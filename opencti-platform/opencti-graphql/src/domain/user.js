@@ -1184,8 +1184,15 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
   // Sort dashboards the same order as the fetched ids
   return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 };
-export const findAdministratedOrganizationsByUser = async (context, user, currentUser) => {
+export const findAdministratedOrganizationsByMe = async (context, user, currentUser) => {
   return currentUser.organizations.filter((o) => o.authorized_authorities.includes(currentUser.id));
+};
+
+export const findAdministratedOrganizationsByUser = async (context, user, current) => {
+  const batchOpts = { batched: false, paginate: false, withInferences: false };
+
+  const organizations = await batchOrganizations(context, SYSTEM_USER, current.id, batchOpts);
+  return organizations.filter((o) => o.authorized_authorities.includes(current.id));
 };
 
 // region context

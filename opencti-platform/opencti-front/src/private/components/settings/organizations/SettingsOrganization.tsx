@@ -112,8 +112,7 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
-  const userHasSetAccessCapability = (me.capabilities ?? []).map((c) => c.name).includes(SETTINGS_SETACCESSES)
-  const isOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organization.id) && userHasSetAccessCapability;
+  const isOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organization.id);
   // TODO Check if right capability for Orga Edition
   return (
     <div className={classes.container}>
@@ -241,7 +240,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <SettingsOrganizationUsers organizationId={organization.id}  isOrganizationAdmin={isOrganizationAdmin}/>
+        <SettingsOrganizationUsers organizationId={organization.id} isOrganizationAdmin={isOrganizationAdmin}/>
       </Grid>
     </div>
   );

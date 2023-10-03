@@ -15,14 +15,14 @@ import {
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
-import inject18n, { useFormatter } from '../../../../components/i18n';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
 import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { DataColumns } from '../../../../components/list_lines';
+import { Theme } from '../../../../components/Theme';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -48,25 +48,39 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
+const UserLineFragment = graphql`
+  fragment SettingsOrganizationUserLine_node on User {
+    id
+    name
+    user_email
+    firstname
+    external
+    lastname
+    otp_activated
+    created_at
+    administrated_organizations {
+      id
+      name
+      authorized_authorities
+    }
+  }
+`;
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns;
   node: SettingsOrganizationUserLine_node$key;
   isOrganizationAdmin: boolean;
 }
 
-export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({dataColumns, node, isOrganizationAdmin}) => {
+export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, isOrganizationAdmin }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const data = useFragment(UserLineFragment, node);
+  // TODO Correct value
+  const memberIsOrganizationAdmin = data.administrated_organizations?.length > 0;
   const external = data.external === true;
 
   const handleOpen = (event: React.SyntheticEvent) => {
@@ -89,65 +103,68 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   }
 
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={true}
-      component={isOrganizationAdmin ? 'div' : Link}
-      to={isOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {external ? <AccountCircleOutlined /> : <PersonOutlined />}
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
+    <ListItem>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={isOrganizationAdmin ? 'div' : Link}
+        to={isOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          {external ? <AccountCircleOutlined /> : <PersonOutlined />}
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {data.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.user_email.width }}
+              >
+                {data.user_email}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.firstname.width }}
+              >
+                {data.firstname}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.lastname.width }}
+              >
+                {data.lastname}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.otp.width }}
+              >
+                {data.otp_activated ? (
+                  <Security fontSize="small" color="secondary" />
+                ) : (
+                  <HorizontalRule fontSize="small" color="primary" />
+                )}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                {fd(data.created_at)}
+              </div>
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.user_email.width }}
-            >
-              {data.user_email}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.firstname.width }}
-            >
-              {data.firstname}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.lastname.width }}
-            >
-              {data.lastname}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.otp.width }}
-            >
-              {data.otp_activated ? (
-                <Security fontSize="small" color="secondary" />
-              ) : (
-                <HorizontalRule fontSize="small" color="primary" />
-              )}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              {fd(data.created_at)}
-            </div>
-          </div>
-        }
-      />
+          }
+        />
+      </ListItem>
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        { isOrganizationAdmin ?
-          <>
+        { isOrganizationAdmin
+          ? <KeyboardArrowRightOutlined />
+          : <>
             <IconButton
               onClick={handleOpen}
               aria-haspopup="true"
@@ -157,34 +174,20 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
               <MoreVertOutlined />
             </IconButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-              <MenuItem onClick={promoteUser}>{t('Promote as Organization Admin')}</MenuItem>
-              <MenuItem onClick={demoteUser}>{t('Demote as simple member')}</MenuItem>
+              {
+                memberIsOrganizationAdmin
+                  ? <MenuItem onClick={demoteUser}>{t('Demote as simple member')}</MenuItem>
+                  : <MenuItem onClick={promoteUser}>{t('Promote as Organization Admin')}</MenuItem>
+              }
               <MenuItem onClick={removeUserFromOrganization}>{t('Remove from the Organization')}</MenuItem>
             </Menu>
           </>
-        :
-            <KeyboardArrowRightOutlined />
 
         }
       </ListItemIcon>
     </ListItem>
   );
-}
-
-
-
-const UserLineFragment = graphql`
-    fragment SettingsOrganizationUserLine_node on User {
-      id
-      name
-      user_email
-      firstname
-      external
-      lastname
-      otp_activated
-      created_at
-    }
-  `;
+};
 
 export const SettingsOrganizationUserLineDummy = ({
   dataColumns,

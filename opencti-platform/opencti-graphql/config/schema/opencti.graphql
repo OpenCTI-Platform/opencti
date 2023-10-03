@@ -58,6 +58,7 @@ enum Capabilities {
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
   TAXIIAPI_SETCSVMAPPERS
+  ORGA_ADMIN
 }
 enum MemberType {
   User
@@ -1349,6 +1350,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
+  administrated_organizations: [Organization]!
   unit_system: UnitSystem
   # Technical
   editContext: [EditUserContext!]
