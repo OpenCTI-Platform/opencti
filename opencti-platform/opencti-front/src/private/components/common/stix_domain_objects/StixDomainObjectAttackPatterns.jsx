@@ -26,7 +26,7 @@ const StixDomainObjectAttackPatterns = ({
   const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage(
+  const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -45,7 +45,7 @@ const StixDomainObjectAttackPatterns = ({
   const finalPaginationOptions = {
     elementId: stixDomainObjectId,
     elementWithTargetTypes: ['Attack-Pattern'],
-    ...paginationOptions,
+    ...rawPaginationOptions,
   };
   return (
       <div className={classes.container}>

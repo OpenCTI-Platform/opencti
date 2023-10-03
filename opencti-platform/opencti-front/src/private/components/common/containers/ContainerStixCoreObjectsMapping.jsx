@@ -1,6 +1,6 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { ContainerStixCoreObjectsMappingLineDummy, } from './ContainerStixCoreObjectsMappingLine';
+import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, {
   containerStixCoreObjectsMappingLinesQuery,
@@ -64,39 +64,37 @@ const ContainerStixCoreObjectsMapping = ({
     handleSetNumberOfElements,
   } = helpers;
 
-  const buildColumns = () => {
-    return {
-      entity_type: {
-        label: 'Type',
-        width: '15%',
-        isSortable: true,
-      },
-      value: {
-        label: 'Value',
-        width: '30%',
-        isSortable: false,
-      },
-      createdBy: {
-        label: 'Author',
-        width: '15%',
-        isSortable: isRuntimeSort,
-      },
-      created_at: {
-        label: 'Creation',
-        width: '12%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        width: '10%',
-        isSortable: isRuntimeSort,
-      },
-      mapping: {
-        label: 'Mapping',
-        width: '10%',
-        isSortable: false,
-      },
-    };
+  const dataColumns = {
+    entity_type: {
+      label: 'Type',
+      width: '15%',
+      isSortable: true,
+    },
+    value: {
+      label: 'Value',
+      width: '30%',
+      isSortable: false,
+    },
+    createdBy: {
+      label: 'Author',
+      width: '15%',
+      isSortable: isRuntimeSort,
+    },
+    created_at: {
+      label: 'Creation',
+      width: '12%',
+      isSortable: true,
+    },
+    objectMarking: {
+      label: 'Marking',
+      width: '10%',
+      isSortable: isRuntimeSort,
+    },
+    mapping: {
+      label: 'Mapping',
+      width: '10%',
+      isSortable: false,
+    },
   };
   const queryRef = useQueryLoading(
     containerStixCoreObjectsMappingLinesQuery,
@@ -108,7 +106,7 @@ const ContainerStixCoreObjectsMapping = ({
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
-          dataColumns={buildColumns()}
+          dataColumns={dataColumns}
           handleSort={handleSort}
           handleSearch={handleSearch}
           handleAddFilter={handleAddFilter}
@@ -137,7 +135,7 @@ const ContainerStixCoreObjectsMapping = ({
                     .map((idx) => (
                       <ContainerStixCoreObjectsMappingLineDummy
                         key={idx}
-                        dataColumns={buildColumns()}
+                        dataColumns={dataColumns}
                       />
                     ))}
                 </>
@@ -146,8 +144,9 @@ const ContainerStixCoreObjectsMapping = ({
               <ContainerStixCoreObjectsMappingLines
                 container={container}
                 queryRef={queryRef}
-                paginationOptions={paginationOptions} searchTerm={searchTerm}
-                dataColumns={buildColumns()}
+                paginationOptions={paginationOptions}
+                searchTerm={searchTerm}
+                dataColumns={dataColumns}
                 setNumberOfElements={handleSetNumberOfElements}
                 height={height}
                 contentMappingData={contentMappingData}

@@ -50,7 +50,7 @@ class AttackPatternsMatrix extends Component {
                   data={props}
                   attackPatterns={attackPatterns}
                   marginRight={marginRight}
-                  searchTerm={searchTerm}
+                  searchTerm={searchTerm ?? ''}
                   handleChangeKillChain={handleChangeKillChain}
                   handleToggleModeOnlyActive={handleToggleModeOnlyActive}
                   handleToggleColorsReversed={handleToggleColorsReversed}
