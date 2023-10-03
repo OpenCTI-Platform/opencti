@@ -23,6 +23,7 @@ import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixCoreObject, StixBundle } from '../types/stix-common';
 import { now } from '../utils/format';
 import { findAllPlaybooks, findById } from '../modules/playbook/playbook-domain';
+import type { StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
 import type { ComponentDefinition, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
@@ -142,6 +143,7 @@ export const playbookExecutor = async ({
       });
     }
   } catch (e) {
+    logApp.error('Error executing playbook', { error: e });
     const observation = {
       stepId: nextStep.instance.id,
       start,
@@ -162,10 +164,9 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
     const context = executionContext('playbook_manager');
     const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
     const playbooks = await findAllPlaybooks(context, SYSTEM_USER, opts);
-    // TODO need to be filter by INTERNAL_DATA_STREAM entry point
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { data } } = streamEvent;
+      const { data: { data, type } } = streamEvent;
       // For each event we need to check ifs
       for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
         const playbook = playbooks[playbookIndex];
@@ -177,19 +178,26 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             throw UnsupportedError('Invalid playbook, entry point needed');
           }
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+          let validStreamEvent = false;
+          const { update, create, delete: deletion } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+          if (type === 'create' && create === true) validStreamEvent = true;
+          if (type === 'update' && update === true) validStreamEvent = true;
+          if (type === 'delete' && deletion === true) validStreamEvent = true;
           // 02. Execute the component
-          const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
-          const bundle: StixBundle = { id: uuidv4(), type: 'bundle', objects: [data] };
-          await playbookExecutor({
-            playbookId: playbook.id,
-            dataInstanceId: data.id,
-            definition: def,
-            previousStep: null,
-            nextStep,
-            previousBundle: bundle,
-            bundle,
-            isExternalCallback: false
-          });
+          if (validStreamEvent) {
+            const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
+            const bundle: StixBundle = { id: uuidv4(), type: 'bundle', objects: [data] };
+            await playbookExecutor({
+              playbookId: playbook.id,
+              dataInstanceId: data.id,
+              definition: def,
+              previousStep: null,
+              nextStep,
+              previousBundle: bundle,
+              bundle,
+              isExternalCallback: false
+            });
+          }
         }
       }
     }

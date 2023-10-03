@@ -25,6 +25,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
+import SwitchField from '../../../../components/SwitchField';
+import SelectField from '../../../../components/SelectField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -256,13 +258,14 @@ const PlaybookAddComponentsContent = ({
     );
   };
   const renderConfig = () => {
-    console.log(componentId);
-    const selectedComponent = playbookComponents
-      .filter((n) => n.id === componentId)
-      .at(0);
-    const configurationSchema = JSON.parse(
-      selectedComponent.configuration_schema,
-    );
+    const selectedComponent = playbookComponents.filter((n) => n.id === componentId).at(0);
+    const configurationSchema = JSON.parse(selectedComponent.configuration_schema ?? '{}');
+    const defaultConfig = {};
+    Object.entries(configurationSchema?.properties ?? {}).forEach(([k, v]) => {
+      if (isNotEmptyField(v.default)) {
+        defaultConfig[k] = v.default;
+      }
+    });
     return (
       <div className={classes.config}>
         <Formik
@@ -275,7 +278,10 @@ const PlaybookAddComponentsContent = ({
                       : selectedComponent.name,
                 ...currentConfig,
               }
-              : { name: selectedComponent.name }
+              : {
+                name: selectedComponent.name,
+                ...defaultConfig,
+              }
           }
           validationSchema={addComponentValidation(t)}
           onSubmit={onSubmit}
@@ -425,6 +431,35 @@ const PlaybookAddComponentsContent = ({
                         label={t(k)}
                         fullWidth={true}
                       />
+                    );
+                  }
+                  if (v.type === 'boolean') {
+                    return (
+                        <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name={k}
+                            label={t(k)}
+                            containerstyle={{ marginTop: 20 }}
+                        />
+                    );
+                  }
+                  if (v.type === 'string' && isNotEmptyField(v.enum)) {
+                    return (
+                        <Field
+                            component={SelectField}
+                            variant="standard"
+                            name={k}
+                            label={t(k)}
+                            fullWidth={true}
+                            containerstyle={{ width: '100%' }}
+                        >
+                          {v.enum.map((value, i) => (
+                              <MenuItem key={i} value={value}>
+                                {value}
+                              </MenuItem>
+                          ))}
+                        </Field>
                     );
                   }
                   return (
