@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';

@@ -12721,6 +12721,7 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookInsertNode: PlaybookInsertResult;
   playbookReplaceNode: Scalars['String']['output'];
+  playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
   playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -13782,6 +13783,16 @@ export type MutationPlaybookReplaceNodeArgs = {
   id: Scalars['ID']['input'];
   input: PlaybookAddNodeInput;
   nodeId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookStepExecutionArgs = {
+  bundle: Scalars['String']['input'];
+  instance_id: Scalars['ID']['input'];
+  playbook_id: Scalars['ID']['input'];
+  previous_bundle: Scalars['String']['input'];
+  previous_step_id: Scalars['ID']['input'];
+  step_id: Scalars['ID']['input'];
 };
 
 
@@ -34011,6 +34022,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
+  playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'instance_id' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;

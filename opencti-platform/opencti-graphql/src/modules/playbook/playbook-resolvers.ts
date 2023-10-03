@@ -30,6 +30,7 @@ import {
   playbookUpdatePositions
 } from './playbook-domain';
 import { isNotEmptyField } from '../../database/utils';
+import { playbookStepExecution } from '../../manager/playbookManager';
 
 const playbookResolvers: Resolvers = {
   Query: {
@@ -54,6 +55,7 @@ const playbookResolvers: Resolvers = {
     playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),
     playbookUpdatePositions: (_, { id, positions }, context) => playbookUpdatePositions(context, context.user, id, positions),
     playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),
+    playbookStepExecution: (_, args, context) => playbookStepExecution(context, context.user, args),
   },
 };
 

@@ -16,7 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import {
+  type EntityOptions,
+  listAllEntities,
+  listEntitiesPaginated,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -24,8 +29,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditInput,
   PlaybookAddInput,
-  PlaybookAddNodeInput,
   PlaybookAddLinkInput,
+  PlaybookAddNodeInput,
   PositionInput,
 } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';

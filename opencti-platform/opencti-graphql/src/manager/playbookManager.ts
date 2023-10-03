@@ -19,26 +19,22 @@ import { createStreamProcessor, lockResource, redisPlaybookUpdate, type StreamPr
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import type { DataEvent, SseEvent } from '../types/event';
-import type { StixCoreObject } from '../types/stix-common';
-// import { loadConnectorById } from '../domain/connector';
-// import { pushToConnector } from '../database/rabbitmq';
+import type { SseEvent, StreamDataEvent } from '../types/event';
+import type { StixCoreObject, StixBundle } from '../types/stix-common';
 import { now } from '../utils/format';
-import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
+import { findAllPlaybooks, findById } from '../modules/playbook/playbook-domain';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
-import type {
-  ComponentDefinition, NodeInstance,
-  PlaybookComponent,
-  PlaybookComponentConfiguration
-} from '../modules/playbook/playbook-types';
+import type { ComponentDefinition, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
 
 export interface ExecutionEnvelop {
-  playbook_run_id: string
+  playbook_id: string
   last_execution_step: string | undefined
   [k: `step_${string}`]: {
     // Setup when sending
@@ -49,115 +45,116 @@ export interface ExecutionEnvelop {
     error?: string
   }
 }
-
-/*
-const PLAYBOOKS: PlayBookSchema[] = [
-  {
-    id: uuidv4(),
-    name: 'playbook01',
-    description: 'description',
-    playbook_start: 'stream',
-    playbook_variables: [],
-    playbook_definition: {
-      nodes: [
-        {
-          id: 'stream',
-          component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
-          configuration: {}
-        },
-        {
-          id: 'filter',
-          component_id: 'PLAYBOOK_FILTERING_COMPONENT',
-          configuration: {
-            filters: JSON.stringify({ entity_type: [{ id: 'Report', value: 'Rapport' }] }),
-          }
-        },
-        {
-          id: 'console',
-          component_id: 'PLAYBOOK_CONSOLE_STANDARD_COMPONENT',
-          configuration: {}
-        },
-        {
-          id: 'error',
-          component_id: 'PLAYBOOK_CONSOLE_ERROR_COMPONENT',
-          configuration: {}
-        }
-      ],
-      links: [
-        { // connection from stream to filtering
-          from: { id: 'stream', port: 'out' },
-          to: { id: 'filter' },
-        },
-        { // connection from filtering to console on empty
-          from: { port: 'empty', id: 'filter' },
-          to: { id: 'error' },
-        },
-        { // connection from filtering to console on standard
-          from: { port: 'out', id: 'filter' },
-          to: { id: 'console' },
-        }
-      ]
-    }
-  }
-];
-*/
-
 type ObservationFn = {
-  playbookRunId: string,
+  playbookId: string,
   start: string,
   end: string,
   stepId: string,
-  data: StixCoreObject
+  bundle: StixBundle
   error?: string
 };
-const registerObservation = async ({ playbookRunId, start, end, stepId, data, error } : ObservationFn) => {
+const registerObservation = async ({ playbookId, start, end, stepId, bundle, error } : ObservationFn) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const envelop: ExecutionEnvelop = {
-    playbook_run_id: playbookRunId,
+    playbook_id: playbookId,
     last_execution_step: stepId,
-    [`step_${stepId}`]: { in_timestamp: start, out_timestamp: end, data, error }
+    [`step_${stepId}`]: { in_timestamp: start, out_timestamp: end, bundle, error }
   };
   await redisPlaybookUpdate(envelop);
 };
 
-const playbookExecutor = async (
-  playbookRunId: string,
+type ExecutorFn = {
+  playbookId: string,
+  dataInstanceId: string,
   definition: ComponentDefinition,
-  component: PlaybookComponent<PlaybookComponentConfiguration>,
-  instance: NodeInstance<string>,
-  data: StixCoreObject
-) => {
+  previousStep: PlaybookExecutionStep<any> | null
+  nextStep: PlaybookExecutionStep<any>,
+  previousBundle: StixBundle | null
+  bundle: StixBundle
+  isExternalCallback: boolean
+};
+export const playbookExecutor = async ({
+  playbookId,
+  dataInstanceId,
+  definition,
+  previousStep,
+  nextStep,
+  previousBundle,
+  bundle,
+  isExternalCallback
+} : ExecutorFn) => {
   const start = now();
   try {
-    const instanceWithConfig = { ...instance, configuration: JSON.parse(instance.configuration ?? '{}') };
-    const execution = await component.executor({ playbookRunId, instance: instanceWithConfig, data });
-    // For internal component, register directly the observability
-    if (component.is_internal) {
-      const observation = { stepId: instance.id, start, end: now(), playbookRunId, data };
-      await registerObservation(observation);
-    }
-    // Send the result to the next component if needed
-    if (execution.output_port) {
-      // Find the next op for this attachment
-      const connections = definition.links.filter((c) => c.from.id === instance.id && c.from.port === execution.output_port);
-      for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
-        const connection = connections[connectionIndex];
-        const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
-        if (!nextInstance) {
-          throw UnsupportedError('Invalid playbook, nextInstance needed');
-        }
-        const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
-        await playbookExecutor(playbookRunId, definition, nextConnector, nextInstance, execution.data);
+    const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
+    if (nextStep.component.is_internal || isExternalCallback) {
+      const execution = await nextStep.component.executor({
+        instanceId: dataInstanceId,
+        playbookId,
+        previousInstance: previousStep?.instance,
+        instance: instanceWithConfig,
+        previousBundle,
+        bundle
+      });
+      // For internal component, register directly the observability
+      if (nextStep.component.is_internal) {
+        const observation = { stepId: nextStep.instance.id, start, end: now(), playbookId, bundle };
+        await registerObservation(observation);
       }
+      // Send the result to the next component if needed
+      if (execution.output_port) {
+        // Find the next op for this attachment
+        const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port);
+        for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
+          const connection = connections[connectionIndex];
+          const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
+          const fromInstance = definition.nodes.find((c) => c.id === connection.from.id);
+          if (!nextInstance || !fromInstance) {
+            throw UnsupportedError('Invalid playbook, nextInstance needed');
+          }
+          const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
+          const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
+          await playbookExecutor({
+            playbookId,
+            dataInstanceId,
+            definition,
+            previousStep: { component: fromConnector, instance: fromInstance },
+            nextStep: { component: nextConnector, instance: nextInstance },
+            previousBundle: bundle,
+            bundle: execution.bundle,
+            isExternalCallback: false
+          });
+        }
+      }
+    } else {
+      if (!nextStep.component.notify) {
+        throw UnsupportedError('Notify definition is required');
+      }
+      // Component must rely on an external call.
+      // Execution will be continued through an external API call
+      await nextStep.component.notify({
+        instanceId: dataInstanceId,
+        playbookId,
+        previousInstance: previousStep?.instance,
+        instance: instanceWithConfig,
+        previousBundle,
+        bundle
+      });
     }
   } catch (e) {
-    const observation = { stepId: instance.id, start, end: now(), playbookRunId, data, error: JSON.stringify(e) };
+    const observation = {
+      stepId: nextStep.instance.id,
+      start,
+      end: now(),
+      playbookId,
+      bundle,
+      error: JSON.stringify(e)
+    };
     await registerObservation(observation);
   }
 };
 
-const playbookStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
+const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
       return;
@@ -181,8 +178,18 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) =
           }
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
           // 02. Execute the component
-          const playbookRunId = uuidv4();
-          await playbookExecutor(playbookRunId, def, connector, instance, data);
+          const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
+          const bundle: StixBundle = { id: uuidv4(), type: 'bundle', objects: [data] };
+          await playbookExecutor({
+            playbookId: playbook.id,
+            dataInstanceId: data.id,
+            definition: def,
+            previousStep: null,
+            nextStep,
+            previousBundle: bundle,
+            bundle,
+            isExternalCallback: false
+          });
         }
       }
     }
@@ -247,6 +254,34 @@ const initPlaybookManager = () => {
     },
   };
 };
+
+export const playbookStepExecution = async (context: AuthContext, user: AuthUser, args: MutationPlaybookStepExecutionArgs) => {
+  const playbook = await findById(context, user, args.playbook_id);
+  if (!playbook) return false;
+  const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const nextInstance = def.nodes.find((n) => n.id === args.step_id);
+  const previousInstance = def.nodes.find((n) => n.id === args.previous_step_id);
+  if (!nextInstance || !previousInstance) return false;
+  const connector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
+  // 02. Execute the component
+  const nextStep: PlaybookExecutionStep<any> = { component: connector, instance: nextInstance };
+  const previousStep: PlaybookExecutionStep<any> = { component: connector, instance: previousInstance };
+  // const previousData = JSON.parse(args.previous_data);
+  const bundle = JSON.parse(args.bundle) as StixBundle;
+  return playbookExecutor({
+    playbookId: args.playbook_id,
+    dataInstanceId: args.instance_id,
+    definition: def,
+    previousStep,
+    nextStep,
+    previousBundle: null,
+    bundle,
+    isExternalCallback: true
+  })
+    .then(() => true)
+    .catch(() => false);
+};
+
 const playbookManager = initPlaybookManager();
 
 export default playbookManager;

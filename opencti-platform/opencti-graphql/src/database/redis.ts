@@ -776,7 +776,7 @@ export const redisPlaybookGet = async (playbookRunId: string) => {
 };
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const clientBase = getClientBase();
-  const id = `playbook_${envelop.playbook_run_id}`;
+  const id = `playbook_${envelop.playbook_id}`;
   const follow = await clientBase.get(id);
   const objectFollow = follow ? JSON.parse(follow) : {};
   const toUpdate = mergeDeepRightAll(objectFollow, envelop);

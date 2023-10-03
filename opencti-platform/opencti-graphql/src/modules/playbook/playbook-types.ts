@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { JSONSchemaType } from 'ajv';
-import type { StixObject, StixCoreObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
+import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
@@ -50,9 +50,21 @@ export interface NodeInstance<T extends PlaybookComponentConfiguration> {
   configuration: T
 }
 
-export interface PlaybookExecution { output_port: string | undefined, data: StixCoreObject }
+export interface PlaybookExecution { output_port: string | undefined, bundle: StixBundle }
 
-export interface ExecutorParameters<T extends PlaybookComponentConfiguration> { playbookRunId: string, instance: NodeInstance<T>, data: StixCoreObject }
+export interface PlaybookExecutionStep<T extends PlaybookComponentConfiguration> {
+  component: PlaybookComponent<PlaybookComponentConfiguration>,
+  instance: NodeInstance<T>,
+}
+
+export interface ExecutorParameters<T extends PlaybookComponentConfiguration> {
+  playbookId: string
+  instanceId: string
+  previousInstance: NodeInstance<T> | undefined
+  instance: NodeInstance<T>
+  previousBundle: StixBundle | null
+  bundle: StixBundle
+}
 
 export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
   id: string
@@ -64,6 +76,7 @@ export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
   ports: PortDefinition[]
   configuration_schema: JSONSchemaType<T> | undefined
   executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>
+  notify?: (parameters: ExecutorParameters<T>) => Promise<void>
 }
 
 export interface PortDefinition {
