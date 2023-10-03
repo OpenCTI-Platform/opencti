@@ -14,8 +14,8 @@ from pythonjsonlogger import jsonlogger
 from pycti import __version__
 from pycti.api import LOGGER
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
-from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
+from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_case_incident import CaseIncident
