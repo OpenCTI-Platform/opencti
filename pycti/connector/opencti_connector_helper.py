@@ -219,6 +219,7 @@ class ListenQueue:
         """
 
         json_data = json.loads(body)
+        work_id = json_data["internal"]["work_id"]
         channel.basic_ack(delivery_tag=method.delivery_tag)
         message_task = self._data_handler(json_data)
         five_minutes = 60 * 5
@@ -233,14 +234,12 @@ class ListenQueue:
                 else:
                     time_wait += 1
                 await asyncio.sleep(1)
-            self.helper.api.work.to_processed(
-                json_data["internal"]["work_id"], message_task.result()
-            )
+            if work_id:
+                self.helper.api.work.to_processed(work_id, message_task.result())
         except Exception as e:  # pylint: disable=broad-except
             logging.exception("Error in message processing, reporting error to API")
-            self.helper.api.work.to_processed(
-                json_data["internal"]["work_id"], str(e), True
-            )
+            if work_id:
+                self.helper.api.work.to_processed(work_id, str(e), True)
         LOGGER.info(
             "Message (delivery_tag=%s) processed, thread terminated",
             method.delivery_tag,
@@ -249,16 +248,32 @@ class ListenQueue:
     def _data_handler(self, json_data) -> None:
         # Set the API headers
         work_id = json_data["internal"]["work_id"]
-        applicant_id = json_data["internal"]["applicant_id"]
         self.helper.work_id = work_id
+        if "playbook" in json_data["internal"]:
+            playbook_id = json_data["internal"]["playbook"]["playbook_id"]
+            instance_id = json_data["internal"]["playbook"]["instance_id"]
+            previous_bundle = json_data["event"]["stix"]
+            step_id = json_data["internal"]["playbook"]["step_id"]
+            previous_step_id = json_data["internal"]["playbook"]["previous_step_id"]
+            playbook_data = {
+                "playbook_id": playbook_id,
+                "instance_id": instance_id,
+                "previous_step_id": previous_step_id,
+                "step_id": step_id,
+                "previous_bundle": previous_bundle,
+            }
+            self.helper.playbook = playbook_data
+
+        applicant_id = json_data["internal"]["applicant_id"]
         if applicant_id is not None:
             self.helper.applicant_id = applicant_id
             self.helper.api_impersonate.set_applicant_id_header(applicant_id)
         # Execute the callback
         try:
-            self.helper.api.work.to_received(
-                work_id, "Connector ready to process the operation"
-            )
+            if work_id:
+                self.helper.api.work.to_received(
+                    work_id, "Connector ready to process the operation"
+                )
             if asyncio.iscoroutinefunction(self.callback):
                 message = asyncio.run_coroutine_threadsafe(
                     self.callback(json_data["event"]), self.connector_event_loop
@@ -271,11 +286,12 @@ class ListenQueue:
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
             LOGGER.exception("Error in message processing, reporting error to API")
-            try:
-                self.helper.api.work.to_processed(work_id, str(e), True)
-            except:  # pylint: disable=bare-except
-                self.helper.metric.inc("error_count")
-                LOGGER.error("Failing reporting the processing")
+            if work_id:
+                try:
+                    self.helper.api.work.to_processed(work_id, str(e), True)
+                except:  # pylint: disable=bare-except
+                    self.helper.metric.inc("error_count")
+                    LOGGER.error("Failing reporting the processing")
 
     def run(self) -> None:
         while True:
@@ -557,7 +573,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     :type config: Dict
     """
 
-    def __init__(self, config: Dict) -> None:
+    def __init__(self, config: Dict, playbook_compatible=False) -> None:
         sys.excepthook = killProgramHook
 
         # Load API config
@@ -697,11 +713,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connect_scope,
             self.connect_auto,
             self.connect_only_contextual,
+            playbook_compatible,
         )
         connector_configuration = self.api.connector.register(self.connector)
         LOGGER.info("Connector registered with ID: %s", self.connect_id)
         self.connector_id = connector_configuration["id"]
         self.work_id = None
+        self.playbook = None
         self.applicant_id = connector_configuration["connector_user_id"]
         self.connector_state = connector_configuration["connector_state"]
         self.connector_config = connector_configuration["config"]
@@ -968,6 +986,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         bypass_validation = kwargs.get("bypass_validation", False)
         entity_id = kwargs.get("entity_id", None)
         file_name = kwargs.get("file_name", None)
+
+        if self.playbook is not None:
+            self.api.playbook.playbook_step_execution(self.playbook, bundle)
+            return [bundle]
 
         if not file_name and work_id:
             file_name = f"{work_id}.json"

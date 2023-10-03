@@ -41,6 +41,7 @@ class OpenCTIConnector:
         scope: str,
         auto: bool,
         only_contextual: bool,
+        playbook_compatible: bool,
     ):
         self.id = connector_id
         self.name = connector_name
@@ -53,6 +54,7 @@ class OpenCTIConnector:
             self.scope = []
         self.auto = auto
         self.only_contextual = only_contextual
+        self.playbook_compatible = playbook_compatible
 
     def to_input(self) -> dict:
         """connector input to use in API query
@@ -68,5 +70,6 @@ class OpenCTIConnector:
                 "scope": self.scope,
                 "auto": self.auto,
                 "only_contextual": self.only_contextual,
+                "playbook_compatible": self.playbook_compatible,
             }
         }
