@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { Close } from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,6 +12,11 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import Grid from '@mui/material/Grid';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
@@ -78,7 +83,10 @@ const PlaybookAddComponentsContent = ({
   const [filters, setFilters] = useState(
     currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
   );
-  const [componentId, setComponentId] = useState(null);
+  const [actionsInputs, setActionsInputs] = useState([{}]);
+  const [componentId, setComponentId] = useState(
+    action === 'config' ? selectedNode?.data?.component?.id : null,
+  );
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -93,6 +101,21 @@ const PlaybookAddComponentsContent = ({
   };
   const handleRemoveFilter = (key) => {
     setFilters(R.dissoc(key, filters));
+  };
+  const handleAddStep = () => {
+    setActionsInputs(R.append({}, actionsInputs));
+  };
+  const handleRemoveStep = (i) => {
+    const newActionsInputs = actionsInputs.splice(i, 1);
+    setActionsInputs(newActionsInputs);
+  };
+  const areStepValid = () => {
+    for (const n of actionsInputs) {
+      if (!n || !n.type || !n.field || !n.values || n.values.length === 0) {
+        return false;
+      }
+    }
+    return true;
   };
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
@@ -232,6 +255,85 @@ const PlaybookAddComponentsContent = ({
                       </div>
                     );
                   }
+                  if (k === 'actions') {
+                    return (
+                      <div key={k}>
+                        <div
+                          className={classes.container}
+                          style={{ marginTop: 20 }}
+                        >
+                          {Array(actionsInputs.length)
+                            .fill(0)
+                            .map((_, i) => (
+                              <div key={i} className={classes.step}>
+                                <IconButton
+                                  disabled={actionsInputs.length === 1}
+                                  aria-label="Delete"
+                                  className={classes.stepCloseButton}
+                                  onClick={() => handleRemoveStep(i)}
+                                  size="small"
+                                >
+                                  <CancelOutlined fontSize="small" />
+                                </IconButton>
+                                <Grid container={true} spacing={3}>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl
+                                      className={classes.formControl}
+                                    >
+                                      <InputLabel>
+                                        {t('Action type')}
+                                      </InputLabel>
+                                      <Select
+                                        variant="standard"
+                                        value={actionsInputs[i]?.type}
+                                        onChange={this.handleChangeActionInput.bind(
+                                          this,
+                                          i,
+                                          'type',
+                                        )}
+                                      >
+                                        <MenuItem value="ADD">
+                                          {t('Add')}
+                                        </MenuItem>
+                                        <MenuItem value="REPLACE">
+                                          {t('Replace')}
+                                        </MenuItem>
+                                        <MenuItem value="REMOVE">
+                                          {t('Remove')}
+                                        </MenuItem>
+                                      </Select>
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl
+                                      className={classes.formControl}
+                                    >
+                                      <InputLabel>{t('Field')}</InputLabel>
+                                      {this.renderFieldOptions(i)}
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={6}>
+                                    {this.renderValuesOptions(i)}
+                                  </Grid>
+                                </Grid>
+                              </div>
+                            ))}
+                          <div className={classes.add}>
+                            <Button
+                              disabled={!areStepValid()}
+                              variant="contained"
+                              color="secondary"
+                              size="small"
+                              onClick={handleAddStep}
+                              classes={{ root: classes.buttonAdd }}
+                            >
+                              <AddOutlined fontSize="small" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
                   if (v.type === 'number') {
                     return (
                       <Field
@@ -309,7 +411,7 @@ const PlaybookAddComponents = ({
     setSelectedNode(null);
     setSelectedEdge(null);
   };
-  const open = (action === 'config' || action === 'add')
+  const open = (action === 'config' || action === 'add' || action === 'replace')
     && (selectedNode !== null || selectedEdge || null);
   return (
     <Drawer

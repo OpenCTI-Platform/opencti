@@ -174,6 +174,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
                 setSelectedNode(nodeId);
                 setAction('config');
               },
+              openReplace: (nodeId) => {
+                setSelectedNode(nodeId);
+                setAction('replace');
+              },
               openAddSibling: (nodeId) => {
                 setSelectedNode(nodeId);
                 setAction('add');
@@ -218,6 +222,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         configuration,
         component,
         openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
+        openReplace: (nodeId) => {
           setSelectedNode(nodeId);
           setAction('config');
         },
@@ -295,6 +303,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         openConfig: (nodeId) => {
           setSelectedNode(nodeId);
           setAction('config');
+        },
+        openReplace: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('replace');
         },
         openAddSibling: (nodeId) => {
           setSelectedNode(nodeId);
@@ -398,6 +410,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
             openConfig: (nodeId) => {
               setSelectedNode(nodeId);
               setAction('config');
+            },
+            openReplace: (nodeId) => {
+              setSelectedNode(nodeId);
+              setAction('replace');
             },
             openAddSibling: (nodeId) => {
               setSelectedNode(nodeId);

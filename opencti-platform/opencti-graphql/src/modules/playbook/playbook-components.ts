@@ -160,6 +160,42 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     return { output_port: 'out', bundle };
   }
 };
+interface UpdateConfiguration extends PlaybookComponentConfiguration {
+  actions: { op: string, path: string, value: string[] }[]
+}
+const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
+  id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
+  name: 'Update knowledge',
+  description: 'Update STIX data',
+  icon: 'edit',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: {
+    type: 'object',
+    properties: {
+      actions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            op: { type: 'string' },
+            path: { type: 'string' },
+            value: { type: 'array', items: { type: 'string' } },
+          }
+        }
+      },
+    },
+    required: ['actions'],
+  },
+  executor: async ({ instance, data }) => {
+    const context = executionContext('playbook_manager');
+    const jsonFilters = JSON.parse(instance.configuration.filters);
+    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+    const isMatch = await isStixMatchFilters(context, SYSTEM_USER, data, adaptedFilters);
+    return { output_port: isMatch ? 'out' : 'empty', data };
+  }
+};
 // endregion
 
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
@@ -168,5 +204,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_CONSOLE_ERROR_COMPONENT.id]: PLAYBOOK_CONSOLE_ERROR_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,
   [PLAYBOOK_FILTERING_COMPONENT.id]: PLAYBOOK_FILTERING_COMPONENT,
-  [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT
+  [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
+  [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT
 };

@@ -97,6 +97,14 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </MenuItem>
           <MenuItem
             onClick={() => {
+              data.openReplace(getNode(id));
+              setAnchorEl(null);
+            }}
+          >
+            {t('Replace')}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
               data.openDelete(getNode(id));
               setAnchorEl(null);
             }}
