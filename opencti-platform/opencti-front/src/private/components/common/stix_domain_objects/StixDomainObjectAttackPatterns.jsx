@@ -1,145 +1,77 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
-import * as R from 'ramda';
+import React from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import Loader from '../../../../components/Loader';
-import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
 import StixDomainObjectAttackPatternsKillChain, {
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectAttackPatternsKillChain';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
     height: '100%',
     margin: 0,
     padding: 0,
   },
-});
+}));
 
-class StixDomainObjectVictimology extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.history,
-      props.location,
-      `view-attack-patterns-${props.stixDomainObjectId}`,
-    );
-    this.state = {
-      searchTerm: R.propOr('', 'searchTerm', params),
-      viewMode: R.propOr('matrix', 'viewMode', params),
-      filters: R.propOr({}, 'filters', params),
+const StixDomainObjectAttackPatterns = ({
+  stixDomainObjectId,
+  entityLink,
+  defaultStartTime,
+  defaultStopTime,
+  disableExport,
+}) => {
+  const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
+  const classes = useStyles();
+
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
       openExports: false,
-    };
-  }
+      filters: {},
+      view: 'matrix',
+    },
+  );
+  const {
+    searchTerm,
+    filters,
+    view,
+    openExports,
+  } = viewStorage;
 
-  saveView() {
-    saveViewParameters(
-      this.props.history,
-      this.props.location,
-      `view-attack-patterns-${this.props.stixDomainObjectId}`,
-      this.state,
-    );
-  }
-
-  handleChangeView(viewMode) {
-    this.setState({ viewMode }, () => this.saveView());
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
-
-  handleAddFilter(key, id, value, event = null) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (this.state.filters[key] && this.state.filters[key].length > 0) {
-      this.setState(
-        {
-          filters: R.assoc(
-            key,
-            isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [
-                { id, value },
-                ...this.state.filters[key],
-              ]),
-            this.state.filters,
-          ),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
-        () => this.saveView(),
-      );
-    }
-  }
-
-  handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
-  }
-
-  handleToggleExports() {
-    this.setState({ openExports: !this.state.openExports });
-  }
-
-  render() {
-    const { viewMode, searchTerm, filters, openExports } = this.state;
-    const {
-      classes,
-      stixDomainObjectId,
-      entityLink,
-      defaultStartTime,
-      defaultStopTime,
-      disableExport,
-    } = this.props;
-    const finalFilters = convertFilters(filters);
-    const paginationOptions = {
-      elementId: stixDomainObjectId,
-      elementWithTargetTypes: ['Attack-Pattern'],
-      search: searchTerm,
-      filters: finalFilters,
-    };
-    return (
+  const finalPaginationOptions = {
+    elementId: stixDomainObjectId,
+    elementWithTargetTypes: ['Attack-Pattern'],
+    ...paginationOptions,
+  };
+  return (
       <div className={classes.container}>
         <QueryRenderer
           query={
             stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
           }
-          variables={{ first: 500, ...paginationOptions }}
+          variables={{ first: 500, ...finalPaginationOptions }}
           render={({ props }) => {
             if (props) {
               return (
                 <StixDomainObjectAttackPatternsKillChain
                   data={props}
                   entityLink={entityLink}
-                  paginationOptions={paginationOptions}
+                  paginationOptions={finalPaginationOptions}
                   stixDomainObjectId={stixDomainObjectId}
-                  handleChangeView={this.handleChangeView.bind(this)}
-                  handleSearch={this.handleSearch.bind(this)}
-                  handleAddFilter={this.handleAddFilter.bind(this)}
-                  handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                  handleChangeView={helpers.handleChangeView}
+                  handleSearch={helpers.handleSearch}
+                  handleAddFilter={helpers.handleAddFilter}
+                  handleRemoveFilter={helpers.handleRemoveFilter}
                   filters={filters}
                   searchTerm={searchTerm}
-                  currentView={viewMode}
+                  currentView={view}
                   defaultStartTime={defaultStartTime}
                   defaultStopTime={defaultStopTime}
-                  handleToggleExports={
-                    disableExport ? null : this.handleToggleExports.bind(this)
-                  }
+                  handleToggleExports={disableExport ? null : helpers.handleToggleExports}
                   openExports={openExports}
                 />
               );
@@ -148,21 +80,7 @@ class StixDomainObjectVictimology extends Component {
           }}
         />
       </div>
-    );
-  }
-}
-
-StixDomainObjectVictimology.propTypes = {
-  stixDomainObjectId: PropTypes.string,
-  entityLink: PropTypes.string,
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  defaultStartTime: PropTypes.string,
-  defaultStopTime: PropTypes.string,
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectVictimology);
+export default StixDomainObjectAttackPatterns;
