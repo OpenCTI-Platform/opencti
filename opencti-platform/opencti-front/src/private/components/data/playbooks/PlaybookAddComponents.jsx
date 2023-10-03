@@ -24,6 +24,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
+import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -62,6 +63,31 @@ const useStyles = makeStyles((theme) => ({
   config: {
     padding: '10px 20px 20px 20px',
   },
+  container: {
+    marginTop: 40,
+  },
+  step: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.background.accent}`,
+    borderRadius: 5,
+    display: 'flex',
+  },
+  formControl: {
+    width: '100%',
+  },
+  buttonAdd: {
+    width: '100%',
+    height: 20,
+  },
+  stepCloseButton: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+  },
 }));
 
 const addComponentValidation = (t) => Yup.object().shape({
@@ -85,7 +111,7 @@ const PlaybookAddComponentsContent = ({
   );
   const [actionsInputs, setActionsInputs] = useState([{}]);
   const [componentId, setComponentId] = useState(
-    action === 'config' ? selectedNode?.data?.component?.id : null,
+    selectedNode?.data?.component?.id ?? null,
   );
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
@@ -109,6 +135,11 @@ const PlaybookAddComponentsContent = ({
     const newActionsInputs = actionsInputs.splice(i, 1);
     setActionsInputs(newActionsInputs);
   };
+  const handleChangeActionInput = (i, key, event) => {
+    const { value } = event.target;
+    actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
+    setActionsInputs(actionsInputs);
+  };
   const areStepValid = () => {
     for (const n of actionsInputs) {
       if (!n || !n.type || !n.field || !n.values || n.values.length === 0) {
@@ -116,6 +147,56 @@ const PlaybookAddComponentsContent = ({
       }
     }
     return true;
+  };
+  const renderFieldOptions = (i) => {
+    const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
+    let options = [];
+    if (actionsInputs[i]?.type === 'ADD') {
+      options = [
+        { label: t('Marking definitions'), value: 'object-marking' },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('External references'), value: 'external-reference' },
+      ];
+    } else if (actionsInputs[i]?.type === 'REPLACE') {
+      options = [
+        { label: t('Marking definitions'), value: 'object-marking' },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('Author'), value: 'created-by' },
+        { label: t('Score'), value: 'x_opencti_score' },
+        { label: t('Confidence'), value: 'confidence' },
+        { label: t('Description'), value: 'description' },
+      ];
+      if (this.props.type) {
+        options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
+      }
+    } else if (actionsInputs[i]?.type === 'REMOVE') {
+      options = [
+        { label: t('Marking definitions'), value: 'object-marking' },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('External references'), value: 'external-reference' },
+      ];
+    }
+    return (
+      <Select
+        variant="standard"
+        disabled={disabled}
+        value={actionsInputs[i]?.type}
+        onChange={(event) => handleChangeActionInput(i, 'field', event)}
+      >
+        {options.length > 0 ? (
+          R.map(
+            (n) => (
+              <MenuItem key={n.value} value={n.value}>
+                {n.label}
+              </MenuItem>
+            ),
+            options,
+          )
+        ) : (
+          <MenuItem value="none">{t('None')}</MenuItem>
+        )}
+      </Select>
+    );
   };
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
@@ -175,6 +256,7 @@ const PlaybookAddComponentsContent = ({
     );
   };
   const renderConfig = () => {
+    console.log(componentId);
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
       .at(0);
@@ -286,11 +368,12 @@ const PlaybookAddComponentsContent = ({
                                       <Select
                                         variant="standard"
                                         value={actionsInputs[i]?.type}
-                                        onChange={this.handleChangeActionInput.bind(
-                                          this,
+                                        onChange={(event) => handleChangeActionInput(
                                           i,
                                           'type',
-                                        )}
+                                          event,
+                                        )
+                                        }
                                       >
                                         <MenuItem value="ADD">
                                           {t('Add')}
@@ -309,12 +392,10 @@ const PlaybookAddComponentsContent = ({
                                       className={classes.formControl}
                                     >
                                       <InputLabel>{t('Field')}</InputLabel>
-                                      {this.renderFieldOptions(i)}
+                                      {renderFieldOptions(i)}
                                     </FormControl>
                                   </Grid>
-                                  <Grid item={true} xs={6}>
-                                    {this.renderValuesOptions(i)}
-                                  </Grid>
+                                  <Grid item={true} xs={6}></Grid>
                                 </Grid>
                               </div>
                             ))}
@@ -387,8 +468,8 @@ const PlaybookAddComponentsContent = ({
   };
   return (
     <>
-      {componentId === null && renderLines()}
-      {componentId !== null && renderConfig()}
+      {isEmptyField(componentId) && renderLines()}
+      {isNotEmptyField(componentId) && renderConfig()}
     </>
   );
 };

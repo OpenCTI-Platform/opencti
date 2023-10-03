@@ -182,7 +182,8 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
             op: { type: 'string' },
             path: { type: 'string' },
             value: { type: 'array', items: { type: 'string' } },
-          }
+          },
+          required: ['op', 'path', 'value'],
         }
       },
     },
