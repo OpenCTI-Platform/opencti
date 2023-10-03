@@ -287,12 +287,10 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
-  console.log('targets', targets);
   const relationWithTargets = {};
   relations.forEach((relation) => {
-    const tempTarget = targets.find(({ id }) => relation[`${opposite}Id`]);
+    const tempTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
     relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: !!relation.x_opencti_inferences };
-    console.log('relationWithTargets', relationWithTargets);
   });
 
   // Group and rebuild the result
@@ -303,11 +301,9 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       const edges = [];
       if (values) {
         const currentSourceRelations = first ? R.take(first, values) : values;
-        console.log('currentSourceRelations', currentSourceRelations);
         const filteredElements = [];
         currentSourceRelations.forEach((relation) => {
           const target = relationWithTargets[relation.id];
-          console.log('target dans le forEach', target);
           if (target) {
             filteredElements.push(target);
           }
