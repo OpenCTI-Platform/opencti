@@ -28,6 +28,8 @@ import type { StixContainer } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import type { StixCoreObject, StixId } from '../../types/stix-common';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 // region Testing playbook components
 interface ConsoleConfiguration extends PlaybookComponentConfiguration {}
@@ -231,6 +233,34 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   }
 };
 
+interface SharingConfiguration extends PlaybookComponentConfiguration {
+  organizations: string
+}
+const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
+  id: 'PLAYBOOK_SHARING_COMPONENT',
+  name: 'Sharing component',
+  description: 'Share data to specific organizations',
+  icon: 'data',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: {
+    type: 'object',
+    properties: {
+      organizations: {
+        type: 'string',
+      },
+    },
+    required: ['organizations'],
+  },
+  executor: async ({ instanceId, instance, bundle }) => {
+    const organizationIds = [instance.configuration.organizations] as unknown as StixId[];
+    const baseData = bundle.objects.find((o) => o.id === instanceId) as StixCoreObject;
+    baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+    return { output_port: 'out', bundle };
+  }
+};
+
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
   actions: { op: string, path: string, value: string[] }[]
 }
@@ -279,5 +309,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
-  [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT
+  [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
+  [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT
 };
