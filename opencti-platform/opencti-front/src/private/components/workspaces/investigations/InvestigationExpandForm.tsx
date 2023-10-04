@@ -11,22 +11,45 @@ import SwitchField from '../../../../components/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import {
-  InvestigationExpandFormTargetsDistributionQuery$data,
-} from './__generated__/InvestigationExpandFormTargetsDistributionQuery.graphql';
+  InvestigationExpandFormTargetsDistributionFromQuery$data,
+} from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
+import {
+  InvestigationExpandFormTargetsDistributionToQuery$data,
+} from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
 import {
   InvestigationExpandFormRelDistributionQuery$data,
 } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import CheckboxesField, { CheckboxesItem } from '../../../../components/CheckboxesField';
 
-// The number of elements targeted by or targeting the given
+// The number of elements targeted by the given
 // entities ids, sorted by type of entity.
-const investigationExpandFormTargetsDistributionQuery = graphql`
-  query InvestigationExpandFormTargetsDistributionQuery($ids: [String]) {
+const investigationExpandFormTargetsDistributionFromQuery = graphql`
+  query InvestigationExpandFormTargetsDistributionFromQuery($ids: [String]) {
     stixRelationshipsDistribution(
-      elementId: $ids
+      fromId: $ids
+      isTo: true
       operation: count
       field: "entity_type"
       relationship_type: "stix-relationship"
+      aggregateOnConnections: true
+    ) {
+      label
+      value
+    }
+  }
+`;
+
+// The number of elements targeting the given
+// entities ids, sorted by type of entity.
+const investigationExpandFormTargetsDistributionToQuery = graphql`
+  query InvestigationExpandFormTargetsDistributionToQuery($ids: [String]) {
+    stixRelationshipsDistribution(
+      toId: $ids
+      isTo: false
+      operation: count
+      field: "entity_type"
+      relationship_type: "stix-relationship"
+      aggregateOnConnections: true
     ) {
       label
       value
@@ -95,9 +118,14 @@ export default function InvestigationExpandForm({
 }: Props) {
   const classes = useStyles();
   const { t } = useFormatter();
+
+  // List of items that are given to the Checkboxes component in the form.
   const [targets, setTargets] = useState<CheckboxesItem[]>([]);
   const [relationships, setRelationships] = useState<CheckboxesItem[]>([]);
 
+  // Nodes and edges we have in our graph.
+  // // Used to compute the difference between total count returned by
+  // the query and what is already displayed.
   const [existingTargets, setExistingTargets] = useState<Map<string, Map<string, number>>>(new Map());
   const [existingRels, setExistingRels] = useState<Map<string, Map<string, string[]>>>(new Map());
 
@@ -186,6 +214,12 @@ export default function InvestigationExpandForm({
         { ids: nodeIds },
       ).toPromise() as InvestigationExpandFormRelDistributionQuery$data;
 
+      // A map where each key of the Map is a relationship type and
+      // the associated value is a Set of ids of the elements in
+      // relation with all selected nodes.
+      //
+      // Used to compute the difference between total count returned by
+      // the query and what is already displayed in the graph.
       const existingRelsSelected = new Map<string, Set<string>>();
       nodeIds.forEach((node) => {
         const nodeRels = existingRels.get(node);
@@ -231,11 +265,12 @@ export default function InvestigationExpandForm({
       if (selectedNodes.length === 0) return;
       const nodeIds = Array.from(selectedNodes).map((node) => node.id);
 
-      const { stixRelationshipsDistribution } = await fetchQuery(
-        investigationExpandFormTargetsDistributionQuery,
-        { ids: nodeIds },
-      ).toPromise() as InvestigationExpandFormTargetsDistributionQuery$data;
-
+      // A map where each key of the Map is a target type and
+      // the associated value is the number of the elements in
+      // relation with all selected nodes.
+      //
+      // Used to compute the difference between total count returned by
+      // the query and what is already displayed in the graph.
       const existingTargetsSelected = new Map<string, number>();
       nodeIds.forEach((node) => {
         const nodeTargets = existingTargets.get(node);
@@ -251,21 +286,54 @@ export default function InvestigationExpandForm({
         }
       });
 
-      const nonNullDistribution = (stixRelationshipsDistribution ?? [])
-        // Use of flatMap() to do both filter() and map() in one step.
-        .flatMap((target) => (target ? [{
+      // We make 2 queries to fetch the count of targets because to have relevant results we
+      // need to tell to the query which direction to use in the relationship. And we want
+      // both directions.
+      const distributions = await Promise.all([
+        // Query to fetch count of relationships sources
+        fetchQuery(
+          investigationExpandFormTargetsDistributionFromQuery,
+          { ids: nodeIds },
+        ).toPromise() as Promise<InvestigationExpandFormTargetsDistributionFromQuery$data>,
+        // Query to fetch count of relationships destinations
+        fetchQuery(
+          investigationExpandFormTargetsDistributionToQuery,
+          { ids: nodeIds },
+        ).toPromise() as Promise<InvestigationExpandFormTargetsDistributionToQuery$data>,
+      ]);
+
+      // Merge both 'from' relationships and 'to' relationships.
+      const distribution: { label: string, value: number }[] = [];
+      distributions.forEach(({ stixRelationshipsDistribution }) => {
+        stixRelationshipsDistribution?.forEach((newTarget) => {
+          if (newTarget) {
+            const target = distribution.find((item) => item.label === newTarget.label);
+            if (target) {
+              target.value += (newTarget.value ?? 0);
+            } else {
+              distribution.push({
+                label: newTarget.label,
+                value: newTarget.value ?? 0,
+              });
+            }
+          }
+        });
+      });
+
+      const graphDistribution = distribution
+        .map((target) => ({
           label: target.label,
           // Decrease from the count of already displayed elements.
           // toLowerCase() because relationship names are pascalized
           // in elAggregationRelationsCount().
-          value: (target.value ?? 0) - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
-        }] : []))
+          value: target.value - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
+        }))
         // Remove from the list entities with nothing to add.
         .filter(({ value }) => value > 0)
-        .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+        .sort((a, b) => a.label.localeCompare(b.label));
 
       setTargets(
-        nonNullDistribution
+        graphDistribution
           .map(({ label, value }) => ({
             label: `${label} (${value})`,
             value: label,
