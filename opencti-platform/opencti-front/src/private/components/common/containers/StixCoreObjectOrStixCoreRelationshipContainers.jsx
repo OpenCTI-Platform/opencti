@@ -25,14 +25,6 @@ const useStyles = makeStyles(() => ({
   containerGraph: {
     marginTop: 20,
   },
-  bottomNav: {
-    zIndex: 1000,
-    display: 'flex',
-    overflow: 'hidden',
-  },
-  button: {
-    marginRight: 10,
-  },
   parameters: {
     marginTop: -10,
   },
@@ -43,21 +35,20 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   onChangeOpenExports,
   reportType,
 }) => {
-
   const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const LOCAL_STORAGE_KEY = `view-containers${
-      stixDomainObjectOrStixCoreRelationship
-          ? `-${stixDomainObjectOrStixCoreRelationship.id}`
-          : `-${authorId}`
+    stixDomainObjectOrStixCoreRelationship
+      ? `-${stixDomainObjectOrStixCoreRelationship.id}`
+      : `-${authorId}`
   }`;
   const additionalFilters = [];
   const reportFilterClass = reportType !== 'all' && reportType !== undefined
-      ? reportType.replace(/_/g, ' ')
-      : '';
+    ? reportType.replace(/_/g, ' ')
+    : '';
   if (reportFilterClass) {
     additionalFilters.push({
       key: 'report_types',
