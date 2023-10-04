@@ -46,6 +46,7 @@ import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
+import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -169,17 +170,22 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         sortBy: 'created',
         orderAsc: false,
         openExports: false,
-        view: 'timeline',
       },
   );
   const {
     filters,
-    view,
   } = viewStorage;
+  const [viewType, setViewType] = useState('timeline');
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+
+  const handleChangeViewType = (type: string) => {
+    if (type) {
+      setViewType(type);
+    }
+  };
 
   const handleChangeTimeField = (event: SelectChangeEvent) => {
     setTimeField(event.target.value);
@@ -213,7 +219,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
       } else {
         toTypes = filters.entity_type.map((o) => o.id) as string[];
       }
-    } else if (view === 'timeline') {
+    } else if (viewType === 'timeline') {
       toTypes = [
         'Attack-Pattern',
         'Campaign',
@@ -241,9 +247,9 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
       elementId: stixDomainObjectId,
       elementWithTargetTypes: toTypes.filter(
           (x) => x.toLowerCase() !== stixDomainObjectType),
-      filters: finalFilters,
+      filters: convertFilters(finalFilters),
     };
-    if (view === 'timeline') {
+    if (viewType === 'timeline') {
       finalPaginationOptions.relationship_type = nestedRelationships
           ? ['stix-relationship']
           : ['stix-core-relationship', 'stix-sighting-relationship'];
@@ -421,10 +427,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         </Grid>
       </Grid>
       <Tabs
-        value={view}
+        value={viewType}
         indicatorColor="primary"
         textColor="primary"
-        onChange={(event, value) => helpers.handleChangeView(value)}
+        onChange={(_, value) => handleChangeViewType(value)}
         style={{ margin: '0 0 20px 0' }}
       >
         <Tab label={t('Timeline')} value="timeline" />
@@ -546,7 +552,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         <ExportButtons
           domElementId="container"
           name={
-            view === 'killchain' ? t('Global kill chain') : t('Timeline')
+            viewType === 'killchain' ? t('Global kill chain') : t('Timeline')
           }
         />
       </div>
@@ -555,7 +561,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         variables={{ first: 500, ...paginationOptions }}
         render={({ props }: { props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data }) => {
           if (props) {
-            if (view === 'killchain') {
+            if (viewType === 'killchain') {
               return (
                 <StixDomainObjectGlobalKillChain
                   data={props}
