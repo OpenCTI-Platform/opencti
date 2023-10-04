@@ -316,8 +316,16 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const elements = ids.map((id) => {
     const values = elGrouped[id];
     const data = first ? R.take(first, values) : values;
-    const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-    return targets.filter((t) => filterIds.includes(t.internal_id));
+    const filteredElements = [];
+    if (data) {
+      data.forEach((relation) => {
+        const target = relationWithTargets[relation.id];
+        if (target) {
+          filteredElements.push(target);
+        }
+      });
+    }
+    return filteredElements;
   });
   if (batched) {
     return elements;
