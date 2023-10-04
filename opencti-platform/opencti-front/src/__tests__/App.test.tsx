@@ -10,6 +10,23 @@ import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from '../components/AppIntlProvider';
 import Profile, { profileQuery } from '../private/components/profile/Profile';
 import { APP_BASE_PATH } from '../relay/environment';
+import {UserContext} from "../utils/hooks/useAuth";
+
+const me = {
+  name: 'admin',
+  user_email: 'admin@opencti.io',
+  firstname: 'Admin',
+  lastname: 'OpenCTI',
+  language: 'auto',
+  unit_system: 'auto',
+  theme: 'default',
+  external: true,
+  userSubscriptions: {
+    edges: [],
+  },
+};
+
+const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
 
 describe('App', () => {
   afterEach(cleanup);
@@ -18,18 +35,7 @@ describe('App', () => {
     const environment = createMockEnvironment();
     const profileMockOperation = (operation: OperationDescriptor) => MockGen.generate(operation, {
       MeUser() {
-        return {
-          name: 'admin',
-          user_email: 'admin@opencti.io',
-          firstname: 'Admin',
-          lastname: 'OpenCTI',
-          language: 'auto',
-          theme: 'default',
-          external: true,
-          userSubscriptions: {
-            edges: [],
-          },
-        };
+        return me;
       },
       AppInfo() {
         return { version: '5.4.0' };
@@ -49,7 +55,9 @@ describe('App', () => {
           <CompatRouter>
             <AppIntlProvider settings={{ platform_language: 'auto' }}>
               <ThemeProvider theme={createTheme()}>
-                <Profile/>
+                <UserContext.Provider value={UserContextValue}>
+                  <Profile/>
+                </UserContext.Provider>
               </ThemeProvider>
             </AppIntlProvider>
           </CompatRouter>
