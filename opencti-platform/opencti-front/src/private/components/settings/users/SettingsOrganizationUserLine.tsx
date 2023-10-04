@@ -93,6 +93,27 @@ export const organizationMutationAdminRemove = graphql`
     }
   }
 `;
+const userMutationRemoveFromOrganization = graphql`
+  mutation SettingsOrganizationUserLineRemoveFromOrganizationMutation(
+    $id: ID!
+    $organizationId: ID!
+  ) {
+    userEdit(id: $id) {
+      organizationDelete(organizationId: $organizationId) {
+        id
+        name
+        objectOrganization {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns;
@@ -105,13 +126,13 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   const { fd, t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
-  const data = useFragment(UserLineFragment, node);
+  const user = useFragment(UserLineFragment, node);
   const { me } = useAuth();
-  const memberIsOrganizationAdmin = data.administrated_organizations?.length > 0;
+  const memberIsOrganizationAdmin = user.administrated_organizations?.length > 0;
   const userIsOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organizationId);
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
-  const external = data.external === true;
+  const external = user.external === true;
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -125,7 +146,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       mutation: organizationMutationAdminAdd,
       variables: {
         id: organizationId,
-        memberId: data.id,
+        memberId: user.id,
       },
       updater: undefined,
       optimisticUpdater: undefined,
@@ -142,7 +163,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       mutation: organizationMutationAdminRemove,
       variables: {
         id: organizationId,
-        memberId: data.id,
+        memberId: user.id,
       },
       updater: undefined,
       optimisticUpdater: undefined,
@@ -155,6 +176,19 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   }
 
   function removeMemberFromOrganization() {
+    commitMutation({
+      mutation: userMutationRemoveFromOrganization,
+      variables: {
+        id: user.id,
+        organizationId: organizationId,
+      },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
     handleClose();
   }
   function editMember() {
@@ -168,7 +202,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/settings/accesses/users/${data.id}`}
+        to={`/dashboard/settings/accesses/users/${user.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {external ? <AccountCircleOutlined /> : (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined/> : <PersonOutlined />)}
@@ -180,31 +214,31 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {data.name}
+                {user.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.user_email.width }}
               >
-                {data.user_email}
+                {user.user_email}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.firstname.width }}
               >
-                {data.firstname}
+                {user.firstname}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lastname.width }}
               >
-                {data.lastname}
+                {user.lastname}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.otp.width }}
               >
-                {data.otp_activated ? (
+                {user.otp_activated ? (
                   <Security fontSize="small" color="secondary" />
                 ) : (
                   <HorizontalRule fontSize="small" color="primary" />
@@ -214,7 +248,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(data.created_at)}
+                {fd(user.created_at)}
               </div>
             </div>
           }

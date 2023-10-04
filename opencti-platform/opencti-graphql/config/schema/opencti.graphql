@@ -12049,7 +12049,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
