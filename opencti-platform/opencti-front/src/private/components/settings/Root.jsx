@@ -69,7 +69,7 @@ const Root = () => (
         path="/dashboard/settings/accesses/users"
         render={() => (
           <Security
-            needs={[SETTINGS_SETACCESSES]}
+            needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <Users />
@@ -80,7 +80,7 @@ const Root = () => (
         path="/dashboard/settings/accesses/users/:userId"
         render={() => (
           <Security
-            needs={[SETTINGS_SETACCESSES]}
+            needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <RootUser />
@@ -108,7 +108,7 @@ const Root = () => (
         path="/dashboard/settings/accesses/roles"
         render={() => (
           <Security
-            needs={[SETTINGS_SETACCESSES]}
+            needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <Roles />

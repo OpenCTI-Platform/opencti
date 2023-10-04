@@ -167,8 +167,8 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        component={userIsOrganizationAdmin ? 'div' : Link}
-        to={userIsOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
+        component={Link}
+        to={`/dashboard/settings/accesses/users/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {external ? <AccountCircleOutlined /> : (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined/> : <PersonOutlined />)}

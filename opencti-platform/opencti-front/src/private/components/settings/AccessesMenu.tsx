@@ -83,11 +83,18 @@ const AccessesMenu: FunctionComponent = () => {
       <Security needs={[ORGA_ADMIN]}>
         <NavToolbarMenu
           entries={
-            [{
-              path: '/dashboard/settings/accesses/organizations',
-              label: 'Organizations',
-              icon: <AccountBalanceOutlined fontSize="medium" />,
-            }]
+            [
+              {
+                path: '/dashboard/settings/accesses/organizations',
+                label: 'Organizations',
+                icon: <AccountBalanceOutlined fontSize="medium" />,
+              },
+              {
+                path: '/dashboard/settings/accesses/users',
+                label: 'Users',
+                icon: <PermIdentityOutlined fontSize="medium" />,
+              }
+            ]
           }
         />
       </Security>

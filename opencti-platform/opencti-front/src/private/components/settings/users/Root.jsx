@@ -10,7 +10,7 @@ import {
 import User, { userQuery } from './User';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { ORGA_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const subscription = graphql`
@@ -59,7 +59,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const { user } = data;
 
   return (
-    <Security needs={[SETTINGS_SETACCESSES]}>
+    <Security needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}>
       {user ? (
         <Switch>
           <Route
