@@ -35,29 +35,30 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
 };
 
 export const organizationAdminAdd = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
-  // Get Orga
-  organizationId = '682d3066-8d91-4450-a090-d79ddee30ed9';
+  // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false, withInferences: false });
-  // Get User
-  const member = await storeLoadById(context, user, memberId, ENTITY_TYPE_USER);
+  const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
   // Check if user is part of Orga. If not, throw exception
-  if (!members.map((m) => m.id).includes(member.id)) {
+  if (!members.map((m) => m.id).includes(memberId)) {
     throw FunctionalError('User is not part of the organization');
   }
-  // Add user to Orga
+  // Add user to organization admins list
   await editAuthorizedAuthorities(context, user, organizationId, [...organization.authorized_authorities, memberId]);
-  // assignOrganizationToUser(context, user, memberId, organizationId);
 };
 
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
-  // Get Orga
-
-  // Get User
+  // Get Orga and membersq
+  const organization = await findById(context, user, organizationId);
+  const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
 
   // Check if user is part of Orga and is orga_admin. If not, throw exception
-
-  // Remove user to Orga
+  if (!members.map((m) => m.id).includes(memberId)) {
+    throw FunctionalError('User is not part of the organization');
+  }
+  // Remove user from organization admins list
+  const indexOfMember = organization.authorized_authorities.indexOf(memberId);
+  organization.authorized_authorities.splice(indexOfMember, 1);
+  await editAuthorizedAuthorities(context, user, organizationId, organization.authorized_authorities);
 };
 
 // endregion
@@ -67,7 +68,6 @@ export const batchSectors = (context: AuthContext, user: AuthUser, organizationI
   return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 export const batchMembers = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
-  // TODO Add restriction in case we remove the @auth
   return batchListThroughGetFrom(context, user, organizationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, opts);
 };
 export const batchSubOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {

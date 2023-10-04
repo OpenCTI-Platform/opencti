@@ -69,7 +69,6 @@ const UserLineFragment = graphql`
     }
   }
 `;
-// organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
 export const organizationMutationAdminAdd = graphql`
   mutation SettingsOrganizationUserLineAdminAddMutation(
     $id: ID!
@@ -81,14 +80,26 @@ export const organizationMutationAdminAdd = graphql`
     }
   }
 `;
+export const organizationMutationAdminRemove = graphql`
+  mutation SettingsOrganizationUserLineAdminRemoveMutation(
+    $id: ID!
+    $memberId: String!
+  ) {
+    organizationAdminRemove(id: $id, memberId: $memberId) {
+      id
+      authorized_authorities
+    }
+  }
+`;
 
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns;
   node: SettingsOrganizationUserLine_node$key;
   isOrganizationAdmin: boolean;
+  organizationId: String;
 }
 
-export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, isOrganizationAdmin }) => {
+export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, isOrganizationAdmin, organizationId }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -108,7 +119,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     commitMutation({
       mutation: organizationMutationAdminAdd,
       variables: {
-        id: '111',
+        id: organizationId,
         memberId: data.id,
       },
       updater: undefined,
@@ -122,7 +133,20 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   }
 
   function demoteUser() {
-
+    commitMutation({
+      mutation: organizationMutationAdminRemove,
+      variables: {
+        id: organizationId,
+        memberId: data.id,
+      },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+    handleClose();
   }
 
   function removeUserFromOrganization() {
