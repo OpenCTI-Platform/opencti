@@ -25,6 +25,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -95,17 +97,20 @@ export const organizationMutationAdminRemove = graphql`
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns;
   node: SettingsOrganizationUserLine_node$key;
-  isOrganizationAdmin: boolean;
-  organizationId: String;
+  organizationId: string;
 }
 
-export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, isOrganizationAdmin, organizationId }) => {
+export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, organizationId }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const data = useFragment(UserLineFragment, node);
+  const { me } = useAuth();
   const memberIsOrganizationAdmin = data.administrated_organizations?.length > 0;
+  const userIsOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organizationId);
+  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
+  const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const external = data.external === true;
 
   const handleOpen = (event: React.SyntheticEvent) => {
@@ -115,7 +120,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     setAnchorEl(null);
   };
 
-  function promoteUser() {
+  function promoteMember() {
     commitMutation({
       mutation: organizationMutationAdminAdd,
       variables: {
@@ -132,7 +137,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     handleClose();
   }
 
-  function demoteUser() {
+  function demoteMember() {
     commitMutation({
       mutation: organizationMutationAdminRemove,
       variables: {
@@ -149,8 +154,11 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     handleClose();
   }
 
-  function removeUserFromOrganization() {
-
+  function removeMemberFromOrganization() {
+    handleClose();
+  }
+  function editMember() {
+    handleClose();
   }
 
   return (
@@ -159,8 +167,8 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        component={isOrganizationAdmin ? 'div' : Link}
-        to={isOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
+        component={userIsOrganizationAdmin ? 'div' : Link}
+        to={userIsOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {external ? <AccountCircleOutlined /> : (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined/> : <PersonOutlined />)}
@@ -213,28 +221,30 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         />
       </ListItem>
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        { isOrganizationAdmin
-          ? <KeyboardArrowRightOutlined />
-          : <>
-            <IconButton
-              onClick={handleOpen}
-              aria-haspopup="true"
-              style={{ marginTop: 3 }}
-              size="large"
-            >
-              <MoreVertOutlined />
-            </IconButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-              {
-                memberIsOrganizationAdmin
-                  ? <MenuItem onClick={demoteUser}>{t('Demote as simple member')}</MenuItem>
-                  : <MenuItem onClick={promoteUser}>{t('Promote as Organization Admin')}</MenuItem>
-              }
-              <MenuItem onClick={removeUserFromOrganization}>{t('Remove from the Organization')}</MenuItem>
-            </Menu>
-          </>
+        <IconButton
+          onClick={handleOpen}
+          aria-haspopup="true"
+          style={{ marginTop: 3 }}
+          size="large"
+        >
+          <MoreVertOutlined />
+        </IconButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          {userHasSettingsAcesses && (
+            memberIsOrganizationAdmin
+              ? <MenuItem onClick={demoteMember}>{t('Demote as simple member')}</MenuItem>
+              : <MenuItem onClick={promoteMember}>{t('Promote as Organization Admin')}</MenuItem>
+            )
+          }
+          {(userIsOrganizationAdmin || userHasSettingsAcesses) &&
+            <MenuItem onClick={editMember}>{t('Edit Member')}</MenuItem>
+          }
 
-        }
+          {(userIsOrganizationAdmin || userHasSettingsAcesses) && !memberIsOrganizationAdmin &&
+              <MenuItem onClick={removeMemberFromOrganization}>{t('Remove from the Organization')}</MenuItem>
+          }
+
+        </Menu>
       </ListItemIcon>
     </ListItem>
   );

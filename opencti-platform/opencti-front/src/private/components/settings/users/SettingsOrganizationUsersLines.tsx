@@ -104,7 +104,7 @@ SettingsOrganizationUsersLinesProps
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       isOrganizationAdmin={isOrganizationAdmin}
-      organizationId={data.organization?.id}
+      organizationId={data.organization?.id} // TODO Take out this parameter
     />
   );
 };
