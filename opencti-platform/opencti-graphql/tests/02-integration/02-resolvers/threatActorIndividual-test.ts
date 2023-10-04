@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQuery';
-import type { ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
+import type { EditInput, ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
+import { EditOperation } from '../../../src/generated/graphql';
 
 const READ_QUERY = gql`
   query threatActorIndividual($id: String!) {
@@ -250,8 +251,8 @@ describe('Threat actor individual resolver standard behavior', () => {
   });
   it('should update threat actor individual heights', async () => {
     const HEIGHT_EDIT = gql`
-      mutation threatActorIndividualHeightEdit($id: ID!, $input: HeightTupleInput!) {
-        threatActorIndividualHeightEdit(id:$id, input:$input) {
+      mutation threatActorIndividualHeightEdit($id: ID!, $input: [EditInput]!) {
+        threatActorIndividualFieldPatch(id:$id, input:$input) {
           height {
             measure
             date_seen
@@ -264,41 +265,48 @@ describe('Threat actor individual resolver standard behavior', () => {
       '2019-12-10T00:00:00.000Z',
       '2019-12-15T00:00:00.000Z',
     ];
-    const REPLACE_ALL_HEIGHT = {
-      values: [{ measure: 182, date_seen: DATES[0] }],
-      operation: 'replace',
+    const REPLACE_ALL_HEIGHT: EditInput = {
+      key: 'height',
+      object_path: '[0]',
+      value: [{ measure: 182, date_seen: DATES[0] }],
+      operation: EditOperation.Replace,
     };
-    const ADD_HEIGHTS = {
-      values: [
+    const ADD_HEIGHTS: EditInput = {
+      key: 'height',
+      value: [
         { measure: 190, date_seen: DATES[2] },
         { measure: 189, date_seen: DATES[1] },
       ],
-      operation: 'add',
+      operation: EditOperation.Add,
     };
-    const REPLACE_INDEX_HEIGHT = {
-      values: [{ measure: 183, date_seen: DATES[0] }],
-      index: 0,
-      operation: 'replace',
+    const REPLACE_INDEX_HEIGHT: EditInput = {
+      key: 'height',
+      object_path: '[0]',
+      value: [{ measure: 183, date_seen: DATES[0] }],
+      operation: EditOperation.Replace,
     };
-    const REMOVE_INDEX_HEIGHT = {
-      index: 1,
-      operation: 'remove',
+    const REMOVE_INDEX_HEIGHT: EditInput = {
+      key: 'height',
+      value: ['[2]'],
+      operation: EditOperation.Remove,
     };
-    const REMOVE_ALL_HEIGHTS = {
-      operation: 'remove',
+    const REMOVE_ALL_HEIGHTS: EditInput = {
+      key: 'height',
+      value: ['[*]'],
+      operation: EditOperation.Remove,
     };
     const expectedHeights = [
-      { measure: 182, date_seen: new Date(DATES[0]) },
-      { measure: 183, date_seen: new Date(DATES[0]) },
-      { measure: 189, date_seen: new Date(DATES[1]) },
-      { measure: 190, date_seen: new Date(DATES[2]) },
+      { measure: 182, date_seen: new Date(DATES[0]) }, // 0
+      { measure: 183, date_seen: new Date(DATES[0]) }, // 1
+      { measure: 189, date_seen: new Date(DATES[1]) }, // 2
+      { measure: 190, date_seen: new Date(DATES[2]) }, // 3
     ];
 
     const replaceAll = await queryAsAdmin({
       query: HEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REPLACE_ALL_HEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REPLACE_ALL_HEIGHT] },
     });
-    let threatActorIndividual = replaceAll?.data?.threatActorIndividualHeightEdit;
+    let threatActorIndividual = replaceAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(1);
@@ -306,52 +314,52 @@ describe('Threat actor individual resolver standard behavior', () => {
 
     const addHeights = await queryAsAdmin({
       query: HEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: ADD_HEIGHTS },
+      variables: { id: threatActorIndividualInternalId, input: [ADD_HEIGHTS] },
     });
-    threatActorIndividual = addHeights?.data?.threatActorIndividualHeightEdit;
+    threatActorIndividual = addHeights?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual?.height).toHaveLength(3);
-    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[0]);
-    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[2]);
-    expect(threatActorIndividual.height[2]).toEqual(expectedHeights[3]);
+    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[0]); // 182
+    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[2]); // 189
+    expect(threatActorIndividual.height[2]).toEqual(expectedHeights[3]); // 190
 
     const replaceIndex = await queryAsAdmin({
       query: HEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REPLACE_INDEX_HEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REPLACE_INDEX_HEIGHT] },
     });
-    threatActorIndividual = replaceIndex?.data?.threatActorIndividualHeightEdit;
+    threatActorIndividual = replaceIndex?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(3);
-    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]);
-    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[2]);
-    expect(threatActorIndividual.height[2]).toEqual(expectedHeights[3]);
+    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
+    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[2]); // 189
+    expect(threatActorIndividual.height[2]).toEqual(expectedHeights[3]); // 190
 
     const removeIndex = await queryAsAdmin({
       query: HEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REMOVE_INDEX_HEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REMOVE_INDEX_HEIGHT] },
     });
-    threatActorIndividual = removeIndex?.data?.threatActorIndividualHeightEdit;
+    threatActorIndividual = removeIndex?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(2);
-    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]);
-    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]);
+    expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
+    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]); // 190
 
     const removeAll = await queryAsAdmin({
       query: HEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REMOVE_ALL_HEIGHTS },
+      variables: { id: threatActorIndividualInternalId, input: [REMOVE_ALL_HEIGHTS] },
     });
-    threatActorIndividual = removeAll?.data?.threatActorIndividualHeightEdit;
+    threatActorIndividual = removeAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(0);
   });
   it('should update threat actor individual weight', async () => {
     const WEIGHT_EDIT = gql`
-      mutation threatActorIndividualWeightEdit($id: ID!, $input: WeightTupleInput!) {
-        threatActorIndividualWeightEdit(id:$id, input:$input) {
+      mutation threatActorIndividualWeightEdit($id: ID!, $input: [EditInput]!) {
+        threatActorIndividualFieldPatch(id:$id, input:$input) {
           weight {
             measure
             date_seen
@@ -364,41 +372,47 @@ describe('Threat actor individual resolver standard behavior', () => {
       '2019-12-10T00:00:00.000Z',
       '2019-12-15T00:00:00.000Z',
     ];
-    const REPLACE_ALL_WEIGHT = {
-      values: [{ measure: 182, date_seen: DATES[0] }],
-      operation: 'replace',
+    const REPLACE_ALL_WEIGHT: EditInput = {
+      key: 'weight',
+      value: [{ measure: 182, date_seen: DATES[0] }],
+      operation: EditOperation.Replace,
     };
-    const ADD_WEIGHTS = {
-      values: [
+    const ADD_WEIGHTS: EditInput = {
+      key: 'weight',
+      value: [
         { measure: 190, date_seen: DATES[2] },
         { measure: 189, date_seen: DATES[1] },
       ],
-      operation: 'add',
+      operation: EditOperation.Add,
     };
-    const REPLACE_INDEX_WEIGHT = {
-      values: [{ measure: 183, date_seen: DATES[0] }],
-      index: 0,
-      operation: 'replace',
+    const REPLACE_INDEX_WEIGHT: EditInput = {
+      key: 'weight',
+      object_path: '[0]',
+      value: [{ measure: 183, date_seen: DATES[0] }],
+      operation: EditOperation.Replace,
     };
-    const REMOVE_INDEX_WEIGHT = {
-      index: 1,
-      operation: 'remove',
+    const REMOVE_INDEX_WEIGHT: EditInput = {
+      key: 'weight',
+      value: ['[2]'],
+      operation: EditOperation.Remove,
     };
-    const REMOVE_ALL_WEIGHTS = {
-      operation: 'remove',
+    const REMOVE_ALL_WEIGHTS: EditInput = {
+      key: 'weight',
+      value: ['[*]'],
+      operation: EditOperation.Remove,
     };
     const expectedWeights = [
-      { measure: 182, date_seen: new Date(DATES[0]) },
-      { measure: 183, date_seen: new Date(DATES[0]) },
-      { measure: 189, date_seen: new Date(DATES[1]) },
-      { measure: 190, date_seen: new Date(DATES[2]) },
+      { measure: 182, date_seen: new Date(DATES[0]) }, // 0
+      { measure: 183, date_seen: new Date(DATES[0]) }, // 1
+      { measure: 189, date_seen: new Date(DATES[1]) }, // 2
+      { measure: 190, date_seen: new Date(DATES[2]) }, // 3
     ];
 
     const replaceAll = await queryAsAdmin({
       query: WEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REPLACE_ALL_WEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REPLACE_ALL_WEIGHT] },
     });
-    let threatActorIndividual = replaceAll?.data?.threatActorIndividualWeightEdit;
+    let threatActorIndividual = replaceAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(1);
@@ -406,9 +420,9 @@ describe('Threat actor individual resolver standard behavior', () => {
 
     const addHeights = await queryAsAdmin({
       query: WEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: ADD_WEIGHTS },
+      variables: { id: threatActorIndividualInternalId, input: [ADD_WEIGHTS] },
     });
-    threatActorIndividual = addHeights?.data?.threatActorIndividualWeightEdit;
+    threatActorIndividual = addHeights?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual?.weight).toHaveLength(3);
@@ -418,9 +432,9 @@ describe('Threat actor individual resolver standard behavior', () => {
 
     const replaceIndex = await queryAsAdmin({
       query: WEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REPLACE_INDEX_WEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REPLACE_INDEX_WEIGHT] },
     });
-    threatActorIndividual = replaceIndex?.data?.threatActorIndividualWeightEdit;
+    threatActorIndividual = replaceIndex?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(3);
@@ -430,9 +444,9 @@ describe('Threat actor individual resolver standard behavior', () => {
 
     const removeIndex = await queryAsAdmin({
       query: WEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REMOVE_INDEX_WEIGHT },
+      variables: { id: threatActorIndividualInternalId, input: [REMOVE_INDEX_WEIGHT] },
     });
-    threatActorIndividual = removeIndex?.data?.threatActorIndividualWeightEdit;
+    threatActorIndividual = removeIndex?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(2);
@@ -441,9 +455,9 @@ describe('Threat actor individual resolver standard behavior', () => {
 
     const removeAll = await queryAsAdmin({
       query: WEIGHT_EDIT,
-      variables: { id: threatActorIndividualInternalId, input: REMOVE_ALL_WEIGHTS },
+      variables: { id: threatActorIndividualInternalId, input: [REMOVE_ALL_WEIGHTS] },
     });
-    threatActorIndividual = removeAll?.data?.threatActorIndividualWeightEdit;
+    threatActorIndividual = removeAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(0);

@@ -943,7 +943,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       }
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       if (isObjectAttribute(key)) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${R.head(value)}` });
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${R.head(value)}` }).reverse();
         const patch = pointers.map((p) => ({ op: operation, path: p }));
         const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
@@ -951,14 +951,17 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
     } else if (isObjectAttribute(key)) { // Replace for object
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` });
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: R.head(value) }));
+      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
+      // Empty object_path = list of values.
+      // If not empty, it should depends of the inner elements definition.
+      // For now we consider that inner elements will not be considered as array
+      const patch = pointers.map((p) => ({ op: operation, path: p, value: object_path ? R.head(value) : value }));
       const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
       finalVal = patchedInstance[key];
     } else { // Replace general
       finalVal = value;
     }
-    if (compareUnsorted(finalVal ?? [], currentValues ?? [])) {
+    if (compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
   } else {
