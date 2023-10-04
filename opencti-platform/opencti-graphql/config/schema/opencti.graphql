@@ -1483,6 +1483,7 @@ input RegisterConnectorInput {
   scope: [String!]
   auto: Boolean
   only_contextual: Boolean
+  playbook_compatible: Boolean
 }
 type RabbitMQConnection {
   host: String!
@@ -1511,6 +1512,7 @@ type Connector implements BasicObject & InternalObject {
   active: Boolean
   auto: Boolean
   only_contextual: Boolean
+  playbook_compatible: Boolean
   connector_type: String
   connector_scope: [String!]
   connector_state: String

@@ -3577,6 +3577,7 @@ export type Connector = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -20414,6 +20415,7 @@ export type RegisterConnectorInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
   only_contextual?: InputMaybe<Scalars['Boolean']['input']>;
+  playbook_compatible?: InputMaybe<Scalars['Boolean']['input']>;
   scope?: InputMaybe<Array<Scalars['String']['input']>>;
   type: ConnectorType;
 };
@@ -30932,6 +30934,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;

@@ -128,6 +128,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'connector_state', type: 'json', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_state_reset', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'playbook_compatible', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

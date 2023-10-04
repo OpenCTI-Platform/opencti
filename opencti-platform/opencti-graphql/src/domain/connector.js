@@ -78,7 +78,7 @@ export const resetStateConnector = async (context, user, id) => {
 };
 export const registerConnector = async (context, user, connectorData) => {
   // eslint-disable-next-line camelcase
-  const { id, name, type, scope, auto = null, only_contextual = null } = connectorData;
+  const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
   const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -91,6 +91,7 @@ export const registerConnector = async (context, user, connectorData) => {
       connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
       only_contextual,
+      playbook_compatible
     };
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
@@ -105,6 +106,7 @@ export const registerConnector = async (context, user, connectorData) => {
     connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
     auto,
     only_contextual,
+    playbook_compatible,
     connector_user_id: user.id,
   };
   const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
