@@ -151,7 +151,8 @@ const PlaybookAddComponentsContent = ({
     return true;
   };
   const renderFieldOptions = (i) => {
-    const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
+    console.log(actionsInputs);
+    const disabled = isEmptyField(actionsInputs[i]?.type);
     let options = [];
     if (actionsInputs[i]?.type === 'ADD') {
       options = [
