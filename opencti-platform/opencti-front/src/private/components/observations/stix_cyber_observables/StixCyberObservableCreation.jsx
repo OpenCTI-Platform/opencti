@@ -80,6 +80,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 280,
+    zIndex: 1200,
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,

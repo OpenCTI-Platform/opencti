@@ -1327,7 +1327,7 @@ class ToolBar extends Component {
               },
             }}
           >
-            <Toolbar style={{ minHeight: 54 }}>
+            <Toolbar style={{ minHeight: 54, paddingRight: 100 }}>
               <Typography
                 className={classes.title}
                 color="inherit"
