@@ -75,6 +75,7 @@ export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
   is_internal: boolean
   ports: PortDefinition[]
   configuration_schema: JSONSchemaType<T> | undefined
+  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>
   executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>
   notify?: (parameters: ExecutorParameters<T>) => Promise<void>
 }

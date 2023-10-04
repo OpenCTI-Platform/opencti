@@ -42,6 +42,9 @@ import type {
 } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { isNotEmptyField } from '../database/utils';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -58,10 +61,23 @@ const workflowStatuses = (context: AuthContext) => {
 const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
+    // Stream filters
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
     filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    // Trigger filters
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
     filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    // Playbook filters
+    const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+    const playbookFilterIds = playbooks
+      .map((p) => JSON.parse(p.playbook_definition) as ComponentDefinition)
+      .map((c) => c.nodes.map((n) => JSON.parse(n.configuration))).flat()
+      .map((config) => config.filters)
+      .filter((f) => isNotEmptyField(f))
+      .map((f) => extractFilterIdsToResolve(JSON.parse(f)))
+      .flat();
+    filteringIds.push(...playbookFilterIds);
+    // Resolve filteringIds
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
       const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
@@ -167,11 +183,10 @@ const initCacheManager = () => {
   };
   const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
     const { instance } = event;
-    const context = executionContext('cache_manager');
     // Invalid cache if any entity has changed.
     resetCacheForEntity(instance.entity_type);
     // Smart dynamic cache loading (for filtering ...)
-    dynamicCacheUpdater(context, SYSTEM_USER, instance);
+    dynamicCacheUpdater(instance);
   };
   return {
     init: () => initCacheContent(), // Use for testing

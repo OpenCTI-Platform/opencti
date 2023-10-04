@@ -108,13 +108,9 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = selectedNode?.data?.configuration;
-  const [filters, setFilters] = useState(
-    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
-  );
+  const [filters, setFilters] = useState(currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {});
   const [actionsInputs, setActionsInputs] = useState([{}]);
-  const [componentId, setComponentId] = useState(
-    selectedNode?.data?.component?.id ?? null,
-  );
+  const [componentId, setComponentId] = useState(selectedNode?.data?.component?.id ?? null);
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -263,27 +259,19 @@ const PlaybookAddComponentsContent = ({
     const configurationSchema = JSON.parse(selectedComponent.configuration_schema ?? '{}');
     const defaultConfig = {};
     Object.entries(configurationSchema?.properties ?? {}).forEach(([k, v]) => {
-      if (isNotEmptyField(v.default)) {
-        defaultConfig[k] = v.default;
-      }
+      defaultConfig[k] = v.default;
     });
+    const initialValues = currentConfig ? {
+      name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
+      ...currentConfig,
+    } : {
+      name: selectedComponent.name,
+      ...defaultConfig,
+    };
     return (
       <div className={classes.config}>
         <Formik
-          initialValues={
-            currentConfig
-              ? {
-                name:
-                    selectedNode?.data?.component?.id === selectedComponent.id
-                      ? selectedNode?.data?.name
-                      : selectedComponent.name,
-                ...currentConfig,
-              }
-              : {
-                name: selectedComponent.name,
-                ...defaultConfig,
-              }
-          }
+          initialValues={initialValues}
           validationSchema={addComponentValidation(t)}
           onSubmit={onSubmit}
           onReset={handleClose}
@@ -445,7 +433,7 @@ const PlaybookAddComponentsContent = ({
                         />
                     );
                   }
-                  if (v.type === 'string' && isNotEmptyField(v.enum)) {
+                  if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
                     return (
                         <Field
                             component={SelectField}
@@ -453,11 +441,30 @@ const PlaybookAddComponentsContent = ({
                             name={k}
                             label={t(k)}
                             fullWidth={true}
-                            containerstyle={{ width: '100%' }}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
                         >
-                          {v.enum.map((value, i) => (
-                              <MenuItem key={i} value={value}>
-                                {value}
+                          {v.oneOf.map((value, i) => (
+                              <MenuItem key={i} value={value.const}>
+                                {value.title}
+                              </MenuItem>
+                          ))}
+                        </Field>
+                    );
+                  }
+                  if (v.type === 'array') {
+                    return (
+                        <Field
+                            component={SelectField}
+                            variant="standard"
+                            name={k}
+                            label={t(k)}
+                            fullWidth={true}
+                            multiple={true}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                        >
+                          {v.items.oneOf.map((value, i) => (
+                              <MenuItem key={i} value={value.const}>
+                                {value.title}
                               </MenuItem>
                           ))}
                         </Field>
@@ -469,6 +476,7 @@ const PlaybookAddComponentsContent = ({
                       variant="standard"
                       name={k}
                       label={t(k)}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
                       fullWidth={true}
                     />
                   );

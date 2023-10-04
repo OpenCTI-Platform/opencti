@@ -29,7 +29,6 @@ import {
   playbookDeleteLink,
   playbookUpdatePositions
 } from './playbook-domain';
-import { isNotEmptyField } from '../../database/utils';
 import { playbookStepExecution } from '../../manager/playbookManager';
 
 const playbookResolvers: Resolvers = {
@@ -41,15 +40,21 @@ const playbookResolvers: Resolvers = {
     playbookComponents: () => availableComponents(),
   },
   PlaybookComponent: {
-    configuration_schema: (current) => (isNotEmptyField(current.configuration_schema) ? JSON.stringify(current.configuration_schema) : '{}')
+    configuration_schema: async (current) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const configurationSchema = await current.schema();
+      return JSON.stringify(configurationSchema ?? '{}');
+    }
   },
   Mutation: {
     playbookAdd: (_, { input }, context) => playbookAdd(context, context.user, input),
     playbookAddNode: (_, { id, input }, context) => playbookAddNode(context, context.user, id, input),
     playbookAddLink: (_, { id, input }, context) => playbookAddLink(context, context.user, id, input),
     playbookReplaceNode: (_, { id, nodeId, input }, context) => playbookReplaceNode(context, context.user, id, nodeId, input),
-    // eslint-disable-next-line max-len
-    playbookInsertNode: (_, { id, parentNodeId, parentPortId, childNodeId, input }, context) => playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input),
+    playbookInsertNode: (_, { id, parentNodeId, parentPortId, childNodeId, input }, context) => {
+      return playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input);
+    },
     playbookDelete: (_, { id }, context) => playbookDelete(context, context.user, id),
     playbookDeleteNode: (_, { id, nodeId }, context) => playbookDeleteNode(context, context.user, id, nodeId),
     playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),

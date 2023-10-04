@@ -12,12 +12,14 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
+import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
+import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToSync } from '../../database/rabbitmq';
-import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
+import { ENTITY_TYPE_CONTAINER, OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { loadConnectorById } from '../../domain/connector';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { StoreCommon } from '../../types/store';
@@ -26,10 +28,15 @@ import { now } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import type { StixContainer } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
-import type { StixCoreObject, StixId } from '../../types/stix-common';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import type { StixCoreObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { connectorsForPlaybook } from '../../database/repository';
+import { schemaTypesDefinition } from '../../schema/schema-types';
+import { listAllEntities } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import type { BasicStoreEntityOrganization } from '../organization/organization-types';
+import { getEntitiesListFromCache } from '../../database/cache';
 
 // region Testing playbook components
 interface ConsoleConfiguration extends PlaybookComponentConfiguration {}
@@ -42,6 +49,7 @@ const PLAYBOOK_CONSOLE_STANDARD_COMPONENT: PlaybookComponent<ConsoleConfiguratio
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: undefined,
+  schema: async () => undefined,
   executor: async ({ bundle }) => {
     // eslint-disable-next-line no-console
     console.log(bundle);
@@ -57,6 +65,7 @@ const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> 
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: undefined,
+  schema: async () => undefined,
   executor: async ({ bundle }) => {
     // eslint-disable-next-line no-console
     console.error(bundle);
@@ -70,6 +79,15 @@ export interface StreamConfiguration extends PlaybookComponentConfiguration {
   update: boolean,
   delete: boolean
 }
+const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> = {
+  type: 'object',
+  properties: {
+    create: { type: 'boolean', default: true },
+    update: { type: 'boolean', default: false },
+    delete: { type: 'boolean', default: false },
+  },
+  required: ['create', 'update', 'delete'],
+};
 const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
   name: 'Listen knowledge events',
@@ -78,15 +96,8 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      create: { type: 'boolean', default: true },
-      update: { type: 'boolean', default: false },
-      delete: { type: 'boolean', default: false },
-    },
-    required: ['create', 'update', 'delete'],
-  },
+  configuration_schema: PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
+  schema: async () => PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle });
   }
@@ -102,6 +113,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   is_internal: true,
   ports: [],
   configuration_schema: undefined,
+  schema: async () => undefined,
   executor: async ({ bundle }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
     await pushToSync({ type: 'bundle', applicant_id: OPENCTI_SYSTEM_UUID, content, update: true });
@@ -112,6 +124,13 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
 interface FilterConfiguration extends PlaybookComponentConfiguration {
   filters: string
 }
+const PLAYBOOK_FILTERING_COMPONENT_SCHEMA: JSONSchemaType<FilterConfiguration> = {
+  type: 'object',
+  properties: {
+    filters: { type: 'string' },
+  },
+  required: ['filters'],
+};
 const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Filter knowledge',
@@ -120,15 +139,10 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'empty', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      filters: { type: 'string' },
-    },
-    required: ['filters'],
-  },
+  configuration_schema: PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
   executor: async ({ instance, instanceId, bundle }) => {
-    const context = executionContext('playbook_manager');
+    const context = executionContext('playbook_components');
     const jsonFilters = JSON.parse(instance.configuration.filters);
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
     const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -138,8 +152,15 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
 };
 
 interface ConnectorConfiguration extends PlaybookComponentConfiguration {
-  connector_id: string
+  connector: string
 }
+const PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA: JSONSchemaType<ConnectorConfiguration> = {
+  type: 'object',
+  properties: {
+    connector: { type: 'string', oneOf: [] },
+  },
+  required: ['connector'],
+};
 const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = {
   id: 'PLAYBOOK_CONNECTOR_COMPONENT',
   name: 'Enrich through connector',
@@ -148,17 +169,17 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   is_entry_point: false,
   is_internal: false,
   ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      connector_id: { type: 'string' },
-    },
-    required: ['connector_id'],
+  configuration_schema: PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA,
+  schema: async () => {
+    const context = executionContext('playbook_components');
+    const connectors = await connectorsForPlaybook(context, SYSTEM_USER);
+    const elements = connectors.map((c) => ({ const: c.id, title: c.name }));
+    const schemaElement = { properties: { connector: { oneOf: elements } } };
+    return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
   notify: async ({ playbookId, instance, previousInstance, instanceId, bundle }) => {
     const context = executionContext('playbook_manager');
-    const connectorId = instance.configuration.connector_id ?? '00ac0c19-7b1b-457d-a2ff-7a8bda8bfd6f';
-    const connector = await loadConnectorById(context, SYSTEM_USER, connectorId);
+    const connector = await loadConnectorById(context, SYSTEM_USER, instance.configuration.connector);
     const message = {
       internal: {
         work_id: null, // No work id associated
@@ -187,6 +208,13 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 interface ContainerWrapperConfiguration extends PlaybookComponentConfiguration {
   container_type: string
 }
+const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
+  type: 'object',
+  properties: {
+    container_type: { type: 'string', default: '', oneOf: [] }
+  },
+  required: ['container_type'],
+};
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
@@ -195,16 +223,12 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      container_type: {
-        type: 'string',
-        enum: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_REPORT],
-        default: ENTITY_TYPE_CONTAINER_REPORT
-      },
-    },
-    required: ['container_type'],
+  configuration_schema: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA,
+  schema: async () => {
+    const entityTypes = schemaTypesDefinition.get(ENTITY_TYPE_CONTAINER);
+    const elements = entityTypes.map((c) => ({ const: c, title: c }));
+    const schemaElement = { properties: { container_type: { oneOf: elements } } };
+    return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ instanceId, instance, bundle }) => {
     const created = now();
@@ -234,8 +258,20 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
 };
 
 interface SharingConfiguration extends PlaybookComponentConfiguration {
-  organizations: string
+  organizations: string[]
 }
+const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
+  type: 'object',
+  properties: {
+    organizations: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      items: { type: 'string', oneOf: [] }
+    }
+  },
+  required: ['organizations'],
+};
 const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
   name: 'Sharing component',
@@ -244,17 +280,21 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      organizations: {
-        type: 'string',
-      },
-    },
-    required: ['organizations'],
+  configuration_schema: PLAYBOOK_SHARING_COMPONENT_SCHEMA,
+  schema: async () => {
+    const context = executionContext('playbook_components');
+    const organizations = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { connectionFormat: false });
+    const elements = organizations.map((c) => ({ const: c.id, title: c.name }));
+    const schemaElement = { properties: { organizations: { items: { oneOf: elements } } } };
+    return R.mergeDeepRight<JSONSchemaType<SharingConfiguration>, any>(PLAYBOOK_SHARING_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ instanceId, instance, bundle }) => {
-    const organizationIds = [instance.configuration.organizations] as unknown as StixId[];
+    const context = executionContext('playbook_components');
+    // const organizations = await storeLoadByIds(context, SYSTEM_USER, instance.configuration.organizations, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const organizations = await getEntitiesListFromCache<BasicStoreEntityOrganization>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const organizationIds = organizations
+      .filter((o) => (instance.configuration.organizations ?? []).includes(o.internal_id))
+      .map((o) => o.standard_id);
     const baseData = bundle.objects.find((o) => o.id === instanceId) as StixCoreObject;
     baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
     return { output_port: 'out', bundle };
@@ -264,6 +304,24 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
   actions: { op: string, path: string, value: string[] }[]
 }
+const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
+  type: 'object',
+  properties: {
+    actions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          op: { type: 'string' },
+          path: { type: 'string' },
+          value: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['op', 'path', 'value'],
+      }
+    },
+  },
+  required: ['actions'],
+};
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
   id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
   name: 'Update knowledge',
@@ -272,24 +330,8 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: {
-    type: 'object',
-    properties: {
-      actions: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            op: { type: 'string' },
-            path: { type: 'string' },
-            value: { type: 'array', items: { type: 'string' } },
-          },
-          required: ['op', 'path', 'value'],
-        }
-      },
-    },
-    required: ['actions'],
-  },
+  configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ bundle }) => {
     // const context = executionContext('playbook_manager');
     // const jsonFilters = JSON.parse(instance.configuration.filters);

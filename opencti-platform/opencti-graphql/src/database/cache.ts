@@ -13,11 +13,13 @@ import {
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { convertStoreToStix } from './stix-converter';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
   [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   // Users must be reset depending on roles and groups modifications
   [ENTITY_TYPE_ROLE]: [ENTITY_TYPE_USER],
   [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
@@ -56,11 +58,7 @@ export const resetCacheForEntity = (entityType: string) => {
   });
 };
 
-export const dynamicCacheUpdater = (
-  context: AuthContext,
-  user: AuthUser,
-  instance: StoreEntity | StoreRelation,
-) => {
+export const dynamicCacheUpdater = (instance: StoreEntity | StoreRelation) => {
   // Dynamic update of filtering cache
   const currentFiltersValues = cache[ENTITY_TYPE_RESOLVED_FILTERS]?.values;
   if (currentFiltersValues?.has(instance.internal_id)) {

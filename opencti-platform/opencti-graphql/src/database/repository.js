@@ -40,6 +40,11 @@ export const connectorsForWorker = async (context, user) => {
   return registeredConnectors;
 };
 
+export const connectorsForPlaybook = async (context, user) => {
+  const registeredConnectors = await connectors(context, user);
+  return registeredConnectors.filter((r) => r.playbook_compatible === true);
+};
+
 const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
   return pipe(
     filter((c) => c.connector_type === type),
