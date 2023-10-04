@@ -1190,13 +1190,15 @@ export const nodePaint = (
   if (numberOfConnectedElement === undefined || numberOfConnectedElement > 0) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
-    ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
+    ctx.arc(x + 4, y - 5, 4, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
     let numberLabel = '?';
     if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
-    if (numberOfConnectedElement > 99) numberLabel = 99;
-    if (numberLabel !== '?') numberLabel = `~${numberLabel}`;
+    if (numberLabel !== '?') {
+      if (numberOfConnectedElement > 99) numberLabel = '99+';
+      else numberLabel = `~${numberLabel}`;
+    }
     ctx.fillText(numberLabel, x + 4, y - 4.5);
   }
 };
