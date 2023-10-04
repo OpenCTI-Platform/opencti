@@ -3,10 +3,7 @@ import TextField from '@mui/material/TextField';
 import React, { Dispatch, FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  directFilters,
-  FiltersVariant,
-} from '../../../../utils/filters/filtersUtils';
+import { directFilters, FiltersVariant, } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { Theme } from '../../../../components/Theme';
@@ -24,7 +21,7 @@ interface FiltersElementProps {
   keyword: string;
   availableFilterKeys: string[];
   searchContext: { entityTypes: string[], elementId?: string[] };
-  handleChangeKeyword: (event: React.SyntheticEvent) => void;
+  handleChangeKeyword: (event: React.ChangeEvent) => void;
   noDirectFilters?: boolean;
   setInputValues: Dispatch<Record<string, string | Date>>;
   inputValues: Record<string, string | Date>;

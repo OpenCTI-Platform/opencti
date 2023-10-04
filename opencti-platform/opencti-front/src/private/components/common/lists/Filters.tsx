@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import {
-  FiltersVariant,
-  isUniqFilter,
-} from '../../../../utils/filters/filtersUtils';
+import { FiltersVariant, isUniqFilter, } from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import type { Filters as FiltersType } from '../../../../components/list_lines';
 
-const Filters = ({
+interface FiltersProps {
+  variant?: string;
+  disabled?: boolean;
+  size?: number;
+  fontSize?: number;
+  availableFilterKeys: string[];
+  noDirectFilters?: boolean;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[],
+  availableRelationFilterTypes?: Record<string, string[]>,
+  allEntityTypes?: boolean;
+  handleAddFilter?: HandleAddFilter,
+  handleRemoveFilter?: (key: string, id?: string) => void,
+  handleSwitchFilter?: HandleAddFilter,
+  searchContext?: { entityTypes: string[], elementId?: string[] };
+  type?: string;
+}
+const Filters: FunctionComponent<FiltersProps> = ({
   variant,
   disabled,
   size,
@@ -23,17 +39,17 @@ const Filters = ({
   handleAddFilter,
   handleRemoveFilter,
   handleSwitchFilter,
-  searchContext = {},
+  searchContext,
   type,
 }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [filters, setFilters] = useState({});
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const [filters, setFilters] = useState<FiltersType>({});
   const [inputValues, setInputValues] = useState({});
   const [keyword, setKeyword] = useState('');
 
-  const handleOpenFilters = (event) => {
+  const handleOpenFilters = (event: React.SyntheticEvent) => {
     setOpen(true);
     setAnchorEl(event.currentTarget);
   };
@@ -42,7 +58,7 @@ const Filters = ({
     setAnchorEl(null);
   };
   const defaultHandleAddFilter = handleAddFilter
-    || ((key, id, value, event = null) => {
+    || ((key, id, value, event = undefined) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -68,14 +84,14 @@ const Filters = ({
       }?${new URLSearchParams(urlParams).toString()}`,
     );
   };
-  const handleChangeKeyword = (event) => setKeyword(event.target.value);
+  const handleChangeKeyword = (event: ChangeEvent) => setKeyword((event.target as HTMLInputElement).value);
 
   const filterElement = (
     <FiltersElement
       variant={variant}
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
-      searchContext={searchContext}
+      searchContext={searchContext ?? { entityTypes: [] }}
       handleChangeKeyword={handleChangeKeyword}
       noDirectFilters={noDirectFilters}
       inputValues={inputValues}
@@ -100,7 +116,6 @@ const Filters = ({
         defaultHandleRemoveFilter={defaultHandleRemoveFilter}
         handleSearch={handleSearch}
         filterElement={filterElement}
-        type={type}
       />
     );
   }

@@ -41,7 +41,7 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import Filters from '../../private/components/common/lists/Filters';
+import Filters from '@components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';

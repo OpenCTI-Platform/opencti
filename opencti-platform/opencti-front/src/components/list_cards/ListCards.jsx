@@ -22,7 +22,7 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import Filters from '../../private/components/common/lists/Filters';
+import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
 
