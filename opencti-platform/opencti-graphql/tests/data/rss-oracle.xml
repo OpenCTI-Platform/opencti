@@ -10,12 +10,10 @@
         <language>en</language>
         <copyright>Copyright 2023 Oracle. All Rights Reserved.</copyright>
         <managingEditor>otnfeedback_us@oracle.com</managingEditor>
-        <pubDate>Tue, 18 Jul 2023 12:30:54 -0700</pubDate>
         <lastBuildDate>Tue, 18 Jul 2023 12:30:54 -0700</lastBuildDate>
         <item>
             <title>Oracle Critical Patch Update Advisory - July 2023</title>
             <link rel="test">https://www.oracle.com/security-alerts/cpujul2023.html</link>
-            <pubDate>Tue, 18 Jul 2023 12:30:54 -0700</pubDate>
             <guid isPermaLink="false">CPUJul2023</guid>
         </item>
     </channel>
