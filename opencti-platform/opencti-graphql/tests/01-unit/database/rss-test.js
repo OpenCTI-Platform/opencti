@@ -9,6 +9,7 @@ describe('Rss parsing testing', () => {
     const turndownService = new TurndownService();
     const items = await rssDataParser(turndownService, rssFeed, undefined);
     expect(items.length).toBe(1);
+    expect(items[0].pubDate.toISOString()).toBe('1970-01-01T00:00:00.000Z');
   });
   it('should citrixRss 2.0 parsed correctly', async () => {
     const rssFeed = fs.readFileSync('./tests/data/rss-citrix.xml', { encoding: 'utf8', flag: 'r' });
