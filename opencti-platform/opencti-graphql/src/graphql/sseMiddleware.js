@@ -137,10 +137,12 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   // Access is restricted, check the current user
   const userAccessIds = computeUserMemberAccessIds(user);
   const collectionAccessIds = (collection.authorized_members ?? []).map((a) => a.id);
-  if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
-    res.statusMessage = 'You are not authorized, please check your credentials';
-    res.status(401).end();
-    return { error: res.statusMessage };
+  if (collectionAccessIds.length > 0) { // If restrictions have been setup
+    if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
+      res.statusMessage = 'You are not authorized, please check your credentials';
+      res.status(401).end();
+      return { error: res.statusMessage };
+    }
   }
   // If no marking part of filtering are accessible for the user, return
   // It's better to prevent connection instead of having no events accessible
