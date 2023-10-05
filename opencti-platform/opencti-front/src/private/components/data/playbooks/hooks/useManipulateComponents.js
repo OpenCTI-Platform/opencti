@@ -533,6 +533,21 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           },
         },
       });
+    } else {
+      newNodes.push({
+        id: 'PLACEHOLDER-ORIGIN',
+        type: 'placeholder',
+        position: { x: 0, y: 0 },
+        data: {
+          name: '+',
+          configuration: null,
+          component: { is_entry_point: true },
+          openConfig: (nodeId) => {
+            setSelectedNode(nodeId);
+            setAction('config');
+          },
+        },
+      });
     }
     if (parentNode && originEdge) {
       newEdges.push({
