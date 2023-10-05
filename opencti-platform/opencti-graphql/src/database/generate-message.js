@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { jsonToPlainText } from "json-to-plain-text";
 import { extractEntityRepresentativeName } from './entity-representative';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
@@ -88,7 +89,7 @@ export const generateUpdateMessage = (entityType, inputs) => {
         } else if (isDateAttribute(key)) {
           message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
         } else if (isObjectAttribute(key)) {
-          message = JSON.stringify(values); // TODO JRI
+          message = jsonToPlainText(values, { color: false, spacing: false });
         } else {
           // If standard primitive data, just join the values
           message = values.join(', ');

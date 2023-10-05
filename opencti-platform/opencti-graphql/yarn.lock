@@ -9556,6 +9556,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-to-plain-text@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "json-to-plain-text@npm:1.1.3"
+  dependencies:
+    chalk: ^4.1.2
+  checksum: 1a322533e24fd548e5178d830eb7e3d4b8d9aec38364fd15c40963a3707f4ace8ee2246e45feb010871011240cb8bb3a81a3ac096e1fe8bbca194e08d5d92491
+  languageName: node
+  linkType: hard
+
 "json-to-pretty-yaml@npm:^1.2.2":
   version: 1.2.2
   resolution: "json-to-pretty-yaml@npm:1.2.2"
@@ -10797,6 +10806,7 @@ __metadata:
     ipaddr.js: 2.1.0
     iterall: 1.3.0
     js-deep-equals: ^2.1.1
+    json-to-plain-text: ^1.1.3
     jsondiffpatch: 0.5.0
     jsonpath-plus: ^7.2.0
     jwt-decode: 3.1.2

@@ -56,7 +56,7 @@ const heightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const lengthPrimaryUnit = Units[userMetricType].length;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, lengthPrimaryUnit).to('m')); // Meter is the pivot format
+    return Number(convert<number>(numericMeasure, lengthPrimaryUnit).to('m').toFixed(8)); // Meter is the pivot format
   };
 };
 const heightsConverterSave = (userMetricType: SupportedUnitType) => {
@@ -82,7 +82,7 @@ const weightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const weightPrimaryUnit = Units[userMetricType].weight;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, weightPrimaryUnit).to('kg')); // Kg is the pivot format
+    return Number(convert<number>(numericMeasure, weightPrimaryUnit).to('kg').toFixed(8)); // Kg is the pivot format
   };
 };
 const weightsConverterSave = (userMetricType: SupportedUnitType) => {
