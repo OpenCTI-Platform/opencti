@@ -443,7 +443,7 @@ export const ethnicity: RelationRefDefinition = {
   multiple: false,
   checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
     && ENTITY_TYPE_LOCATION_COUNTRY === toType,
-  label: 'Of Ethnicity',
+  label: 'Ethnicity',
   datable: false,
 };
 

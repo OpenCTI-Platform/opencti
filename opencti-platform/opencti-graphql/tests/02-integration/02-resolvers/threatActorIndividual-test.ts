@@ -287,14 +287,11 @@ describe('Threat actor individual resolver standard behavior', () => {
     };
     const REMOVE_INDEX_HEIGHT: EditInput = {
       key: 'height',
-      value: ['[2]'],
+      value: [],
+      object_path: '[2]',
       operation: EditOperation.Remove,
     };
-    const REMOVE_ALL_HEIGHTS: EditInput = {
-      key: 'height',
-      value: ['[*]'],
-      operation: EditOperation.Remove,
-    };
+
     const expectedHeights = [
       { measure: 182, date_seen: new Date(DATES[0]) }, // 0
       { measure: 183, date_seen: new Date(DATES[0]) }, // 1
@@ -347,11 +344,57 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
     expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]); // 190
 
+
+  });
+  it('should update partial height', async () => {
+    const HEIGHT_EDIT = gql`
+          mutation threatActorIndividualHeightEdit($id: ID!, $input: [EditInput]!) {
+            threatActorIndividualFieldPatch(id:$id, input:$input) {
+              height {
+                measure
+                date_seen
+              }
+            }
+          }
+        `;
+    const REPLACE_MEASURE_ONLY: EditInput = {
+      key: 'height',
+      object_path: '[0].measure',
+      value: [283],
+      operation: EditOperation.Replace,
+    };
+    const replaceMeasure = await queryAsAdmin({
+      query: HEIGHT_EDIT,
+      variables: { id: threatActorIndividualInternalId, input: [REPLACE_MEASURE_ONLY] },
+    });
+    const threatActorIndividual = replaceMeasure?.data?.threatActorIndividualFieldPatch;
+    expect(threatActorIndividual).not.toBeNull();
+    expect(threatActorIndividual).toBeDefined();
+    expect(threatActorIndividual.height).toHaveLength(2);
+    expect(threatActorIndividual.height[0].measure).toBe(283);
+  });
+  it('should remove all height', async () => {
+    const HEIGHT_EDIT = gql`
+      mutation threatActorIndividualHeightEdit($id: ID!, $input: [EditInput]!) {
+        threatActorIndividualFieldPatch(id:$id, input:$input) {
+          height {
+            measure
+            date_seen
+          }
+        }
+      }
+    `;
+    const REMOVE_ALL_HEIGHTS: EditInput = {
+      key: 'height',
+      value: [],
+      object_path: '[*]',
+      operation: EditOperation.Remove,
+    };
     const removeAll = await queryAsAdmin({
       query: HEIGHT_EDIT,
       variables: { id: threatActorIndividualInternalId, input: [REMOVE_ALL_HEIGHTS] },
     });
-    threatActorIndividual = removeAll?.data?.threatActorIndividualFieldPatch;
+    const threatActorIndividual = removeAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(0);
@@ -393,12 +436,14 @@ describe('Threat actor individual resolver standard behavior', () => {
     };
     const REMOVE_INDEX_WEIGHT: EditInput = {
       key: 'weight',
-      value: ['[2]'],
+      value: [],
+      object_path: '[2]',
       operation: EditOperation.Remove,
     };
     const REMOVE_ALL_WEIGHTS: EditInput = {
       key: 'weight',
-      value: ['[*]'],
+      value: [],
+      object_path: '[*]',
       operation: EditOperation.Remove,
     };
     const expectedWeights = [
@@ -461,6 +506,32 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.weight).toHaveLength(0);
+  });
+  it.skip('should fail update for invalid input', async () => {
+    const WEIGHT_EDIT = gql`
+      mutation threatActorIndividualWeightEdit($id: ID!, $input: [EditInput]!) {
+        threatActorIndividualFieldPatch(id:$id, input:$input) {
+          weight {
+            measure
+            date_seen
+          }
+        }
+      }
+    `;
+    const ADD_WEIGHTS: EditInput = {
+      key: 'weight',
+      value: [
+        { measure: 190, date_seen: '2017-11-06T00:00:00.000Z' },
+        { measure: 189, date_seen_invalid: '2017-11-06T00:00:00.000Z' },
+      ],
+      operation: EditOperation.Add,
+    };
+    const addHeights = await queryAsAdmin({
+      query: WEIGHT_EDIT,
+      variables: { id: threatActorIndividualInternalId, input: [ADD_WEIGHTS] },
+    });
+    expect(addHeights?.data?.threatActorIndividualFieldPatch).toBeNull();
+    expect(addHeights?.errors?.length).toBe(1);
   });
   it('should delete threat actor individual', async () => {
     const DELETE_QUERY = gql`

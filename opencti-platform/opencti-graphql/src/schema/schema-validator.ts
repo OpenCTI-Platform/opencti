@@ -1,6 +1,9 @@
+import * as R from 'ramda';
 import Ajv from 'ajv';
+import * as jsonpatch from 'fast-json-patch';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { isJsonAttribute, schemaAttributesDefinition } from './schema-attributes';
+import { JSONPath } from 'jsonpath-plus';
+import { isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isNotEmptyField } from '../database/utils';
@@ -11,18 +14,27 @@ import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
 import type { AttributeDefinition } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
+import { EditOperation } from '../generated/graphql';
 
 const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 
+export const extractSchemaDefFromPath = (attributeDefinition: AttributeDefinition, pointer: string, editInput: EditInput): object | object[] => {
+  const configPath = pointer.split('/').filter((a) => isNotEmptyField(a) && a !== editInput.key)
+    .map((t) => (!Number.isNaN(Number(t)) ? 'items' : (`properties.${t}`))).join('.');
+  const configSchema = JSONPath({ json: attributeDefinition.schemaDef as object, resultType: 'value', wrap: false, path: configPath });
+  return configSchema?.type === undefined || configSchema?.type === 'array' ? editInput.value : R.head(editInput.value);
+};
+
 export const validateFormatSchemaAttribute = (
   instanceType: string,
   attributeName: string,
   attributeDefinition: AttributeDefinition | undefined,
-  value: unknown
+  initial: object,
+  editInput: EditInput
 ) => {
-  if (isJsonAttribute(attributeName)) {
+  if (isJsonAttribute(attributeName) || isObjectAttribute(attributeName)) {
     if (!attributeDefinition) {
       throw ValidationError(attributeName, {
         message: 'This attribute is not declared for this type',
@@ -31,20 +43,38 @@ export const validateFormatSchemaAttribute = (
     }
     if (attributeDefinition.schemaDef) {
       const validate = ajv.compile(attributeDefinition.schemaDef);
-      const valid = validate(JSON.parse(value as string));
-      if (!valid) {
-        throw ValidationError(attributeName, { message: 'The JSON Schema is not valid', data: validate.errors });
+      if (isJsonAttribute(attributeName)) {
+        const jsonValue = R.head(editInput.value); // json cannot be multiple
+        const valid = validate(JSON.parse(jsonValue as string));
+        if (!valid) {
+          throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
+        }
+      }
+      if (isObjectAttribute(attributeName)) {
+        let validationValues = editInput.value;
+        if (editInput.object_path) {
+          // If object path is setup, controlling the field is much harder.
+          // Concept here is to apply the partial operation and check if the result comply to the schema
+          const pointers = JSONPath({ json: initial, resultType: 'pointer', path: `${editInput.key}${editInput.object_path}` });
+          const patch = pointers.map((p: string) => ({ op: editInput.operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, editInput) }));
+          const patchedInstance = jsonpatch.applyPatch(R.clone(initial), patch).newDocument as any;
+          validationValues = patchedInstance[editInput.key];
+        }
+        const valid = validate(validationValues);
+        if (!valid) {
+          throw ValidationError(attributeName, { message: 'The Object schema is not valid', data: validate.errors });
+        }
       }
     }
   }
 };
 
-const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>) => {
+const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, initial: Record<string, unknown>, editInputs: EditInput[]) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
-    const inputEntries = Object.entries(input);
-    inputEntries.forEach(([key, value]) => {
-      validateFormatSchemaAttribute(instanceType, key, availableAttributes.get(key), value);
+    editInputs.forEach((editInput) => {
+      const attributeDefinition = availableAttributes.get(editInput.key);
+      validateFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, initial, editInput);
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
@@ -124,7 +154,9 @@ export const validateInputCreation = async (
 ) => {
   const validateInputCreationFn = async () => {
     // Generic validator
-    await validateFormatSchemaAttributes(context, user, instanceType, input);
+    const editInputs: EditInput[] = Object.entries(input)
+      .map(([k, v]) => ({ operation: EditOperation.Replace, value: Array.isArray(v) ? v : [v], key: k }));
+    await validateFormatSchemaAttributes(context, user, instanceType, input, editInputs);
     await validateMandatoryAttributesOnCreation(context, user, input, entitySetting);
     // Functional validator
     const validator = getEntityValidatorCreation(instanceType);
@@ -154,30 +186,24 @@ export const validateInputUpdate = async (
   context: AuthContext,
   user: AuthUser,
   instanceType: string,
-  input: Array<EditInput>,
+  initial: Record<string, unknown>,
+  editInputs: EditInput[],
   entitySetting: BasicStoreEntityEntitySetting,
-  initial: Record<string, unknown>
 ) => {
   const validateInputUpdateFn = async () => {
     // Convert input to record
-    let inputs: Record<string, unknown> = {};
-    if (Array.isArray(input)) {
-      input.forEach((obj) => {
-        inputs[obj.key] = obj.value;
-      });
-    } else {
-      inputs = input;
-    }
+    const instanceFromInputs: Record<string, unknown> = {};
+    editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
     // Generic validator
-    await validateFormatSchemaAttributes(context, user, instanceType, inputs);
-    await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
-    validateUpdatableAttribute(instanceType, inputs);
+    await validateFormatSchemaAttributes(context, user, instanceType, initial, editInputs);
+    await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);
+    validateUpdatableAttribute(instanceType, instanceFromInputs);
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
-      const validate = await validator(context, user, inputs, initial);
+      const validate = await validator(context, user, instanceFromInputs, initial);
       if (!validate) {
-        throw UnsupportedError('The input is not valid', { inputs });
+        throw UnsupportedError('The input is not valid', { inputs: instanceFromInputs });
       }
     }
   };

@@ -232,7 +232,7 @@ import {
   getEntitySettingFromCache
 } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
@@ -943,19 +943,17 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       }
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       if (isObjectAttribute(key)) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${R.head(value)}` }).reverse();
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` }).reverse();
         const patch = pointers.map((p) => ({ op: operation, path: p }));
         const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
-    } else if (isObjectAttribute(key)) { // Replace for object
+    } else if (isObjectAttribute(key)) {
+      const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
       const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
-      // Empty object_path = list of values.
-      // If not empty, it should depends of the inner elements definition.
-      // For now we consider that inner elements will not be considered as array
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: object_path ? R.head(value) : value }));
+      const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
       const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
       finalVal = patchedInstance[key];
     } else { // Replace general
@@ -1805,7 +1803,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, inputs, entitySetting, initial);
+  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;

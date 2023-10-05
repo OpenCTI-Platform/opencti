@@ -163,7 +163,6 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 name="height"
                 values={values.height}
                 id={threatActorIndividual.id}
-                label={t('Heights')}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
               />
@@ -171,7 +170,6 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 name="weight"
                 values={values.weight}
                 id={threatActorIndividual.id}
-                label={t('Weights')}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
               />

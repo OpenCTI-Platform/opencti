@@ -10,7 +10,7 @@ import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from '../components/AppIntlProvider';
 import Profile, { profileQuery } from '../private/components/profile/Profile';
 import { APP_BASE_PATH } from '../relay/environment';
-import {UserContext} from "../utils/hooks/useAuth";
+import { UserContext } from '../utils/hooks/useAuth';
 
 const me = {
   name: 'admin',
@@ -26,6 +26,7 @@ const me = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
 
 describe('App', () => {

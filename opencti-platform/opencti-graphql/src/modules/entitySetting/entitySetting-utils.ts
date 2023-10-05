@@ -110,7 +110,7 @@ export const getAttributesConfiguration = (entitySetting: BasicStoreEntityEntity
   return null;
 };
 
-export const getDefaultValues = (attributeConfiguration: AttributeConfiguration, multiple: boolean) => {
+export const getDefaultValues = (attributeConfiguration: AttributeConfiguration, multiple: boolean): string[] | string | undefined => {
   if (attributeConfiguration.default_values) {
     if (multiple) {
       return attributeConfiguration.default_values;

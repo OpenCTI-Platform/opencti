@@ -1,6 +1,6 @@
 import { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import { IconButton, Typography } from '@mui/material';
+import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import {
@@ -9,12 +9,14 @@ import {
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
@@ -30,40 +32,36 @@ export const individualWeightMutation = graphql`
 
 interface WeightFieldAddProps {
   name: string,
-  label: string,
   values: MeasureInput[],
   containerStyle: { marginTop: number; width: string; },
   setFieldValue?: (name: string, value: unknown) => void,
 }
 export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
   name,
-  label,
   values,
   containerStyle,
 }): ReactElement => {
   const { t } = useFormatter();
   const { weightPrimaryUnit } = useUserMetric();
   return <div style={containerStyle}>
-            <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left', color: 'rgb(0, 177, 255)' }}
-            >
-                {label}
-            </Typography>
-            <br />
             <FieldArray
                 name={name}
                 render={(arrayHelpers) => (
                     <div>
+                        <Button size="small" startIcon={<Add />} variant="contained" color="primary" aria-label="Add" id="addHeight"
+                                onClick={() => {
+                                  arrayHelpers.push({ date_seen: null });
+                                }}>
+                            {t('Add a weight')}
+                        </Button>
                         {values?.map(({ date_seen }, index) => (
-                            <div key={date_seen}>
+                            <div key={date_seen} style={fieldSpacingContainerStyle}>
                                 <Field
                                     component={TextField}
                                     variant="standard"
                                     name={`${name}.${index}.measure`}
                                     label={t(`Weight (${weightPrimaryUnit})`)}
-                                    style={{ marginRight: 20 }}
+                                    style={{ marginRight: 20, width: '40%' }}
                                     type='number'
                                     InputProps={{ inputProps: { min: 0 } }}
                                 />
@@ -73,6 +71,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                                     TextFieldProps={{
                                       label: t('Date Seen'),
                                       variant: 'standard',
+                                      style: { width: '40%' },
                                     }}
                                     type='date'
                                 />
@@ -89,16 +88,6 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                                 </IconButton>
                             </div>
                         ))}
-                        <IconButton
-                            aria-label="Add"
-                            id ="addWeight"
-                            color="primary"
-                            onClick={() => {
-                              arrayHelpers.push({ date_seen: null });
-                            }}
-                        >
-                            <b style={{ fontSize: 12 }}>{t('Add a weight')}</b> <Add />
-                        </IconButton>
                     </div>
                 )}
             ></FieldArray>
@@ -106,9 +95,8 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
 };
 
 interface WeightFieldEditProps {
-  name: string,
-  label: string,
   id: string,
+  name: string,
   values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'],
   containerStyle: {
     marginTop: number;
@@ -123,7 +111,6 @@ interface WeightFieldEditProps {
 export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   id,
   name,
-  label,
   values,
   containerStyle,
   editContext = [],
@@ -131,23 +118,35 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   const { t } = useFormatter();
   const { weightPrimaryUnit, weightToPivotFormat } = useUserMetric();
   return <div style={containerStyle}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left', color: 'rgb(0, 177, 255)' }}>
-          {label}
-        </Typography>
-        <br />
+        <Button size="small" startIcon={<Add />} variant="contained" color="primary" aria-label="Add" id="addHeight"
+                onClick={() => {
+                  commitMutation({
+                    ...defaultCommitMutation,
+                    mutation: individualWeightMutation,
+                    variables: {
+                      id,
+                      input: {
+                        key: 'weight',
+                        value: [{ measure: null, date_seen: null }],
+                        operation: 'add',
+                      },
+                    },
+                  });
+                }}>
+            {t('Add a weight')}
+        </Button>
         <FieldArray
           name={name}
           render={(arrayHelpers) => (
             <div>
               {(values ?? []).map((weight, index) => {
-                const fieldName = `${name}.${index}.measure`;
-                return (<div key={index}>
+                return (<div key={index} style={fieldSpacingContainerStyle}>
                   <Field
                     component={TextField}
                     variant="standard"
                     type="number"
                     InputProps={{ inputProps: { min: 0 } }}
-                    name={fieldName}
+                    name={`${name}.${index}.measure`}
                     label={t(`Weight (${weightPrimaryUnit})`)}
                     onSubmit={(_: string, measure: string) => {
                       commitMutation({
@@ -164,7 +163,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                         },
                       });
                     }}
-                    style={{ marginRight: 20 }}
+                    style={{ marginRight: 20, width: '40%' }}
                   />
                   <Field
                     component={DatePickerField}
@@ -188,6 +187,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                     TextFieldProps={{
                       label: t('Date Seen'),
                       variant: 'standard',
+                      style: { width: '40%' },
                       helperText: (
                         <SubscriptionFocus
                           context={editContext}
@@ -208,7 +208,8 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                           id,
                           input: {
                             key: 'weight',
-                            value: `[${weight.index}]`,
+                            object_path: `[${weight.index}]`,
+                            value: [],
                             operation: 'remove',
                           },
                         },
@@ -222,28 +223,6 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                 </div>
                 );
               })}
-              <IconButton
-                aria-label="Add"
-                id="addWeight"
-                color="primary"
-                onClick={() => {
-                  arrayHelpers.push({});
-                  commitMutation({
-                    ...defaultCommitMutation,
-                    mutation: individualWeightMutation,
-                    variables: {
-                      id,
-                      input: {
-                        key: 'weight',
-                        value: [{ measure: null, date_seen: null }],
-                        operation: 'add',
-                      },
-                    },
-                  });
-                }}
-              >
-                <b style={{ fontSize: 12 }}>{t('Add a weight')}</b> <Add />
-              </IconButton>
             </div>
           )}
         ></FieldArray>

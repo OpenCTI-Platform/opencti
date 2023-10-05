@@ -1,6 +1,8 @@
 import { Field, Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
+import CountryField from '@components/common/form/CountryField';
+import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
@@ -10,9 +12,9 @@ import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { buildDate } from '../../../../utils/Time';
 import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
-import CountryPickerField from '../../common/form/CountryPickerField';
 import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { isEmptyField } from '../../../../utils/utils';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -46,9 +48,11 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
     job_title
     bornIn {
       id
+      name
     }
     ethnicity {
       id
+      name
     }
   }
 `;
@@ -66,8 +70,8 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
   job_title: Yup.string()
     .nullable()
     .max(250, t('The value is too long')),
-  bornIn: Yup.string().nullable(),
-  ethnicity: Yup.string().nullable(),
+  bornIn: Yup.object().nullable(),
+  ethnicity: Yup.object().nullable(),
 });
 
 interface ThreatActorIndividualEditionDemographicsComponentProps {
@@ -100,12 +104,16 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
 
   const handleSubmitField = (
     name: string,
-    value: string | string[] | null,
+    value: string | string[] | Option | null,
     operation: EditOperation = 'replace',
   ) => {
     threatActorIndividualValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
+        let finalValue = value;
+        if (name === 'bornIn' || name === 'ethnicity') {
+          finalValue = (value as Option)?.value ?? '';
+        }
         commitMutation({
           ...defaultCommitMutation,
           mutation: threatActorIndividualMutationFieldPatch,
@@ -113,7 +121,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
             id: threatActorIndividual.id,
             input: {
               key: name,
-              value: Array.isArray(value) ? value : [value],
+              value: Array.isArray(finalValue) ? finalValue : [finalValue],
               operation,
             },
           },
@@ -127,8 +135,8 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     gender: threatActorIndividual.gender,
     marital_status: threatActorIndividual.marital_status,
     job_title: threatActorIndividual.job_title,
-    bornIn: threatActorIndividual.bornIn?.id,
-    ethnicity: threatActorIndividual.ethnicity?.id,
+    bornIn: { label: threatActorIndividual.bornIn?.name ?? '', value: threatActorIndividual.bornIn?.id ?? '' },
+    ethnicity: { label: threatActorIndividual.ethnicity?.name ?? '', value: threatActorIndividual.ethnicity?.id ?? '' },
   };
 
   return (
@@ -140,7 +148,6 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         onSubmit={() => {}}
       >
         {({
-          values,
           submitForm,
           isSubmitting,
           setFieldValue,
@@ -149,28 +156,24 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <CountryPickerField
+              <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
-                multi={false}
-                initialValues={values.bornIn}
                 label={t('Place of Birth')}
-                style={fieldSpacingContainerStyle}
-                handleChange={(n, v) => {
-                  setFieldValue(n, Array.isArray(v) ? v[0] : v);
-                  handleSubmitField(n, Array.isArray(v) ? v[0] : v);
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(name, value) => {
+                  setFieldValue(name, value);
+                  handleSubmitField(name, isEmptyField(value) ? null : value);
                 }}
               />
-              <CountryPickerField
+              <CountryField
                 id="Ethnicity"
                 name="ethnicity"
-                multi={false}
-                initialValues={values.ethnicity}
                 label={t('Ethnicity')}
-                style={fieldSpacingContainerStyle}
-                handleChange={(n, v) => {
-                  setFieldValue(n, Array.isArray(v) ? v[0] : v);
-                  handleSubmitField(n, Array.isArray(v) ? v[0] : v);
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(name, value) => {
+                  setFieldValue(name, value);
+                  handleSubmitField(name, isEmptyField(value) ? null : value);
                 }}
               />
               <Field

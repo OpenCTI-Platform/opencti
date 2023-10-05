@@ -14,6 +14,7 @@ import { FormikConfig, FormikErrors } from 'formik/dist/types';
 import { Box, Tab, Tabs } from '@mui/material';
 import Badge, { BadgeProps } from '@mui/material/Badge';
 import { styled } from '@mui/material/styles';
+import CountryField from '@components/common/form/CountryField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -41,7 +42,6 @@ import {
 import DatePickerField from '../../../../components/DatePickerField';
 import { HeightFieldAdd } from '../../common/form/HeightField';
 import { WeightFieldAdd } from '../../common/form/WeightField';
-import CountryPickerField from '../../common/form/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
@@ -122,8 +122,8 @@ interface ThreatActorIndividualAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  bornIn: string | null
-  ethnicity: string | null
+  bornIn: Option | undefined
+  ethnicity: Option | undefined
   date_of_birth: Date | null
   gender: string | null
   marital_status: string | null
@@ -168,8 +168,8 @@ ThreatActorIndividualFormProps
     date_of_birth: Yup.date()
       .nullable()
       .typeError(t('The value must be a date (yyyy-MM-dd)')),
-    bornIn: Yup.string().nullable(),
-    ethnicity: Yup.string().nullable(),
+    bornIn: Yup.object().nullable(),
+    ethnicity: Yup.object().nullable(),
     gender: Yup.string()
       .nullable()
       .typeError(t('The value must be a string')),
@@ -214,8 +214,8 @@ ThreatActorIndividualFormProps
       objectLabel: values?.objectLabel.map((v) => v.value),
       externalReferences: values?.externalReferences.map(({ value }) => value),
       file: values?.file,
-      bornIn: values?.bornIn,
-      ethnicity: values?.ethnicity,
+      bornIn: values?.bornIn?.value,
+      ethnicity: values?.ethnicity?.value,
       date_of_birth: values?.date_of_birth,
       gender: values?.gender,
       marital_status: values?.marital_status,
@@ -256,8 +256,8 @@ ThreatActorIndividualFormProps
     objectLabel: [],
     externalReferences: [],
     file: undefined,
-    bornIn: null,
-    ethnicity: null,
+    bornIn: undefined,
+    ethnicity: undefined,
     date_of_birth: null,
     gender: null,
     marital_status: null,
@@ -353,23 +353,19 @@ ThreatActorIndividualFormProps
           )}
           {currentTab === 1 && (
             <div>
-              <CountryPickerField
+              <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
-                multi={false}
-                initialValues={values?.bornIn || undefined}
                 label={t('Place of Birth')}
-                style={fieldSpacingContainerStyle}
-                handleChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
               />
-              <CountryPickerField
+              <CountryField
                 id="Ethnicity"
                 name="ethnicity"
-                multi={false}
-                initialValues={values?.ethnicity || undefined}
                 label={t('Ethnicity')}
-                style={fieldSpacingContainerStyle}
-                handleChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
               />
               <Field
                 id="DateOfBirth"
@@ -442,14 +438,12 @@ ThreatActorIndividualFormProps
                 id='new_height'
                 name="height"
                 values={values?.height}
-                label={t('Heights')}
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
               <WeightFieldAdd
                 name="weight"
                 values={values?.weight}
-                label={t('Weights')}
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
