@@ -459,20 +459,18 @@ export const buildTargetEvents = async (
           if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
             const message = await generateNotificationMessageForInstance(context, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });
-          } else
-          // --- 03. Just an update
-            if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
-              const message = await generateNotificationMessageForInstance(context, user, data);
-              targets.push({ user: notificationUser, type: translatedType, message });
-            }
+          } else if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) {
+            // Case 03. Just an update
+            const message = await generateNotificationMessageForInstance(context, user, data);
+            targets.push({ user: notificationUser, type: translatedType, message });
+          }
       } else { // useSideEventMatching = true: Case side events for instance triggers
         // eslint-disable-next-line no-lonely-if
         if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
           const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
-          const translatedType = await
-          eventTypeTranslaterForSideEvents(context, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
-          const message = await
-          generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, translatedType, updatePatch, previous);
+          // eslint-disable-next-line max-len
+          const translatedType = await eventTypeTranslaterForSideEvents(context, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
+          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, translatedType, updatePatch, previous);
           if (message) {
             targets.push({ user: notificationUser, type: translatedType, message });
           }
@@ -490,8 +488,7 @@ export const buildTargetEvents = async (
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: eventType, message });
         } else { // instance trigger side events
-          const message = await
-          generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, eventType);
+          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, eventType);
           if (message) {
             targets.push({ user: notificationUser, type: eventType, message });
           }

@@ -60,6 +60,10 @@ interface StixObject {
   };
 }
 
+interface StixInternal extends StixObject {
+  name: string;
+}
+
 // --- STIX Core Objects
 // SDO
 interface StixDomainObject extends StixObject {

@@ -1,8 +1,8 @@
-import type { StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getStixRepresentativeConverters } from './stix-converter';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type * as SRO from '../types/stix-sro';
+import type * as S from '../types/stix-common';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -64,9 +64,10 @@ import {
 import type * as SCO from '../types/stix-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
+import { isInternalObject } from '../schema/internalObject';
 
 export const extractStixRepresentative = (
-  stix: StixObject,
+  stix: S.StixObject,
   { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false }
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
@@ -76,6 +77,10 @@ export const extractStixRepresentative = (
     return convertFn(stix);
   }
   // endregion
+  if (isInternalObject(entityType)) {
+    const internal = stix as S.StixInternal;
+    return internal.name ?? 'undefined';
+  }
   // region Sighting
   if (isStixSightingRelationship(entityType)) {
     const sighting = stix as SRO.StixSighting;

@@ -365,11 +365,15 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
 };
 
 // INTERNAL
-const convertInternalToStix = (instance: StoreEntity, type: string): S.StixObject => {
+const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternal => {
   if (!isInternalObject(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with internal`);
   }
-  return buildStixObject(instance);
+  const internal = buildStixObject(instance);
+  return {
+    ...internal,
+    name: instance.name,
+  };
 };
 // SDO
 export const convertIdentityToStix = (instance: StoreEntityIdentity, type: string): SDO.StixIdentity => {
@@ -1375,11 +1379,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (isStixDomainObjectLocation(type)) {
       return convertLocationToStix(basic, type);
     }
-
     if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
       return convertThreatActorGroupToStix(basic, type);
     }
-    // Remaining
     if (ENTITY_TYPE_CONTAINER_REPORT === type) {
       return convertReportToStix(basic, type);
     }
