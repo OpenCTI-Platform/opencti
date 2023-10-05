@@ -360,13 +360,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
     $elementId: String!
     $relationship_type: [String]
     $elementWithTargetTypes: [String]
-    $count: Int
   ) {
     stixRelationships(
       elementId: $elementId
       relationship_type: $relationship_type
       elementWithTargetTypes: $elementWithTargetTypes
-      first: $count
     ) {
       edges {
         node {
@@ -1846,7 +1844,6 @@ class InvestigationGraphComponent extends Component {
           elementId: n,
           relationship_type: filters.relationship_types.map((o) => o.value),
           elementWithTargetTypes: filters.entity_types.map((o) => o.value),
-          count: parseInt(filters.limit, 10),
         },
       )
         .toPromise()
