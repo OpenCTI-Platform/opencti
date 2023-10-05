@@ -2097,6 +2097,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Hay dos notificadores integrados en la plataforma: Interfaz de usuario y Mailer predeterminado. No son configurables y puede crear sus personalizados aquí.',
       Expired: 'Caducada',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'fr-fr': {
       // Titles
@@ -4199,6 +4202,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Il existe deux notificateurs intégrés dans la plate-forme: Interface utilisateur et Expéditeur par défaut. Ils ne sont pas configurables et vous pouvez créer vos notificateurs personnalisés ici.',
       Expired: 'Expiré',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Votre compte à expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'ja-jp': {
       // Titles
@@ -6222,6 +6228,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。',
       Expired: '期限切れ',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'zh-cn': {
       // Titles
@@ -8140,7 +8149,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': '平臺中有兩個內置通知程式：使用者介面和預設郵件程式。它們不可配置，您可以在此處創建自定義。',
       Expired: '已到期',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': '您的帳戶已過期。如果您想重新激活您的帳戶，請聯繫您的管理員。',
-
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'en-us': {
       gt: 'Greater than',
@@ -8556,6 +8567,9 @@ const i18n = {
       Inactive: 'Inactive',
       Expired: 'Expired',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
   },
 };

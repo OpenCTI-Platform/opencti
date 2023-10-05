@@ -15,11 +15,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
+import * as jsonpatch from 'fast-json-patch';
 import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
-import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToSync } from '../../database/rabbitmq';
-import { ENTITY_TYPE_CONTAINER, OPENCTI_SYSTEM_UUID } from '../../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER, INPUT_CREATED_BY,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  OPENCTI_SYSTEM_UUID
+} from '../../schema/general';
 import { loadConnectorById } from '../../domain/connector';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { StoreCommon } from '../../types/store';
@@ -28,52 +38,57 @@ import { now } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import type { StixContainer } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { StixCoreObject } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
 import { getEntitiesListFromCache } from '../../database/cache';
-
-// region Testing playbook components
-interface ConsoleConfiguration extends PlaybookComponentConfiguration {}
-const PLAYBOOK_CONSOLE_STANDARD_COMPONENT: PlaybookComponent<ConsoleConfiguration> = {
-  id: 'PLAYBOOK_CONSOLE_STANDARD_COMPONENT',
-  name: 'Standard console',
-  description: 'Print data in standard console',
-  icon: 'console',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: undefined,
-  schema: async () => undefined,
-  executor: async ({ bundle }) => {
-    // eslint-disable-next-line no-console
-    console.log(bundle);
-    return { output_port: 'out', bundle };
-  }
-};
-const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> = {
-  id: 'PLAYBOOK_CONSOLE_ERROR_COMPONENT',
-  name: 'Error console',
-  description: 'Print data in error console',
-  icon: 'console',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: undefined,
-  schema: async () => undefined,
-  executor: async ({ bundle }) => {
-    // eslint-disable-next-line no-console
-    console.error(bundle);
-    return { output_port: 'out', bundle };
-  }
-};
+import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
+import { logApp } from '../../config/conf';
 
 // region built in playbook components
+interface LoggerConfiguration extends PlaybookComponentConfiguration {
+  level: string
+}
+const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
+  type: 'object',
+  properties: {
+    level: { type: 'string', default: 'debug', oneOf: [{ const: 'debug', title: 'debug' }, { const: 'info', title: 'info' }, { const: 'warning', title: 'warning' }, { const: 'error', title: 'error' }] },
+  },
+  required: ['level'],
+};
+const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
+  id: 'PLAYBOOK_LOGGER_COMPONENT',
+  name: 'Log data in standard output',
+  description: 'Print bundle in platform logs',
+  icon: 'console',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
+  executor: async ({ bundle, instance }) => {
+    switch (instance.configuration.level) {
+      case 'info':
+        logApp.info('[PLAYBOOK MANAGER] Logger component output', { bundle });
+        break;
+      case 'warning':
+        logApp.warn('[PLAYBOOK MANAGER] Logger component output', { bundle });
+        break;
+      case 'error':
+        logApp.error('[PLAYBOOK MANAGER] Logger component output', { bundle });
+        break;
+      default:
+        logApp.debug('[PLAYBOOK MANAGER] Logger component output', { bundle });
+    }
+    return { output_port: 'out', bundle };
+  }
+};
+
 export interface StreamConfiguration extends PlaybookComponentConfiguration {
   create: boolean,
   update: boolean,
@@ -165,7 +180,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   id: 'PLAYBOOK_CONNECTOR_COMPONENT',
   name: 'Enrich through connector',
   description: 'Use a registered platform connector for enrichment',
-  icon: 'enrichment',
+  icon: 'connector',
   is_entry_point: false,
   is_internal: false,
   ports: [{ id: 'out', type: 'out' }],
@@ -173,7 +188,8 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   schema: async () => {
     const context = executionContext('playbook_components');
     const connectors = await connectorsForPlaybook(context, SYSTEM_USER);
-    const elements = connectors.map((c) => ({ const: c.id, title: c.name }));
+    const elements = connectors.map((c) => ({ const: c.id, title: c.name }))
+      .sort((a, b) => (a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1));
     const schemaElement = { properties: { connector: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
@@ -189,7 +205,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
           step_id: instance.id,
           previous_step_id: previousInstance?.id,
         },
-        applicant_id: SYSTEM_USER.id, // System user is responsible for the automation
+        applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
       },
       event: {
         entity_id: instanceId,
@@ -219,7 +235,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
   description: 'Create a container and wrap the element inside it',
-  icon: 'data',
+  icon: 'container',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -274,9 +290,9 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
 };
 const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
-  name: 'Sharing component',
-  description: 'Share data to specific organizations',
-  icon: 'data',
+  name: 'Share with organizations',
+  description: 'Share the object with organizations within the platform',
+  icon: 'identity',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -301,8 +317,43 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   }
 };
 
+const attributePathMapping: any = {
+  [INPUT_MARKINGS]: {
+    [ABSTRACT_STIX_CORE_OBJECT]: `/${objectMarking.stixName}`,
+    [ABSTRACT_STIX_RELATIONSHIP]: `/${objectMarking.stixName}`,
+  },
+  [INPUT_LABELS]: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/${objectLabel.stixName}`,
+    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/${objectLabel.stixName}`,
+    [ABSTRACT_STIX_RELATIONSHIP]: `/${objectLabel.stixName}`,
+  },
+  [INPUT_CREATED_BY]: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/${createdBy.stixName}`,
+    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/${createdBy.stixName}`,
+    [ABSTRACT_STIX_RELATIONSHIP]: `/${createdBy.stixName}`,
+  },
+  confidence: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: '/confidence',
+    [ABSTRACT_STIX_RELATIONSHIP]: '/confidence',
+  },
+  x_opencti_score: {
+    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/score`,
+    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/score`,
+  },
+  x_opencti_detection: {
+    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/detection`,
+  },
+  x_opencti_workflow_id: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
+    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
+  }
+};
+interface UpdateValueConfiguration {
+  label: string
+  value: string
+}
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
-  actions: { op: string, path: string, value: string[] }[]
+  actions: { op: string, attribute: string, values: UpdateValueConfiguration[] }[]
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
   type: 'object',
@@ -313,10 +364,20 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
         type: 'object',
         properties: {
           op: { type: 'string' },
-          path: { type: 'string' },
-          value: { type: 'array', items: { type: 'string' } },
+          attribute: { type: 'string' },
+          values: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                value: { type: 'string' }
+              },
+              required: ['label', 'value'],
+            }
+          },
         },
-        required: ['op', 'path', 'value'],
+        required: ['op', 'attribute', 'values'],
       }
     },
   },
@@ -325,18 +386,36 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
   id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
   name: 'Update knowledge',
-  description: 'Update STIX data',
+  description: 'Manipulate STIX data',
   icon: 'edit',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  executor: async ({ bundle }) => {
-    // const context = executionContext('playbook_manager');
-    // const jsonFilters = JSON.parse(instance.configuration.filters);
-    // const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
-    // const isMatch = await isStixMatchFilters(context, SYSTEM_USER, data, adaptedFilters);
+  executor: async ({ instanceId, instance, bundle }) => {
+    let baseData = bundle.objects.find((o) => o.id === instanceId) as any;
+    const { actions } = instance.configuration;
+    const patches = actions.map((n) => {
+      let path = null;
+      if (attributePathMapping[n.attribute]) {
+        const { type } = baseData.extensions[STIX_EXT_OCTI];
+        if (attributePathMapping[n.attribute][type]) {
+          path = attributePathMapping[n.attribute][type];
+        } else {
+          const key = Object.keys(attributePathMapping[n.attribute]).filter((o) => getParentTypes(type).includes(o)).at(0);
+          if (key) {
+            path = attributePathMapping[n.attribute][key];
+          }
+        }
+      }
+      return { op: n.op, path, value: n.values.map((o) => o.value) };
+    }).filter((n) => n.path !== null);
+    if (patches.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      baseData = patches.reduce(jsonpatch.applyReducer, baseData);
+    }
     return { output_port: 'out', bundle };
   }
 };
@@ -344,8 +423,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
 
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
-  [PLAYBOOK_CONSOLE_STANDARD_COMPONENT.id]: PLAYBOOK_CONSOLE_STANDARD_COMPONENT,
-  [PLAYBOOK_CONSOLE_ERROR_COMPONENT.id]: PLAYBOOK_CONSOLE_ERROR_COMPONENT,
+  [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,
   [PLAYBOOK_FILTERING_COMPONENT.id]: PLAYBOOK_FILTERING_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,

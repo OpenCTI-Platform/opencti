@@ -93,6 +93,8 @@ export const dateAttributes = [
 ];
 
 export const numberAttributes = [
+  'x_opencti_score',
+  'confidence',
   'number',
   'src_port',
   'dst_port',
@@ -108,6 +110,7 @@ export const numberAttributes = [
 ];
 
 export const booleanAttributes = [
+  'x_opencti_detection',
   'is_self_signed',
   'is_multipart',
   'is_hidden',

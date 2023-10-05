@@ -17,6 +17,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
@@ -27,6 +28,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/SwitchField';
 import SelectField from '../../../../components/SelectField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import StatusField from '../../common/form/StatusField';
+import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -108,9 +113,15 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = selectedNode?.data?.configuration;
-  const [filters, setFilters] = useState(currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {});
-  const [actionsInputs, setActionsInputs] = useState([{}]);
-  const [componentId, setComponentId] = useState(selectedNode?.data?.component?.id ?? null);
+  const [filters, setFilters] = useState(
+    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
+  );
+  const [actionsInputs, setActionsInputs] = useState(
+    currentConfig?.actions ? currentConfig.actions : [],
+  );
+  const [componentId, setComponentId] = useState(
+    selectedNode?.data?.component?.id ?? null,
+  );
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -130,57 +141,60 @@ const PlaybookAddComponentsContent = ({
     setActionsInputs(R.append({}, actionsInputs));
   };
   const handleRemoveStep = (i) => {
-    const newActionsInputs = actionsInputs.splice(i, 1);
-    setActionsInputs(newActionsInputs);
+    setActionsInputs(R.remove(i, 1, actionsInputs));
   };
   const handleChangeActionInput = (i, key, event) => {
-    const { value } = event.target;
-    actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
-    setActionsInputs(actionsInputs);
+    const value = event.target ? event.target.value : event;
+    setActionsInputs(
+      actionsInputs.map((v, k) => {
+        if (k === i) {
+          return { ...v, [key]: value };
+        }
+        return v;
+      }),
+    );
   };
-  const areStepValid = () => {
+  const areStepsValid = () => {
     for (const n of actionsInputs) {
-      if (!n || !n.type || !n.field || !n.values || n.values.length === 0) {
+      if (!n || !n.op || !n.attribute || !n.values || n.values.length === 0) {
         return false;
       }
     }
     return true;
   };
-  const renderFieldOptions = (i) => {
-    console.log(actionsInputs);
-    const disabled = isEmptyField(actionsInputs[i]?.type);
+  const renderFieldOptions = (i, values, setValues) => {
+    const disabled = isEmptyField(actionsInputs[i]?.op);
     let options = [];
-    if (actionsInputs[i]?.type === 'ADD') {
+    if (actionsInputs[i]?.op === 'add') {
       options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
+        { label: t('Marking definitions'), value: 'objectMarking' },
+        { label: t('Labels'), value: 'objectLabel' },
       ];
-    } else if (actionsInputs[i]?.type === 'REPLACE') {
+    } else if (actionsInputs[i]?.op === 'replace') {
       options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('Author'), value: 'created-by' },
-        { label: t('Score'), value: 'x_opencti_score' },
+        { label: t('Marking definitions'), value: 'objectMarking' },
+        { label: t('Labels'), value: 'objectLabel' },
+        { label: t('Author'), value: 'createdBy' },
         { label: t('Confidence'), value: 'confidence' },
-        { label: t('Description'), value: 'description' },
+        { label: t('Score'), value: 'x_opencti_score' },
+        { label: t('Detection'), value: 'x_opencti_detection' },
+        { label: t('Status'), value: 'x_opencti_workflow_id' },
       ];
-      if (this.props.type) {
-        options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
-      }
-    } else if (actionsInputs[i]?.type === 'REMOVE') {
+    } else if (actionsInputs[i]?.op === 'remove') {
       options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
+        { label: t('Marking definitions'), value: 'objectMarking' },
+        { label: t('Labels'), value: 'objectLabel' },
       ];
     }
     return (
       <Select
         variant="standard"
         disabled={disabled}
-        value={actionsInputs[i]?.type}
-        onChange={(event) => handleChangeActionInput(i, 'field', event)}
+        value={actionsInputs[i]?.attribute}
+        onChange={(event) => {
+          handleChangeActionInput(i, 'attribute', event);
+          setValues(R.omit([`actions-${i}-values`], values));
+        }}
       >
         {options.length > 0 ? (
           R.map(
@@ -197,6 +211,85 @@ const PlaybookAddComponentsContent = ({
       </Select>
     );
   };
+  const renderValuesOptions = (i) => {
+    const disabled = isEmptyField(actionsInputs[i]?.attribute);
+    switch (actionsInputs[i]?.attribute) {
+      case 'objectMarking':
+        return (
+          <ObjectMarkingField
+            name={`actions-${i}-values`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(
+              i,
+              'values',
+              value.map((n) => ({
+                label: n.label,
+                value: n.value,
+              })),
+            )
+            }
+          />
+        );
+      case 'objectLabel':
+        return (
+          <ObjectLabelField
+            name={`actions-${i}-values`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(
+              i,
+              'values',
+              value.map((n) => ({
+                label: n.label,
+                value: n.value,
+              })),
+            )
+            }
+          />
+        );
+      case 'createdBy':
+        return (
+          <CreatedByField
+            name={`actions-${i}-values`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(i, 'values', {
+              label: value.label,
+              value: value.value,
+            })
+            }
+          />
+        );
+      case 'x_opencti_workflow_id':
+        return (
+          <StatusField
+            name={`actions-${i}-values`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(i, 'values', {
+              label: value.label,
+              value: value.value,
+            })
+            }
+          />
+        );
+      default:
+        return (
+          <Field
+            component={TextField}
+            disabled={disabled}
+            type={
+              numberAttributes.includes(actionsInputs[i]?.attribute)
+                ? 'number'
+                : 'text'
+            }
+            variant="standard"
+            name={`actions-${i}-values`}
+            label={t('Values')}
+            fullWidth={true}
+            onChange={(_, value) => handleChangeActionInput(i, 'values', [{ label: value, value }])
+            }
+          />
+        );
+    }
+  };
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
@@ -209,6 +302,9 @@ const PlaybookAddComponentsContent = ({
     if (configurationSchema?.properties?.filters) {
       const jsonFilters = JSON.stringify(filters);
       finalConfig = { ...config, filters: jsonFilters };
+    }
+    if (configurationSchema?.properties?.actions) {
+      finalConfig = { ...config, actions: actionsInputs };
     }
     resetForm();
     if (selectedNode?.data?.component?.id && action === 'config') {
@@ -255,19 +351,28 @@ const PlaybookAddComponentsContent = ({
     );
   };
   const renderConfig = () => {
-    const selectedComponent = playbookComponents.filter((n) => n.id === componentId).at(0);
-    const configurationSchema = JSON.parse(selectedComponent.configuration_schema ?? '{}');
+    const selectedComponent = playbookComponents
+      .filter((n) => n.id === componentId)
+      .at(0);
+    const configurationSchema = JSON.parse(
+      selectedComponent.configuration_schema ?? '{}',
+    );
     const defaultConfig = {};
     Object.entries(configurationSchema?.properties ?? {}).forEach(([k, v]) => {
       defaultConfig[k] = v.default;
     });
-    const initialValues = currentConfig ? {
-      name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
-      ...currentConfig,
-    } : {
-      name: selectedComponent.name,
-      ...defaultConfig,
-    };
+    const initialValues = currentConfig
+      ? {
+        name:
+            selectedNode?.data?.component?.id === selectedComponent.id
+              ? selectedNode?.data?.name
+              : selectedComponent.name,
+        ...currentConfig,
+      }
+      : {
+        name: selectedComponent.name,
+        ...defaultConfig,
+      };
     return (
       <div className={classes.config}>
         <Formik
@@ -276,7 +381,7 @@ const PlaybookAddComponentsContent = ({
           onSubmit={onSubmit}
           onReset={handleClose}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, isSubmitting, setValues, values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -347,7 +452,12 @@ const PlaybookAddComponentsContent = ({
                                   disabled={actionsInputs.length === 1}
                                   aria-label="Delete"
                                   className={classes.stepCloseButton}
-                                  onClick={() => handleRemoveStep(i)}
+                                  onClick={() => {
+                                    handleRemoveStep(i);
+                                    setValues(
+                                      R.omit([`actions-${i}-values`], values),
+                                    );
+                                  }}
                                   size="small"
                                 >
                                   <CancelOutlined fontSize="small" />
@@ -362,21 +472,21 @@ const PlaybookAddComponentsContent = ({
                                       </InputLabel>
                                       <Select
                                         variant="standard"
-                                        value={actionsInputs[i]?.type}
+                                        value={actionsInputs[i]?.op}
                                         onChange={(event) => handleChangeActionInput(
                                           i,
-                                          'type',
+                                          'op',
                                           event,
                                         )
                                         }
                                       >
-                                        <MenuItem value="ADD">
+                                        <MenuItem value="add">
                                           {t('Add')}
                                         </MenuItem>
-                                        <MenuItem value="REPLACE">
+                                        <MenuItem value="replace">
                                           {t('Replace')}
                                         </MenuItem>
-                                        <MenuItem value="REMOVE">
+                                        <MenuItem value="remove">
                                           {t('Remove')}
                                         </MenuItem>
                                       </Select>
@@ -387,16 +497,18 @@ const PlaybookAddComponentsContent = ({
                                       className={classes.formControl}
                                     >
                                       <InputLabel>{t('Field')}</InputLabel>
-                                      {renderFieldOptions(i)}
+                                      {renderFieldOptions(i, values, setValues)}
                                     </FormControl>
                                   </Grid>
-                                  <Grid item={true} xs={6}></Grid>
+                                  <Grid item={true} xs={6}>
+                                    {renderValuesOptions(i)}
+                                  </Grid>
                                 </Grid>
                               </div>
                             ))}
                           <div className={classes.add}>
                             <Button
-                              disabled={!areStepValid()}
+                              disabled={!areStepsValid()}
                               variant="contained"
                               color="secondary"
                               size="small"
@@ -424,50 +536,50 @@ const PlaybookAddComponentsContent = ({
                   }
                   if (v.type === 'boolean') {
                     return (
-                        <Field
-                            component={SwitchField}
-                            type="checkbox"
-                            name={k}
-                            label={t(k)}
-                            containerstyle={{ marginTop: 20 }}
-                        />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name={k}
+                        label={t(k)}
+                        containerstyle={{ marginTop: 20 }}
+                      />
                     );
                   }
                   if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
                     return (
-                        <Field
-                            component={SelectField}
-                            variant="standard"
-                            name={k}
-                            label={t(k)}
-                            fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
-                        >
-                          {v.oneOf.map((value, i) => (
-                              <MenuItem key={i} value={value.const}>
-                                {value.title}
-                              </MenuItem>
-                          ))}
-                        </Field>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name={k}
+                        label={t(k)}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        {v.oneOf.map((value, i) => (
+                          <MenuItem key={i} value={value.const}>
+                            {value.title}
+                          </MenuItem>
+                        ))}
+                      </Field>
                     );
                   }
                   if (v.type === 'array') {
                     return (
-                        <Field
-                            component={SelectField}
-                            variant="standard"
-                            name={k}
-                            label={t(k)}
-                            fullWidth={true}
-                            multiple={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
-                        >
-                          {v.items.oneOf.map((value, i) => (
-                              <MenuItem key={i} value={value.const}>
-                                {value.title}
-                              </MenuItem>
-                          ))}
-                        </Field>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name={k}
+                        label={t(k)}
+                        fullWidth={true}
+                        multiple={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        {v.items.oneOf.map((value, i) => (
+                          <MenuItem key={i} value={value.const}>
+                            {value.title}
+                          </MenuItem>
+                        ))}
+                      </Field>
                     );
                   }
                   return (
@@ -496,7 +608,10 @@ const PlaybookAddComponentsContent = ({
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={
+                    (actionsInputs.length > 0 && !areStepsValid())
+                    || isSubmitting
+                  }
                   classes={{ root: classes.button }}
                 >
                   {selectedNode?.data?.component?.id

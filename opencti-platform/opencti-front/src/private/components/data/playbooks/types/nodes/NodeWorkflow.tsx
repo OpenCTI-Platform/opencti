@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { MoreVert, ForkLeftOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { Theme } from '../../../../../../components/Theme';
@@ -70,8 +71,12 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
     <div className={classes.node}>
       <ItemIcon type={data.component.icon} variant="inline" />
       <div style={{ float: 'left' }}>
-        <div className={classes.name}>{data.name}</div>
-        <div className={classes.component}>{data.component.name}</div>
+        <Tooltip title={data.name}>
+          <div className={classes.name}>{data.name}</div>
+        </Tooltip>
+        <Tooltip title={data.component.description}>
+          <div className={classes.component}>{data.component.description}</div>
+        </Tooltip>
       </div>
       <div className="clearfix" />
       <div style={{ position: 'absolute', top: 0, right: 0 }}>

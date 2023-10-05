@@ -11,6 +11,7 @@ import { LabelCreationContextualMutation$data } from '../../settings/labels/__ge
 import LabelCreation from '../../settings/labels/LabelCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { Option } from './ReferenceField';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles({
   icon: {
@@ -28,16 +29,24 @@ const useStyles = makeStyles({
 });
 
 interface ObjectLabelFieldProps {
-  style: React.CSSProperties
-  name: string
-  helpertext?: string
-  dryrun?: boolean
-  setFieldValue?: (name: string, value: Option[]) => void
-  values?: Option[]
-  onChange?: (name: string, value: Option[]) => void
+  style: React.CSSProperties;
+  name: string;
+  helpertext?: string;
+  dryrun?: boolean;
+  setFieldValue?: (name: string, value: Option[]) => void;
+  values?: Option[];
+  onChange?: (name: string, value: Option[]) => void;
 }
 
-const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({ style, name, helpertext, dryrun = false, setFieldValue, values, onChange }) => {
+const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
+  style,
+  name,
+  helpertext,
+  dryrun = false,
+  setFieldValue,
+  values,
+  onChange,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -52,13 +61,21 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({ style, nam
     })
       .toPromise()
       .then((data) => {
-        const newLabels = ((data as LabelsQuerySearchQuery$data).labels?.edges ?? []).map(({ node }) => ({ label: node.value, value: node.id, color: node.color } as Option));
+        const newLabels = (
+          (data as LabelsQuerySearchQuery$data).labels?.edges ?? []
+        ).map(
+          ({ node }) => ({
+            label: node.value,
+            value: node.id,
+            color: node.color,
+          }) as Option,
+        );
         setLabels(union(labels, newLabels));
       });
   };
 
   return (
-    <div>
+    <>
       <Field
         component={AutocompleteField}
         style={style}
@@ -75,10 +92,13 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({ style, nam
         onInputChange={searchLabels}
         openCreate={() => setLabelCreation(true)}
         onChange={onChange}
-        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: Option) => (
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: Option,
+        ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <Label />
+              <ItemIcon type="Label" color={option.color} />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
@@ -93,14 +113,14 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({ style, nam
         dryrun={dryrun}
         creationCallback={(data: LabelCreationContextualMutation$data) => {
           if (data.labelAdd) {
-            setFieldValue?.(
-              name,
-              [...(values ?? []), { label: data.labelAdd.value ?? '', value: data.labelAdd.id }],
-            );
+            setFieldValue?.(name, [
+              ...(values ?? []),
+              { label: data.labelAdd.value ?? '', value: data.labelAdd.id },
+            ]);
           }
         }}
       />
-    </div>
+    </>
   );
 };
 

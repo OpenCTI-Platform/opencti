@@ -53,6 +53,7 @@ import {
   CastConnectedOutlined,
   TerminalOutlined,
   DriveFolderUploadOutlined,
+  EditOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -79,6 +80,7 @@ import {
   ClipboardTextClockOutline,
   AccountMultipleOutline,
   AccountGroupOutline,
+    Group
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -324,6 +326,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
           role="img"
         />
       );
+    case 'edit':
+      return <EditOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'container':
+      return <Group style={style} fontSize={fontSize} role="img" />;
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':
@@ -365,7 +371,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'console':
       return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
     case 'storage':
-      return <DriveFolderUploadOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <DriveFolderUploadOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':

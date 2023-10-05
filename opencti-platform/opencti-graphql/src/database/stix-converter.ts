@@ -121,7 +121,8 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS, INPUT_PARTICIPANT
+  INPUT_OBJECTS,
+  INPUT_PARTICIPANT
 } from '../schema/general';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';

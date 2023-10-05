@@ -129,6 +129,7 @@ const PlaybookEditionFragment = createFragmentContainer(
         name
         description
         playbook_running
+        playbook_definition
       }
     `,
   },

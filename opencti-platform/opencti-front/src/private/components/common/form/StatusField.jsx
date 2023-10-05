@@ -10,6 +10,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
+import {Option} from "@components/common/form/ReferenceField";
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -74,6 +75,7 @@ class StatusField extends Component {
             color: defaultStatus.template.color,
             value: defaultStatus.id,
             order: defaultStatus.order,
+            type: defaultStatus.type,
           },
         ]
         : [],
@@ -100,7 +102,9 @@ class StatusField extends Component {
   searchStatuses() {
     fetchQuery(statusFieldStatusesSearchQuery, {
       first: 10,
-      filters: [{ key: 'type', values: [this.props.type] }],
+      filters: this.props.type
+        ? [{ key: 'type', values: [this.props.type] }]
+        : null,
       orderBy: 'order',
       orderMode: 'asc',
       search: this.state.keyword,
@@ -115,6 +119,7 @@ class StatusField extends Component {
             value: n.node.id,
             order: n.node.order,
             color: n.node.template.color,
+            type: n.node.type,
           })),
         )(data);
         this.setState({ statuses: R.union(this.state.statuses, statuses) });
@@ -122,43 +127,42 @@ class StatusField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext } = this.props;
+    const { t, name, style, classes, onChange, helpertext, type, } = this.props;
     return (
-      <div>
-        <Field
-          component={AutocompleteField}
-          style={style}
-          name={name}
-          textfieldprops={{
-            variant: 'standard',
-            label: t('Status'),
-            helperText: helpertext,
-            onFocus: this.searchStatuses.bind(this),
-          }}
-          noOptionsText={t('No available options')}
-          options={this.state.statuses}
-          onInputChange={this.handleSearch.bind(this)}
-          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div className={classes.icon}>
-                <Avatar
-                  variant="square"
-                  style={{
-                    color: option.color,
-                    borderColor: option.color,
-                    backgroundColor: hexToRGB(option.color),
-                  }}
-                >
-                  {option.order}
-                </Avatar>
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-          classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
-      </div>
+      <Field
+        component={AutocompleteField}
+        style={style}
+        name={name}
+        textfieldprops={{
+          variant: 'standard',
+          label: t('Status'),
+          helperText: helpertext,
+          onFocus: this.searchStatuses.bind(this),
+        }}
+        noOptionsText={t('No available options')}
+        options={this.state.statuses}
+        onInputChange={this.handleSearch.bind(this)}
+        groupBy={type ? undefined : (option) => option.type}
+        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+        renderOption={(props, option) => (
+          <li {...props}>
+            <div className={classes.icon}>
+              <Avatar
+                variant="square"
+                style={{
+                  color: option.color,
+                  borderColor: option.color,
+                  backgroundColor: hexToRGB(option.color),
+                }}
+              >
+                {option.order}
+              </Avatar>
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
+        )}
+        classes={{ clearIndicator: classes.autoCompleteIndicator }}
+      />
     );
   }
 }

@@ -27,6 +27,7 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
+export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 
 export const MEMBER_ACCESS_ALL = 'ALL';
@@ -115,6 +116,28 @@ export const RULE_MANAGER_USER: AuthUser = {
   account_status: ACCOUNT_STATUS_ACTIVE,
 };
 
+export const AUTOMATION_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: AUTOMATION_MANAGER_USER_UUID,
+  internal_id: AUTOMATION_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'AUTOMATION MANAGER',
+  user_email: 'AUTOMATION MANAGER',
+  inside_platform_organization: true,
+  origin: { user_id: AUTOMATION_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_organizations: [],
+  allowed_marking: [],
+  default_marking: [],
+  all_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+};
+
 export const REDACTED_USER: AuthUser = {
   entity_type: 'User',
   id: REDACTED_USER_UUID,
@@ -172,6 +195,7 @@ export const INTERNAL_USERS = {
   [SYSTEM_USER.id]: SYSTEM_USER,
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
+  [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
   [REDACTED_USER.id]: REDACTED_USER
 };
 
