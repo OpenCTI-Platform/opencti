@@ -162,6 +162,7 @@ enum OrganizationsFilter {
   description
   contact_information
   revoked
+  authorized_authorities
 }
 input OrganizationsFiltering {
   key: [OrganizationsFilter!]!
@@ -189,7 +190,6 @@ type Query {
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
     filters: [OrganizationsFiltering!]
-    #TODO ADD includeAuthorities
     filterMode: FilterMode
     search: String
     toStix: Boolean

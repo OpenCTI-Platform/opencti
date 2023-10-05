@@ -240,7 +240,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <SettingsOrganizationUsers organizationId={organization.id} isOrganizationAdmin={isOrganizationAdmin}/>
+        <SettingsOrganizationUsers organization={organization} isOrganizationAdmin={isOrganizationAdmin}/>
       </Grid>
     </div>
   );

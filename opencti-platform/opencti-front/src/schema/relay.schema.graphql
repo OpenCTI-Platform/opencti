@@ -12204,6 +12204,7 @@ enum OrganizationsFilter {
   description
   contact_information
   revoked
+  authorized_authorities
 }
 
 input OrganizationsFiltering {

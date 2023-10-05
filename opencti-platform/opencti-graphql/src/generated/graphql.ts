@@ -16858,6 +16858,7 @@ export type OrganizationOrIndividual = Individual | Organization;
 export enum OrganizationsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  AuthorizedAuthorities = 'authorized_authorities',
   ContactInformation = 'contact_information',
   Created = 'created',
   CreatedBy = 'createdBy',

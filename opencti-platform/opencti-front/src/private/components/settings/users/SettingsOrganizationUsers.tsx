@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -18,6 +18,12 @@ import SettingsOrganizationUsersLines, {
   settingsOrganizationUsersLinesQuery,
 } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
+import IconButton from '@mui/material/IconButton';
+import { AddCircleOutlined, CampaignOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import TriggerLiveCreation from '@components/profile/triggers/TriggerLiveCreation';
+import UserCreation from '@components/settings/users/UserCreation';
+import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -27,26 +33,31 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '15px',
     borderRadius: 6,
   },
+  createButton: {
+    float: 'left',
+    marginTop: -15,
+  },
 }));
 
 interface MembersListContainerProps {
-  organizationId: string;
+  organization: any;
   isOrganizationAdmin: boolean;
 }
 
 const SettingsOrganizationUsers: FunctionComponent<
 MembersListContainerProps
-> = ({ organizationId, isOrganizationAdmin = false }) => {
+> = ({ organization, isOrganizationAdmin = false }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const [openAddUser, setOpenAddUser] = useState(false);
   const {
     viewStorage,
     helpers,
     paginationOptions: paginationOptionsFromStorage,
   } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
-    `view-organization-${organizationId}-users`,
+    `view-organization-${organization.id}-users`,
     {
-      id: organizationId,
+      id: organization.id,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -117,6 +128,24 @@ MembersListContainerProps
           keyword={searchTerm}
         />
       </div>
+      <Tooltip title={t('Add a new member')}>
+        <IconButton
+          aria-label="Add"
+          className={classes.createButton}
+          onClick={() => setOpenAddUser(true)}
+          size="large"
+          color="secondary"
+        >
+          <AddCircleOutlined fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <SettingsOrganizationUserCreation
+        paginationOptions={paginationOptions}
+        open={openAddUser}
+        handleClose={() => setOpenAddUser(false)}
+        organization={organization}
+      />
+
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
           dataColumns={dataColumns}

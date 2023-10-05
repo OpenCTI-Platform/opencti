@@ -9,6 +9,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import AccessesMenu from './AccessesMenu';
 import { useFormatter } from '../../../components/i18n';
 import { SettingsOrganizationLine_node$data as Organization } from './organizations/__generated__/SettingsOrganizationLine_node.graphql';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -19,13 +20,21 @@ const useStyles = makeStyles(() => ({
 
 const SettingsOrganizations = () => {
   const classes = useStyles();
+  const { me } = useAuth();
   const LOCAL_STORAGE_KEY = 'view-settings-organizations';
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     sortBy: 'name',
     orderAsc: false,
-    // TODO Add includeAuthorities
   });
+
+
+  const userIsOrganizationAdmin = me.administrated_organizations.length > 0;
+  const paginationOptions = {
+    ...paginationOptionsFromStorage,
+    filters: userIsOrganizationAdmin ? [{ key: ['authorized_authorities'], values: [me.id] }]: undefined,
+  }
+
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
   const { fd, t } = useFormatter();
 
