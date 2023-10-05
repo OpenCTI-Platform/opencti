@@ -29,8 +29,8 @@ interface ListValue {
 
 interface FormatValue {
   date: string | Date | null,
-  height?: string | number | null,
-  weight?: string | number | null,
+  height?: number | null,
+  weight?: number | null,
 }
 
 interface DetailValue {
@@ -47,8 +47,8 @@ const ListValueDisplay = ({ primary, secondary }: ListValue) => (
 );
 
 const HeightDisplay = ({ height, date }: FormatValue) => {
-  const { fsd, len } = useFormatter();
-  const { lengthPrimaryUnit } = useUserMetric();
+  const { fsd } = useFormatter();
+  const { lengthPrimaryUnit, len } = useUserMetric();
   if (isEmptyField(height)) return <Typography>-</Typography>;
   const inchDisplay = len(height);
   return (
@@ -60,8 +60,8 @@ const HeightDisplay = ({ height, date }: FormatValue) => {
 };
 
 const WeightDisplay = ({ weight, date }: FormatValue) => {
-  const { fsd, wgt } = useFormatter();
-  const { weightPrimaryUnit } = useUserMetric();
+  const { fsd } = useFormatter();
+  const { weightPrimaryUnit, wgt } = useUserMetric();
   if (isEmptyField(weight)) return <Typography>-</Typography>;
   const weightDisplay = wgt(weight);
   return (

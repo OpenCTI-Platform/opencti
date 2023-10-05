@@ -1,4 +1,4 @@
-import { useIntl } from 'react-intl';
+import { FormatNumberOptions, useIntl } from 'react-intl';
 import convert, { Length, Mass } from 'convert';
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
@@ -9,6 +9,7 @@ import {
 import useAuth from './useAuth';
 import { UnitSystem } from '../../private/__generated__/RootPrivateQuery.graphql';
 import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';
+import { isEmptyField } from '../utils';
 
 export const BASE_LENGTH_TYPE: Length = 'm';
 export const BASE_WEIGHT_TYPE: Mass = 'kg';
@@ -55,7 +56,7 @@ const heightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const lengthPrimaryUnit = Units[userMetricType].length;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, lengthPrimaryUnit).to('m').toFixed(2)); // Meter is the pivot format
+    return Number(convert<number>(numericMeasure, lengthPrimaryUnit).to('m')); // Meter is the pivot format
   };
 };
 const heightsConverterSave = (userMetricType: SupportedUnitType) => {
@@ -81,7 +82,7 @@ const weightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const weightPrimaryUnit = Units[userMetricType].weight;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, weightPrimaryUnit).to('kg').toFixed(2)); // Kg is the pivot format
+    return Number(convert<number>(numericMeasure, weightPrimaryUnit).to('kg')); // Kg is the pivot format
   };
 };
 const weightsConverterSave = (userMetricType: SupportedUnitType) => {
@@ -105,7 +106,21 @@ const useUserMetric = () => {
   const weightsConverterLoadFn = weightsConverterLoad(unitSystem);
   const heightToPivotFormatFn = heightToPivotFormat(unitSystem);
   const weightToPivotFormatFn = weightToPivotFormat(unitSystem);
+  const formatLength = (number: number) => {
+    if (isEmptyField(number)) return '';
+    const converted = convert(number, BASE_LENGTH_TYPE).to(lengthPrimaryUnit);
+    const formatOpts: FormatNumberOptions = { maximumFractionDigits: 2, unitDisplay: 'long' };
+    return intl.formatNumber(Number(converted), formatOpts);
+  };
+  const formatWeight = (number: number) => {
+    if (isEmptyField(number)) return '';
+    const converted = convert(number, BASE_WEIGHT_TYPE).to(weightPrimaryUnit);
+    const formatOpts: FormatNumberOptions = { maximumFractionDigits: 2, unitDisplay: 'long' };
+    return intl.formatNumber(Number(converted), formatOpts);
+  };
   return {
+    len: formatLength,
+    wgt: formatWeight,
     weightPrimaryUnit,
     lengthPrimaryUnit,
     heightToPivotFormat: heightToPivotFormatFn,

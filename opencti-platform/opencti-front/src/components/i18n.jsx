@@ -1,10 +1,7 @@
 import { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
-import convert from 'convert';
 import { bytesFormat, numberFormat } from '../utils/Number';
-import useUserMetric, { BASE_LENGTH_TYPE, BASE_WEIGHT_TYPE } from '../utils/hooks/useUserMetric';
-import { isEmptyField } from '../utils/utils';
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -161,7 +158,6 @@ const inject18n = (WrappedComponent) => {
 
 export const useFormatter = () => {
   const intl = useIntl();
-  const { lengthPrimaryUnit, weightPrimaryUnit } = useUserMetric();
   const translate = (message) => intl.formatMessage({ id: message });
   const formatNumber = (number) => {
     if (number === null || number === '') {
@@ -174,18 +170,6 @@ export const useFormatter = () => {
   const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
     bytesFormat(number).symbol
   }`;
-  const formatLength = (number) => {
-    if (isEmptyField(number)) return '';
-    const converted = convert(number, BASE_LENGTH_TYPE).to(lengthPrimaryUnit);
-    const formatOpts = { maximumFractionDigits: 2, unitDisplay: 'long' };
-    return intl.formatNumber(Number(converted), formatOpts);
-  };
-  const formatWeight = (number) => {
-    if (isEmptyField(number)) return '';
-    const converted = convert(number, BASE_WEIGHT_TYPE).to(weightPrimaryUnit);
-    const formatOpts = { maximumFractionDigits: 2, unitDisplay: 'long' };
-    return intl.formatNumber(Number(converted), formatOpts);
-  };
   const longDate = (date) => {
     if (isNone(date)) {
       return '-';
@@ -306,8 +290,6 @@ export const useFormatter = () => {
     t: translate,
     n: formatNumber,
     b: formatBytes,
-    len: formatLength,
-    wgt: formatWeight,
     fld: longDate,
     fldt: longDateTime,
     fsd: shortDate,
