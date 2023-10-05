@@ -594,7 +594,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
               input: {
                 from_node: parentNode.id,
                 from_port: placeholderEdge.sourceHandle,
-                to_node: nodeResult.playbookAddNode, 
+                to_node: nodeResult.playbookAddNode,
               },
             },
             onCompleted: (linkResult) => {

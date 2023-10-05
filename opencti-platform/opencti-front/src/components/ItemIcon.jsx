@@ -80,7 +80,7 @@ import {
   ClipboardTextClockOutline,
   AccountMultipleOutline,
   AccountGroupOutline,
-    Group
+  Group,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
