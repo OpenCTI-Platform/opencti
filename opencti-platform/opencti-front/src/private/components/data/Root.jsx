@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
+import Security from '../../../utils/Security';
 import Connectors from './Connectors';
 import Entities from './Entities';
 import Relationships from './Relationships';
@@ -14,12 +15,9 @@ import IngestionRss from './IngestionRss';
 import IngestionTaxiis from './IngestionTaxiis';
 import Playbooks from './Playbooks';
 import RootPlaybook from './playbooks/Root';
-import useGranted, {
-  SETTINGS_SETACCESSES,
-} from '../../../utils/hooks/useGranted';
+import { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 
 const Root = () => {
-  const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   return (
     <Switch>
       <BoundaryRoute
@@ -89,12 +87,14 @@ const Root = () => {
       <BoundaryRoute
         exact
         path="/dashboard/data/processing"
-        render={() => (isAdministrator ? (
+        render={() => (
+          <Security
+            needs={[SETTINGS_SETACCESSES]}
+            placeholder={<Redirect to="/dashboard/data/processing/tasks" />}
+          >
             <Redirect to="/dashboard/data/processing/automation" />
-        ) : (
-            <Redirect to="/dashboard/data/processing/tasks" />
-        ))
-        }
+          </Security>
+        )}
       />
       <BoundaryRoute
         exact
