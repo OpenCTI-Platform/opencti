@@ -1650,7 +1650,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, searchOptions, aggregationOptions } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
@@ -1715,7 +1715,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
-      if (field === 'internal_id' || field === 'entity_type' || field === null) {
+      if (isAggregationConnection) {
         const { buckets } = data.aggregations.connections.filtered.genres;
         if (field === 'internal_id') {
           return buckets.map((b) => ({ label: b.key, value: b.parent.weight.value }));
