@@ -418,6 +418,7 @@ const FeedCreation = (props) => {
                       include_header: true,
                       feed_types: [],
                       authorized_members: [],
+                      feed_date_attribute: 'created_at',
                       feed_public: false,
                     }}
                     validationSchema={feedCreationValidation(t)}
@@ -503,6 +504,17 @@ const FeedCreation = (props) => {
                             ),
                           }}
                         />
+                        <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="feed_date_attribute"
+                            label={t('Base attribute')}
+                            fullWidth={true}
+                            multiple={false}
+                            containerstyle={{ width: '100%', marginTop: 20 }}>
+                          <MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
+                          <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                        </Field>
                         <Field
                           component={SelectField}
                           variant="standard"

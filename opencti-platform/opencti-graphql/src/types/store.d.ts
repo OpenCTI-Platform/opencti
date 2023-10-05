@@ -380,6 +380,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
   include_header: boolean;
   feed_public: boolean;
   feed_types: Array<string>;
+  feed_date_attribute: string;
   feed_attributes: Array<{
     attribute: string;
     mappings: [{

@@ -502,6 +502,7 @@ type Feed {
   filters: String
   separator: String!
   rolling_time: Int!
+  feed_date_attribute: String
   include_header: Boolean!
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
@@ -524,6 +525,7 @@ input FeedAddInput {
   description: String
   filters: String
   separator: String!
+  feed_date_attribute: String!
   rolling_time: Int!
   include_header: Boolean!
   feed_types: [String!]!

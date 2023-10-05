@@ -146,6 +146,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'include_header', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'feed_public', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'feed_types', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
+    { name: 'feed_date_attribute', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'feed_attributes', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],

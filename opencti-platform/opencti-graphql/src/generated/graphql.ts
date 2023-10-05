@@ -6935,6 +6935,7 @@ export type Feed = {
   authorized_members?: Maybe<Array<MemberAccess>>;
   description?: Maybe<Scalars['String']['output']>;
   feed_attributes: Array<FeedAttribute>;
+  feed_date_attribute?: Maybe<Scalars['String']['output']>;
   feed_public?: Maybe<Scalars['Boolean']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
@@ -6950,6 +6951,7 @@ export type FeedAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   feed_attributes: Array<FeedAttributeMappingInput>;
+  feed_date_attribute: Scalars['String']['input'];
   feed_public?: InputMaybe<Scalars['Boolean']['input']>;
   feed_types: Array<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
@@ -31911,6 +31913,7 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
+  feed_date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

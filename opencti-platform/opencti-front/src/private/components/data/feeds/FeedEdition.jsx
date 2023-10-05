@@ -132,6 +132,7 @@ const feedValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   separator: Yup.string().required(t('This field is required')),
+  feed_date_attribute: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
   feed_types: Yup.array().required(t('This field is required')),
   feed_public: Yup.bool().nullable(),
@@ -277,6 +278,7 @@ const FeedEditionContainer = (props) => {
     description: feed.description,
     separator: feed.separator,
     rolling_time: feed.rolling_time,
+    feed_date_attribute: feed.feed_date_attribute ?? 'created_at',
     include_header: feed.include_header,
     feed_types: feed.feed_types,
     feed_public: feed.feed_public,
@@ -415,6 +417,17 @@ const FeedEditionContainer = (props) => {
                           ),
                         }}
                       />
+                      <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="feed_date_attribute"
+                          label={t('Base attribute')}
+                          fullWidth={true}
+                          multiple={false}
+                          containerstyle={{ width: '100%', marginTop: 20 }}>
+                        <MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
+                        <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                      </Field>
                       <Field
                         component={SelectField}
                         variant="standard"
@@ -654,6 +667,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
       rolling_time
       include_header
       feed_types
+      feed_date_attribute
       separator
       feed_attributes {
         attribute
