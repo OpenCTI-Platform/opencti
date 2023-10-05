@@ -342,8 +342,12 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
 `;
 
 // To count the number of relationships for MetaObjects and Identities.
-// /!\ It counts only rels that point towards given ids. So the value may
-// not be exactly the total number of rels in some cases.
+//
+// /!\ It counts only rels that point towards given ids. So the value may not be
+// exactly the total number of rels in some cases when entities (Identities) also
+// have relations where there are the source of the relation.
+// This issue can be fixed by making a second query fetching the count in the
+// other direction. TODO Call this query.
 const investigationGraphCountRelToQuery = graphql`
   query InvestigationGraphStixCountRelToQuery($objectIds: [String!]!) {
     stixRelationshipsDistribution(
