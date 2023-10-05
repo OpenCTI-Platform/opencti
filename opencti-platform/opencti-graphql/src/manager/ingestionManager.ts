@@ -13,7 +13,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { utcDate } from '../utils/format';
+import { FROM_START_STR, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToSync } from '../database/rabbitmq';
@@ -83,8 +83,8 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
     description: turndownService.turndown(entry.summary?._ ?? ''),
     link: isNotEmptyField(entry.link) ? entry.link.href?.trim() : '',
     content: turndownService.turndown(entry.content?._ ?? ''),
-    labels: [],
-    pubDate: utcDate(entry.updated?._ ?? updated?._),
+    labels: [], // No label in rss v1
+    pubDate: utcDate(entry.updated?._ ?? updated?._ ?? FROM_START_STR),
   };
 };
 
@@ -96,7 +96,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
     link: isNotEmptyField(item.link) ? (item.link._ ?? '').trim() : '',
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
     labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => c._.trim())),
-    pubDate: utcDate(item.pubDate?._ ?? pubDate?._),
+    pubDate: utcDate(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR),
   };
 };
 
@@ -112,7 +112,7 @@ const rssHttpGetter = (): Getter => {
 // A valid date is required, and after the current_state_date
 const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
   return items.filter((e) => isNotEmptyField(e.title))
-    .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid())
+    .filter((e) => e.pubDate.isValid())
     .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
     .sort((a, b) => a.pubDate.diff(b.pubDate));
 };
