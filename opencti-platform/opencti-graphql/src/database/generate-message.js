@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { jsonToPlainText } from "json-to-plain-text";
+import { jsonToPlainText } from 'json-to-plain-text';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
