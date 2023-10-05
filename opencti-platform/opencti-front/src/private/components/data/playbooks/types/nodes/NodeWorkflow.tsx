@@ -137,6 +137,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       <div className={classes.handlesWrapper}>
         {(data.component?.ports ?? []).map((n: node) => (
           <Handle
+            key={n.id}
             id={n.id}
             type="source"
             position={Position.Bottom}

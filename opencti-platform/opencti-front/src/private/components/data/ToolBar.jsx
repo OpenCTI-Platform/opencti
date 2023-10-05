@@ -612,7 +612,7 @@ class ToolBar extends Component {
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
+              <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
             </span>,
           );
           this.setState({ processing: false });
@@ -638,7 +638,7 @@ class ToolBar extends Component {
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
+              <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
             </span>,
           );
           this.setState({ processing: false });

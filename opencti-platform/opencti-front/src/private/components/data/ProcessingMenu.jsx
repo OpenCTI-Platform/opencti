@@ -8,6 +8,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+} from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -28,6 +31,7 @@ const ProcessingMenu = () => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   return (
     <Drawer
       variant="permanent"
@@ -40,16 +44,18 @@ const ProcessingMenu = () => {
         style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
         sx={{ marginBottom: bannerHeightNumber }}
       >
-        <MenuItem
-          component={Link}
-          to={'/dashboard/data/processing/automation'}
-          selected={location.pathname.includes(
-            '/dashboard/data/processing/automation',
-          )}
-          dense={false}
-        >
-          <ListItemText primary={t('Automation')} />
-        </MenuItem>
+        {isAdministrator && (
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/processing/automation'}
+            selected={location.pathname.includes(
+              '/dashboard/data/processing/automation',
+            )}
+            dense={false}
+          >
+            <ListItemText primary={t('Automation')} />
+          </MenuItem>
+        )}
         <MenuItem
           component={Link}
           to={'/dashboard/data/processing/tasks'}

@@ -12047,7 +12047,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): SynchronizerConnection @auth(for: [SETTINGS])
-  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [CONNECTORAPI])
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES

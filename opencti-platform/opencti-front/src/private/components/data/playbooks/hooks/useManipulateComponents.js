@@ -97,7 +97,10 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
   }
   while (childrenEdges.length > 0) {
     edgesToDelete.push(...childrenEdges);
-    childrenNodes = definitionNodes.filter((n) => edgesToDelete.map((o) => o.target).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
+    childrenNodes = definitionNodes.filter(
+      (n) => edgesToDelete.map((o) => o.target).includes(n.id)
+        && !nodesToDelete.map((o) => o.id).includes(n.id),
+    );
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
       // eslint-disable-next-line @typescript-eslint/no-loop-func
@@ -107,8 +110,12 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
     }
   }
   return {
-    nodes: definitionNodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
-    edges: definitionEdges.filter((n) => !edgesToDelete.map((o) => o.id).includes(n.id)),
+    nodes: definitionNodes.filter(
+      (n) => !nodesToDelete.map((o) => o.id).includes(n.id),
+    ),
+    edges: definitionEdges.filter(
+      (n) => !edgesToDelete.map((o) => o.id).includes(n.id),
+    ),
   };
 };
 
@@ -468,12 +475,25 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           },
         });
       }
-    } else if (selectedNode.data.component.ports.length > component.ports.length) {
+    } else if (
+      selectedNode.data.component.ports.length > component.ports.length
+    ) {
       // eslint-disable-next-line no-plusplus
-      for (let i = 1; i <= selectedNode.data.component.ports.length - component.ports.length; i++) {
+      for (
+        let i = 1;
+        i <= selectedNode.data.component.ports.length - component.ports.length;
+        i++
+      ) {
         // Find all links to the port
-        const edgesToDelete = newEdges.filter((n) => n.source === selectedNode.id && n.sourceHandle === selectedNode.data.component.ports[i].id);
-        const result = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
+        const edgesToDelete = newEdges.filter(
+          (n) => n.source === selectedNode.id
+            && n.sourceHandle === selectedNode.data.component.ports[i].id,
+        );
+        const result = deleteEdgesAndAllChildren(
+          newNodes,
+          newEdges,
+          edgesToDelete,
+        );
         newNodes = result.nodes;
         newEdges = result.edges;
       }
@@ -495,36 +515,40 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       .filter((n) => n.id === originEdge?.source)
       ?.at(0);
     const childPlaceholderId = uuid();
-    newNodes.push({
-      id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
-      position: {
-        x: selectedNode.position.x,
-        y: selectedNode.position.y,
-      },
-      type: 'placeholder',
-      data: {
-        name: '+',
-        configuration: null,
-        component: { is_entry_point: false },
-        openConfig: (nodeId) => {
-          setSelectedNode(nodeId);
-          setAction('config');
+    if (originEdge) {
+      newNodes.push({
+        id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+        position: {
+          x: selectedNode.position.x,
+          y: selectedNode.position.y,
         },
-      },
-    });
-    newEdges.push({
-      id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
-      type: 'placeholder',
-      source: parentNode.id,
-      sourceHandle: originEdge.sourceHandle,
-      target: `${childPlaceholderId}-${originEdge.sourceHandle}`,
-      data: {
-        openConfig: (nodeId) => {
-          setSelectedNode(nodeId);
-          setAction('config');
+        type: 'placeholder',
+        data: {
+          name: '+',
+          configuration: null,
+          component: { is_entry_point: false },
+          openConfig: (nodeId) => {
+            setSelectedNode(nodeId);
+            setAction('config');
+          },
         },
-      },
-    });
+      });
+    }
+    if (parentNode && originEdge) {
+      newEdges.push({
+        id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
+        type: 'placeholder',
+        source: parentNode.id,
+        sourceHandle: originEdge.sourceHandle,
+        target: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+        data: {
+          openConfig: (nodeId) => {
+            setSelectedNode(nodeId);
+            setAction('config');
+          },
+        },
+      });
+    }
     setNodes(newNodes);
     setEdges(newEdges);
   };
@@ -570,7 +594,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
               input: {
                 from_node: parentNode.id,
                 from_port: placeholderEdge.sourceHandle,
-                to_node: nodeResult.playbookAddNode,
+                to_node: nodeResult.playbookAddNode, 
               },
             },
             onCompleted: (linkResult) => {
@@ -615,29 +639,31 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         const parentNode = getNodes()
           .filter((n) => n.id === originEdge?.source)
           ?.at(0);
-        commitMutation({
-          mutation: useManipulateComponentsAddLinkMutation,
-          variables: {
-            id: playbook.id,
-            input: {
-              from_node: parentNode.id,
-              from_port: originEdge.sourceHandle,
-              to_node: nodeResult.playbookAddNode,
-            },
-          },
-          onCompleted: (linkResult) => {
-            applyAddNode(
-              {
-                nodeId: nodeResult.playbookAddNode,
-                linkId: linkResult.playbookAddLink,
+        if (originEdge) {
+          commitMutation({
+            mutation: useManipulateComponentsAddLinkMutation,
+            variables: {
+              id: playbook.id,
+              input: {
+                from_node: parentNode.id,
+                from_port: originEdge.sourceHandle,
+                to_node: nodeResult.playbookAddNode,
               },
-              component,
-              name,
-              config,
-              originEdge,
-            );
-          },
-        });
+            },
+            onCompleted: (linkResult) => {
+              applyAddNode(
+                {
+                  nodeId: nodeResult.playbookAddNode,
+                  linkId: linkResult.playbookAddLink,
+                },
+                component,
+                name,
+                config,
+                originEdge,
+              );
+            },
+          });
+        }
         setSelectedNode(null);
         setAction(null);
       },

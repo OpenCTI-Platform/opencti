@@ -42,7 +42,7 @@ type IngestionRssEdge {
 
 # Queries
 type Query {
-    ingestionRss(id: String!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRss(id: String!): IngestionRss @auth(for: [SETTINGS])
     ingestionRsss(
         first: Int
         after: ID
@@ -52,7 +52,7 @@ type Query {
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
-    ): IngestionRssConnection @auth(for: [CONNECTORAPI])
+    ): IngestionRssConnection @auth(for: [SETTINGS])
 }
 
 # Mutations
@@ -70,7 +70,7 @@ input IngestionRssAddInput {
 }
 
 type Mutation {
-    ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [CONNECTORAPI])
-    ingestionRssDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
-    ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [SETTINGS])
+    ingestionRssDelete(id: ID!): ID @auth(for: [SETTINGS])
+    ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [SETTINGS])
 }

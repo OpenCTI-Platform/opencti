@@ -1,6 +1,5 @@
 import { makeStyles } from '@mui/styles';
 import { Field } from 'formik';
-import { Label } from 'mdi-material-ui';
 import { union } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import AutocompleteField from '../../../../components/AutocompleteField';

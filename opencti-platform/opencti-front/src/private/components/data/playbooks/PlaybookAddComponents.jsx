@@ -439,85 +439,74 @@ const PlaybookAddComponentsContent = ({
                   }
                   if (k === 'actions') {
                     return (
-                      <div key={k}>
-                        <div
-                          className={classes.container}
-                          style={{ marginTop: 20 }}
-                        >
-                          {Array(actionsInputs.length)
-                            .fill(0)
-                            .map((_, i) => (
-                              <div key={i} className={classes.step}>
-                                <IconButton
-                                  disabled={actionsInputs.length === 1}
-                                  aria-label="Delete"
-                                  className={classes.stepCloseButton}
-                                  onClick={() => {
-                                    handleRemoveStep(i);
-                                    setValues(
-                                      R.omit([`actions-${i}-values`], values),
-                                    );
-                                  }}
-                                  size="small"
-                                >
-                                  <CancelOutlined fontSize="small" />
-                                </IconButton>
-                                <Grid container={true} spacing={3}>
-                                  <Grid item={true} xs={3}>
-                                    <FormControl
-                                      className={classes.formControl}
+                      <div
+                        key={k}
+                        className={classes.container}
+                        style={{ marginTop: 20 }}
+                      >
+                        {Array(actionsInputs.length)
+                          .fill(0)
+                          .map((_, i) => (
+                            <div key={i} className={classes.step}>
+                              <IconButton
+                                disabled={actionsInputs.length === 1}
+                                aria-label="Delete"
+                                className={classes.stepCloseButton}
+                                onClick={() => {
+                                  handleRemoveStep(i);
+                                  setValues(
+                                    R.omit([`actions-${i}-values`], values),
+                                  );
+                                }}
+                                size="small"
+                              >
+                                <CancelOutlined fontSize="small" />
+                              </IconButton>
+                              <Grid container={true} spacing={3}>
+                                <Grid item={true} xs={3}>
+                                  <FormControl className={classes.formControl}>
+                                    <InputLabel>{t('Action type')}</InputLabel>
+                                    <Select
+                                      variant="standard"
+                                      value={actionsInputs[i]?.op}
+                                      onChange={(event) => handleChangeActionInput(i, 'op', event)
+                                      }
                                     >
-                                      <InputLabel>
-                                        {t('Action type')}
-                                      </InputLabel>
-                                      <Select
-                                        variant="standard"
-                                        value={actionsInputs[i]?.op}
-                                        onChange={(event) => handleChangeActionInput(
-                                          i,
-                                          'op',
-                                          event,
-                                        )
-                                        }
-                                      >
-                                        <MenuItem value="add">
-                                          {t('Add')}
-                                        </MenuItem>
-                                        <MenuItem value="replace">
-                                          {t('Replace')}
-                                        </MenuItem>
-                                        <MenuItem value="remove">
-                                          {t('Remove')}
-                                        </MenuItem>
-                                      </Select>
-                                    </FormControl>
-                                  </Grid>
-                                  <Grid item={true} xs={3}>
-                                    <FormControl
-                                      className={classes.formControl}
-                                    >
-                                      <InputLabel>{t('Field')}</InputLabel>
-                                      {renderFieldOptions(i, values, setValues)}
-                                    </FormControl>
-                                  </Grid>
-                                  <Grid item={true} xs={6}>
-                                    {renderValuesOptions(i)}
-                                  </Grid>
+                                      <MenuItem value="add">
+                                        {t('Add')}
+                                      </MenuItem>
+                                      <MenuItem value="replace">
+                                        {t('Replace')}
+                                      </MenuItem>
+                                      <MenuItem value="remove">
+                                        {t('Remove')}
+                                      </MenuItem>
+                                    </Select>
+                                  </FormControl>
                                 </Grid>
-                              </div>
-                            ))}
-                          <div className={classes.add}>
-                            <Button
-                              disabled={!areStepsValid()}
-                              variant="contained"
-                              color="secondary"
-                              size="small"
-                              onClick={handleAddStep}
-                              classes={{ root: classes.buttonAdd }}
-                            >
-                              <AddOutlined fontSize="small" />
-                            </Button>
-                          </div>
+                                <Grid item={true} xs={3}>
+                                  <FormControl className={classes.formControl}>
+                                    <InputLabel>{t('Field')}</InputLabel>
+                                    {renderFieldOptions(i, values, setValues)}
+                                  </FormControl>
+                                </Grid>
+                                <Grid item={true} xs={6}>
+                                  {renderValuesOptions(i)}
+                                </Grid>
+                              </Grid>
+                            </div>
+                          ))}
+                        <div className={classes.add}>
+                          <Button
+                            disabled={!areStepsValid()}
+                            variant="contained"
+                            color="secondary"
+                            size="small"
+                            onClick={handleAddStep}
+                            classes={{ root: classes.buttonAdd }}
+                          >
+                            <AddOutlined fontSize="small" />
+                          </Button>
                         </div>
                       </div>
                     );
@@ -525,6 +514,7 @@ const PlaybookAddComponentsContent = ({
                   if (v.type === 'number') {
                     return (
                       <Field
+                        key={k}
                         component={TextField}
                         variant="standard"
                         type="number"
@@ -537,6 +527,7 @@ const PlaybookAddComponentsContent = ({
                   if (v.type === 'boolean') {
                     return (
                       <Field
+                        key={k}
                         component={SwitchField}
                         type="checkbox"
                         name={k}
@@ -548,6 +539,7 @@ const PlaybookAddComponentsContent = ({
                   if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
                     return (
                       <Field
+                        key={k}
                         component={SelectField}
                         variant="standard"
                         name={k}
@@ -566,6 +558,7 @@ const PlaybookAddComponentsContent = ({
                   if (v.type === 'array') {
                     return (
                       <Field
+                        key={k}
                         component={SelectField}
                         variant="standard"
                         name={k}
@@ -584,6 +577,7 @@ const PlaybookAddComponentsContent = ({
                   }
                   return (
                     <Field
+                      key={k}
                       component={TextField}
                       variant="standard"
                       name={k}

@@ -10,7 +10,6 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
-import {Option} from "@components/common/form/ReferenceField";
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 

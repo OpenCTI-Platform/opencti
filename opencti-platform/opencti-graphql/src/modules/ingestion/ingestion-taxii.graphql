@@ -58,7 +58,7 @@ type IngestionTaxiiEdge {
 
 # Queries
 type Query {
-    ingestionTaxii(id: String!): IngestionTaxii @auth(for: [CONNECTORAPI])
+    ingestionTaxii(id: String!): IngestionTaxii @auth(for: [SETTINGS])
     ingestionTaxiis(
         first: Int
         after: ID
@@ -68,7 +68,7 @@ type Query {
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
-    ): IngestionTaxiiConnection @auth(for: [CONNECTORAPI])
+    ): IngestionTaxiiConnection @auth(for: [SETTINGS])
 }
 
 # Mutations
@@ -86,7 +86,7 @@ input IngestionTaxiiAddInput {
 }
 
 type Mutation {
-    ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii @auth(for: [CONNECTORAPI])
-    ingestionTaxiiDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
-    ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii @auth(for: [CONNECTORAPI])
+    ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii @auth(for: [SETTINGS])
+    ingestionTaxiiDelete(id: ID!): ID @auth(for: [SETTINGS])
+    ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii @auth(for: [SETTINGS])
 }

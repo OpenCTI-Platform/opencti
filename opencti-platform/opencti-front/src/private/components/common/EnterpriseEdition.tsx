@@ -39,7 +39,7 @@ const EnterpriseEdition = () => {
     >
       <AlertTitle style={{ marginBottom: 0 }}>
         {t(
-          'You need to activate OpenCTI enterprise edition to use the activity feature',
+          'You need to activate OpenCTI enterprise edition to use this feature.',
         )}
         <br />
       </AlertTitle>
