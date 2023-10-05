@@ -143,12 +143,15 @@ const PlaybookAddComponentsContent = ({
   const handleRemoveStep = (i) => {
     setActionsInputs(R.remove(i, 1, actionsInputs));
   };
-  const handleChangeActionInput = (i, key, event) => {
-    const value = event.target ? event.target.value : event;
+  const handleChangeActionInput = (i, key, value, isMultiple = null) => {
     setActionsInputs(
       actionsInputs.map((v, k) => {
         if (k === i) {
-          return { ...v, [key]: value };
+          return {
+            ...v,
+            [key]: value,
+            isMultiple: isMultiple !== null ? isMultiple : v.isMultiple,
+          };
         }
         return v;
       }),
@@ -156,7 +159,7 @@ const PlaybookAddComponentsContent = ({
   };
   const areStepsValid = () => {
     for (const n of actionsInputs) {
-      if (!n || !n.op || !n.attribute || !n.values || n.values.length === 0) {
+      if (!n || !n.op || !n.attribute || !n.value || n.value.length === 0) {
         return false;
       }
     }
@@ -167,23 +170,43 @@ const PlaybookAddComponentsContent = ({
     let options = [];
     if (actionsInputs[i]?.op === 'add') {
       options = [
-        { label: t('Marking definitions'), value: 'objectMarking' },
-        { label: t('Labels'), value: 'objectLabel' },
+        {
+          label: t('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
-        { label: t('Marking definitions'), value: 'objectMarking' },
-        { label: t('Labels'), value: 'objectLabel' },
-        { label: t('Author'), value: 'createdBy' },
-        { label: t('Confidence'), value: 'confidence' },
-        { label: t('Score'), value: 'x_opencti_score' },
-        { label: t('Detection'), value: 'x_opencti_detection' },
-        { label: t('Status'), value: 'x_opencti_workflow_id' },
+        {
+          label: t('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t('Author'), value: 'createdBy', isMultiple: false },
+        { label: t('Confidence'), value: 'confidence', isMultiple: false },
+        { label: t('Score'), value: 'x_opencti_score', isMultiple: false },
+        {
+          label: t('Detection'),
+          value: 'x_opencti_detection',
+          isMultiple: false,
+        },
+        {
+          label: t('Status'),
+          value: 'x_opencti_workflow_id',
+          isMultiple: false,
+        },
       ];
     } else if (actionsInputs[i]?.op === 'remove') {
       options = [
-        { label: t('Marking definitions'), value: 'objectMarking' },
-        { label: t('Labels'), value: 'objectLabel' },
+        {
+          label: t('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
       ];
     }
     return (
@@ -192,8 +215,14 @@ const PlaybookAddComponentsContent = ({
         disabled={disabled}
         value={actionsInputs[i]?.attribute}
         onChange={(event) => {
-          handleChangeActionInput(i, 'attribute', event);
-          setValues(R.omit([`actions-${i}-values`], values));
+          handleChangeActionInput(
+            i,
+            'attribute',
+            event.target.value,
+            options.filter((n) => n.value === event.target.value).at(0)
+              .isMultiple,
+          );
+          setValues(R.omit([`actions-${i}-value`], values));
         }}
       >
         {options.length > 0 ? (
@@ -217,14 +246,15 @@ const PlaybookAddComponentsContent = ({
       case 'objectMarking':
         return (
           <ObjectMarkingField
-            name={`actions-${i}-values`}
+            name={`actions-${i}-value`}
             disabled={disabled}
             onChange={(_, value) => handleChangeActionInput(
               i,
-              'values',
+              'value',
               value.map((n) => ({
                 label: n.label,
                 value: n.value,
+                patch_value: n.value,
               })),
             )
             }
@@ -233,14 +263,15 @@ const PlaybookAddComponentsContent = ({
       case 'objectLabel':
         return (
           <ObjectLabelField
-            name={`actions-${i}-values`}
+            name={`actions-${i}-value`}
             disabled={disabled}
             onChange={(_, value) => handleChangeActionInput(
               i,
-              'values',
+              'value',
               value.map((n) => ({
                 label: n.label,
                 value: n.value,
+                patch_value: n.label,
               })),
             )
             }
@@ -249,24 +280,30 @@ const PlaybookAddComponentsContent = ({
       case 'createdBy':
         return (
           <CreatedByField
-            name={`actions-${i}-values`}
+            name={`actions-${i}-value`}
             disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'values', {
-              label: value.label,
-              value: value.value,
-            })
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              {
+                label: value.label,
+                value: value.value,
+                patch_value: value.value,
+              },
+            ])
             }
           />
         );
       case 'x_opencti_workflow_id':
         return (
           <StatusField
-            name={`actions-${i}-values`}
+            name={`actions-${i}-value`}
             disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'values', {
-              label: value.label,
-              value: value.value,
-            })
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              {
+                label: value.label,
+                value: value.value,
+                patch_value: value.value,
+              },
+            ])
             }
           />
         );
@@ -281,10 +318,12 @@ const PlaybookAddComponentsContent = ({
                 : 'text'
             }
             variant="standard"
-            name={`actions-${i}-values`}
-            label={t('Values')}
+            name={`actions-${i}-value`}
+            label={t('Value')}
             fullWidth={true}
-            onChange={(_, value) => handleChangeActionInput(i, 'values', [{ label: value, value }])
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
+            ])
             }
           />
         );
@@ -455,7 +494,7 @@ const PlaybookAddComponentsContent = ({
                                 onClick={() => {
                                   handleRemoveStep(i);
                                   setValues(
-                                    R.omit([`actions-${i}-values`], values),
+                                    R.omit([`actions-${i}-value`], values),
                                   );
                                 }}
                                 size="small"
@@ -469,7 +508,11 @@ const PlaybookAddComponentsContent = ({
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(i, 'op', event)
+                                      onChange={(event) => handleChangeActionInput(
+                                        i,
+                                        'op',
+                                        event.target.value,
+                                      )
                                       }
                                     >
                                       <MenuItem value="add">

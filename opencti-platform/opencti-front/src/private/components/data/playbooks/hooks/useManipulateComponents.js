@@ -478,10 +478,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     } else if (
       selectedNode.data.component.ports.length > component.ports.length
     ) {
-      // eslint-disable-next-line no-plusplus
       for (
         let i = 1;
         i <= selectedNode.data.component.ports.length - component.ports.length;
+        // eslint-disable-next-line no-plusplus
         i++
       ) {
         // Find all links to the port

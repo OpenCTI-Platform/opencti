@@ -16,9 +16,10 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
+import type { Operation } from 'fast-json-patch';
 import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
-import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToSync } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -28,7 +29,6 @@ import {
   ENTITY_TYPE_CONTAINER, INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  OPENCTI_SYSTEM_UUID
 } from '../../schema/general';
 import { loadConnectorById } from '../../domain/connector';
 import { convertStoreToStix } from '../../database/stix-converter';
@@ -131,7 +131,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   schema: async () => undefined,
   executor: async ({ bundle }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToSync({ type: 'bundle', applicant_id: AUTOMATION_MANAGER_USER_UUID, content, update: true });
     return { output_port: undefined, bundle };
   }
 };
@@ -351,9 +351,10 @@ const attributePathMapping: any = {
 interface UpdateValueConfiguration {
   label: string
   value: string
+  patch_value: string
 }
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
-  actions: { op: string, attribute: string, values: UpdateValueConfiguration[] }[]
+  actions: { op: 'add' | 'replace' | 'remove', attribute: string, isMultiple: boolean, value: UpdateValueConfiguration[] }[]
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
   type: 'object',
@@ -363,21 +364,23 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
       items: {
         type: 'object',
         properties: {
-          op: { type: 'string' },
+          op: { type: 'string', enum: ['add', 'replace', 'remove'] },
           attribute: { type: 'string' },
-          values: {
+          isMultiple: { type: 'boolean' },
+          value: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 label: { type: 'string' },
-                value: { type: 'string' }
+                value: { type: 'string' },
+                patch_value: { type: 'string' }
               },
-              required: ['label', 'value'],
+              required: ['label', 'value', 'patch_value'],
             }
           },
         },
-        required: ['op', 'attribute', 'values'],
+        required: ['op', 'attribute', 'isMultiple', 'value'],
       }
     },
   },
@@ -394,9 +397,9 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ instanceId, instance, bundle }) => {
-    let baseData = bundle.objects.find((o) => o.id === instanceId) as any;
+    const baseData = bundle.objects.find((o) => o.id === instanceId) as any;
     const { actions } = instance.configuration;
-    const patches = actions.map((n) => {
+    const patches: Operation[] = actions.map((n) => {
       let path = null;
       if (attributePathMapping[n.attribute]) {
         const { type } = baseData.extensions[STIX_EXT_OCTI];
@@ -409,12 +412,10 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           }
         }
       }
-      return { op: n.op, path, value: n.values.map((o) => o.value) };
+      return { op: n.op, path, value: n.isMultiple ? n.value.map((o) => o.patch_value) : R.head(n.value)?.patch_value };
     }).filter((n) => n.path !== null);
     if (patches.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      baseData = patches.reduce(jsonpatch.applyReducer, baseData);
+      jsonpatch.applyPatch(baseData, patches);
     }
     return { output_port: 'out', bundle };
   }
