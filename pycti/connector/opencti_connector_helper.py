@@ -220,7 +220,6 @@ class ListenQueue:
 
         json_data = json.loads(body)
         work_id = json_data["internal"]["work_id"]
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         message_task = self._data_handler(json_data)
         five_minutes = 60 * 5
         time_wait = 0
@@ -240,6 +239,8 @@ class ListenQueue:
             logging.exception("Error in message processing, reporting error to API")
             if work_id:
                 self.helper.api.work.to_processed(work_id, str(e), True)
+        finally:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
         LOGGER.info(
             "Message (delivery_tag=%s) processed, thread terminated",
             method.delivery_tag,
