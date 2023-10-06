@@ -47,7 +47,7 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
 interface ObjectMarkingFieldProps {
   name: string;
   style?: React.CSSProperties;
-  onChange: (name: string, values: Option[]) => void;
+  onChange: (name: string, values: Option[], operation?: string | undefined) => void;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;
@@ -66,6 +66,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [newMarking, setNewMarking] = useState<Option[] | undefined>(undefined);
+  const [operation, setOperation] = useState<string | undefined>(undefined);
 
   const { me } = useAuth();
   const allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
@@ -84,14 +85,22 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
     setNewMarking(undefined);
   };
   const submitUpdate = () => {
-    onChange(name, newMarking as Option[]);
+    onChange(name, newMarking as Option[], operation);
     handleClose();
   };
   const handleOnChange = (n: string, values: Option[]) => {
-    const valueAdded = values.filter((m) => values.find((item) => item.definition_type === m.definition_type && item.x_opencti_order !== m.x_opencti_order));
-
-    if (valueAdded.length) {
-      setNewMarking([...values]);
+    const valueAdded = values[values.length - 1];
+    const valueToReplace = values.find((marking) => marking.definition_type === valueAdded.definition_type && marking.x_opencti_order !== valueAdded.x_opencti_order);
+    console.log('VALUE ADDED', valueAdded);
+    console.log('VALUE To replace', valueToReplace);
+    if (valueToReplace) {
+      if ((valueToReplace.x_opencti_order ?? 0) > (valueAdded.x_opencti_order ?? 0)) {
+        setOperation('replace');
+        setNewMarking(values.filter((marking) => marking.value !== valueToReplace.value));
+      } else {
+        setNewMarking([valueAdded]);
+        setOperation(undefined);
+      }
     } else onChange(name, values);
   };
 

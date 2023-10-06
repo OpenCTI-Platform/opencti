@@ -15,7 +15,7 @@ export const cleanMarkings = async (context, values) => {
   }).flat();
 };
 
-export const handleMarkingOperations = async (context, currentMarkings, refs, operation) => {
+export const handleMarkingOperations = async (context, currentMarkings = [], refs, operation) => {
   // Get all marking definitions
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Get object entries from markings Map, convert into array without duplicate values
@@ -28,6 +28,7 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
   const markingsInCommon = currentMarkings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
 
   if (operation === UPDATE_OPERATION_ADD) {
+    // If it is a new type, we add it
     if (markingsInCommon.length === 0) {
       // If markings in input is thoroughly different from current
       operationUpdated.operation = UPDATE_OPERATION_ADD;
@@ -35,23 +36,22 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
       return operationUpdated;
     }
 
+    // We have some type in common with different order
     if (markingsAddedCleaned.some((mark) => currentMarkings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
       const markingsToKeep = await cleanMarkings(context, [...currentMarkings, ...markingsAddedCleaned]);
 
-      const markingsAddedHasHigherOrder = currentMarkings
-        .some((currentMarking) => markingsAddedCleaned
-          .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
+      // const markingsAddedHasHigherOrder = currentMarkings
+      //   .some((currentMarking) => markingsAddedCleaned
+      //     .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
+      const markingsAddedHasHigherOrder = markingsToKeep.some((markingAdded) => currentMarkings.some((currentMarking) => currentMarking.definition_type && markingAdded.x_opencti_order && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
 
-      // NEED TO DO A REPLACE
       // If some of the added item has a higher rank than before, replace
       if (markingsAddedHasHigherOrder) {
         operationUpdated.operation = UPDATE_OPERATION_REPLACE;
         operationUpdated.refs = markingsToKeep.map((m) => m.id);
         return operationUpdated;
       }
-      operationUpdated.operation = UPDATE_OPERATION_ADD;
-      operationUpdated.refs = markingsToKeep.filter((m) => !currentMarkings.some(({ id }) => id === m.id)).map((m) => m.id);
-      return operationUpdated;
+      return null;
     }
     // THIS IS A ADD
     operationUpdated.operation = UPDATE_OPERATION_ADD;
