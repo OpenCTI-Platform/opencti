@@ -91,14 +91,13 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const handleOnChange = (n: string, values: Option[]) => {
     const valueAdded = values[values.length - 1];
     const valueToReplace = values.find((marking) => marking.definition_type === valueAdded.definition_type && marking.x_opencti_order !== valueAdded.x_opencti_order);
-    console.log('VALUE ADDED', valueAdded);
-    console.log('VALUE To replace', valueToReplace);
+
     if (valueToReplace) {
       if ((valueToReplace.x_opencti_order ?? 0) > (valueAdded.x_opencti_order ?? 0)) {
         setOperation('replace');
         setNewMarking(values.filter((marking) => marking.value !== valueToReplace.value));
       } else {
-        setNewMarking([valueAdded]);
+        setNewMarking(values);
         setOperation(undefined);
       }
     } else onChange(name, values);

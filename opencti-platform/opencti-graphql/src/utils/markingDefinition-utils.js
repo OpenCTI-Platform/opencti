@@ -43,7 +43,9 @@ export const handleMarkingOperations = async (context, currentMarkings = [], ref
       // const markingsAddedHasHigherOrder = currentMarkings
       //   .some((currentMarking) => markingsAddedCleaned
       //     .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
-      const markingsAddedHasHigherOrder = markingsToKeep.some((markingAdded) => currentMarkings.some((currentMarking) => currentMarking.definition_type && markingAdded.x_opencti_order && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
+      const markingsAddedHasHigherOrder = markingsToKeep
+        .some((markingAdded) => currentMarkings
+          .some((currentMarking) => currentMarking.definition_type && markingAdded.x_opencti_order && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
 
       // If some of the added item has a higher rank than before, replace
       if (markingsAddedHasHigherOrder) {
