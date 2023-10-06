@@ -34,6 +34,11 @@ utc = pytz.UTC
 # Spec version
 SPEC_VERSION = "2.1"
 
+# Extensions
+STIX_EXT_OCTI = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+STIX_EXT_OCTI_SCO = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+STIX_EXT_MITRE = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+
 
 class OpenCTIStix2:
     """Python API for Stix2 in OpenCTI
