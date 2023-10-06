@@ -82,6 +82,9 @@ export interface UserReadAction extends BasicUserAction {
     id: string
     entity_name: string
     entity_type: string
+    creator_ids: string[]
+    granted_refs_ids: string[]
+    object_marking_refs_ids: string[]
   }
 }
 export interface UserForbiddenAction extends BasicUserAction {

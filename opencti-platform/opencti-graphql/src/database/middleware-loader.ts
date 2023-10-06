@@ -22,6 +22,7 @@ import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql'
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -469,12 +470,13 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
+    const creator_ids = data.creator_id ?? [];
     await publishUserAction({
       user,
       event_type: 'read',
@@ -483,7 +485,10 @@ export const storeLoadById = async <T extends BasicStoreBase>(context: AuthConte
       context_data: {
         id,
         entity_name: extractEntityRepresentativeName(data),
-        entity_type: data.entity_type
+        entity_type: data.entity_type,
+        creator_ids: Array.isArray(creator_ids) ? creator_ids : [creator_ids],
+        granted_refs_ids: data[RELATION_GRANTED_TO] ?? [],
+        object_marking_refs_ids: data[RELATION_OBJECT_MARKING] ?? [],
       }
     });
   }
