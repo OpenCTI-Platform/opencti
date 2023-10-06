@@ -2407,3 +2407,23 @@ class OpenCTIStix2:
                 imported_elements.append({"id": item["id"], "type": item["type"]})
 
         return imported_elements
+
+    @staticmethod
+    def put_attribute_in_extension(
+        object, extension_id, key, value, multiple=False
+    ) -> any:
+        if "extensions" not in object:
+            object["extensions"] = {}
+        if extension_id not in object["extensions"]:
+            object["extensions"][extension_id] = {}
+        if key in object["extensions"][extension_id]:
+            if multiple:
+                object["extensions"][extension_id][key].append(value)
+            else:
+                object["extensions"][extension_id][key] = value
+        else:
+            if multiple:
+                object["extensions"][extension_id][key] = [value]
+            else:
+                object["extensions"][extension_id][key] = value
+        return object
