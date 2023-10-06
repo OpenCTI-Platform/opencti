@@ -1988,12 +1988,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
 
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
 
-        if (relType === RELATION_OBJECT_MARKING && initial.objectMarking) {
-          const markingsToReplace = await markingsToReplaceFiltered(context, initial.objectMarking, refs);
-          // TODO Julien, Helene Always use a replace can be improved depending of the situation
-          if (markingsToReplace) {
-            ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: markingsToReplace });
-          }
+        if (relType === RELATION_OBJECT_MARKING) {
+          const markingsCleaned = await handleMarkingOperations(context, initial.objectMarking, refs, operation);
+          ({ operation, refs } = { operation: markingsCleaned.operation, refs: markingsCleaned.refs });
         }
 
         if (operation === UPDATE_OPERATION_REPLACE) {

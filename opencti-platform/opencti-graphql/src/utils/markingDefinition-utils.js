@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { SYSTEM_USER } from './access';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 export const cleanMarkings = async (context, values) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
@@ -14,34 +15,59 @@ export const cleanMarkings = async (context, values) => {
   }).flat();
 };
 
-export const markingsToReplaceFiltered = async (context, currentMarkings, refs) => {
+export const handleMarkingOperations = async (context, currentMarkings, refs, operation) => {
+  // Get all marking definitions
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Get object entries from markings Map, convert into array without duplicate values
   const markingsAdded = [...new Set(Object.values(Object.fromEntries(markingsMap)))].filter((m) => refs.includes(m.id));
   // If multiple markings is added, filter and keep the highest rank
   const markingsAddedCleaned = await cleanMarkings(context, markingsAdded);
 
-  const needToBeReplaced = true;
-  const markingsToBeChanged = [];
-  // todo improve the loop
-  currentMarkings.forEach((element) => {
-    markingsAddedCleaned.forEach((item) => {
-      if (item.definition_type === element.definition_type) {
-        if (item.x_opencti_order !== element.x_opencti_order || item.x_opencti_order >= element.x_opencti_order) {
-          markingsToBeChanged.push(item);
-          // todo if data is coming from a connector, keep the highest order between currentMarkings and markings added
-        }
-      } else markingsToBeChanged.push(item);
-    });
-  });
-  const existingMarkings = currentMarkings
-    .filter((currentMarking) => !markingsAddedCleaned
-      .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type));
+  const operationUpdated = { operation, refs };
 
-  const finalMarkingsList = markingsToBeChanged.concat(existingMarkings);
+  const markingsInCommon = currentMarkings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
 
-  if (finalMarkingsList !== currentMarkings) {
-    return finalMarkingsList.map((m) => m.id);
+  if (operation === UPDATE_OPERATION_ADD) {
+    if (markingsInCommon.length === 0) {
+      // If markings in input is thoroughly different from current
+      operationUpdated.operation = UPDATE_OPERATION_ADD;
+      operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+      return operationUpdated;
+    }
+
+    if (markingsAddedCleaned.some((mark) => currentMarkings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
+      const markingsToKeep = await cleanMarkings(context, [...currentMarkings, ...markingsAddedCleaned]);
+
+      const markingsAddedHasHigherOrder = currentMarkings
+        .some((currentMarking) => markingsAddedCleaned
+          .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
+
+      // NEED TO DO A REPLACE
+      // If some of the added item has a higher rank than before, replace
+      if (markingsAddedHasHigherOrder) {
+        operationUpdated.operation = UPDATE_OPERATION_REPLACE;
+        operationUpdated.refs = markingsToKeep.map((m) => m.id);
+        return operationUpdated;
+      }
+      operationUpdated.operation = UPDATE_OPERATION_ADD;
+      operationUpdated.refs = markingsToKeep.filter((m) => !currentMarkings.some(({ id }) => id === m.id)).map((m) => m.id);
+      return operationUpdated;
+    }
+    // THIS IS A ADD
+    operationUpdated.operation = UPDATE_OPERATION_ADD;
+    operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+    return operationUpdated;
   }
-  return !needToBeReplaced;
+
+  if (operation === UPDATE_OPERATION_REPLACE) {
+    operationUpdated.operation = UPDATE_OPERATION_REPLACE;
+    operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+    return operationUpdated;
+  }
+
+  if (operation === UPDATE_OPERATION_REMOVE) {
+    return operationUpdated;
+  }
+
+  return operationUpdated;
 };
