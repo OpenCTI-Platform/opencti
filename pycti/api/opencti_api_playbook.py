@@ -25,7 +25,7 @@ class OpenCTIApiPlaybook:
                 "data_instance_id": playbook["data_instance_id"],
                 "step_id": playbook["step_id"],
                 "previous_step_id": playbook["previous_step_id"],
-                "previous_bundle": json.dumps(playbook["previous_bundle"]),
+                "previous_bundle": playbook["previous_bundle"],
                 "bundle": bundle,
             },
         )

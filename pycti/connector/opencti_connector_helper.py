@@ -255,7 +255,7 @@ class ListenQueue:
             execution_start = self.helper.date_now()
             playbook_id = json_data["internal"]["playbook"]["playbook_id"]
             data_instance_id = json_data["internal"]["playbook"]["data_instance_id"]
-            previous_bundle = json_data["event"]["bundle"]
+            previous_bundle = json.dumps((json_data["event"]["bundle"]))
             step_id = json_data["internal"]["playbook"]["step_id"]
             previous_step_id = json_data["internal"]["playbook"]["previous_step_id"]
             playbook_data = {
