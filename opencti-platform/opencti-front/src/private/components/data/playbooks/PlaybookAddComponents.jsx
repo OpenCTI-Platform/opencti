@@ -17,6 +17,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
 import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -27,11 +28,11 @@ import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/SwitchField';
-import SelectField from '../../../../components/SelectField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
 import { numberAttributes } from '../../../../utils/hooks/useAttributes';
+import AutocompleteField from '../../../../components/AutocompleteField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -420,244 +421,307 @@ const PlaybookAddComponentsContent = ({
           onSubmit={onSubmit}
           onReset={handleClose}
         >
-          {({ submitForm, handleReset, isSubmitting, setValues, values }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-              />
-              {Object.entries(configurationSchema?.properties ?? {}).map(
-                ([k, v]) => {
-                  if (k === 'filters') {
-                    return (
-                      <div key={k}>
-                        <div style={{ marginTop: 35 }}>
-                          <Filters
-                            variant="text"
-                            availableFilterKeys={[
-                              'entity_type',
-                              'x_opencti_workflow_id',
-                              'assigneeTo',
-                              'objectContains',
-                              'markedBy',
-                              'labelledBy',
-                              'creator',
-                              'createdBy',
-                              'priority',
-                              'severity',
-                              'x_opencti_score',
-                              'x_opencti_detection',
-                              'revoked',
-                              'confidence',
-                              'indicator_types',
-                              'pattern_type',
-                              'x_opencti_main_observable_type',
-                              'fromId',
-                              'toId',
-                              'fromTypes',
-                              'toTypes',
-                            ]}
-                            handleAddFilter={handleAddFilter}
-                            noDirectFilters={true}
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setValues,
+            values,
+            setFieldValue,
+          }) => {
+            console.log(values);
+            return (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                />
+                {Object.entries(configurationSchema?.properties ?? {}).map(
+                  ([k, v]) => {
+                    if (k === 'filters') {
+                      return (
+                        <div key={k}>
+                          <div style={{ marginTop: 35 }}>
+                            <Filters
+                              variant="text"
+                              availableFilterKeys={[
+                                'entity_type',
+                                'x_opencti_workflow_id',
+                                'assigneeTo',
+                                'objectContains',
+                                'markedBy',
+                                'labelledBy',
+                                'creator',
+                                'createdBy',
+                                'priority',
+                                'severity',
+                                'x_opencti_score',
+                                'x_opencti_detection',
+                                'revoked',
+                                'confidence',
+                                'indicator_types',
+                                'pattern_type',
+                                'x_opencti_main_observable_type',
+                                'fromId',
+                                'toId',
+                                'fromTypes',
+                                'toTypes',
+                              ]}
+                              handleAddFilter={handleAddFilter}
+                              noDirectFilters={true}
+                            />
+                          </div>
+                          <div className="clearfix" />
+                          <FilterIconButton
+                            filters={filters}
+                            handleRemoveFilter={handleRemoveFilter}
+                            classNameNumber={2}
+                            styleNumber={2}
+                            redirection
                           />
+                          <div className="clearfix" />
                         </div>
-                        <div className="clearfix" />
-                        <FilterIconButton
-                          filters={filters}
-                          handleRemoveFilter={handleRemoveFilter}
-                          classNameNumber={2}
-                          styleNumber={2}
-                          redirection
-                        />
-                        <div className="clearfix" />
-                      </div>
-                    );
-                  }
-                  if (k === 'actions') {
-                    return (
-                      <div
-                        key={k}
-                        className={classes.container}
-                        style={{ marginTop: 20 }}
-                      >
-                        {Array(actionsInputs.length)
-                          .fill(0)
-                          .map((_, i) => (
-                            <div key={i} className={classes.step}>
-                              <IconButton
-                                disabled={actionsInputs.length === 1}
-                                aria-label="Delete"
-                                className={classes.stepCloseButton}
-                                onClick={() => {
-                                  handleRemoveStep(i);
-                                  setValues(
-                                    R.omit([`actions-${i}-value`], values),
-                                  );
-                                }}
-                                size="small"
-                              >
-                                <CancelOutlined fontSize="small" />
-                              </IconButton>
-                              <Grid container={true} spacing={3}>
-                                <Grid item={true} xs={3}>
-                                  <FormControl className={classes.formControl}>
-                                    <InputLabel>{t('Action type')}</InputLabel>
-                                    <Select
-                                      variant="standard"
-                                      value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(
-                                        i,
-                                        'op',
-                                        event.target.value,
-                                      )
-                                      }
+                      );
+                    }
+                    if (k === 'actions') {
+                      return (
+                        <div
+                          key={k}
+                          className={classes.container}
+                          style={{ marginTop: 20 }}
+                        >
+                          {Array(actionsInputs.length)
+                            .fill(0)
+                            .map((_, i) => (
+                              <div key={i} className={classes.step}>
+                                <IconButton
+                                  disabled={actionsInputs.length === 1}
+                                  aria-label="Delete"
+                                  className={classes.stepCloseButton}
+                                  onClick={() => {
+                                    handleRemoveStep(i);
+                                    setValues(
+                                      R.omit([`actions-${i}-value`], values),
+                                    );
+                                  }}
+                                  size="small"
+                                >
+                                  <CancelOutlined fontSize="small" />
+                                </IconButton>
+                                <Grid container={true} spacing={3}>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl
+                                      className={classes.formControl}
                                     >
-                                      <MenuItem value="add">
-                                        {t('Add')}
-                                      </MenuItem>
-                                      <MenuItem value="replace">
-                                        {t('Replace')}
-                                      </MenuItem>
-                                      <MenuItem value="remove">
-                                        {t('Remove')}
-                                      </MenuItem>
-                                    </Select>
-                                  </FormControl>
+                                      <InputLabel>
+                                        {t('Action type')}
+                                      </InputLabel>
+                                      <Select
+                                        variant="standard"
+                                        value={actionsInputs[i]?.op}
+                                        onChange={(event) => handleChangeActionInput(
+                                          i,
+                                          'op',
+                                          event.target.value,
+                                        )
+                                        }
+                                      >
+                                        <MenuItem value="add">
+                                          {t('Add')}
+                                        </MenuItem>
+                                        <MenuItem value="replace">
+                                          {t('Replace')}
+                                        </MenuItem>
+                                        <MenuItem value="remove">
+                                          {t('Remove')}
+                                        </MenuItem>
+                                      </Select>
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl
+                                      className={classes.formControl}
+                                    >
+                                      <InputLabel>{t('Field')}</InputLabel>
+                                      {renderFieldOptions(i, values, setValues)}
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={6}>
+                                    {renderValuesOptions(i)}
+                                  </Grid>
                                 </Grid>
-                                <Grid item={true} xs={3}>
-                                  <FormControl className={classes.formControl}>
-                                    <InputLabel>{t('Field')}</InputLabel>
-                                    {renderFieldOptions(i, values, setValues)}
-                                  </FormControl>
-                                </Grid>
-                                <Grid item={true} xs={6}>
-                                  {renderValuesOptions(i)}
-                                </Grid>
-                              </Grid>
-                            </div>
-                          ))}
-                        <div className={classes.add}>
-                          <Button
-                            disabled={!areStepsValid()}
-                            variant="contained"
-                            color="secondary"
-                            size="small"
-                            onClick={handleAddStep}
-                            classes={{ root: classes.buttonAdd }}
-                          >
-                            <AddOutlined fontSize="small" />
-                          </Button>
+                              </div>
+                            ))}
+                          <div className={classes.add}>
+                            <Button
+                              disabled={!areStepsValid()}
+                              variant="contained"
+                              color="secondary"
+                              size="small"
+                              onClick={handleAddStep}
+                              classes={{ root: classes.buttonAdd }}
+                            >
+                              <AddOutlined fontSize="small" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  }
-                  if (v.type === 'number') {
+                      );
+                    }
+                    if (v.type === 'number') {
+                      return (
+                        <Field
+                          key={k}
+                          component={TextField}
+                          variant="standard"
+                          type="number"
+                          name={k}
+                          label={t(k)}
+                          fullWidth={true}
+                          style={{ marginTop: 20, width: '100%' }}
+                        />
+                      );
+                    }
+                    if (v.type === 'boolean') {
+                      return (
+                        <Field
+                          key={k}
+                          component={SwitchField}
+                          type="checkbox"
+                          name={k}
+                          label={t(k)}
+                          containerstyle={{ marginTop: 20 }}
+                        />
+                      );
+                    }
+                    if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
+                      return (
+                        <Field
+                          key={k}
+                          component={AutocompleteField}
+                          name={k}
+                          fullWidth={true}
+                          multiple={false}
+                          style={{ marginTop: 20, width: '100%' }}
+                          renderOption={(optionProps, value) => (
+                            <Tooltip
+                              {...optionProps}
+                              key={value.const}
+                              title={value.title}
+                              placement="bottom-start"
+                            >
+                              <MenuItem value={value.const}>
+                                {value.title}
+                              </MenuItem>
+                            </Tooltip>
+                          )}
+                          isOptionEqualToValue={(option, value) => option.const === value
+                          }
+                          onInternalChange={(name, value) => setFieldValue(
+                            name,
+                            value.const ? value.const : value,
+                          )
+                          }
+                          options={v.oneOf}
+                          textfieldprops={{
+                            variant: 'standard',
+                            label: t(k),
+                          }}
+                          getOptionLabel={(option) => (option.title
+                            ? option.title
+                            : v.oneOf
+                              ?.filter((n) => n.const === option)
+                              ?.at(0)?.title ?? option)
+                          }
+                        />
+                      );
+                    }
+                    if (v.type === 'array') {
+                      return (
+                        <Field
+                          key={k}
+                          component={AutocompleteField}
+                          name={k}
+                          fullWidth={true}
+                          multiple={true}
+                          style={{ marginTop: 20, width: '100%' }}
+                          renderOption={(optionProps, value) => (
+                            <Tooltip
+                              {...optionProps}
+                              key={value.const}
+                              title={value.title}
+                              placement="bottom-start"
+                            >
+                              <MenuItem value={value.const}>
+                                {value.title}
+                              </MenuItem>
+                            </Tooltip>
+                          )}
+                          isOptionEqualToValue={(option, value) => option.const === value
+                          }
+                          onInternalChange={(name, value) => setFieldValue(
+                            name,
+                            value.map((n) => (n.const ? n.const : n)),
+                          )
+                          }
+                          noFieldUpdate={true}
+                          options={v.items.oneOf}
+                          textfieldprops={{
+                            variant: 'standard',
+                            label: t(k),
+                          }}
+                          getOptionLabel={(option) => (option.title
+                            ? option.title
+                            : v.items.oneOf
+                              ?.filter((n) => n.const === option)
+                              ?.at(0)?.title ?? option)
+                          }
+                        />
+                      );
+                    }
                     return (
                       <Field
                         key={k}
                         component={TextField}
+                        style={{ marginTop: 20, width: '100%' }}
                         variant="standard"
-                        type="number"
                         name={k}
                         label={t(k)}
                         fullWidth={true}
                       />
                     );
-                  }
-                  if (v.type === 'boolean') {
-                    return (
-                      <Field
-                        key={k}
-                        component={SwitchField}
-                        type="checkbox"
-                        name={k}
-                        label={t(k)}
-                        containerstyle={{ marginTop: 20 }}
-                      />
-                    );
-                  }
-                  if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
-                    return (
-                      <Field
-                        key={k}
-                        component={SelectField}
-                        variant="standard"
-                        name={k}
-                        label={t(k)}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        {v.oneOf.map((value, i) => (
-                          <MenuItem key={i} value={value.const}>
-                            {value.title}
-                          </MenuItem>
-                        ))}
-                      </Field>
-                    );
-                  }
-                  if (v.type === 'array') {
-                    return (
-                      <Field
-                        key={k}
-                        component={SelectField}
-                        variant="standard"
-                        name={k}
-                        label={t(k)}
-                        fullWidth={true}
-                        multiple={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        {v.items.oneOf.map((value, i) => (
-                          <MenuItem key={i} value={value.const}>
-                            {value.title}
-                          </MenuItem>
-                        ))}
-                      </Field>
-                    );
-                  }
-                  return (
-                    <Field
-                      key={k}
-                      component={TextField}
-                      variant="standard"
-                      name={k}
-                      label={t(k)}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      fullWidth={true}
-                    />
-                  );
-                },
-              )}
-              <div className="clearfix" />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={
-                    (actionsInputs.length > 0 && !areStepsValid())
-                    || isSubmitting
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  {selectedNode?.data?.component?.id
-                    ? t('Update')
-                    : t('Create')}
-                </Button>
-              </div>
-            </Form>
-          )}
+                  },
+                )}
+                <div className="clearfix" />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={
+                      (actionsInputs.length > 0 && !areStepsValid())
+                      || isSubmitting
+                    }
+                    classes={{ root: classes.button }}
+                  >
+                    {selectedNode?.data?.component?.id
+                      ? t('Update')
+                      : t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            );
+          }}
         </Formik>
       </div>
     );
