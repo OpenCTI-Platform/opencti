@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import base64
 import json
 import os
 
@@ -814,13 +815,22 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "Artifact":
+                if (
+                    "x_opencti_additional_names" not in observable_data
+                    and self.opencti.get_attribute_in_extension(
+                        "additional_names", observable_data
+                    )
+                    is not None
+                ):
+                    observable_data[
+                        "x_opencti_additional_names"
+                    ] = self.opencti.get_attribute_in_extension(
+                        "additional_names", observable_data
+                    )
                 input_variables["Artifact"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
                     "mime_type": observable_data["mime_type"]
                     if "mime_type" in observable_data
-                    else None,
-                    "payload_bin": observable_data["payload_bin"]
-                    if "payload_bin" in observable_data
                     else None,
                     "url": observable_data["url"] if "url" in observable_data else None,
                     "encryption_algorithm": observable_data["encryption_algorithm"]
@@ -828,6 +838,11 @@ class StixCyberObservable:
                     else None,
                     "decryption_key": observable_data["decryption_key"]
                     if "decryption_key" in observable_data
+                    else None,
+                    "x_opencti_additional_names": observable_data[
+                        "x_opencti_additional_names"
+                    ]
+                    if "x_opencti_additional_names" in observable_data
                     else None,
                 }
             elif type == "StixFile":
@@ -1165,6 +1180,16 @@ class StixCyberObservable:
                     else None,
                 }
             result = self.opencti.query(query, input_variables)
+            if "payload_bin" in observable_data and "mime/type" in observable_data:
+                self.add_file(
+                    id=result["data"]["stixCyberObservableAdd"]["id"],
+                    file_name=observable_data["x_opencti_additional_names"][0]
+                    if "x_opencti_additional_names" in observable_data
+                    and len(observable_data["x_opencti_additional_names"]) > 0
+                    else "artifact.bin",
+                    data=base64.b64decode(observable_data["payload_bin"]),
+                    mime_type=observable_data["mime_type"],
+                )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
             )
