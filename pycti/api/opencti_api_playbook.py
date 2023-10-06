@@ -1,5 +1,3 @@
-import json
-
 from pycti.api import LOGGER
 
 
