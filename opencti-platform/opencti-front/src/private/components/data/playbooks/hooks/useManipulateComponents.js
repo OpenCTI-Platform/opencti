@@ -514,8 +514,12 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     const parentNode = getNodes()
       .filter((n) => n.id === originEdge?.source)
       ?.at(0);
+    const otherEdgesToParentNode = getEdges().filter(
+      (o) => o.source === originEdge?.source
+        && o.sourceHandle === originEdge?.sourceHandle,
+    );
     const childPlaceholderId = uuid();
-    if (originEdge) {
+    if (originEdge && otherEdgesToParentNode.length === 1) {
       newNodes.push({
         id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
         position: {
@@ -533,7 +537,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           },
         },
       });
-    } else {
+    } else if (otherEdgesToParentNode.length === 1) {
       newNodes.push({
         id: 'PLACEHOLDER-ORIGIN',
         type: 'placeholder',
@@ -549,7 +553,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         },
       });
     }
-    if (parentNode && originEdge) {
+    if (parentNode && originEdge && otherEdgesToParentNode.length === 1) {
       newEdges.push({
         id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
         type: 'placeholder',
