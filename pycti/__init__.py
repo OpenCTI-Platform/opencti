@@ -62,10 +62,10 @@ from .utils.constants import (
     StixMetaTypes,
 )
 from .utils.opencti_stix2 import (
-    OpenCTIStix2,
-    STIX_EXT_OCTI,
     STIX_EXT_MITRE,
+    STIX_EXT_OCTI,
     STIX_EXT_OCTI_SCO,
+    OpenCTIStix2,
 )
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.opencti_stix2_update import OpenCTIStix2Update
