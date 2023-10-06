@@ -198,6 +198,7 @@ class ListenQueue:
         self.user = connector_config["connection"]["user"]
         self.password = connector_config["connection"]["pass"]
         self.queue_name = connector_config["listen"]
+        self.thread = None
         self.connector_thread = None
         self.connector_event_loop = None
         self.queue_event_loop = asyncio.new_event_loop()
@@ -205,7 +206,7 @@ class ListenQueue:
         self.run()
 
     # noinspection PyUnusedLocal
-    async def _process_message(self, channel, method, properties, body) -> None:
+    def _process_message(self, channel, method, properties, body) -> None:
         """process a message from the rabbit queue
 
         :param channel: channel instance
@@ -217,30 +218,22 @@ class ListenQueue:
         :param body: message body (data)
         :type body: str or bytes or bytearray
         """
-
         json_data = json.loads(body)
-        work_id = json_data["internal"]["work_id"]
-        message_task = self._data_handler(json_data)
+        self.thread = threading.Thread(target=self._data_handler, args=[json_data])
+        self.thread.start()
         five_minutes = 60 * 5
         time_wait = 0
-        try:
-            while not message_task.done():  # Loop while the task/thread is processing
-                if (
-                    self.helper.work_id is not None and time_wait > five_minutes
-                ):  # Ping every 5 minutes
-                    self.helper.api.work.ping(self.helper.work_id)
-                    time_wait = 0
-                else:
-                    time_wait += 1
-                await asyncio.sleep(1)
-            if work_id:
-                self.helper.api.work.to_processed(work_id, message_task.result())
-        except Exception as e:  # pylint: disable=broad-except
-            logging.exception("Error in message processing, reporting error to API")
-            if work_id:
-                self.helper.api.work.to_processed(work_id, str(e), True)
-        finally:
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+        # Wait for end of execution of the _data_handler
+        while self.thread.is_alive():  # Loop while the thread is processing
+            if (
+                self.helper.work_id is not None and time_wait > five_minutes
+            ):  # Ping every 5 minutes
+                self.helper.api.work.ping(self.helper.work_id)
+                time_wait = 0
+            else:
+                time_wait += 1
+            time.sleep(1)
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         LOGGER.info(
             "Message (delivery_tag=%s) processed, thread terminated",
             method.delivery_tag,
@@ -280,15 +273,9 @@ class ListenQueue:
                 self.helper.api.work.to_received(
                     work_id, "Connector ready to process the operation"
                 )
-            if asyncio.iscoroutinefunction(self.callback):
-                message = asyncio.run_coroutine_threadsafe(
-                    self.callback(json_data["event"]), self.connector_event_loop
-                )
-            else:
-                message = asyncio.get_running_loop().run_in_executor(
-                    None, self.callback, json_data["event"]
-                )
-            return message
+            message = self.callback(json_data["event"])
+            if work_id:
+                self.helper.api.work.to_processed(work_id, message)
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
             LOGGER.exception("Error in message processing, reporting error to API")
@@ -356,9 +343,7 @@ class ListenQueue:
         assert self.channel is not None
         self.channel.basic_consume(
             queue=self.queue_name,
-            on_message_callback=lambda *args: asyncio.create_task(
-                self._process_message(*args)
-            ),
+            on_message_callback=self._process_message,
         )
 
 
