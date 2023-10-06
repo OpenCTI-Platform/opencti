@@ -13788,7 +13788,9 @@ export type MutationPlaybookReplaceNodeArgs = {
 
 export type MutationPlaybookStepExecutionArgs = {
   bundle: Scalars['String']['input'];
-  instance_id: Scalars['ID']['input'];
+  data_instance_id: Scalars['ID']['input'];
+  execution_id: Scalars['ID']['input'];
+  execution_start: Scalars['DateTime']['input'];
   playbook_id: Scalars['ID']['input'];
   previous_bundle: Scalars['String']['input'];
   previous_step_id: Scalars['ID']['input'];
@@ -17013,11 +17015,31 @@ export type PhoneNumberAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PlayBookExecution = {
+  __typename?: 'PlayBookExecution';
+  execution_start?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  playbook_id: Scalars['ID']['output'];
+  steps?: Maybe<Array<PlayBookExecutionStep>>;
+};
+
+export type PlayBookExecutionStep = {
+  __typename?: 'PlayBookExecutionStep';
+  bundle_or_patch?: Maybe<Scalars['String']['output']>;
+  duration?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  in_timestamp?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  out_timestamp?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
+};
+
 export type Playbook = BasicObject & InternalObject & {
   __typename?: 'Playbook';
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  last_executions?: Maybe<Array<PlayBookExecution>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   playbook_definition?: Maybe<Scalars['String']['output']>;
@@ -29090,6 +29112,8 @@ export type ResolversTypes = ResolversObject<{
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PhoneNumberAddInput: PhoneNumberAddInput;
+  PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
+  PlayBookExecutionStep: ResolverTypeWrapper<PlayBookExecutionStep>;
   Playbook: ResolverTypeWrapper<BasicStoreEntityPlaybook>;
   PlaybookAddInput: PlaybookAddInput;
   PlaybookAddLinkInput: PlaybookAddLinkInput;
@@ -29828,6 +29852,8 @@ export type ResolversParentTypes = ResolversObject<{
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: Omit<PhoneNumber, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PhoneNumberAddInput: PhoneNumberAddInput;
+  PlayBookExecution: PlayBookExecution;
+  PlayBookExecutionStep: PlayBookExecutionStep;
   Playbook: BasicStoreEntityPlaybook;
   PlaybookAddInput: PlaybookAddInput;
   PlaybookAddLinkInput: PlaybookAddLinkInput;
@@ -34022,7 +34048,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
-  playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'instance_id' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
+  playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
@@ -34859,10 +34885,30 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PlayBookExecutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecution'] = ResolversParentTypes['PlayBookExecution']> = ResolversObject<{
+  execution_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  playbook_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  steps?: Resolver<Maybe<Array<ResolversTypes['PlayBookExecutionStep']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecutionStep'] = ResolversParentTypes['PlayBookExecutionStep']> = ResolversObject<{
+  bundle_or_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  in_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  out_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PlaybookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playbook'] = ResolversParentTypes['Playbook']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_executions?: Resolver<Maybe<Array<ResolversTypes['PlayBookExecution']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38206,6 +38252,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ParticipantEdge?: ParticipantEdgeResolvers<ContextType>;
   PaymentCard?: PaymentCardResolvers<ContextType>;
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
+  PlayBookExecution?: PlayBookExecutionResolvers<ContextType>;
+  PlayBookExecutionStep?: PlayBookExecutionStepResolvers<ContextType>;
   Playbook?: PlaybookResolvers<ContextType>;
   PlaybookComponent?: PlaybookComponentResolvers<ContextType>;
   PlaybookComponentPort?: PlaybookComponentPortResolvers<ContextType>;

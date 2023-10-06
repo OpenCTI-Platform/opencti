@@ -770,16 +770,27 @@ export const getClusterInstances = async () => {
 // endregion
 
 // playground handling
-export const redisPlaybookGet = async (playbookRunId: string) => {
-  const follow = await getClientBase().get(playbookRunId);
-  return follow ? JSON.parse(follow) : undefined;
-};
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const clientBase = getClientBase();
-  const id = `playbook_${envelop.playbook_id}`;
+  const id = `playbook_execution_${envelop.playbook_execution_id}`;
   const follow = await clientBase.get(id);
   const objectFollow = follow ? JSON.parse(follow) : {};
   const toUpdate = mergeDeepRightAll(objectFollow, envelop);
-  await clientBase.set(id, JSON.stringify(toUpdate), 'EX', 60 * 60 * 24); // 1 day
+  await setKeyWithList(id, [`playbook_executions_${envelop.playbook_id}`], toUpdate, 5 * 60); // 5 minutes
+};
+export const getLastPlaybookExecutions = async (playbookId: string) => {
+  const executions = await keysFromList(`playbook_executions_${playbookId}`, 5 * 60) as ExecutionEnvelop[];
+  return executions.map((e) => {
+    const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
+      const bundle_or_patch = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+      return ({ id: k.split('step_')[1], bundle_or_patch, ...v });
+    });
+    return {
+      id: e.playbook_execution_id,
+      playbook_id: e.playbook_id,
+      execution_start: steps[0].in_timestamp,
+      steps
+    };
+  });
 };
 // endregion

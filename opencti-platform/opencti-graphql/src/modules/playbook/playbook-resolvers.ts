@@ -30,6 +30,7 @@ import {
   playbookUpdatePositions
 } from './playbook-domain';
 import { playbookStepExecution } from '../../manager/playbookManager';
+import { getLastPlaybookExecutions } from '../../database/redis';
 
 const playbookResolvers: Resolvers = {
   Query: {
@@ -38,6 +39,9 @@ const playbookResolvers: Resolvers = {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: () => availableComponents(),
+  },
+  Playbook: {
+    last_executions: async (current) => getLastPlaybookExecutions(current.id)
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {

@@ -1,3 +1,20 @@
+type PlayBookExecutionStep {
+    id: ID!
+    message: String
+    status: String
+    in_timestamp: String
+    out_timestamp: String
+    duration: Int
+    bundle_or_patch: String
+}
+
+type PlayBookExecution {
+    id: ID!
+    playbook_id: ID!
+    execution_start: String
+    steps: [PlayBookExecutionStep!]
+}
+
 type Playbook implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
@@ -8,6 +25,7 @@ type Playbook implements InternalObject & BasicObject {
     description: String
     playbook_running: Boolean
     playbook_definition: String
+    last_executions: [PlayBookExecution!]
 }
 
 type PlaybookComponentPort {
@@ -107,5 +125,5 @@ type Mutation {
     playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth(for: [SETTINGS_SETACCESSES])
     playbookUpdatePositions(id: ID!, positions: String!): ID @auth(for: [SETTINGS_SETACCESSES])
     playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook @auth(for: [SETTINGS_SETACCESSES])
-    playbookStepExecution(instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean @auth(for: [SETTINGS_SETACCESSES])
+    playbookStepExecution(execution_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean @auth(for: [SETTINGS_SETACCESSES])
 }

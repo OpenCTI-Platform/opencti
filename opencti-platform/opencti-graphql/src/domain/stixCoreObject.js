@@ -196,7 +196,7 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
       applicant_id: user.id, // User asking for the import
     },
     event: {
-      entity_id: elementId,
+      entity_id: element.standard_id,
     },
   };
   await pushToConnector(context, connector, message);

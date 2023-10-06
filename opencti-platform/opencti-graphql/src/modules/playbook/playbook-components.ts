@@ -16,11 +16,10 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import type { Operation } from 'fast-json-patch';
 import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
-import { pushToConnector, pushToSync } from '../../database/rabbitmq';
+import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -39,7 +38,7 @@ import { STIX_SPEC_VERSION } from '../../database/stix';
 import type { StixContainer } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_INDICATOR, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import type { StixCoreObject } from '../../types/stix-common';
+import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -49,6 +48,17 @@ import type { BasicStoreEntityOrganization } from '../organization/organization-
 import { getEntitiesListFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
+import { extractStixRepresentative } from '../../database/stix-representative';
+import { isNotEmptyField } from '../../database/utils';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+
+const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
+  const baseData = bundle.objects.find((o) => o.id === instanceId);
+  if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
+  return baseData;
+};
 
 // region built in playbook components
 interface LoggerConfiguration extends PlaybookComponentConfiguration {
@@ -71,8 +81,8 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
-  executor: async ({ bundle, instance }) => {
-    switch (instance.configuration.level) {
+  executor: async ({ bundle, playbookNode }) => {
+    switch (playbookNode.configuration.level) {
       case 'info':
         logApp.info('[PLAYBOOK MANAGER] Logger component output', { bundle });
         break;
@@ -131,7 +141,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   schema: async () => undefined,
   executor: async ({ bundle }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: AUTOMATION_MANAGER_USER_UUID, content, update: true });
+    await pushToPlaybook({ type: 'bundle', applicant_id: AUTOMATION_MANAGER_USER_UUID, content, update: true });
     return { output_port: undefined, bundle };
   }
 };
@@ -156,11 +166,11 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   ports: [{ id: 'out', type: 'out' }, { id: 'empty', type: 'out' }],
   configuration_schema: PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
-  executor: async ({ instance, instanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
     const context = executionContext('playbook_components');
-    const jsonFilters = JSON.parse(instance.configuration.filters);
+    const jsonFilters = JSON.parse(playbookNode.configuration.filters);
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
-    const baseData = bundle.objects.find((o) => o.id === instanceId);
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const isMatch = await isStixMatchFilters(context, SYSTEM_USER, baseData, adaptedFilters);
     return { output_port: isMatch ? 'out' : 'empty', bundle };
   }
@@ -193,23 +203,24 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     const schemaElement = { properties: { connector: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
-  notify: async ({ playbookId, instance, previousInstance, instanceId, bundle }) => {
+  notify: async ({ executionId, playbookId, playbookNode, previousPlaybookNode, dataInstanceId, bundle }) => {
     const context = executionContext('playbook_manager');
-    const connector = await loadConnectorById(context, SYSTEM_USER, instance.configuration.connector);
+    const connector = await loadConnectorById(context, SYSTEM_USER, playbookNode.configuration.connector);
     const message = {
       internal: {
         work_id: null, // No work id associated
         playbook: {
+          execution_id: executionId,
           playbook_id: playbookId,
-          instance_id: instanceId,
-          step_id: instance.id,
-          previous_step_id: previousInstance?.id,
+          data_instance_id: dataInstanceId,
+          step_id: playbookNode.id,
+          previous_step_id: previousPlaybookNode?.id,
         },
         applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
       },
       event: {
-        entity_id: instanceId,
-        stix: bundle
+        entity_id: dataInstanceId,
+        bundle
       },
     };
     await pushToConnector(context, connector, message);
@@ -246,13 +257,13 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
     const schemaElement = { properties: { container_type: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ instanceId, instance, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const created = now();
-    const containerType = instance.configuration.container_type;
+    const containerType = playbookNode.configuration.container_type;
     if (isStixDomainObjectContainer(containerType)) {
-      const baseData = bundle.objects.find((o) => o.id === instanceId) as any;
+      const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const containerData = {
-        name: baseData.name ?? `Generated container wrapper from playbook at ${created}`,
+        name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
         created,
         published: created,
       };
@@ -304,14 +315,14 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
     const schemaElement = { properties: { organizations: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<SharingConfiguration>, any>(PLAYBOOK_SHARING_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ instanceId, instance, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     // const organizations = await storeLoadByIds(context, SYSTEM_USER, instance.configuration.organizations, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const organizations = await getEntitiesListFromCache<BasicStoreEntityOrganization>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const organizationIds = organizations
-      .filter((o) => (instance.configuration.organizations ?? []).includes(o.internal_id))
+      .filter((o) => (playbookNode.configuration.organizations ?? []).includes(o.internal_id))
       .map((o) => o.standard_id);
-    const baseData = bundle.objects.find((o) => o.id === instanceId) as StixCoreObject;
+    const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
     baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
     return { output_port: 'out', bundle };
   }
@@ -354,7 +365,7 @@ interface UpdateValueConfiguration {
   patch_value: string
 }
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove', attribute: string, isMultiple: boolean, value: UpdateValueConfiguration[] }[]
+  actions: { op: 'add' | 'replace' | 'remove', attribute: string, value: UpdateValueConfiguration[] }[]
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
   type: 'object',
@@ -366,7 +377,6 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
         properties: {
           op: { type: 'string', enum: ['add', 'replace', 'remove'] },
           attribute: { type: 'string' },
-          isMultiple: { type: 'boolean' },
           value: {
             type: 'array',
             items: {
@@ -380,7 +390,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
             }
           },
         },
-        required: ['op', 'attribute', 'isMultiple', 'value'],
+        required: ['op', 'attribute', 'value'],
       }
     },
   },
@@ -388,7 +398,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
 };
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
   id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
-  name: 'Update knowledge',
+  name: 'Manipulate knowledge',
   description: 'Manipulate STIX data',
   icon: 'edit',
   is_entry_point: false,
@@ -396,27 +406,36 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  executor: async ({ instanceId, instance, bundle }) => {
-    const baseData = bundle.objects.find((o) => o.id === instanceId) as any;
-    const { actions } = instance.configuration;
-    const patches: Operation[] = actions.map((n) => {
-      let path = null;
-      if (attributePathMapping[n.attribute]) {
-        const { type } = baseData.extensions[STIX_EXT_OCTI];
-        if (attributePathMapping[n.attribute][type]) {
-          path = attributePathMapping[n.attribute][type];
-        } else {
-          const key = Object.keys(attributePathMapping[n.attribute]).filter((o) => getParentTypes(type).includes(o)).at(0);
-          if (key) {
-            path = attributePathMapping[n.attribute][key];
-          }
+  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const { actions } = playbookNode.configuration;
+    // Compute if the attribute is defined as multiple in schema definition
+    const isAttributeMultiple = (entityType:string, attribute: string) => {
+      const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
+      if (baseAttribute) return baseAttribute.multiple;
+      const relationRef = schemaRelationsRefDefinition.getRelationRef(entityType, attribute);
+      if (relationRef) return relationRef.multiple;
+      return undefined;
+    };
+    // Compute the access path for the attribute in the static matrix
+    const computeAttributePath = (entityType:string, attribute: string) => {
+      if (attributePathMapping[attribute]) {
+        if (attributePathMapping[attribute][entityType]) {
+          return attributePathMapping[attribute][entityType];
+        }
+        const key = Object.keys(attributePathMapping[attribute]).filter((o) => getParentTypes(entityType).includes(o)).at(0);
+        if (key) {
+          return attributePathMapping[attribute][key];
         }
       }
-      return { op: n.op, path, value: n.isMultiple ? n.value.map((o) => o.patch_value) : R.head(n.value)?.patch_value };
-    }).filter((n) => n.path !== null);
-    if (patches.length > 0) {
-      jsonpatch.applyPatch(baseData, patches);
-    }
+      return undefined;
+    };
+    const { type } = baseData.extensions[STIX_EXT_OCTI];
+    const standardOperations = actions
+      .map((action) => ({ action, multiple: isAttributeMultiple(type, action.attribute), path: computeAttributePath(type, action.attribute) }))
+      .filter(({ path, multiple }) => multiple !== undefined && isNotEmptyField(path))
+      .map(({ action, path, multiple }) => ({ op: action.op, path, value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value }));
+    jsonpatch.applyPatch(baseData, standardOperations);
     return { output_port: 'out', bundle };
   }
 };

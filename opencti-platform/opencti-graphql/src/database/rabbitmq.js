@@ -6,7 +6,7 @@ import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { RABBIT_QUEUE_PREFIX } from './utils';
+import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX } from './utils';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -170,7 +170,11 @@ export const rabbitMQIsAlive = async () => {
 };
 
 export const pushToSync = (message) => {
-  return send(WORKER_EXCHANGE, pushRouting('sync'), JSON.stringify(message));
+  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_SYNC_QUEUE), JSON.stringify(message));
+};
+
+export const pushToPlaybook = (message) => {
+  return send(WORKER_EXCHANGE, pushRouting(INTERNAL_PLAYBOOK_QUEUE), JSON.stringify(message));
 };
 
 export const pushToConnector = (context, connector, message) => {

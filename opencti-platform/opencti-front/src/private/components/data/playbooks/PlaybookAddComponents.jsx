@@ -22,7 +22,6 @@ import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
-import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -52,9 +51,6 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     float: 'left',
-  },
-  search: {
-    float: 'right',
   },
   lines: {
     padding: 0,
@@ -144,15 +140,11 @@ const PlaybookAddComponentsContent = ({
   const handleRemoveStep = (i) => {
     setActionsInputs(R.remove(i, 1, actionsInputs));
   };
-  const handleChangeActionInput = (i, key, value, isMultiple = null) => {
+  const handleChangeActionInput = (i, key, value) => {
     setActionsInputs(
       actionsInputs.map((v, k) => {
         if (k === i) {
-          return {
-            ...v,
-            [key]: value,
-            isMultiple: isMultiple !== null ? isMultiple : v.isMultiple,
-          };
+          return { ...v, [key]: value };
         }
         return v;
       }),
@@ -220,8 +212,6 @@ const PlaybookAddComponentsContent = ({
             i,
             'attribute',
             event.target.value,
-            options.filter((n) => n.value === event.target.value).at(0)
-              .isMultiple,
           );
           setValues(R.omit([`actions-${i}-value`], values));
         }}
@@ -516,12 +506,7 @@ const PlaybookAddComponentsContent = ({
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(
-                                        i,
-                                        'op',
-                                        event.target.value,
-                                      )
-                                      }
+                                      onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
                                     >
                                       <MenuItem value="add">
                                         {t('Add')}
@@ -609,10 +594,8 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value}
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)}
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
@@ -763,13 +746,6 @@ const PlaybookAddComponents = ({
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Add components')}
         </Typography>
-        <div className={classes.search}>
-          <SearchInput
-            variant="inDrawer"
-            placeholder={`${t('Search')}...`}
-            onChange={setSearchTerm}
-          />
-        </div>
       </div>
       {(selectedNode || selectedEdge) && (
         <PlaybookAddComponentsContent

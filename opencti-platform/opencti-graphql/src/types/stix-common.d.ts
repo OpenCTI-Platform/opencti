@@ -8,6 +8,7 @@ type StixId = `${string}--${v4 | v5}`;
 
 export type StixBundle = {
   id: string;
+  spec_version: string,
   type: 'bundle'
   objects: StixObject[];
 };

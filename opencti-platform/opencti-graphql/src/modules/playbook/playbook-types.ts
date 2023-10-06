@@ -58,11 +58,11 @@ export interface PlaybookExecutionStep<T extends PlaybookComponentConfiguration>
 }
 
 export interface ExecutorParameters<T extends PlaybookComponentConfiguration> {
+  executionId: string
   playbookId: string
-  instanceId: string
-  previousInstance: NodeInstance<T> | undefined
-  instance: NodeInstance<T>
-  previousBundle: StixBundle | null
+  dataInstanceId: string
+  previousPlaybookNode: NodeInstance<T> | undefined
+  playbookNode: NodeInstance<T>
   bundle: StixBundle
 }
 
