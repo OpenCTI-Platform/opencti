@@ -249,18 +249,23 @@ class ListenQueue:
         # Set the API headers
         work_id = json_data["internal"]["work_id"]
         self.helper.work_id = work_id
+        self.helper.playbook = None
         if "playbook" in json_data["internal"]:
+            execution_id = json_data["internal"]["playbook"]["execution_id"]
+            execution_start = self.helper.date_now()
             playbook_id = json_data["internal"]["playbook"]["playbook_id"]
-            instance_id = json_data["internal"]["playbook"]["instance_id"]
-            previous_bundle = json_data["event"]["stix"]
+            data_instance_id = json_data["internal"]["playbook"]["data_instance_id"]
+            previous_bundle = json_data["event"]["bundle"]
             step_id = json_data["internal"]["playbook"]["step_id"]
             previous_step_id = json_data["internal"]["playbook"]["previous_step_id"]
             playbook_data = {
+                "execution_id": execution_id,
+                "execution_start": execution_start,
                 "playbook_id": playbook_id,
-                "instance_id": instance_id,
+                "data_instance_id": data_instance_id,
                 "previous_step_id": previous_step_id,
-                "step_id": step_id,
                 "previous_bundle": previous_bundle,
+                "step_id": step_id,
             }
             self.helper.playbook = playbook_data
 
