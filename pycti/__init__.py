@@ -61,7 +61,12 @@ from .utils.constants import (
     StixCyberObservableTypes,
     StixMetaTypes,
 )
-from .utils.opencti_stix2 import OpenCTIStix2
+from .utils.opencti_stix2 import (
+    OpenCTIStix2,
+    STIX_EXT_OCTI,
+    STIX_EXT_MITRE,
+    STIX_EXT_OCTI_SCO,
+)
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.opencti_stix2_update import OpenCTIStix2Update
 from .utils.opencti_stix2_utils import OpenCTIStix2Utils
@@ -127,4 +132,7 @@ __all__ = [
     "CustomObservableUserAgent",
     "CustomObservableCryptocurrencyWallet",
     "CustomObservableText",
+    "STIX_EXT_MITRE",
+    "STIX_EXT_OCTI_SCO",
+    "STIX_EXT_OCTI",
 ]
