@@ -109,14 +109,12 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const currentConfig = selectedNode?.data?.configuration;
+  const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const [filters, setFilters] = useState(
-    action === 'config' && currentConfig?.filters
-      ? JSON.parse(currentConfig?.filters)
-      : {},
+    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
   );
   const [actionsInputs, setActionsInputs] = useState(
-    action === 'config' && currentConfig?.actions ? currentConfig.actions : [],
+    currentConfig?.actions ? currentConfig.actions : [],
   );
   const [componentId, setComponentId] = useState(
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
