@@ -16,6 +16,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -178,5 +179,12 @@ export const createListTask = async (context, user, input) => {
 };
 
 export const isTaskEnabledEntity = (entityType) => {
-  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || [ENTITY_TYPE_VOCABULARY, ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_CASE_TEMPLATE].includes(entityType);
+  return isStixCoreObject(entityType)
+    || isStixCoreRelationship(entityType)
+    || [
+      ENTITY_TYPE_VOCABULARY,
+      ENTITY_TYPE_NOTIFICATION,
+      ENTITY_TYPE_CASE_TEMPLATE,
+      ENTITY_TYPE_LABEL
+    ].includes(entityType);
 };
