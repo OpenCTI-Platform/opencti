@@ -332,8 +332,9 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     // Connect the parent node to the new node using the existing link
     newEdges = newEdges.map((edge) => {
       if (
-          edge.source === selectedEdge.source
-          && edge.sourceHandle === selectedEdge.sourceHandle
+        edge.source === selectedEdge.source
+        && edge.sourceHandle === selectedEdge.sourceHandle
+        && edge.target === targetNode.id
       ) {
         return {
           ...edge,
@@ -351,9 +352,9 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     });
     // If the selected component has no ports, delete all children
     if (component.ports.length === 0) {
-      const edgesToDelete = newEdges.filter(
-        (n) => n.source === targetNode.id || n.target === targetNode.id,
-      );
+      newNodes = newNodes.filter((n) => n.id !== targetNode.id);
+      newEdges = newEdges.filter((n) => n.target !== targetNode.id);
+      const edgesToDelete = newEdges.filter((n) => n.source === targetNode.id);
       const deleteResult = deleteEdgesAndAllChildren(
         newNodes,
         newEdges,
@@ -416,6 +417,8 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         );
       }
     }
+    console.log(newNodes);
+    console.log(newEdges);
     setNodes(newNodes);
     setEdges(newEdges);
   };

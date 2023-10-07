@@ -240,7 +240,11 @@ export const playbookInsertNode = async (context: AuthContext, user: AuthUser, i
       return n;
     });
   } else {
-    const linksToDelete = definition.links.filter((n) => (n.from.id === childNodeId || n.to.id === childNodeId));
+    // Delete the child node ID
+    definition.nodes = definition.nodes.filter((n) => n.id !== childNodeId);
+    // Also delete all links going to this node (all links from this node are deleted after)
+    definition.links = definition.links.filter((n) => n.to.id !== childNodeId);
+    const linksToDelete = definition.links.filter((n) => n.from.id === childNodeId);
     const result = deleteLinksAndAllChildren(definition, linksToDelete);
     definition.nodes = result.nodes;
     definition.links = result.links;
