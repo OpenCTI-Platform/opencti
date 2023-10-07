@@ -15,6 +15,7 @@ export const cleanMarkings = async (context, values) => {
   }).flat();
 };
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 export const handleMarkingOperations = async (context, currentMarkings = [], refs, operation) => {
   try {
     // Get all marking definitions
@@ -41,20 +42,23 @@ export const handleMarkingOperations = async (context, currentMarkings = [], ref
       if (markingsAddedCleaned.some((mark) => currentMarkings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
         const markingsToKeep = await cleanMarkings(context, [...currentMarkings, ...markingsAddedCleaned]);
 
-        // const markingsAddedHasHigherOrder = currentMarkings
-        //   .some((currentMarking) => markingsAddedCleaned
-        //     .some((markingAdded) => markingAdded.definition_type === currentMarking.definition_type && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
         const markingsAddedHasHigherOrder = markingsToKeep
           .some((markingAdded) => currentMarkings
             .some((currentMarking) => currentMarking.definition_type && markingAdded.x_opencti_order && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
+
+        const markingsNotInCommon = markingsToKeep.filter((item) => !currentMarkings.some((m) => m.definition_type === item.definition_type));
 
         // If some of the added item has a higher rank than before, replace
         if (markingsAddedHasHigherOrder) {
           operationUpdated.operation = UPDATE_OPERATION_REPLACE;
           operationUpdated.refs = markingsToKeep.map((m) => m.id);
           return operationUpdated;
-        }
-        return null;
+        } if (markingsNotInCommon.length !== 0) {
+          // Add all markings to keep not in common with current if there is no highest order
+          operationUpdated.operation = UPDATE_OPERATION_ADD;
+          operationUpdated.refs = markingsNotInCommon.map((m) => m.id);
+          return operationUpdated;
+        } return null; // no marking to add, do nothing
       }
       // THIS IS A ADD
       operationUpdated.operation = UPDATE_OPERATION_ADD;
@@ -62,16 +66,19 @@ export const handleMarkingOperations = async (context, currentMarkings = [], ref
       return operationUpdated;
     }
 
+    // If replace operation, replace all
     if (operation === UPDATE_OPERATION_REPLACE) {
       operationUpdated.operation = UPDATE_OPERATION_REPLACE;
       operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
       return operationUpdated;
     }
 
+    // If remove operation, do nothing
     if (operation === UPDATE_OPERATION_REMOVE) {
       return operationUpdated;
     }
 
+    // If add a new not expected operation, throw exception
     throw new Error('Invalid operation');
   } catch (error) {
     return error.message;
