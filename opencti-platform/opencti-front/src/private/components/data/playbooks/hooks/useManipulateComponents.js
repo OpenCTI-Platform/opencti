@@ -417,8 +417,6 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         );
       }
     }
-    console.log(newNodes);
-    console.log(newEdges);
     setNodes(newNodes);
     setEdges(newEdges);
   };
