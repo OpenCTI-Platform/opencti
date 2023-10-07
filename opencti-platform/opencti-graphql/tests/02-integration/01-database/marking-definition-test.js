@@ -119,13 +119,13 @@ describe('Marking Definition', () => {
       it('Case add 1 marking, current 1 has same type AND higher order => do nothing', async () => {
         // PAP 04 -> Add PAP 01 => Do nothing
         const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual({ operation: 'add', refs: [] });
+        expect(result).toEqual(null);
       });
     });
 
     describe('Case update operation UPDATE', () => {
-      it('Replace with nothing', async () => {
-        // PAP 01 + statement1 00 -> Add nothing => ADD nothing
+      it('Replace with nothing => Remove all markings', async () => {
+        // PAP 01 + statement1 00 -> Add nothing => Remove all
         const result = await handleMarkingOperations(testContext, [statementMarking1, clearPAPMarking], [], UPDATE_OPERATION_REPLACE);
         expect(result).toEqual({ operation: 'replace', refs: [] });
       });
@@ -159,6 +159,12 @@ describe('Marking Definition', () => {
         const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [clearPAPMarking.id, statementMarking2.id], UPDATE_OPERATION_REMOVE);
         expect(result).toEqual({ operation: 'remove', refs: [clearPAPMarking.id, statementMarking2.id] });
       });
+    });
+
+    it('Case the operation changed or added => throw exception invalid operation', async () => {
+      const UPDATE_OPERATION_NEW = 'erase';
+      const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [clearPAPMarking.id, statementMarking2.id], UPDATE_OPERATION_NEW);
+      expect(result).toEqual('Invalid operation');
     });
   });
 
