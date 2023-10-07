@@ -2419,13 +2419,12 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   }
   // Add support for existing creator_id that can be a simple string except of an array
   const creatorIds = [];
-  const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
-  const validCreators = idCreators.filter((id) => !Object.keys(INTERNAL_USERS).includes(id));
-  if (isNotEmptyField(element.creator_id) && validCreators.length > 0) {
-    creatorIds.push(...validCreators);
+  if (isNotEmptyField(element.creator_id)) {
+    const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
+    creatorIds.push(...idCreators);
   }
   // Cumulate creator id
-  if (!creatorIds.includes(user.id)) {
+  if (!INTERNAL_USERS[user.id] && !creatorIds.includes(user.id)) {
     inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
   }
   // Upsert observed data count and times extensions

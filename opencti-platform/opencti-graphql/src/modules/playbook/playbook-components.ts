@@ -33,11 +33,22 @@ import { loadConnectorById } from '../../domain/connector';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { StoreCommon } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
-import { now } from '../../utils/format';
+import { now, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import type { StixContainer } from '../../types/stix-sdo';
+import type {
+  StixCampaign,
+  StixContainer,
+  StixIncident,
+  StixInfrastructure,
+  StixMalware,
+  StixReport, StixThreatActor
+} from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import { ENTITY_TYPE_INDICATOR, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INDICATOR,
+  isStixDomainObjectContainer
+} from '../../schema/stixDomainObject';
 import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
@@ -53,6 +64,7 @@ import { extractStixRepresentative } from '../../database/stix-representative';
 import { isNotEmptyField } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+import { stixLoadByIds } from '../../database/middleware';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -439,6 +451,60 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     return { output_port: 'out', bundle };
   }
 };
+
+// First seen rule
+const FIRST_SEEN_RULE = 'first_seen';
+type StixWithFirstSeen = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
+const ENTITIES_FIRST_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
+
+interface RuleConfiguration extends PlaybookComponentConfiguration {
+  rule: string
+}
+const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
+  type: 'object',
+  properties: {
+    rule: { type: 'string', oneOf: [{ const: FIRST_SEEN_RULE, title: 'First seen computing' }] },
+  },
+  required: ['rule'],
+};
+const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
+  id: 'PLAYBOOK_RULE_COMPONENT',
+  name: 'Execute predefined rule',
+  description: 'Execute complex predefined computing',
+  icon: 'memory',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_RULE_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_RULE_COMPONENT_SCHEMA,
+  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+    const context = executionContext('playbook_components');
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const { type } = baseData.extensions[STIX_EXT_OCTI];
+    const { rule } = playbookNode.configuration;
+    if (rule === FIRST_SEEN_RULE) {
+      // Handle first seen synchro for reports creation / modification
+      if (type === ENTITY_TYPE_CONTAINER_REPORT) {
+        const report = baseData as StixReport;
+        const publicationDate = utcDate(report.published);
+        const targetIds = (report.object_refs ?? [])
+          .filter((o) => ENTITIES_FIRST_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)));
+        if (targetIds.length > 0) {
+          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          const elementsToPatch = elements
+            .filter((e: StixWithFirstSeen) => publicationDate.isBefore(e.first_seen ? utcDate(e.first_seen) : utcDate()))
+            .map((e: StixWithFirstSeen) => {
+              const firstSeen = e.first_seen ? utcDate(e.first_seen) : utcDate();
+              if (publicationDate.isBefore(firstSeen)) return { ...e, first_seen: publicationDate.toISOString() };
+              return e;
+            });
+          bundle.objects.push(...elementsToPatch);
+        }
+      }
+    }
+    return { output_port: 'out', bundle };
+  }
+};
 // endregion
 
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
@@ -450,5 +516,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
-  [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT
+  [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
+  [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT
 };
