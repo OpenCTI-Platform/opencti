@@ -2412,6 +2412,10 @@ class OpenCTIStix2:
     def put_attribute_in_extension(
         object, extension_id, key, value, multiple=False
     ) -> any:
+        if ("x_opencti_" + key) in object:
+            del object["x_opencti_" + key]
+        if ("x_mitre_" + key) in object:
+            del object["x_mitre_" + key]
         if "extensions" not in object:
             object["extensions"] = {}
         if extension_id not in object["extensions"]:

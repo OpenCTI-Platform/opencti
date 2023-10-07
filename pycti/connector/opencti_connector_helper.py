@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import copy
 import datetime
 import json
 import logging
@@ -1310,3 +1311,20 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
             ][key]
         return None
+
+    def get_data_from_enrichment(self, data, opencti_entity):
+        stix_id = data["entity_id"]
+        bundle = data.get("bundle", None)
+        # Extract IPv4, IPv6 and Domain from entity data
+        if bundle is None:
+            # Generate bundle
+            stix_objects = self.api.stix2.prepare_export(
+                self.api.stix2.generate_export(copy.copy(opencti_entity))
+            )
+        else:
+            stix_objects = bundle["objects"]
+        stix_entity = [e for e in stix_objects if e["id"] == stix_id][0]
+        return {
+            "stix_entity": stix_entity,
+            "stix_objects": stix_objects,
+        }
