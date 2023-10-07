@@ -149,7 +149,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
     // eslint-disable-next-line no-plusplus
-    for (let i = 1; i <= oldComponent.ports.length - relatedComponent.ports.length; i++) {
+    for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
       const result = deleteLinksAndAllChildren(definition, linksToDelete);
@@ -223,21 +223,28 @@ export const playbookInsertNode = async (context: AuthContext, user: AuthUser, i
     }
   });
   // Replace the link
-  definition.links = definition.links.map((n) => {
-    if (n.from.id === parentNodeId && n.from.port === parentPortId && n.to.id === childNodeId) {
-      return {
-        ...n,
-        from: {
-          id: nodeId,
-          port: 'out',
-        },
-        to: {
-          id: childNodeId
-        }
-      };
-    }
-    return n;
-  });
+  if (relatedComponent.ports.length > 0) {
+    definition.links = definition.links.map((n) => {
+      if (n.from.id === parentNodeId && n.from.port === parentPortId && n.to.id === childNodeId) {
+        return {
+          ...n,
+          from: {
+            id: nodeId,
+            port: relatedComponent.ports.at(0)?.id ?? 'out',
+          },
+          to: {
+            id: childNodeId
+          }
+        };
+      }
+      return n;
+    });
+  } else {
+    const linksToDelete = definition.links.filter((n) => (n.from.id === childNodeId || n.to.id === childNodeId));
+    const result = deleteLinksAndAllChildren(definition, linksToDelete);
+    definition.nodes = result.nodes;
+    definition.links = result.links;
+  }
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return { nodeId, linkId };

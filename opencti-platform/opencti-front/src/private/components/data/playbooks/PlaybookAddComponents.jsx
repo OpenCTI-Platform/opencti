@@ -111,13 +111,15 @@ const PlaybookAddComponentsContent = ({
   const { t } = useFormatter();
   const currentConfig = selectedNode?.data?.configuration;
   const [filters, setFilters] = useState(
-    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
+    action === 'config' && currentConfig?.filters
+      ? JSON.parse(currentConfig?.filters)
+      : {},
   );
   const [actionsInputs, setActionsInputs] = useState(
-    currentConfig?.actions ? currentConfig.actions : [],
+    action === 'config' && currentConfig?.actions ? currentConfig.actions : [],
   );
   const [componentId, setComponentId] = useState(
-    action !== 'add' ? selectedNode?.data?.component?.id ?? null : null,
+    action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
@@ -208,11 +210,7 @@ const PlaybookAddComponentsContent = ({
         disabled={disabled}
         value={actionsInputs[i]?.attribute}
         onChange={(event) => {
-          handleChangeActionInput(
-            i,
-            'attribute',
-            event.target.value,
-          );
+          handleChangeActionInput(i, 'attribute', event.target.value);
           setValues(R.omit([`actions-${i}-value`], values));
         }}
       >
@@ -337,7 +335,10 @@ const PlaybookAddComponentsContent = ({
       finalConfig = { ...config, actions: actionsInputs };
     }
     resetForm();
-    if (selectedNode?.data?.component?.id && action === 'config') {
+    if (
+      selectedNode?.data?.component?.id
+      && (action === 'config' || action === 'replace')
+    ) {
       onConfigReplace(selectedComponent, name, finalConfig);
     } else {
       onConfigAdd(selectedComponent, name, finalConfig);
@@ -506,7 +507,12 @@ const PlaybookAddComponentsContent = ({
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
+                                      onChange={(event) => handleChangeActionInput(
+                                        i,
+                                        'op',
+                                        event.target.value,
+                                      )
+                                      }
                                     >
                                       <MenuItem value="add">
                                         {t('Add')}
@@ -594,8 +600,10 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value}
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)}
+                        isOptionEqualToValue={(option, value) => option.const === value
+                        }
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
+                        }
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
@@ -722,8 +730,10 @@ const PlaybookAddComponents = ({
     setSelectedNode(null);
     setSelectedEdge(null);
   };
-  const open = (action === 'config' || action === 'add' || action === 'replace')
-    && (selectedNode !== null || selectedEdge || null);
+  const open = !!(
+    (action === 'config' || action === 'add' || action === 'replace')
+    && (selectedNode !== null || selectedEdge || null)
+  );
   return (
     <Drawer
       open={open}

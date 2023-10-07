@@ -298,7 +298,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     setEdges((edges) => edges.concat([...childPlaceholderEdges, newEdge]));
   };
   const applyInsertNode = (result, component, name, configuration) => {
+    let newNodes = getNodes();
+    let newEdges = getEdges();
     const targetNode = getNode(selectedEdge.target);
+    // Add the new node
     const newNode = {
       id: result.nodeId,
       position: { x: targetNode.position.x, y: targetNode.position.y },
@@ -325,82 +328,96 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         },
       },
     };
-    const newEdge = {
-      id: result.linkId,
-      type: 'workflow',
-      source: result.nodeId,
-      sourceHandle: component.ports.at(0).id,
-      target: selectedEdge.target,
-      data: {
-        openConfig: (edgeId) => {
-          setSelectedEdge(edgeId);
-          setAction('config');
-        },
-      },
-    };
-    let newNodes = [newNode];
-    let newEdges = [newEdge];
-    if (component.ports.length > 1) {
-      const childPlaceholderId = uuid();
-      newNodes = [
-        newNode,
-        ...component.ports.slice(1).map((n) => ({
-          id: `${childPlaceholderId}-${n.id}`,
-          position: {
-            x: targetNode.position.x,
-            y: targetNode.position.y,
-          },
-          type: 'placeholder',
-          data: {
-            name: '+',
-            configuration: null,
-            component: { is_entry_point: false },
-            openConfig: (nodeId) => {
-              setSelectedNode(nodeId);
-              setAction('config');
-            },
-          },
-        })),
-      ];
-      newEdges = [
-        newEdge,
-        ...component.ports.slice(1).map((n) => ({
-          id: `${result.nodeId}-${childPlaceholderId}-${n.id}`,
-          type: 'placeholder',
-          source: result.nodeId,
-          sourceHandle: n.id,
-          target: `${childPlaceholderId}-${n.id}`,
-          data: {
-            openConfig: (nodeId) => {
-              setSelectedNode(nodeId);
-              setAction('config');
-            },
-          },
-        })),
-      ];
-    }
-    setNodes((nodes) => nodes.concat(newNodes));
-    setEdges((edges) => edges
-      .map((edge) => {
-        if (
+    newNodes.push(newNode);
+    // Connect the parent node to the new node using the existing link
+    newEdges = newEdges.map((edge) => {
+      if (
           edge.source === selectedEdge.source
-            && edge.sourceHandle === selectedEdge.sourceHandle
-        ) {
-          return {
-            ...edge,
-            type: 'workflow',
-            target: result.nodeId,
+          && edge.sourceHandle === selectedEdge.sourceHandle
+      ) {
+        return {
+          ...edge,
+          type: 'workflow',
+          target: result.nodeId,
+          data: {
+            openConfig: (edgeId) => {
+              setSelectedEdge(edgeId);
+              setAction('config');
+            },
+          },
+        };
+      }
+      return edge;
+    });
+    // If the selected component has no ports, delete all children
+    if (component.ports.length === 0) {
+      const edgesToDelete = newEdges.filter(
+        (n) => n.source === targetNode.id || n.target === targetNode.id,
+      );
+      const deleteResult = deleteEdgesAndAllChildren(
+        newNodes,
+        newEdges,
+        edgesToDelete,
+      );
+      newNodes = deleteResult.nodes;
+      newEdges = deleteResult.edges;
+    } else {
+      // If not, create the link from the new node to the child
+      const newEdge = {
+        id: result.linkId,
+        type: 'workflow',
+        source: result.nodeId,
+        sourceHandle: component.ports.at(0).id,
+        target: selectedEdge.target,
+        data: {
+          openConfig: (edgeId) => {
+            setSelectedEdge(edgeId);
+            setAction('config');
+          },
+        },
+      };
+      newEdges.push(newEdge);
+      if (component.ports.length > 1) {
+        // If more ports, create placeholders
+        const childPlaceholderId = uuid();
+        newNodes.push(
+          ...component.ports.slice(1).map((n) => ({
+            id: `${childPlaceholderId}-${n.id}`,
+            position: {
+              x: targetNode.position.x,
+              y: targetNode.position.y,
+            },
+            type: 'placeholder',
             data: {
-              openConfig: (edgeId) => {
-                setSelectedEdge(edgeId);
+              name: '+',
+              configuration: null,
+              component: { is_entry_point: false },
+              openConfig: (nodeId) => {
+                setSelectedNode(nodeId);
                 setAction('config');
               },
             },
-          };
-        }
-        return edge;
-      })
-      .concat(newEdges));
+          })),
+        );
+        newEdges.push(
+          ...component.ports.slice(1).map((n) => ({
+            id: `${result.nodeId}-${childPlaceholderId}-${n.id}`,
+            type: 'placeholder',
+            source: result.nodeId,
+            sourceHandle: n.id,
+            target: `${childPlaceholderId}-${n.id}`,
+            data: {
+              openConfig: (nodeId) => {
+                setSelectedNode(nodeId);
+                setAction('config');
+              },
+            },
+          })),
+        );
+      }
+    }
+    setNodes(newNodes);
+    setEdges(newEdges);
   };
   const applyReplaceNode = (component, name, configuration) => {
     let newEdges = getEdges();
@@ -438,8 +455,11 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     if (selectedNode.data.component.ports.length < component.ports.length) {
       const childPlaceholderId = uuid();
       for (
-        let i = 1;
-        i <= component.ports.length - selectedNode.data.component.ports.length;
+        let i = selectedNode.data.component.ports.length;
+        i
+        < component.ports.length
+          - selectedNode.data.component.ports.length
+          + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
         // eslint-disable-next-line no-plusplus
         i++
       ) {
@@ -479,10 +499,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       selectedNode.data.component.ports.length > component.ports.length
     ) {
       for (
-        let i = 1;
-        i <= selectedNode.data.component.ports.length - component.ports.length;
+        let i = selectedNode.data.component.ports.length - 1;
+        i >= component.ports.length;
         // eslint-disable-next-line no-plusplus
-        i++
+        i--
       ) {
         // Find all links to the port
         const edgesToDelete = newEdges.filter(
