@@ -18,6 +18,7 @@ from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
+import stix2.utils
 from filigran_sseclient import SSEClient
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.exceptions import NackError, UnroutableError
@@ -1220,6 +1221,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: JSON of the stix2 bundle
         :rtype:
         """
+
+        # Check if item are native STIX 2 lib
+        for i in range(len(items)):
+            if hasattr(items[i], "serialize"):
+                items[i] = json.loads(items[i].serialize())
 
         bundle = {
             "type": "bundle",
