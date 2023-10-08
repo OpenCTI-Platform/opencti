@@ -25,6 +25,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import GroupField from "@components/common/form/GroupField";
+import { convertGrantableGroups } from "@components/settings/organizations/SettingsOrganizationEdition";
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -265,7 +266,7 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
                     label={t('Add a group')}
                     multiple={true}
                     containerStyle={{ width: '100%' }}
-                    predefinedGroups={grantableGroups}
+                    predefinedGroups={convertGrantableGroups(organization)}
                     style={fieldSpacingContainerStyle}
                   />
                   <Field
