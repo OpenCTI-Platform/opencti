@@ -64,6 +64,7 @@ export interface ExecutorParameters<T extends PlaybookComponentConfiguration> {
   dataInstanceId: string
   previousPlaybookNode: NodeInstance<T> | undefined
   playbookNode: NodeInstance<T>
+  previousStepBundle: StixBundle | null
   bundle: StixBundle
 }
 

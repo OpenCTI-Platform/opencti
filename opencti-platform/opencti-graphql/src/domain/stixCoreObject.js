@@ -199,7 +199,7 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
       entity_id: element.standard_id,
     },
   };
-  await pushToConnector(context, connector, message);
+  await pushToConnector(connector.internal_id, message);
   await publishUserAction({
     user,
     event_access: 'extended',

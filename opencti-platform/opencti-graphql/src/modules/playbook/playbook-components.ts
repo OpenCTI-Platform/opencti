@@ -36,7 +36,6 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
 } from '../../schema/general';
-import { loadConnectorById } from '../../domain/connector';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { StoreCommon } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
@@ -102,7 +101,17 @@ interface LoggerConfiguration extends PlaybookComponentConfiguration {
 const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
   type: 'object',
   properties: {
-    level: { type: 'string', default: 'debug', oneOf: [{ const: 'debug', title: 'debug' }, { const: 'info', title: 'info' }, { const: 'warning', title: 'warning' }, { const: 'error', title: 'error' }] },
+    level: {
+      type: 'string',
+      default: 'debug',
+      $ref: 'Log level',
+      oneOf: [
+        { const: 'debug', title: 'debug' },
+        { const: 'info', title: 'info' },
+        { const: 'warning', title: 'warning' },
+        { const: 'error', title: 'error' }
+      ]
+    },
   },
   required: ['level'],
 };
@@ -182,11 +191,13 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
 };
 
 interface FilterConfiguration extends PlaybookComponentConfiguration {
+  all: boolean
   filters: string
 }
 const PLAYBOOK_FILTERING_COMPONENT_SCHEMA: JSONSchemaType<FilterConfiguration> = {
   type: 'object',
   properties: {
+    all: { type: 'boolean', $ref: 'Filter on elements included in the bundle', default: false },
     filters: { type: 'string' },
   },
   required: ['filters'],
@@ -203,8 +214,20 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   schema: async () => PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
     const context = executionContext('playbook_components');
-    const jsonFilters = JSON.parse(playbookNode.configuration.filters);
+    const { filters, all } = playbookNode.configuration;
+    const jsonFilters = JSON.parse(filters);
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+    // Checking on all bundle elements
+    if (all) {
+      const matchedElements = [];
+      for (let index = 0; index < bundle.objects.length; index += 1) {
+        const bundleElement = bundle.objects[index];
+        const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+        if (isMatch) matchedElements.push(bundleElement);
+      }
+      return { output_port: matchedElements.length > 0 ? 'out' : 'no-match', bundle };
+    }
+    // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const isMatch = await isStixMatchFilters(context, SYSTEM_USER, baseData, adaptedFilters);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
@@ -217,7 +240,7 @@ interface ConnectorConfiguration extends PlaybookComponentConfiguration {
 const PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA: JSONSchemaType<ConnectorConfiguration> = {
   type: 'object',
   properties: {
-    connector: { type: 'string', oneOf: [] },
+    connector: { type: 'string', $ref: 'Enrichment connector', oneOf: [] },
   },
   required: ['connector'],
 };
@@ -228,7 +251,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   icon: 'connector',
   is_entry_point: false,
   is_internal: false,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }], // { id: 'not-impacted', type: 'out' }]
   configuration_schema: PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA,
   schema: async () => {
     const context = executionContext('playbook_components');
@@ -239,30 +262,35 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
   notify: async ({ executionId, playbookId, playbookNode, previousPlaybookNode, dataInstanceId, bundle }) => {
-    const context = executionContext('playbook_manager');
-    const connector = await loadConnectorById(context, SYSTEM_USER, playbookNode.configuration.connector);
-    const message = {
-      internal: {
-        work_id: null, // No work id associated
-        playbook: {
-          execution_id: executionId,
-          playbook_id: playbookId,
-          data_instance_id: dataInstanceId,
-          step_id: playbookNode.id,
-          previous_step_id: previousPlaybookNode?.id,
+    if (playbookNode.configuration.connector) {
+      const message = {
+        internal: {
+          work_id: null, // No work id associated
+          playbook: {
+            execution_id: executionId,
+            playbook_id: playbookId,
+            data_instance_id: dataInstanceId,
+            step_id: playbookNode.id,
+            previous_step_id: previousPlaybookNode?.id,
+          },
+          applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
         },
-        applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
-      },
-      event: {
-        entity_id: dataInstanceId,
-        bundle
-      },
-    };
-    await pushToConnector(context, connector, message);
+        event: {
+          entity_id: dataInstanceId,
+          bundle
+        },
+      };
+      await pushToConnector(playbookNode.configuration.connector, message);
+    }
   },
   executor: async ({ bundle }) => {
-    // Nothing to check on the follow up connector execution
-    // Could be interesting to check if the bundle has changed in the future to forward to a different port
+    // TODO Could be reactivated after improvement of enrichment connectors
+    // if (previousStepBundle) {
+    //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
+    //   if (diffOperations.length === 0) {
+    //     return { output_port: 'not-impacted', bundle };
+    //   }
+    // }
     return { output_port: 'out', bundle };
   }
 };
@@ -273,7 +301,7 @@ interface ContainerWrapperConfiguration extends PlaybookComponentConfiguration {
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
   properties: {
-    container_type: { type: 'string', default: '', oneOf: [] }
+    container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] }
   },
   required: ['container_type'],
 };
@@ -295,7 +323,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const created = now();
     const containerType = playbookNode.configuration.container_type;
-    if (isStixDomainObjectContainer(containerType)) {
+    if (containerType && isStixDomainObjectContainer(containerType)) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const containerData = {
         name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
@@ -330,9 +358,19 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       type: 'array',
       uniqueItems: true,
       default: [],
+      $ref: 'Target organizations',
       items: { type: 'string', oneOf: [] }
     },
-    operation: { type: 'string', default: 'add', oneOf: [{ const: 'add', title: 'Add' }, { const: 'remove', title: 'Remove' }, { const: 'replace', title: 'Replace' }] },
+    operation: {
+      type: 'string',
+      default: 'add',
+      $ref: 'Operation to apply',
+      oneOf: [
+        { const: 'add', title: 'Add' },
+        { const: 'remove', title: 'Remove' },
+        { const: 'replace', title: 'Replace' }
+      ]
+    },
   },
   required: ['organizations', 'operation'],
 };
@@ -503,7 +541,13 @@ interface RuleConfiguration extends PlaybookComponentConfiguration {
 const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
   type: 'object',
   properties: {
-    rule: { type: 'string', oneOf: [{ const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' }] },
+    rule: {
+      type: 'string',
+      $ref: 'Rule to apply',
+      oneOf: [
+        { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' }
+      ]
+    },
   },
   required: ['rule'],
 };
@@ -585,6 +629,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       type: 'array',
       uniqueItems: true,
       default: [],
+      $ref: 'Notifiers',
       items: { type: 'string', oneOf: [] }
     },
     authorized_members: { type: 'object' },
@@ -593,7 +638,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
 };
 const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   id: 'PLAYBOOK_NOTIFIER_COMPONENT',
-  name: 'Execute notifier',
+  name: 'Send to notifier',
   description: 'Send user notification',
   icon: 'notification',
   is_entry_point: false,
@@ -612,6 +657,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+    const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
       const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(context, targetUser, o));
@@ -624,11 +670,14 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
         data: stixElements.map((stixObject) => ({
           notification_id: playbookNode.id,
           instance: stixObject,
-          type: 'create',
+          type: 'create', // TODO Improve that with type event follow up
           message: `\`${playbookNode.name}\``
         }))
       };
-      await storeNotificationEvent(context, notificationEvent);
+      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
+    }
+    if (notificationsCall.length > 0) {
+      await Promise.all(notificationsCall);
     }
     return { output_port: undefined, bundle };
   }

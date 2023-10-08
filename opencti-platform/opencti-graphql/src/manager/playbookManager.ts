@@ -26,15 +26,22 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-common';
 import { utcDate } from '../utils/format';
-import { findAllPlaybooks, findById } from '../modules/playbook/playbook-domain';
+import { findById } from '../modules/playbook/playbook-domain';
 import type { StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
-import type { ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
+import type {
+  BasicStoreEntityPlaybook,
+  ComponentDefinition,
+  PlaybookExecution,
+  PlaybookExecutionStep
+} from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
+import { getEntitiesListFromCache } from '../database/cache';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
@@ -97,9 +104,9 @@ type ExecutorFn = {
   definition: ComponentDefinition,
   previousStep: PlaybookExecutionStep<any> | null
   nextStep: PlaybookExecutionStep<any>,
+  previousStepBundle: StixBundle | null
   bundle: StixBundle
   externalCallback?: {
-    previousBundle: StixBundle
     externalStartDate: Date
   }
 };
@@ -110,6 +117,7 @@ export const playbookExecutor = async ({
   definition,
   previousStep,
   nextStep,
+  previousStepBundle,
   bundle,
   externalCallback
 } : ExecutorFn) => {
@@ -119,12 +127,13 @@ export const playbookExecutor = async ({
   if (nextStep.component.is_internal || isExternalCallback) {
     let execution: PlaybookExecution;
     try {
-      const baseBundle = R.clone(bundle);
+      const baseBundle = R.clone(isExternalCallback ? previousStepBundle : bundle);
       execution = await nextStep.component.executor({
         executionId,
         dataInstanceId,
         playbookId,
         previousPlaybookNode: previousStep?.instance,
+        previousStepBundle,
         playbookNode: instanceWithConfig,
         bundle
       });
@@ -143,7 +152,7 @@ export const playbookExecutor = async ({
         end: end.toISOString(),
         diff: durationDiff,
         playbookId,
-        previousBundle: isExternalCallback ? externalCallback?.previousBundle : baseBundle,
+        previousBundle: baseBundle,
         bundle: execution.bundle
       };
       await registerStepObservation(observation);
@@ -188,6 +197,7 @@ export const playbookExecutor = async ({
           definition,
           previousStep: { component: fromConnector, instance: fromInstance },
           nextStep: { component: nextConnector, instance: nextInstance },
+          previousStepBundle,
           bundle: execution.bundle
         });
       }
@@ -205,6 +215,7 @@ export const playbookExecutor = async ({
         playbookId,
         previousPlaybookNode: previousStep?.instance,
         playbookNode: instanceWithConfig,
+        previousStepBundle,
         bundle
       });
     } catch (notifyError) {
@@ -219,9 +230,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
       return;
     }
     const context = executionContext('playbook_manager');
-    const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
-    // TODO JRI PUT IN CACHE
-    const playbooks = await findAllPlaybooks(context, SYSTEM_USER, opts);
+    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, type } } = streamEvent;
@@ -255,6 +264,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
               previousStep: null,
               nextStep,
               // Data
+              previousStepBundle: null,
               bundle,
             });
           }
@@ -347,10 +357,10 @@ export const playbookStepExecution = async (context: AuthContext, user: AuthUser
     definition: def,
     previousStep,
     nextStep,
+    previousStepBundle: JSON.parse(args.previous_bundle),
     bundle,
     externalCallback: {
       externalStartDate: args.execution_start,
-      previousBundle: JSON.parse(args.previous_bundle)
     }
   }).then(() => true);
 };

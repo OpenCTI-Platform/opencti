@@ -177,8 +177,8 @@ export const pushToPlaybook = (message) => {
   return send(WORKER_EXCHANGE, pushRouting(INTERNAL_PLAYBOOK_QUEUE), JSON.stringify(message));
 };
 
-export const pushToConnector = (context, connector, message) => {
-  return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
+export const pushToConnector = (connectorId, message) => {
+  return send(CONNECTOR_EXCHANGE, listenRouting(connectorId), JSON.stringify(message));
 };
 
 export const getRabbitMQVersion = (context) => {

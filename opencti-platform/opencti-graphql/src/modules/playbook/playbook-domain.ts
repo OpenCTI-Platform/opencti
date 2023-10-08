@@ -77,8 +77,8 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
   }
-  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return nodeId;
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
 };
 
 const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
@@ -126,8 +126,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
     return n;
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
-  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return id;
+  return patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch).then(() => id);
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
@@ -171,8 +170,8 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
     return n;
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
-  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return nodeId;
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
 };
 
 // eslint-disable-next-line max-len
@@ -250,8 +249,8 @@ export const playbookInsertNode = async (context: AuthContext, user: AuthUser, i
     definition.links = result.links;
   }
   const patch: any = { playbook_definition: JSON.stringify(definition) };
-  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return { nodeId, linkId };
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => ({ nodeId, linkId }));
 };
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
@@ -305,8 +304,8 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
     }
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
-  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return linkId;
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => linkId);
 };
 
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
@@ -327,8 +326,7 @@ export const playbookAdd = async (context: AuthContext, user: AuthUser, input: P
 
 export const playbookDelete = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await deleteElementById(context, user, id, ENTITY_TYPE_PLAYBOOK);
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
-  return id;
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user).then(() => id);
 };
 
 export const playbookEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {

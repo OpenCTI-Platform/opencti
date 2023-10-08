@@ -41,7 +41,7 @@ describe('Rabbit connector management', () => {
   });
   it('should push message to connector', async () => {
     const connector = { internal_id: connectorId };
-    await pushToConnector(testContext, connector, { id: uuid() });
+    await pushToConnector(connector.internal_id, { id: uuid() });
   });
   it('should delete connector', async () => {
     const unregister = await unregisterConnector(connectorId);

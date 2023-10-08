@@ -31,7 +31,7 @@ export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId
           entity_id: stixCoreObjectId,
         },
       };
-      return pushToConnector(context, connector, message);
+      return pushToConnector(connector.internal_id, message);
     }, workList)
   );
   return workList;

@@ -45,6 +45,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
+import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -117,6 +118,13 @@ const platformTriggers = (context: AuthContext) => {
   };
   return { values: null, fn: reloadTriggers };
 };
+const platformRunningPlaybooks = (context: AuthContext) => {
+  const reloadPlaybooks = () => {
+    const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
+    return findAllPlaybooks(context, SYSTEM_USER, opts);
+  };
+  return { values: null, fn: reloadPlaybooks };
+};
 const platformUsers = (context: AuthContext) => {
   const reloadUsers = async () => {
     const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
@@ -175,6 +183,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
     writeCacheForEntity(ENTITY_TYPE_CONNECTOR, platformConnectors(context));
     writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
+    writeCacheForEntity(ENTITY_TYPE_PLAYBOOK, platformRunningPlaybooks(context));
     writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
     writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));

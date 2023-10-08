@@ -571,7 +571,7 @@ const PlaybookAddComponentsContent = ({
                         variant="standard"
                         type="number"
                         name={k}
-                        label={t(k)}
+                        label={t(v.$ref ?? k)}
                         fullWidth={true}
                         style={{ marginTop: 20, width: '100%' }}
                       />
@@ -584,7 +584,7 @@ const PlaybookAddComponentsContent = ({
                         component={SwitchField}
                         type="checkbox"
                         name={k}
-                        label={t(k)}
+                        label={t(v.$ref ?? k)}
                         containerstyle={{ marginTop: 20 }}
                       />
                     );
@@ -610,14 +610,12 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value}
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)}
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
-                          label: t(k),
+                          label: t(v.$ref ?? k),
                         }}
                         getOptionLabel={(option) => (option.title
                           ? option.title
@@ -648,18 +646,16 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value}
                         onInternalChange={(name, value) => setFieldValue(
                           name,
                           value.map((n) => (n.const ? n.const : n)),
-                        )
-                        }
+                        )}
                         noFieldUpdate={true}
                         options={v.items.oneOf}
                         textfieldprops={{
                           variant: 'standard',
-                          label: t(k),
+                          label: t(v.$ref ?? k),
                         }}
                         getOptionLabel={(option) => (option.title
                           ? option.title
@@ -677,7 +673,7 @@ const PlaybookAddComponentsContent = ({
                       style={{ marginTop: 20, width: '100%' }}
                       variant="standard"
                       name={k}
-                      label={t(k)}
+                      label={t(v.$ref ?? k)}
                       fullWidth={true}
                     />
                   );
