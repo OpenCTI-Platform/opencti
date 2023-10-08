@@ -173,7 +173,7 @@ def create_mq_ssl_context(config) -> ssl.SSLContext:
     return ssl_context
 
 
-class ListenQueue:
+class ListenQueue(threading.Thread):
     """Main class for the ListenQueue used in OpenCTIConnectorHelper
 
     :param helper: instance of a `OpenCTIConnectorHelper` class
@@ -185,6 +185,7 @@ class ListenQueue:
     """
 
     def __init__(self, helper, config: Dict, connector_config: Dict, callback) -> None:
+        threading.Thread.__init__(self)
         self.pika_credentials = None
         self.pika_parameters = None
         self.pika_connection = None
@@ -199,12 +200,8 @@ class ListenQueue:
         self.user = connector_config["connection"]["user"]
         self.password = connector_config["connection"]["pass"]
         self.queue_name = connector_config["listen"]
+        self.exit_event = threading.Event()
         self.thread = None
-        self.connector_thread = None
-        self.connector_event_loop = None
-        self.queue_event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.queue_event_loop)
-        self.run()
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
@@ -224,6 +221,8 @@ class ListenQueue:
         # Not ACK the message here may lead to infinite re-deliver if the connector is broken
         # Also ACK, will not have any impact on the blocking aspect of the following functions
         channel.basic_ack(delivery_tag=method.delivery_tag)
+        LOGGER.info("Message (delivery_tag=%s) ack", method.delivery_tag)
+
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
         five_minutes = 60 * 5
@@ -291,7 +290,7 @@ class ListenQueue:
                     LOGGER.error("Failing reporting the processing")
 
     def run(self) -> None:
-        while True:
+        while not self.exit_event.is_set():
             try:
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
@@ -306,49 +305,23 @@ class ListenQueue:
                     if self.use_ssl
                     else None,
                 )
-                if asyncio.iscoroutinefunction(self.callback):
-                    self.connector_event_loop = asyncio.new_event_loop()
-                    self.connector_thread = threading.Thread(
-                        target=lambda: start_loop(self.connector_event_loop)
-                    )
-                    self.connector_thread.start()
-                self.pika_connection = AsyncioConnection(
-                    self.pika_parameters,
-                    on_open_callback=self.on_connection_open,
-                    on_open_error_callback=self.on_connection_open_error,
-                    on_close_callback=self.on_connection_closed,
-                    custom_ioloop=self.queue_event_loop,
+                self.pika_connection = pika.BlockingConnection(self.pika_parameters)
+                self.channel = self.pika_connection.channel()
+                assert self.channel is not None
+                self.channel.basic_consume(
+                    queue=self.queue_name, on_message_callback=self._process_message
                 )
-                self.pika_connection.ioloop.run_forever()
-                # If the connection fails, sleep between reconnect attempts
-                time.sleep(10)
+                self.channel.start_consuming()
             except (KeyboardInterrupt, SystemExit):
                 LOGGER.info("Connector stop")
                 sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
                 LOGGER.error("%s", err)
 
-    # noinspection PyUnusedLocal
-    def on_connection_open(self, _unused_connection):
-        self.pika_connection.channel(on_open_callback=self.on_channel_open)
-
-    # noinspection PyUnusedLocal
-    def on_connection_open_error(self, _unused_connection, err):
-        LOGGER.info("Unable to connect to the queue. %s", err)
-        self.pika_connection.ioloop.stop()
-
-    # noinspection PyUnusedLocal
-    def on_connection_closed(self, _unused_connection, reason):
-        LOGGER.info("The connection to the queue closed: %s", reason)
-        self.pika_connection.ioloop.stop()
-
-    def on_channel_open(self, channel):
-        self.channel = channel
-        assert self.channel is not None
-        self.channel.basic_consume(
-            queue=self.queue_name,
-            on_message_callback=self._process_message,
-        )
+    def stop(self):
+        self.exit_event.set()
+        if self.thread:
+            self.thread.join()
 
 
 class PingAlive(threading.Thread):
@@ -829,6 +802,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_queue = ListenQueue(
             self, self.config, self.connector_config, message_callback
         )
+        self.listen_queue.start()
 
     def listen_stream(
         self,
