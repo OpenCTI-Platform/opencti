@@ -239,6 +239,30 @@ const SettingsOrganization = ({
                     </List>
                   </FieldOrEmpty>
                 </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Grantable groups (for organization administrators)')}
+                  </Typography>
+                  <FieldOrEmpty source={organization.grantable_groups}>
+                    <List>
+                      {(organization.grantable_groups ?? []).map((group) => (
+                        <ListItem
+                          key={group.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${group.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={group.name} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </FieldOrEmpty>
+                </Grid>
               </Grid>
             </Paper>
           </div>
