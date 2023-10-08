@@ -468,7 +468,7 @@ EntityDetailsComponentProps
                 externalReferenceSecondary = t('No description');
               }
               return (
-                <div key={externalReference.node.id}>
+                <React.Fragment key={externalReference.node.id}>
                   <ListItem
                     component={Link}
                     to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
@@ -492,7 +492,7 @@ EntityDetailsComponentProps
                       }
                     />
                   </ListItem>
-                </div>
+                </React.Fragment>
               );
             })}
         </List>

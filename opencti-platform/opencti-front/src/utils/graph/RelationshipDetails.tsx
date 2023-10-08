@@ -505,7 +505,7 @@ RelationshipDetailsComponentProps
                   externalReferenceSecondary = t('No description');
                 }
                 return (
-                  <div key={externalReference.node.id}>
+                  <React.Fragment key={externalReference.node.id}>
                     <ListItem
                       component={Link}
                       to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
@@ -529,7 +529,7 @@ RelationshipDetailsComponentProps
                         }
                       />
                     </ListItem>
-                  </div>
+                  </React.Fragment>
                 );
               })}
           </List>

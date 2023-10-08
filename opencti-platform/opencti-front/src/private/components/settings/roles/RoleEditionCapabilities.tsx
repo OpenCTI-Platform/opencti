@@ -127,7 +127,9 @@ RoleEditionCapabilitiesComponentProps
           const capability = edge?.node;
           if (capability) {
             const paddingLeft = capability.name.split('_').length * 20 - 20;
-            const roleCapability = roleCapabilities.find((r) => r.name === capability.name);
+            const roleCapability = roleCapabilities.find(
+              (r) => r.name === capability.name,
+            );
             const matchingCapabilities = R.filter(
               (r) => capability.name !== r.name
                 && R.includes(capability.name, r.name)
@@ -156,7 +158,7 @@ RoleEditionCapabilitiesComponentProps
               </ListItem>
             );
           }
-          return <div key={'none'}></div>;
+          return <div key="none" />;
         })}
       </List>
     );

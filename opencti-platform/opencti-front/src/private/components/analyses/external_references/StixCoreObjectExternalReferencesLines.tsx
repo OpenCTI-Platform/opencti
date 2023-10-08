@@ -290,7 +290,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 }
                 if (externalReference.url && !isFileAttached) {
                   return (
-                    <div key={externalReference.id}>
+                    <React.Fragment key={externalReference.id}>
                       <ListItem
                         component={Link}
                         to={`/dashboard/analyses/external_references/${externalReference.id}`}
@@ -348,29 +348,32 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       {externalReference.importFiles?.edges
                         && externalReference.importFiles?.edges.length > 0 && (
                           <List>
-                            {externalReference.importFiles.edges.map((file) => file?.node && (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                file={file.node}
-                                nested={true}
-                                workNested={true}
-                                onDelete={() => relay.refetchConnection(200)}
-                                connectors={
-                                  importConnsPerFormat[
-                                    file.node.metaData?.mimetype ?? 0
-                                  ]
-                                }
-                                handleOpenImport={handleOpenImport}
-                              />
-                            ))}
+                            {externalReference.importFiles.edges.map(
+                              (file) => file?.node && (
+                                  <FileLine
+                                    key={file.node.id}
+                                    dense={true}
+                                    file={file.node}
+                                    nested={true}
+                                    workNested={true}
+                                    onDelete={() => relay.refetchConnection(200)
+                                    }
+                                    connectors={
+                                      importConnsPerFormat[
+                                        file.node.metaData?.mimetype ?? 0
+                                      ]
+                                    }
+                                    handleOpenImport={handleOpenImport}
+                                  />
+                              ),
+                            )}
                           </List>
                       )}
-                    </div>
+                    </React.Fragment>
                   );
                 }
                 return (
-                  <div key={externalReference.id}>
+                  <React.Fragment key={externalReference.id}>
                     <ListItem
                       component={Link}
                       to={`/dashboard/analyses/external_references/${externalReference.id}`}
@@ -410,19 +413,21 @@ StixCoreObjectExternalReferencesLinesContainerProps
                     {externalReference.importFiles?.edges
                       && externalReference.importFiles?.edges.length > 0 && (
                         <List>
-                          {externalReference.importFiles?.edges?.map((file) => file?.node && (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                              isExternalReferenceAttachment={isFileAttached}
-                            />
-                          ))}
+                          {externalReference.importFiles?.edges?.map(
+                            (file) => file?.node && (
+                                <FileLine
+                                  key={file.node.id}
+                                  dense={true}
+                                  disableImport={true}
+                                  file={file.node}
+                                  nested={true}
+                                  isExternalReferenceAttachment={isFileAttached}
+                                />
+                            ),
+                          )}
                         </List>
                     )}
-                  </div>
+                  </React.Fragment>
                 );
               })}
           </List>

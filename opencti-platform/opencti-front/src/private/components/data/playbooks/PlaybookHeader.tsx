@@ -213,9 +213,8 @@ const PlaybookHeaderComponent = ({
           <List>
             {(playbook.last_executions ?? []).map((lastExecution) => {
               return (
-                <>
+                <React.Fragment key={lastExecution.id}>
                   <ListItem
-                    key={lastExecution.id}
                     dense={true}
                     button={true}
                     divider={openExecution !== lastExecution.id}
@@ -229,7 +228,7 @@ const PlaybookHeaderComponent = ({
                       primary={`${t('Execution at')} ${nsdt(
                         lastExecution.execution_start,
                       )}`}
-                      secondary={`${(lastExecution?.steps ?? []).length} ${t(
+                      secondary={`${(lastExecution.steps ?? []).length} ${t(
                         'steps executed',
                       )}`}
                     />
@@ -245,7 +244,7 @@ const PlaybookHeaderComponent = ({
                     unmountOnExit
                   >
                     <List component="div" disablePadding={true}>
-                      {(lastExecution?.steps ?? []).map((step) => (
+                      {(lastExecution.steps ?? []).map((step) => (
                         <ListItem
                           key={step.id}
                           dense={true}
@@ -275,7 +274,7 @@ const PlaybookHeaderComponent = ({
                       ))}
                     </List>
                   </Collapse>
-                </>
+                </React.Fragment>
               );
             })}
           </List>
