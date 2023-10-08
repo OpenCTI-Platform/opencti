@@ -10629,7 +10629,7 @@ __metadata:
     node-calls-python: 1.7.7
     node-fetch: 3.3.2
     nodemailer: 6.9.5
-    openid-client: 5.5.0
+    openid-client: 5.6.0
     opentelemetry-node-metrics: 3.0.0
     otplib: 12.0.1
     passport: 0.6.0
@@ -10664,15 +10664,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"openid-client@npm:5.5.0":
-  version: 5.5.0
-  resolution: "openid-client@npm:5.5.0"
+"openid-client@npm:5.6.0":
+  version: 5.6.0
+  resolution: "openid-client@npm:5.6.0"
   dependencies:
-    jose: ^4.14.4
+    jose: ^4.15.1
     lru-cache: ^6.0.0
     object-hash: ^2.2.0
     oidc-token-hash: ^5.0.3
-  checksum: d2617b5bb0d9a0da338aeb7489bcbe3a79df9681189c7b61c2a3284289eee7110dfee2b04b49a9fdd4f064b7e2057ddb0becfedd9c19388e7788ae15b24c8e4c
+  checksum: 414fe43c5aac07d8b8f5ea52ef1812374ff28140910977a1360781284b09d4a03c916d910017bf15003d602d859b3dcf9857d1dfe6f61508c8f5c52de334e6ea
   languageName: node
   linkType: hard
 
