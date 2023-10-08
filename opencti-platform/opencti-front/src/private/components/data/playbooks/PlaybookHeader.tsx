@@ -178,7 +178,7 @@ const PlaybookHeaderComponent = ({
             <Tooltip title={t('Open last execution traces')}>
               <Badge
                 badgeContent={(playbook.last_executions ?? []).length}
-                color="primary"
+                color="secondary"
               >
                 <ManageHistoryOutlined color="primary" />
               </Badge>
