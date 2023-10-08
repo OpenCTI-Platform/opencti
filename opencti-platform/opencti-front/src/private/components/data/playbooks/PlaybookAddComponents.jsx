@@ -18,6 +18,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -428,6 +429,14 @@ const PlaybookAddComponentsContent = ({
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([k, v]) => {
+                  if (k === 'authorized_members') {
+                    return <ObjectMembersField
+                        label={'Targets'}
+                        style={{ marginTop: 35 }}
+                        multiple={true}
+                        name="authorized_members"
+                    />;
+                  }
                   if (k === 'filters') {
                     return (
                       <div key={k}>

@@ -16,16 +16,23 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
+import { type PlaybookComponent, type PlaybookComponentConfiguration, type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  AUTOMATION_MANAGER_USER_UUID,
+  executionContext,
+  INTERNAL_USERS, isUserCanAccessStixElement,
+  SYSTEM_USER
+} from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER, INPUT_CREATED_BY,
+  ENTITY_TYPE_CONTAINER,
+  INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
 } from '../../schema/general';
@@ -41,7 +48,8 @@ import type {
   StixIncident,
   StixInfrastructure,
   StixMalware,
-  StixReport, StixThreatActor
+  StixReport,
+  StixThreatActor
 } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
 import {
@@ -53,15 +61,16 @@ import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-co
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { listAllEntities } from '../../database/middleware-loader';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { listAllEntities, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import {
+  isEmptyField,
   isNotEmptyField,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
@@ -70,6 +79,15 @@ import {
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
+import { usableNotifiers } from '../notifier/notifier-domain';
+import {
+  convertToNotificationUser,
+  type DigestEvent,
+  EVENT_NOTIFICATION_VERSION,
+} from '../../manager/notificationManager';
+import { storeNotificationEvent } from '../../database/redis';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import type { AuthUser } from '../../types/user';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -435,7 +453,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   icon: 'edit',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'not-impacted', type: 'out' }],
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
@@ -467,23 +485,25 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       .map((action) => ({ action, multiple: isAttributeMultiple(type, action.attribute), path: computeAttributePath(type, action.attribute) }))
       .filter(({ path, multiple }) => multiple !== undefined && isNotEmptyField(path))
       .map(({ action, path, multiple }) => ({ op: action.op, path, value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value }));
-    jsonpatch.applyPatch(baseData, standardOperations);
-    return { output_port: 'out', bundle };
+    if (standardOperations.length > 0) {
+      jsonpatch.applyPatch(baseData, standardOperations);
+      return { output_port: 'out', bundle };
+    }
+    return { output_port: 'unmodified', bundle };
   }
 };
 
-// First seen rule
-const FIRST_SEEN_RULE = 'first_seen';
-type StixWithFirstSeen = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
-const ENTITIES_FIRST_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
-
+const DATE_SEEN_RULE = 'seen_dates';
+type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
+const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
+type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
 interface RuleConfiguration extends PlaybookComponentConfiguration {
   rule: string
 }
 const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
   type: 'object',
   properties: {
-    rule: { type: 'string', oneOf: [{ const: FIRST_SEEN_RULE, title: 'First seen computing' }] },
+    rule: { type: 'string', oneOf: [{ const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' }] },
   },
   required: ['rule'],
 };
@@ -494,7 +514,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   icon: 'memory',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'not-impacted', type: 'out' }],
   configuration_schema: PLAYBOOK_RULE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_RULE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
@@ -502,27 +522,115 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { type } = baseData.extensions[STIX_EXT_OCTI];
     const { rule } = playbookNode.configuration;
-    if (rule === FIRST_SEEN_RULE) {
-      // Handle first seen synchro for reports creation / modification
+    if (rule === DATE_SEEN_RULE) {
+      // DATE_SEEN_RULE is only triggered on report creation / update
       if (type === ENTITY_TYPE_CONTAINER_REPORT) {
+      // Handle first seen synchro for reports creation / modification
         const report = baseData as StixReport;
         const publicationDate = utcDate(report.published);
         const targetIds = (report.object_refs ?? [])
-          .filter((o) => ENTITIES_FIRST_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)));
+          .filter((o) => ENTITIES_DATE_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)));
         if (targetIds.length > 0) {
           const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
           const elementsToPatch = elements
-            .filter((e: StixWithFirstSeen) => publicationDate.isBefore(e.first_seen ? utcDate(e.first_seen) : utcDate()))
-            .map((e: StixWithFirstSeen) => {
-              const firstSeen = e.first_seen ? utcDate(e.first_seen) : utcDate();
-              if (publicationDate.isBefore(firstSeen)) return { ...e, first_seen: publicationDate.toISOString() };
-              return e;
+            .map((e: StixWithSeenDates) => {
+              // Check if seen dates will be impacted.
+              const isImpactedBefore = publicationDate.isBefore(e.first_seen ? utcDate(e.first_seen) : utcDate());
+              const isImpactedAfter = publicationDate.isAfter(e.last_seen ? utcDate(e.last_seen) : utcDate());
+              return { element: e, isImpactedBefore, isImpactedAfter };
+            })
+            .filter((data: SeenFilter) => {
+              return data.isImpactedBefore || data.isImpactedAfter;
+            })
+            .map((data: SeenFilter) => {
+              const first_seen = data.isImpactedBefore ? publicationDate.toISOString() : data.element.first_seen;
+              const last_seen = data.isImpactedAfter ? publicationDate.toISOString() : data.element.last_seen;
+              return { ...data.element, first_seen, last_seen };
             });
-          bundle.objects.push(...elementsToPatch);
+          if (elementsToPatch.length > 0) {
+            bundle.objects.push(...elementsToPatch);
+            return { output_port: 'out', bundle };
+          }
         }
       }
     }
-    return { output_port: 'out', bundle };
+    return { output_port: 'unmodified', bundle };
+  }
+};
+
+const convertAuthorizedMemberToUsers = async (authorized_members: { value: string }[]) => {
+  if (isEmptyField(authorized_members)) {
+    return [];
+  }
+  const context = executionContext('playbook_components');
+  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const triggerAuthorizedMembersIds = authorized_members?.map((member) => member.value) ?? [];
+  const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
+    .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
+  const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
+    .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
+  const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
+  const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
+    .filter((u) => INTERNAL_USERS[u.id] === undefined);
+  return R.uniqBy(R.prop('id'), withoutInternalUsers);
+};
+export interface NotifierConfiguration extends PlaybookComponentConfiguration {
+  notifiers: string[]
+  authorized_members: object
+}
+const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
+  type: 'object',
+  properties: {
+    notifiers: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      items: { type: 'string', oneOf: [] }
+    },
+    authorized_members: { type: 'object' },
+  },
+  required: ['notifiers', 'authorized_members'],
+};
+const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
+  id: 'PLAYBOOK_NOTIFIER_COMPONENT',
+  name: 'Execute notifier',
+  description: 'Send user notification',
+  icon: 'notification',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [],
+  configuration_schema: PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
+  schema: async () => {
+    const context = executionContext('playbook_components');
+    const notifiers = await usableNotifiers(context, SYSTEM_USER);
+    const elements = notifiers.map((c) => ({ const: c.id, title: c.name }));
+    const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
+    return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
+  },
+  executor: async ({ playbookId, playbookNode, bundle }) => {
+    const context = executionContext('playbook_components');
+    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
+    const { notifiers, authorized_members } = playbookNode.configuration;
+    const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+    for (let index = 0; index < targetUsers.length; index += 1) {
+      const targetUser = targetUsers[index];
+      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(context, targetUser, o));
+      const notificationEvent: DigestEvent = {
+        version: EVENT_NOTIFICATION_VERSION,
+        playbook_source: playbook.name,
+        notification_id: playbookNode.id,
+        target: convertToNotificationUser(targetUser, notifiers),
+        type: 'digest',
+        data: stixElements.map((stixObject) => ({
+          notification_id: playbookNode.id,
+          instance: stixObject,
+          type: 'create',
+          message: `\`${playbookNode.name}\``
+        }))
+      };
+      await storeNotificationEvent(context, notificationEvent);
+    }
+    return { output_port: undefined, bundle };
   }
 };
 // endregion
@@ -537,5 +645,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
-  [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT
+  [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT,
+  [PLAYBOOK_NOTIFIER_COMPONENT.id]: PLAYBOOK_NOTIFIER_COMPONENT
 };

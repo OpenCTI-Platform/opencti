@@ -220,6 +220,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
     }
     const context = executionContext('playbook_manager');
     const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
+    // TODO JRI PUT IN CACHE
     const playbooks = await findAllPlaybooks(context, SYSTEM_USER, opts);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];

@@ -142,13 +142,12 @@ export const internalProcessNotification = async (
 
 const processNotificationEvent = async (
   context: AuthContext,
+  notificationMap: Map<string, BasicStoreEntityTrigger>,
   notificationId: string,
   user: NotificationUser,
   data: NotificationData[]
 ) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notifications = await getNotifications(context);
-  const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
   const notification = notificationMap.get(notificationId);
   if (!notification) {
     return;
@@ -162,18 +161,22 @@ const processNotificationEvent = async (
   }
 };
 
-const processLiveNotificationEvent = async (context: AuthContext, event: KnowledgeNotificationEvent | ActivityNotificationEvent) => {
+const processLiveNotificationEvent = async (
+  context: AuthContext,
+  notificationMap: Map<string, BasicStoreEntityTrigger>,
+  event: KnowledgeNotificationEvent | ActivityNotificationEvent
+) => {
   const { targets, data: instance } = event;
   for (let index = 0; index < targets.length; index += 1) {
     const { user, type, message } = targets[index];
     const data = [{ notification_id: event.notification_id, instance, type, message }];
-    await processNotificationEvent(context, event.notification_id, user, data);
+    await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
   }
 };
 
-const processDigestNotificationEvent = async (context: AuthContext, event: DigestEvent) => {
+const processDigestNotificationEvent = async (context: AuthContext, notificationMap: Map<string, BasicStoreEntityTrigger>, event: DigestEvent) => {
   const { target: user, data } = event;
-  await processNotificationEvent(context, event.notification_id, user, data);
+  await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
 };
 
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
@@ -183,17 +186,18 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
     const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { notification_id } } = streamEvent;
-      const notification = notificationMap.get(notification_id);
-      if (notification) {
-        if (notification.trigger_type === 'live') {
-          const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
-          await processLiveNotificationEvent(context, liveEvent.data);
+      const { data: { notification_id, type } } = streamEvent;
+      if (type === 'live') {
+        const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
+        await processLiveNotificationEvent(context, notificationMap, liveEvent.data);
+      }
+      if (type === 'digest') {
+        const digestEvent = streamEvent as SseEvent<DigestEvent>;
+        // Add virtual notification in map for playbook execution
+        if (digestEvent.data.playbook_source) {
+          notificationMap.set(notification_id, { name: digestEvent.data.playbook_source, trigger_type: type } as BasicStoreEntityTrigger);
         }
-        if (notification.trigger_type === 'digest') {
-          const digestEvent = streamEvent as SseEvent<DigestEvent>;
-          await processDigestNotificationEvent(context, digestEvent.data);
-        }
+        await processDigestNotificationEvent(context, notificationMap, digestEvent.data);
       }
     }
   } catch (e) {

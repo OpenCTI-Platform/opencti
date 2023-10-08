@@ -46,6 +46,7 @@ export interface PlaybookComponentConfiguration {}
 
 export interface NodeInstance<T extends PlaybookComponentConfiguration> {
   id: string
+  name: string,
   component_id: string
   configuration: T
 }
