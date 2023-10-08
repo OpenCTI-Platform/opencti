@@ -198,7 +198,7 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   icon: 'filter',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'empty', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
   configuration_schema: PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -207,7 +207,7 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const isMatch = await isStixMatchFilters(context, SYSTEM_USER, baseData, adaptedFilters);
-    return { output_port: isMatch ? 'out' : 'empty', bundle };
+    return { output_port: isMatch ? 'out' : 'no-match', bundle };
   }
 };
 
@@ -509,8 +509,8 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
 };
 const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   id: 'PLAYBOOK_RULE_COMPONENT',
-  name: 'Execute predefined rule',
-  description: 'Execute complex predefined computing',
+  name: 'Apply predefined rule',
+  description: 'Execute advanced predefined computing',
   icon: 'memory',
   is_entry_point: false,
   is_internal: true,

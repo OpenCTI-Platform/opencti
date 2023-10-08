@@ -13,22 +13,29 @@ import {
   ArrowDropUp,
   FileDownloadOutlined,
   LibraryBooksOutlined,
-  PreviewOutlined,
-  SourceOutlined,
+  SettingsOutlined,
   ViewListOutlined,
   ViewModuleOutlined,
 } from '@mui/icons-material';
-import AirlineStopsIcon from '@mui/icons-material/AirlineStops';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
 import {
   FormatListGroup,
-  GraphOutline,
   RelationManyToMany,
   VectorPolygon,
+  Group,
 } from 'mdi-material-ui';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -41,6 +48,7 @@ import StixCoreObjectsExports from '../../private/components/common/stix_core_ob
 import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
+import Transition from '../Transition';
 
 const styles = (theme) => ({
   container: {
@@ -105,6 +113,19 @@ const styles = (theme) => ({
 });
 
 class ListLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { openSettings: false };
+  }
+
+  handleOpenSettings() {
+    this.setState({ openSettings: true });
+  }
+
+  handleCloseSettings() {
+    this.setState({ openSettings: false });
+  }
+
   reverseBy(field) {
     this.props.handleSort(field, !this.props.orderAsc);
   }
@@ -256,52 +277,6 @@ class ListLines extends Component {
                 {t('entitie(s)')}
               </div>
             )}
-            {handleSwitchRedirectionMode && (
-              <ToggleButtonGroup
-                size="small"
-                color="secondary"
-                exclusive={true}
-                onChange={(_, value) => {
-                  handleSwitchRedirectionMode(value);
-                }}
-                style={{ margin: '7px 20px 0 10px' }}
-              >
-                <ToggleButton value="overview" aria-label="overview">
-                  <Tooltip title={t('Redirecting to the Overview section')}>
-                    <PreviewOutlined
-                      fontSize="small"
-                      color={
-                        !redirectionMode || redirectionMode === 'overview'
-                          ? 'secondary'
-                          : 'primary'
-                      }
-                    />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="knowledge" aria-label="knowledge">
-                  <Tooltip title={t('Redirecting to the Knowledge section')}>
-                    <GraphOutline
-                      fontSize="small"
-                      color={
-                        redirectionMode === 'knowledge'
-                          ? 'secondary'
-                          : 'primary'
-                      }
-                    />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="content" aria-label="content">
-                  <Tooltip title={t('Redirecting to the Content section')}>
-                    <SourceOutlined
-                      fontSize="small"
-                      color={
-                        redirectionMode === 'content' ? 'secondary' : 'primary'
-                      }
-                    />
-                  </Tooltip>
-                </ToggleButton>
-              </ToggleButtonGroup>
-            )}
             {(typeof handleChangeView === 'function'
               || typeof handleToggleExports === 'function') && (
               <ToggleButtonGroup
@@ -312,6 +287,8 @@ class ListLines extends Component {
                 onChange={(_, value) => {
                   if (value && value === 'export') {
                     handleToggleExports();
+                  } else if (value && value === 'settings') {
+                    this.handleOpenSettings();
                   } else if (value) {
                     handleChangeView(value);
                   }
@@ -387,8 +364,10 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function'
                   && enableContextualView && (
                     <ToggleButton value="contextual" aria-label="contextual">
-                      <Tooltip title={t('Contextual view')}>
-                        <AirlineStopsIcon
+                      <Tooltip
+                        title={t('Knowledge from related containers view')}
+                      >
+                        <Group
                           fontSize="small"
                           color={
                             currentView === 'contextual' || !currentView
@@ -398,6 +377,17 @@ class ListLines extends Component {
                         />
                       </Tooltip>
                     </ToggleButton>
+                )}
+                {handleSwitchRedirectionMode && (
+                  <ToggleButton
+                    size="small"
+                    value="settings"
+                    aria-label="settings"
+                  >
+                    <Tooltip title={t('List settings')}>
+                      <SettingsOutlined fontSize="small" color="primary" />
+                    </Tooltip>
+                  </ToggleButton>
                 )}
                 {typeof handleToggleExports === 'function'
                   && !exportDisabled && (
@@ -571,6 +561,46 @@ class ListLines extends Component {
                 context={exportContext}
               />
             </Security>
+        )}
+        {handleSwitchRedirectionMode && (
+          <Dialog
+            open={this.state.openSettings}
+            PaperProps={{ elevation: 1 }}
+            TransitionComponent={Transition}
+            onClose={this.handleCloseSettings.bind(this)}
+            maxWidth="xs"
+            fullWidth={true}
+          >
+            <DialogTitle>{t('List settings')}</DialogTitle>
+            <DialogContent>
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel id="redirectionMode">
+                  {t('Redirection mode')}
+                </InputLabel>
+                <Select
+                  value={redirectionMode}
+                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
+                  }
+                  fullWidth={true}
+                >
+                  <MenuItem value="overview">
+                    {t('Redirecting to the Overview section')}
+                  </MenuItem>
+                  <MenuItem value="knowledge">
+                    {t('Redirecting to the Knowledge section')}
+                  </MenuItem>
+                  <MenuItem value="content">
+                    {t('Redirecting to the Content section')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleCloseSettings.bind(this)}>
+                {t('Close')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         )}
       </div>
     );

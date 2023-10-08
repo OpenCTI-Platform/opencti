@@ -116,6 +116,7 @@ const Playbook = createFragmentContainer(PlaybookComponent, {
       description
       playbook_definition
       playbook_running
+      ...PlaybookHeader_playbook
     }
   `,
 });

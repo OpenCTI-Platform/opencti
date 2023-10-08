@@ -54,6 +54,8 @@ import {
   TerminalOutlined,
   DriveFolderUploadOutlined,
   EditOutlined,
+  MemoryOutlined,
+  NotificationsOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -330,6 +332,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <EditOutlined style={style} fontSize={fontSize} role="img" />;
     case 'container':
       return <Group style={style} fontSize={fontSize} role="img" />;
+    case 'memory':
+      return <MemoryOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'notification':
+      return <NotificationsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':

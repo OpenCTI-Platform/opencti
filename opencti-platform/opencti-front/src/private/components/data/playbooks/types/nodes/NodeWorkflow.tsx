@@ -5,7 +5,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, ForkLeftOutlined } from '@mui/icons-material';
+import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -120,15 +120,19 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       </div>
       {!data.component?.is_entry_point && (
         <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
-          <IconButton
-            onClick={() => data.openAddSibling(getNode(id))}
-            aria-haspopup="true"
-            size="small"
+          <Tooltip
+            title={t(
+              'Add a new branch at the same level from the parent output',
+            )}
           >
-            <ForkLeftOutlined
-              style={{ fontSize: 12, transform: 'rotate(-180deg)' }}
-            />
-          </IconButton>
+            <IconButton
+              onClick={() => data.openAddSibling(getNode(id))}
+              aria-haspopup="true"
+              size="small"
+            >
+              <LoginOutlined style={{ fontSize: 12 }} />
+            </IconButton>
+          </Tooltip>
         </div>
       )}
       {!data.component?.is_entry_point && (

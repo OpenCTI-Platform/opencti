@@ -430,12 +430,15 @@ const PlaybookAddComponentsContent = ({
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([k, v]) => {
                   if (k === 'authorized_members') {
-                    return <ObjectMembersField
+                    return (
+                      <ObjectMembersField
+                        key={k}
                         label={'Targets'}
-                        style={{ marginTop: 35 }}
+                        style={{ marginTop: 20 }}
                         multiple={true}
                         name="authorized_members"
-                    />;
+                      />
+                    );
                   }
                   if (k === 'filters') {
                     return (
