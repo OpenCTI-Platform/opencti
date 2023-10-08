@@ -18,7 +18,6 @@ from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
-import stix2.utils
 from filigran_sseclient import SSEClient
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.exceptions import NackError, UnroutableError
