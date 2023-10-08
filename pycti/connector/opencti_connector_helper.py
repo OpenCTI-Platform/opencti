@@ -220,6 +220,10 @@ class ListenQueue:
         :type body: str or bytes or bytearray
         """
         json_data = json.loads(body)
+        # Message should be ack before processing as we don't own the processing
+        # Not ACK the message here may lead to infinite re-deliver if the connector is broken
+        # Also ACK, will not have any impact on the blocking aspect of the following functions
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
         five_minutes = 60 * 5
@@ -234,7 +238,6 @@ class ListenQueue:
             else:
                 time_wait += 1
             time.sleep(1)
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         LOGGER.info(
             "Message (delivery_tag=%s) processed, thread terminated",
             method.delivery_tag,
