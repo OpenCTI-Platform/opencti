@@ -558,7 +558,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           },
         },
       });
-    } else if (otherEdgesToParentNode.length === 1) {
+    } else if (otherEdgesToParentNode.length <= 1) {
       newNodes.push({
         id: 'PLACEHOLDER-ORIGIN',
         type: 'placeholder',
