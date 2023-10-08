@@ -168,6 +168,7 @@ const PlaybookHeaderComponent = ({
       </div>
       <div className={classes.activity}>
         <ToggleButtonGroup
+          size="small"
           color="secondary"
           value={openLastExecutions}
           exclusive={true}
