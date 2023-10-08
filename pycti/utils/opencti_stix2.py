@@ -1990,6 +1990,7 @@ class OpenCTIStix2:
         mode: str = "simple",
         max_marking_definition: Dict = None,
         no_custom_attributes: bool = False,
+        only_entity: bool = False,
     ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -2057,6 +2058,7 @@ class OpenCTIStix2:
         if entity is None:
             API_LOGGER.error("Cannot export entity (not found)")
             return bundle
+        entity_standard_id = entity["standard_id"]
         stix_objects = self.prepare_export(
             self.generate_export(entity, no_custom_attributes),
             mode,
@@ -2065,6 +2067,10 @@ class OpenCTIStix2:
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
+        if only_entity:
+            return [e for e in bundle["objects"] if e.get("id") == entity_standard_id][
+                0
+            ]
         return bundle
 
     def export_list(
