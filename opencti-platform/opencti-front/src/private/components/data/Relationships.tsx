@@ -4,12 +4,8 @@ import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import {
-  RelationshipsStixCoreRelationshipLine_node$data,
-} from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
-import {
-  RelationshipsStixCoreRelationshipLineDummy,
-} from '@components/data/relationships/RelationshipsStixCoreRelationshipLine';
+import { RelationshipsStixCoreRelationshipLine_node$data } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
+import { RelationshipsStixCoreRelationshipLineDummy } from '@components/data/relationships/RelationshipsStixCoreRelationshipLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import RelationshipsStixCoreRelationshipsLines, {
   relationshipsStixCoreRelationshipsLinesQuery,
@@ -58,15 +54,15 @@ const Relationships = () => {
     handleToggleSelectAll,
     onToggleEntity,
     numberOfSelectedElements,
-  } = useEntityToggle<RelationshipsStixCoreRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
+  } = useEntityToggle<RelationshipsStixCoreRelationshipLine_node$data>(
+    LOCAL_STORAGE_KEY,
+  );
   const queryRef = useQueryLoading<RelationshipsStixCoreRelationshipsLinesPaginationQuery>(
     relationshipsStixCoreRelationshipsLinesQuery,
     paginationOptions,
   );
-
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-
     const dataColumns = {
       fromType: {
         label: 'From type',
@@ -116,93 +112,92 @@ const Relationships = () => {
     };
     return (
       <>
-      <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={storageHelpers.handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleToggleExports={storageHelpers.handleToggleExports}
-              openExports={openExports}
-              handleToggleSelectAll={handleToggleSelectAll}
-              selectAll={selectAll}
-              exportEntityType="stix-core-relationship"
-              disableCards={true}
-              secondaryAction={true}
-              iconExtension={true}
-              noPadding={true}
-              keyword={searchTerm}
-              filters={filters}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              availableFilterKeys={[
-                'relationship_type',
-                'fromId',
-                'toId',
-                'fromTypes',
-                'toTypes',
-                'markedBy',
-                'created_start_date',
-                'created_end_date',
-                'createdBy',
-                'creator',
-              ]}
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          exportEntityType="stix-core-relationship"
+          disableCards={true}
+          secondaryAction={true}
+          iconExtension={true}
+          noPadding={true}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'relationship_type',
+            'fromId',
+            'toId',
+            'fromTypes',
+            'toTypes',
+            'markedBy',
+            'created_start_date',
+            'created_end_date',
+            'createdBy',
+            'creator',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <RelationshipsStixCoreRelationshipLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
             >
-            {queryRef && (
-                  <React.Suspense
-                    fallback={
-                      <>
-                        {Array(20)
-                          .fill(0)
-                          .map((idx) => (
-                            <RelationshipsStixCoreRelationshipLineDummy key={idx} dataColumns={dataColumns} />
-                          ))}
-                      </>
-                    }
-                  >
-                  <RelationshipsStixCoreRelationshipsLines
-                    queryRef={queryRef}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    onLabelClick={storageHelpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  />
-                  <ToolBar
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    numberOfSelectedElements={numberOfSelectedElements}
-                    selectAll={selectAll}
-                    filters={R.assoc(
-                      'entity_type',
-                      [
-                        {
-                          id: 'stix-core-relationship',
-                          value: 'stix-core-relationship',
-                        },
-                      ],
-                      filters,
-                    )}
-                    search={searchTerm}
-                    handleClearSelectedElements={handleClearSelectedElements}
-                  />
-              </React.Suspense>
-            )}
-      </ListLines>
+              <RelationshipsStixCoreRelationshipsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={storageHelpers.handleAddFilter}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={R.assoc(
+                  'entity_type',
+                  [
+                    {
+                      id: 'stix-core-relationship',
+                      value: 'stix-core-relationship',
+                    },
+                  ],
+                  filters,
+                )}
+                search={searchTerm}
+                handleClearSelectedElements={handleClearSelectedElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
       </>
     );
   };
 
-  return (
-      <ExportContextProvider>
-        {renderLines()}
-      </ExportContextProvider>
-  );
+  return <ExportContextProvider>{renderLines()}</ExportContextProvider>;
 };
 
 export default Relationships;

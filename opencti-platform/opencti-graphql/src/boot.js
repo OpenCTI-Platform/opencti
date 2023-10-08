@@ -3,7 +3,7 @@ import conf, {
   ENABLED_CONNECTOR_MANAGER,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_HISTORY_MANAGER, ENABLED_INGESTION_MANAGER,
-  ENABLED_NOTIFICATION_MANAGER,
+  ENABLED_NOTIFICATION_MANAGER, ENABLED_PLAYBOOK_MANAGER,
   ENABLED_PUBLISHER_MANAGER,
   ENABLED_RETENTION_MANAGER,
   ENABLED_RULE_ENGINE,
@@ -30,6 +30,7 @@ import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
+import playbookManager from './manager/playbookManager';
 
 // region dynamic modules
 const startModules = async () => {
@@ -107,6 +108,13 @@ const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] Publisher manager not started (disabled by configuration)');
   }
   // endregion
+  // region playbook manager
+  if (ENABLED_PLAYBOOK_MANAGER) {
+    await playbookManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Playbook manager not started (disabled by configuration)');
+  }
+  // endregion
   // region Cluster manager
   await clusterManager.start();
   // endregion
@@ -167,6 +175,11 @@ const shutdownModules = async () => {
   }
   if (ENABLED_PUBLISHER_MANAGER) {
     stoppingPromises.push(publisherManager.shutdown());
+  }
+  // endregion
+  // region playbook manager
+  if (ENABLED_PLAYBOOK_MANAGER) {
+    stoppingPromises.push(playbookManager.shutdown());
   }
   // endregion
   // region Cluster manager

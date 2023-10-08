@@ -67,7 +67,8 @@ const i18n = {
       Vocabularies: 'Vocabularios',
       'Create a vocabulary': 'Crear un vocabulario',
       'This item is built-in': 'Este artículo está integrado',
-      'Some fields in usage are mandatory': 'Algunos campos en uso son obligatorios',
+      'Some fields in usage are mandatory':
+        'Algunos campos en uso son obligatorios',
       'Used in': 'Utilizada en',
       Usages: 'Usos',
       Aliases: 'alias',
@@ -407,8 +408,10 @@ const i18n = {
       'Update an infrastructure': 'Actualizar una infrastructura',
       'Create a threat actor group': 'Crear un grupo de actores de amenazas',
       'Update a threat actor group': 'Actualizar un grupo de actor de amenazas',
-      'Create a threat actor individual': 'Crear un actor de amenazas individual',
-      'Update a threat actor individual': 'Actualizar a un actor de amenazas individual',
+      'Create a threat actor individual':
+        'Crear un actor de amenazas individual',
+      'Update a threat actor individual':
+        'Actualizar a un actor de amenazas individual',
       'Create an intrusion set': 'Crear un set de intrusión',
       'Update an intrusion set': 'Actualizar un set de intrusión',
       'Create a campaign': 'Crear una campaña',
@@ -2096,6 +2099,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Hay dos notificadores integrados en la plataforma: Interfaz de usuario y Mailer predeterminado. No son configurables y puede crear sus personalizados aquí.',
       Expired: 'Caducada',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'fr-fr': {
       // Titles
@@ -2165,7 +2171,8 @@ const i18n = {
       Vocabularies: 'Vocabulaires',
       'Create a vocabulary': 'Créer un vocabulaire',
       'This item is built-in': 'Cet attribut est par défaut',
-      'Some fields in usage are mandatory': 'Certains champs utilisés sont obligatoires',
+      'Some fields in usage are mandatory':
+        'Certains champs utilisés sont obligatoires',
       'Used in': 'Utilisé dans',
       Usages: 'Les usages',
       Aliases: 'Pseudonymes',
@@ -4150,6 +4157,7 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Manager de génération de notifiers',
       HISTORY_MANAGER: "Manager d'historique",
       INGESTION_MANAGER: "Manager d'ingestion",
+      PLAYBOOK_MANAGER: 'Manager de playbook',
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Update a status': 'Mettre à jour un statut',
@@ -4198,6 +4206,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Il existe deux notificateurs intégrés dans la plate-forme: Interface utilisateur et Expéditeur par défaut. Ils ne sont pas configurables et vous pouvez créer vos notificateurs personnalisés ici.',
       Expired: 'Expiré',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Votre compte à expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'ja-jp': {
       // Titles
@@ -4265,7 +4276,8 @@ const i18n = {
       Vocabularies: '語彙',
       'Create a vocabulary': '語彙を作成する',
       'This item is built-in': 'このアイテムは内蔵されています',
-      'Some fields in usage are mandatory': '使用法の一部のフィールドは必須です',
+      'Some fields in usage are mandatory':
+        '使用法の一部のフィールドは必須です',
       'Used in': 'で使われる',
       Usages: '用途',
       Aliases: 'エイリアス',
@@ -6222,6 +6234,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。',
       Expired: '期限切れ',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'zh-cn': {
       // Titles
@@ -6303,7 +6318,8 @@ const i18n = {
       'Do you want to delete this group?': '是否要删除此组？',
       'Do you want to delete this threat actor group?':
         '您想删除该威胁组织吗？',
-      'Do you want to delete this threat actor individual?': '您想删除此威胁行为者个人吗？',
+      'Do you want to delete this threat actor individual?':
+        '您想删除此威胁行为者个人吗？',
       'Do you want to delete this intrusion set?': '是否要删除此入侵集合？',
       'Do you want to delete this campaign?': '是否要删除此攻击活动？',
       'Do you want to delete this incident?': '是否要删除此安全事件？',
@@ -8141,7 +8157,9 @@ const i18n = {
       'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': '平臺中有兩個內置通知程式：使用者介面和預設郵件程式。它們不可配置，您可以在此處創建自定義。',
       Expired: '已到期',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': '您的帳戶已過期。如果您想重新激活您的帳戶，請聯繫您的管理員。',
-
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
     'en-us': {
       gt: 'Greater than',
@@ -8546,6 +8564,7 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
       INGESTION_MANAGER: 'Ingestion manager',
+      PLAYBOOK_MANAGER: 'Playbook manager',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':
@@ -8556,6 +8575,9 @@ const i18n = {
       Inactive: 'Inactive',
       Expired: 'Expired',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+      create: 'Creation events',
+      update: 'Modification events',
+      delete: 'Deletion events',
     },
   },
 };

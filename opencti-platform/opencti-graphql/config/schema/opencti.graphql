@@ -5138,6 +5138,7 @@ enum IntrusionSetsFilter {
   confidence
   source_reliability
   creator
+  targets
 }
 input IntrusionSetsFiltering {
   key: [IntrusionSetsFilter!]!
@@ -12048,7 +12049,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): SynchronizerConnection @auth(for: [SETTINGS])
-  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [CONNECTORAPI])
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -13096,6 +13097,7 @@ type Subscription {
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
   stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
+  internalObject(id: ID!): InternalObject @auth(for: [SETTINGS])
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
   stixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
   stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])

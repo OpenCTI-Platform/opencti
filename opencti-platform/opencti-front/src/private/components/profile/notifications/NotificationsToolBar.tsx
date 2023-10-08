@@ -175,7 +175,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
     MESSAGING$.notifySuccess(
       <span>
         {t('The background task has been executed. You can monitor it on')}{' '}
-        <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
+        <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
       </span>,
     );
     setProcessing(false);

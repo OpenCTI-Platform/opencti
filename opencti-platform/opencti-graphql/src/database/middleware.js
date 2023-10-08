@@ -177,18 +177,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
-import {
-  BYPASS,
-  BYPASS_REFERENCE,
-  executionContext,
-  isBypassUser,
-  isUserCanAccessStoreElement,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  RULE_MANAGER_USER,
-  SYSTEM_USER,
-  userFilterStoreElements,
-  validateUserAccessOperation
-} from '../utils/access';
+import { BYPASS, BYPASS_REFERENCE, executionContext, INTERNAL_USERS, isBypassUser, isUserCanAccessStoreElement, KNOWLEDGE_ORGANIZATION_RESTRICT, RULE_MANAGER_USER, SYSTEM_USER, userFilterStoreElements, validateUserAccessOperation } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
@@ -2435,7 +2424,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     creatorIds.push(...idCreators);
   }
   // Cumulate creator id
-  if (!creatorIds.includes(user.id)) {
+  if (!INTERNAL_USERS[user.id] && !creatorIds.includes(user.id)) {
     inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
   }
   // Upsert observed data count and times extensions
@@ -3171,7 +3160,7 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
-    await createEntityAutoEnrichment(context, user, data.element.id, type);
+    await createEntityAutoEnrichment(context, user, data.element.standard_id, type);
   }
   return isCompleteResult ? data : data.element;
 };

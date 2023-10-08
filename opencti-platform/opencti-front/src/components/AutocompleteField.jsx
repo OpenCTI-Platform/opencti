@@ -19,13 +19,19 @@ const AutocompleteField = (props) => {
     isOptionEqualToValue,
     textfieldprops,
     openCreate,
+    getOptionLabel,
+    onInternalChange,
   } = props;
   const [, meta] = useField(name);
   const internalOnChange = React.useCallback(
     (_, value) => {
-      setFieldValue(name, value);
-      if (typeof onChange === 'function') {
-        onChange(name, value || '');
+      if (typeof onInternalChange === 'function') {
+        onInternalChange(name, value || '');
+      } else {
+        setFieldValue(name, value);
+        if (typeof onChange === 'function') {
+          onChange(name, value || '');
+        }
       }
     },
     [setFieldValue, name, onChange],
@@ -49,9 +55,10 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
-        getOptionLabel={(option) => (typeof option === 'object'
-          ? truncate(option.label, 40)
-          : truncate(option, 40))
+        getOptionLabel={
+          getOptionLabel || ((option) => (typeof option === 'object'
+            ? truncate(option.label, 40)
+            : truncate(option, 40)))
         }
         noOptionsText={noOptionsText}
         {...fieldProps}

@@ -242,7 +242,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
     const pushMessage = (data) => {
       const { connector } = data;
       const message = buildConnectorMessage(data);
-      return pushToConnector(context, connector, message);
+      return pushToConnector(connector.internal_id, message);
     };
     await Promise.all(R.map((data) => pushMessage(data), actionList));
   }

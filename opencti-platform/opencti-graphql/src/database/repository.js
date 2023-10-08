@@ -8,7 +8,7 @@ import {
   CONNECTOR_INTERNAL_NOTIFICATION
 } from '../schema/general';
 import { listEntities } from './middleware-loader';
-import { INTERNAL_SYNC_QUEUE } from './utils';
+import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 
 // region connectors
@@ -30,14 +30,27 @@ export const connectors = (context, user) => {
 
 export const connectorsForWorker = async (context, user) => {
   const registeredConnectors = await connectors(context, user);
+  // Register internal queues
   registeredConnectors.push({
-    id: 'sync',
-    name: 'Internal sync connector',
+    id: INTERNAL_SYNC_QUEUE,
+    name: 'Internal sync manager',
     connector_scope: [],
     config: connectorConfig(INTERNAL_SYNC_QUEUE),
     active: true
   });
+  registeredConnectors.push({
+    id: INTERNAL_PLAYBOOK_QUEUE,
+    name: 'Internal playbook manager',
+    connector_scope: [],
+    config: connectorConfig(INTERNAL_PLAYBOOK_QUEUE),
+    active: true
+  });
   return registeredConnectors;
+};
+
+export const connectorsForPlaybook = async (context, user) => {
+  const registeredConnectors = await connectors(context, user);
+  return registeredConnectors.filter((r) => r.playbook_compatible === true);
 };
 
 const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {

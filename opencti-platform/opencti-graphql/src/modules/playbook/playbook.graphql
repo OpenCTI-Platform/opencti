@@ -1,0 +1,129 @@
+type PlayBookExecutionStep {
+    id: ID!
+    message: String
+    status: String
+    in_timestamp: String
+    out_timestamp: String
+    duration: Int
+    bundle_or_patch: String
+}
+
+type PlayBookExecution {
+    id: ID!
+    playbook_id: ID!
+    execution_start: String
+    steps: [PlayBookExecutionStep!]
+}
+
+type Playbook implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    # Playbook
+    name: String!
+    description: String
+    playbook_running: Boolean
+    playbook_definition: String
+    last_executions: [PlayBookExecution!]
+}
+
+type PlaybookComponentPort {
+    id: ID!
+    type: String!
+}
+type PlaybookComponent {
+    id: ID!
+    name: String!
+    description: String!
+    icon: String!
+    is_entry_point: Boolean
+    is_internal: Boolean
+    configuration_schema: String
+    ports: [PlaybookComponentPort!]!
+}
+type PlaybookInsertResult {
+    nodeId: String!
+    linkId: String!
+}
+
+# Ordering
+enum PlaybooksOrdering {
+    name
+    playbook_running
+}
+
+# Filtering
+enum PlaybookFilter {
+    name
+}
+
+input PlaybooksFiltering {
+    key: [PlaybookFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type PlaybookConnection {
+    pageInfo: PageInfo!
+    edges: [PlaybookEdge!]!
+}
+type PlaybookEdge {
+    cursor: String!
+    node: Playbook!
+}
+
+# Queries
+type Query {
+    playbook(id: String!): Playbook @auth(for: [SETTINGS_SETACCESSES])
+    playbooks(
+        first: Int
+        after: ID
+        orderBy: PlaybooksOrdering
+        orderMode: OrderingMode
+        filters: [PlaybooksFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): PlaybookConnection @auth(for: [SETTINGS_SETACCESSES])
+    playbookComponents: [PlaybookComponent]! @auth(for: [SETTINGS_SETACCESSES])
+}
+
+input PlaybookAddInput {
+    name: String! @constraint(minLength: 2)
+    description: String
+}
+
+input PositionInput {
+    x: Int!
+    y: Int!
+}
+
+input PlaybookAddNodeInput {
+    name: String!
+    component_id: String!
+    position: PositionInput!
+    configuration: String
+}
+
+input PlaybookAddLinkInput {
+    from_node: String!
+    from_port: String!
+    to_node: String!
+}
+
+# Mutations
+type Mutation {
+    playbookAdd(input: PlaybookAddInput!): Playbook @auth(for: [SETTINGS_SETACCESSES])
+    playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String! @auth(for: [SETTINGS_SETACCESSES])
+    playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String! @auth(for: [SETTINGS_SETACCESSES])
+    playbookInsertNode(id: ID!, parentNodeId: ID!, parentPortId: ID!, childNodeId: ID!, input: PlaybookAddNodeInput!): PlaybookInsertResult! @auth(for: [SETTINGS_SETACCESSES])
+    playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String! @auth(for: [SETTINGS_SETACCESSES])
+    playbookDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+    playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth(for: [SETTINGS_SETACCESSES])
+    playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth(for: [SETTINGS_SETACCESSES])
+    playbookUpdatePositions(id: ID!, positions: String!): ID @auth(for: [SETTINGS_SETACCESSES])
+    playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook @auth(for: [SETTINGS_SETACCESSES])
+    playbookStepExecution(execution_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean @auth(for: [SETTINGS_SETACCESSES])
+}

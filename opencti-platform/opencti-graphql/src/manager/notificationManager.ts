@@ -73,7 +73,7 @@ export interface NotificationUser {
 export interface KnowledgeNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
-  data: StixCoreObject
+  data: StixObject
 }
 
 export interface ActivityNotificationEvent extends StreamNotifEvent {
@@ -85,7 +85,8 @@ export interface ActivityNotificationEvent extends StreamNotifEvent {
 export interface DigestEvent extends StreamNotifEvent {
   type: 'digest'
   target: NotificationUser
-  data: Array<{ notification_id: string, instance: StixCoreObject, type: string, message: string }>
+  playbook_source?: string
+  data: Array<{ notification_id: string, instance: StixObject, type: string, message: string }>
 }
 
 // region: user access information extractors
@@ -123,7 +124,7 @@ const extractUserAccessPropertiesFromRelationship = (relation: StixRelation) => 
 
 // extract information from a stix object to have all the elements to check if a user has access to the object
 const extractUserAccessPropertiesFromStixObject = (
-  instance: StixCoreObject | StixRelationshipObject
+  instance: StixObject | StixRelationshipObject
 ) => {
   if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
     const sighting = instance as StixSighting;
@@ -331,7 +332,7 @@ const eventTypeTranslaterForSideEvents = async (
 export const generateNotificationMessageForInstance = async (
   context: AuthContext,
   user: AuthUser,
-  instance: StixCoreObject | StixRelationshipObject,
+  instance: StixObject | StixRelationshipObject,
 ) => {
   const [from, to] = extractUserAccessPropertiesFromStixObject(instance);
   const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;

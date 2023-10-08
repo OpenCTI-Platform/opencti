@@ -48,6 +48,14 @@ import {
   TravelExploreOutlined,
   ReceiptOutlined,
   UpcomingOutlined,
+  PrecisionManufacturingOutlined,
+  FilterAltOutlined,
+  CastConnectedOutlined,
+  TerminalOutlined,
+  DriveFolderUploadOutlined,
+  EditOutlined,
+  MemoryOutlined,
+  NotificationsOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -74,6 +82,7 @@ import {
   ClipboardTextClockOutline,
   AccountMultipleOutline,
   AccountGroupOutline,
+  Group,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -311,6 +320,22 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'session':
       return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'playbook':
+      return (
+        <PrecisionManufacturingOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
+    case 'edit':
+      return <EditOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'container':
+      return <Group style={style} fontSize={fontSize} role="img" />;
+    case 'memory':
+      return <MemoryOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'notification':
+      return <NotificationsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':
@@ -343,8 +368,22 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
-    case 'stix-internal-relationship':
-      return <VectorRadius style={style} fontSize={fontSize} role="img" />;
+    case 'filter':
+      return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'stream':
+      return (
+        <CastConnectedOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'console':
+      return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'storage':
+      return (
+        <DriveFolderUploadOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':

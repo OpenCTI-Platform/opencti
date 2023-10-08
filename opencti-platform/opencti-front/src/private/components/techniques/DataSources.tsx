@@ -119,7 +119,6 @@ const DataSources: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
     <>
       {renderLines()}

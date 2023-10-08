@@ -16,7 +16,7 @@ import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
-import { INDEX_INTERNAL_OBJECTS, INTERNAL_SYNC_QUEUE } from './database/utils';
+import { INDEX_INTERNAL_OBJECTS, INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
 import {
   BYPASS,
@@ -167,6 +167,7 @@ const initializeSchema = async () => {
 };
 
 const initializeInternalQueues = async () => {
+  await registerConnectorQueues(INTERNAL_PLAYBOOK_QUEUE, 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
 };
 

@@ -8,6 +8,7 @@ type StixId = `${string}--${v4 | v5}`;
 
 export type StixBundle = {
   id: string;
+  spec_version: string,
   type: 'bundle'
   objects: StixObject[];
 };
@@ -54,6 +55,7 @@ interface StixObject {
   id: StixId;
   type: string;
   spec_version: string;
+  object_marking_refs?: Array<StixId>; // optional
   // TODO Implement granular_markings
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtension;

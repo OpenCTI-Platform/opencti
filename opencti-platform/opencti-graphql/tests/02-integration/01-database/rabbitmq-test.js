@@ -34,14 +34,14 @@ describe('Rabbit connector management', () => {
   it('should connector queues available', async () => {
     const data = await metrics(testContext, ADMIN_USER);
     expect(data).not.toBeNull();
-    expect(data.queues.length).toEqual(4);
+    expect(data.queues.length).toEqual(6);
     const aggregationMap = new Map(data.queues.map((q) => [q.name, q]));
     expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}listen_${connectorId}`)).not.toBeUndefined();
     expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}push_${connectorId}`)).not.toBeUndefined();
   });
   it('should push message to connector', async () => {
     const connector = { internal_id: connectorId };
-    await pushToConnector(testContext, connector, { id: uuid() });
+    await pushToConnector(connector.internal_id, { id: uuid() });
   });
   it('should delete connector', async () => {
     const unregister = await unregisterConnector(connectorId);

@@ -17,6 +17,7 @@ const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
 export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
 
 export const INTERNAL_SYNC_QUEUE = 'sync';
+export const INTERNAL_PLAYBOOK_QUEUE = 'playbook';
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_DELETE = 'delete';
 export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';
@@ -186,7 +187,14 @@ export const cursorToOffset = (cursor) => {
   return JSON.parse(str);
 };
 
+export const toBase64 = (utf8String) => {
+  if (isEmptyField(utf8String)) return undefined;
+  const buff = Buffer.from(utf8String, 'utf-8');
+  return buff.toString('base64');
+};
+
 export const fromBase64 = (base64String) => {
+  if (isEmptyField(base64String)) return undefined;
   const buff = Buffer.from(base64String, 'base64');
   return buff.toString('utf-8');
 };

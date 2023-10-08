@@ -16,6 +16,7 @@ import { getEntityFromCache } from '../database/cache';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
+import playbookManager from './playbookManager';
 
 const SCHEDULE_TIME = 30000;
 const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
@@ -45,6 +46,7 @@ const initClusterManager = () => {
       notificationManager.status(),
       ingestionManager.status(),
       activityManager.status(settings),
+      playbookManager.status(settings),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

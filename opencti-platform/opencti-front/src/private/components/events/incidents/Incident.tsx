@@ -108,12 +108,10 @@ const Incident = ({
   incidentData: Incident_incident$key;
 }) => {
   const classes = useStyles();
-
   const incident = useFragment<Incident_incident$key>(
     incidentFragment,
     incidentData,
   );
-
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader

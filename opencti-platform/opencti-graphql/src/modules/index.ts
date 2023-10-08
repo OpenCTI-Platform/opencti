@@ -44,6 +44,7 @@ import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
+import './playbook/playbook';
 import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
 import './organization/organization';

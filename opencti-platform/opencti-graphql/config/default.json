@@ -97,6 +97,7 @@
     "lock_key": "history_manager_lock"
   },
   "activity_manager": {
+    "enabled": true,
     "lock_key": "activity_manager_lock"
   },
   "connector_manager": {
@@ -120,6 +121,11 @@
     "lock_live_key": "notification_live_manager_lock",
     "lock_digest_key": "notification_digest_manager_lock",
     "interval": 10000
+  },
+  "playbook_manager": {
+    "enabled": true,
+    "lock_key": "playbook_manager_lock",
+    "interval": 60000
   },
   "publisher_manager": {
     "enabled": true,

@@ -42,6 +42,7 @@ generates:
         IngestionRss: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionRss
         IngestionTaxii: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxii
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
+        Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook
   ./graphql.schema.json:
     plugins:
       - "introspection"

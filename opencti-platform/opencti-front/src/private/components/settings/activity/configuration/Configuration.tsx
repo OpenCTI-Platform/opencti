@@ -211,7 +211,7 @@ ConfigurationComponentProps
             >
               {(settings.activity_listeners ?? []).map((listener) => {
                 return (
-                  <div key={listener.id}>
+                  <React.Fragment key={listener.id}>
                     <ListItem
                       classes={{ root: classes.item }}
                       divider={true}
@@ -247,7 +247,7 @@ ConfigurationComponentProps
                         </IconButton>
                       </ListItemSecondaryAction>
                     </ListItem>
-                  </div>
+                  </React.Fragment>
                 );
               })}
             </List>

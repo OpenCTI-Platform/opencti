@@ -479,6 +479,7 @@ export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
+export const ENABLED_PLAYBOOK_MANAGER = booleanConf('playbook_manager:enabled', false);
 
 // Default Accounts management
 export const ACCOUNT_STATUS_ACTIVE = 'Active';

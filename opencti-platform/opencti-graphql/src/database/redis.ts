@@ -17,7 +17,7 @@ import {
 } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { AlreadyDeletedError, DatabaseError, UnsupportedError } from '../config/errors';
-import { now, utcDate } from '../utils/format';
+import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -38,6 +38,7 @@ import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
+import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage } from './generate-message';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
@@ -765,5 +766,31 @@ export const registerClusterInstance = async (instanceId: string, instanceConfig
 };
 export const getClusterInstances = async () => {
   return keysFromList(CLUSTER_LIST_KEY, CLUSTER_NODE_EXPIRE);
+};
+// endregion
+
+// playground handling
+export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
+  const clientBase = getClientBase();
+  const id = `playbook_execution_${envelop.playbook_execution_id}`;
+  const follow = await clientBase.get(id);
+  const objectFollow = follow ? JSON.parse(follow) : {};
+  const toUpdate = mergeDeepRightAll(objectFollow, envelop);
+  await setKeyWithList(id, [`playbook_executions_${envelop.playbook_id}`], toUpdate, 5 * 60); // 5 minutes
+};
+export const getLastPlaybookExecutions = async (playbookId: string) => {
+  const executions = await keysFromList(`playbook_executions_${playbookId}`, 5 * 60) as ExecutionEnvelop[];
+  return executions.map((e) => {
+    const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
+      const bundle_or_patch = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+      return ({ id: k.split('step_')[1], bundle_or_patch, ...v });
+    });
+    return {
+      id: e.playbook_execution_id,
+      playbook_id: e.playbook_id,
+      execution_start: steps[0].in_timestamp,
+      steps
+    };
+  });
 };
 // endregion

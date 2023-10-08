@@ -4182,6 +4182,7 @@ enum IntrusionSetsFilter {
   confidence
   source_reliability
   creator
+  targets
 }
 
 input IntrusionSetsFiltering {
@@ -8304,6 +8305,9 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  playbook(id: String!): Playbook
+  playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: [PlaybooksFiltering!], filterMode: FilterMode, search: String): PlaybookConnection
+  playbookComponents: [PlaybookComponent]!
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
@@ -8322,6 +8326,7 @@ type Subscription {
   markingDefinition(id: ID!): MarkingDefinition
   killChainPhase(id: ID!): KillChainPhase
   stixCoreObject(id: ID!): StixCoreObject
+  internalObject(id: ID!): InternalObject
   stixDomainObject(id: ID!): StixDomainObject
   stixCyberObservable(id: ID!): StixCyberObservable
   stixCoreRelationship(id: ID!): StixCoreRelationship
@@ -9018,6 +9023,17 @@ type Mutation {
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual
+  playbookAdd(input: PlaybookAddInput!): Playbook
+  playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
+  playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String!
+  playbookInsertNode(id: ID!, parentNodeId: ID!, parentPortId: ID!, childNodeId: ID!, input: PlaybookAddNodeInput!): PlaybookInsertResult!
+  playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String!
+  playbookDelete(id: ID!): ID
+  playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
+  playbookDeleteLink(id: ID!, linkId: ID!): Playbook
+  playbookUpdatePositions(id: ID!, positions: String!): ID
+  playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook
+  playbookStepExecution(execution_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean
   ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
@@ -11690,6 +11706,105 @@ input ThreatActorIndividualAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type PlayBookExecutionStep {
+  id: ID!
+  message: String
+  status: String
+  in_timestamp: String
+  out_timestamp: String
+  duration: Int
+  bundle_or_patch: String
+}
+
+type PlayBookExecution {
+  id: ID!
+  playbook_id: ID!
+  execution_start: String
+  steps: [PlayBookExecutionStep!]
+}
+
+type Playbook implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  description: String
+  playbook_running: Boolean
+  playbook_definition: String
+  last_executions: [PlayBookExecution!]
+}
+
+type PlaybookComponentPort {
+  id: ID!
+  type: String!
+}
+
+type PlaybookComponent {
+  id: ID!
+  name: String!
+  description: String!
+  icon: String!
+  is_entry_point: Boolean
+  is_internal: Boolean
+  configuration_schema: String
+  ports: [PlaybookComponentPort!]!
+}
+
+type PlaybookInsertResult {
+  nodeId: String!
+  linkId: String!
+}
+
+enum PlaybooksOrdering {
+  name
+  playbook_running
+}
+
+enum PlaybookFilter {
+  name
+}
+
+input PlaybooksFiltering {
+  key: [PlaybookFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type PlaybookConnection {
+  pageInfo: PageInfo!
+  edges: [PlaybookEdge!]!
+}
+
+type PlaybookEdge {
+  cursor: String!
+  node: Playbook!
+}
+
+input PlaybookAddInput {
+  name: name_String_NotNull_minLength_2!
+  description: String
+}
+
+input PositionInput {
+  x: Int!
+  y: Int!
+}
+
+input PlaybookAddNodeInput {
+  name: String!
+  component_id: String!
+  position: PositionInput!
+  configuration: String
+}
+
+input PlaybookAddLinkInput {
+  from_node: String!
+  from_port: String!
+  to_node: String!
 }
 
 type IngestionRss implements InternalObject & BasicObject {

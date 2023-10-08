@@ -24,13 +24,22 @@ const SharingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-
   return (
-    <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
+    <Drawer
+      variant="permanent"
+      anchor="right"
+      classes={{ paper: classes.drawer }}
+    >
       <div className={classes.toolbar} />
-      <MenuList component="nav" style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }} sx={{ marginBottom: bannerHeightNumber }}>
+      <MenuList
+        component="nav"
+        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+        sx={{ marginBottom: bannerHeightNumber }}
+      >
         <MenuItem
           component={Link}
           to={'/dashboard/data/sharing/streams'}

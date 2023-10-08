@@ -98,7 +98,6 @@ interface IncidentAddInput {
   objectLabel: Option[];
   objectAssignee: Option[];
   objectParticipant: Option[];
-
   externalReferences: Option[];
   file: File | undefined;
 }
@@ -152,7 +151,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
-      objectParticipant: cleanedValues.objectParticipant.map(({ value }) => value),
+      objectParticipant: cleanedValues.objectParticipant.map(
+        ({ value }) => value,
+      ),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
       externalReferences: cleanedValues.externalReferences.map(
         ({ value }) => value,
@@ -316,7 +317,7 @@ const IncidentCreation = ({
   const onReset = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   return (
-    <div>
+    <>
       <Fab
         onClick={() => setOpen(true)}
         color="secondary"
@@ -353,7 +354,7 @@ const IncidentCreation = ({
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

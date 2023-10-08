@@ -189,7 +189,6 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-
   const observableInput = {
     stix_id,
     x_opencti_score,

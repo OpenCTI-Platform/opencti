@@ -59,7 +59,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
             );
           }
         }
-        return <div key={'none'}></div>;
+        return <div key="none" />;
       })}
     </List>
   );
