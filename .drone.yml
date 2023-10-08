@@ -31,10 +31,16 @@ steps:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-312
+    image: python:3.12
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
 
   # always run the examples last since they don't clean up
   - name: example-tests
-    image: python:3.11
+    image: python:3.12
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install .
