@@ -27,6 +27,7 @@ import DashboardField from '../../common/form/DashboardField';
 import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
+import GroupField from '@components/common/form/GroupField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -96,7 +97,7 @@ const organizationMutationRelationAdd = graphql`
   ) {
     organizationRelationAdd(id: $id, input: $input) {
       from {
-        ...OrganizationEditionOverview_organization
+        ...SettingsOrganization_organization
       }
     }
   }
@@ -109,7 +110,7 @@ const organizationMutationRelationDelete = graphql`
     $relationship_type: String!
   ) {
     organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
-      ...OrganizationEditionOverview_organization
+      ...SettingsOrganization_organization
     }
   }
 `;
@@ -134,6 +135,11 @@ interface SettingsOrganizationEditionProps {
   | null;
   enableReferences?: boolean;
 }
+
+export const convertGrantableGroups = (organization) => (organization?.grantable_groups ?? []).map((n) => ({
+  label: n.name,
+  value: n.id,
+}));
 
 const SettingsOrganizationEdition = ({
   organization,
@@ -176,6 +182,7 @@ const SettingsOrganizationEdition = ({
         label: organization.default_dashboard.name,
       }
       : null,
+    grantable_groups: convertGrantableGroups(organization),
   };
   const onSubmit: FormikConfig<SettingsOrganizationFormValues>['onSubmit'] = (
     values,
@@ -344,6 +351,14 @@ const SettingsOrganizationEdition = ({
                   context={context}
                 />
                 <SettingsOrganizationHiddenTypesField organizationData={organization} />
+                <GroupField
+                  name="grantable_groups"
+                  label={t('Grantable groups (for Organization Administrators')}
+                  multiple={true}
+                  onChange={editor.changeGrantableGroups}
+                  containerStyle={{ width: '100%' }}
+                  style={{ marginTop: 20 }}
+                />
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}

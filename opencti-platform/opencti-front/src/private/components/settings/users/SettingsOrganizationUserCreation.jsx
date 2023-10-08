@@ -104,10 +104,18 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose, organization }) => {
-  const { settings } = useAuth();
+  const { settings, me } = useAuth();
   const { t } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose();
+
+
+  const grantableGroups =  [
+      {
+        label: 'Knowledge Group',
+        value: '123456'
+      }
+    ];
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       omit(['confirmation']),
@@ -257,10 +265,8 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
                     label={t('Add a group')}
                     multiple={true}
                     containerStyle={{ width: '100%' }}
-                    groupList={[{
-                      id: '13465465',
-                      name: 'group1'
-                    }]}
+                    predefinedGroups={grantableGroups}
+                    style={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={SelectField}

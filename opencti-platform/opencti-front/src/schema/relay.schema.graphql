@@ -12160,6 +12160,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   authorized_authorities: [String]
+  grantable_groups: [Group]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace

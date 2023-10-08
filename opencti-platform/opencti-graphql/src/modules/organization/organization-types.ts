@@ -11,6 +11,7 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   sectors: string[]
   default_dashboard: string
   authorized_authorities: string[]
+  grantable_groups: string[]
   [RELATION_PARTICIPATE_TO]: string[]
 }
 

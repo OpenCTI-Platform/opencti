@@ -53,18 +53,23 @@ class GroupField extends Component {
   }
 
   searchGroups() {
-    fetchQuery(groupsQuery)
-      .toPromise()
-      .then((data) => {
-        const groups = pipe(
-          pathOr([], ['groups', 'edges']),
-          map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-          })),
-        )(data);
-        this.setState({ groups });
-      });
+    if(this.props.predefinedGroups) {
+      this.setState({groups: this.props.predefinedGroups})
+    }
+    else {
+      fetchQuery(groupsQuery)
+        .toPromise()
+        .then((data) => {
+          const groups = pipe(
+            pathOr([], ['groups', 'edges']),
+            map((n) => ({
+              label: n.node.name,
+              value: n.node.id,
+            })),
+          )(data);
+          this.setState({ groups });
+        });
+    }
   }
 
   render() {

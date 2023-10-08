@@ -87,6 +87,10 @@ const settingsOrganizationFragment = graphql`
         }
       }
     }
+    grantable_groups {
+      id
+      name
+    }
     editContext {
       name
       focusOn
@@ -112,7 +116,7 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
-  const isOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organization.id);
+  const isOrganizationAdmin = (me.administrated_organizations ?? []).map((orga) => orga?.id).includes(organization.id);
   // TODO Check if right capability for Orga Edition
   return (
     <div className={classes.container}>

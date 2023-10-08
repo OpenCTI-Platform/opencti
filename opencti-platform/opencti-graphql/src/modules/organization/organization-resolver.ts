@@ -7,7 +7,7 @@ import {
   batchSectors,
   batchSubOrganizations, editAuthorizedAuthorities,
   findAll,
-  findById, organizationAdminAdd, organizationAdminRemove
+  findById, findGrantableGroups, organizationAdminAdd, organizationAdminRemove
 } from './organization-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -37,6 +37,7 @@ const organizationResolvers: Resolvers = {
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
+    grantable_groups: (current, _, context) => findGrantableGroups(context, context.user, current),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

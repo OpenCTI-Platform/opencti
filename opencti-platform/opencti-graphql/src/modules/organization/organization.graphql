@@ -115,6 +115,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   authorized_authorities: [String]
+  grantable_groups: [Group]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace

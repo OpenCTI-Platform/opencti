@@ -60,6 +60,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     },
     { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'grantable_groups', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [
     {
