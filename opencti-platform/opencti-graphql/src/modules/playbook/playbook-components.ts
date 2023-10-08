@@ -219,13 +219,13 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
     // Checking on all bundle elements
     if (all) {
-      const matchedElements = [];
+      let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
         const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
-        if (isMatch) matchedElements.push(bundleElement);
+        if (isMatch) matchedElements += 1;
       }
-      return { output_port: matchedElements.length > 0 ? 'out' : 'no-match', bundle };
+      return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
