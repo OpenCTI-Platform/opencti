@@ -2306,6 +2306,21 @@ class OpenCTIStix2:
                         for where_sighted_ref in item["where_sighted_refs"]:
                             to_ids.append(where_sighted_ref)
                     # Import sighting_of_ref
+                    if "x_opencti_sighting_of_ref" in item:
+                        from_id = item["x_opencti_sighting_of_ref"]
+                        if len(to_ids) > 0:
+                            for to_id in to_ids:
+                                self.import_sighting(item, from_id, to_id, update)
+                    if (
+                        self.opencti.get_attribute_in_extension("sighting_of_ref", item)
+                        is not None
+                    ):
+                        from_id = self.opencti.get_attribute_in_extension(
+                            "sighting_of_ref", item
+                        )
+                        if len(to_ids) > 0:
+                            for to_id in to_ids:
+                                self.import_sighting(item, from_id, to_id, update)
                     from_id = item["sighting_of_ref"]
                     if len(to_ids) > 0:
                         for to_id in to_ids:
