@@ -362,7 +362,7 @@ ListLinesContent.propTypes = {
   contentMappingData: PropTypes.object,
   bypassEditionRestriction: PropTypes.bool,
   isOrganizationAdmin: PropTypes.bool,
-  organization:PropTypes.object
+  organization: PropTypes.object,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

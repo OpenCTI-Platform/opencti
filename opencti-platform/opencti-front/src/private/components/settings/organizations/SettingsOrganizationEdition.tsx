@@ -10,6 +10,7 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import GroupField from '@components/common/form/GroupField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
@@ -27,7 +28,6 @@ import DashboardField from '../../common/form/DashboardField';
 import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
-import GroupField from '@components/common/form/GroupField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -353,7 +353,7 @@ const SettingsOrganizationEdition = ({
                 <SettingsOrganizationHiddenTypesField organizationData={organization} />
                 <GroupField
                   name="grantable_groups"
-                  label={t('Grantable groups (for Organization Administrators')}
+                  label={t('Grantable groups by Organization administrators')}
                   multiple={true}
                   onChange={editor.changeGrantableGroups}
                   containerStyle={{ width: '100%' }}

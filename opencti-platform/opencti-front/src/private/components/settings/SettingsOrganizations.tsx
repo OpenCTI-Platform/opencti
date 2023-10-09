@@ -28,12 +28,11 @@ const SettingsOrganizations = () => {
     orderAsc: false,
   });
 
-
-  const userIsOrganizationAdmin = me.administrated_organizations.length > 0;
+  const userIsOrganizationAdmin = (me.administrated_organizations ?? []).length > 0;
   const paginationOptions = {
     ...paginationOptionsFromStorage,
-    filters: userIsOrganizationAdmin ? [{ key: ['authorized_authorities'], values: [me.id] }]: undefined,
-  }
+    filters: userIsOrganizationAdmin ? [{ key: ['authorized_authorities'], values: [me.id] }] : undefined,
+  };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
   const { fd, t } = useFormatter();

@@ -1288,6 +1288,7 @@ enum UsersFilter {
   external
   entity_type
   created_at
+  organization
 }
 
 input UsersFiltering {

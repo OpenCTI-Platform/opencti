@@ -241,7 +241,7 @@ const SettingsOrganization = ({
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Grantable groups (for organization administrators)')}
+                    {t('Grantable groups by organization administrators')}
                   </Typography>
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
