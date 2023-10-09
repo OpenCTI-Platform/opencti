@@ -4,7 +4,7 @@ import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { createRelations, deleteRelationsByFromAndTo, patchAttribute } from '../database/middleware';
+import { buildRelationData, createRelations, deleteRelationsByFromAndTo, patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -35,15 +35,18 @@ export const stixObjectOrRelationshipAddRefRelation = async (
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
   // Create relation
-  const fromRole = `${type}_from`;
   const fromType = stixObjectOrRelationship.entity_type;
   const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromType, input.relationship_type);
   const patch = { [fieldName as string]: [input.toId] };
   const operations = { [fieldName as string]: UPDATE_OPERATION_ADD };
-  const { element } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
-  const relation = { ...element, from: stixObjectOrRelationship, fromId: stixObjectOrRelationshipId, fromRole, fromType, to };
-  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, relation, user);
-  return relation;
+  // Update data
+  await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
+
+  const relationData = await buildRelationData(context, user, { from: stixObjectOrRelationship, to, relationship_type: input.relationship_type });
+
+  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, relationData.element, user);
+
+  return relationData.element;
 };
 export const stixObjectOrRelationshipAddRefRelations = async (
   context: AuthContext,

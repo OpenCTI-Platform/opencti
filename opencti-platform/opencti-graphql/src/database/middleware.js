@@ -2578,7 +2578,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   return { element, event: null, isCreation: false };
 };
 
-const buildRelationData = async (context, user, input, opts = {}) => {
+export const buildRelationData = async (context, user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
