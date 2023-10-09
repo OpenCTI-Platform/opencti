@@ -46,7 +46,7 @@ const externalReferenceResolvers = {
       const listing = await filesListing(context, context.user, first, `import/${externalReference.entity_type}/${externalReference.id}/`, externalReference);
       if (externalReference.fileId) {
         try {
-          const refFile = await loadFile(context, context.user, externalReference.fileId);
+          const refFile = await loadFile(context.user, externalReference.fileId);
           listing.edges.unshift({ node: refFile, cursor: '' });
         } catch {
           // FileId is no longer available

@@ -10,7 +10,7 @@ const domainLoader = batchLoader(batchStixDomainObjects);
 
 const fileResolvers = {
   Query: {
-    file: (_, { id }, context) => loadFile(context, context.user, id),
+    file: (_, { id }, context) => loadFile(context.user, id),
     importFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/global/'),
     pendingFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/pending/'),
   },

@@ -145,7 +145,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       await publishFileRead(executeContext, auth, data);
       const stream = await downloadFile(file);
       res.attachment(file);
@@ -166,7 +166,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       await publishFileRead(executeContext, auth, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
@@ -195,7 +195,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
