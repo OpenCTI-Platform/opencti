@@ -8595,6 +8595,7 @@ type ContainerEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Container
   investigationAdd: Workspace
+  knowledgeAddFromInvestigation(workspaceId: ID!): Container
 }
 
 type NoteEditMutations {
@@ -8923,7 +8924,7 @@ type Mutation {
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign
   campaignEdit(id: ID!): CampaignEditMutations
-  containerEdit(id: ID!): ContainerEditMutations
+  containerEdit(id: ID!, workspaceId: ID): ContainerEditMutations
   noteAdd(input: NoteAddInput!): Note
   userNoteAdd(input: NoteUserAddInput!): Note
   noteEdit(id: ID!): NoteEditMutations

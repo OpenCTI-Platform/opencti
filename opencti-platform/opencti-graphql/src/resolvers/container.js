@@ -1,4 +1,11 @@
-import { findAll, findById, objects, containersObjectsOfObject, relatedContainers } from '../domain/container';
+import {
+  findAll,
+  findById,
+  objects,
+  containersObjectsOfObject,
+  relatedContainers,
+  knowledgeAddFromInvestigation
+} from '../domain/container';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -48,6 +55,7 @@ const containerResolvers = {
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       investigationAdd: () => investigationAddFromContainer(context, context.user, id),
+      knowledgeAddFromInvestigation: ({ workspaceId }) => knowledgeAddFromInvestigation(context, context.user, { containerId: id, workspaceId }),
     }),
   },
 };

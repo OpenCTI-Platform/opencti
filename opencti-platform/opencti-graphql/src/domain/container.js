@@ -14,6 +14,8 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, isInferredIndex, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';
 import { elCount } from '../database/engine';
+import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
+import { stixCoreObjectAddRelations } from './stixCoreObject';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';
@@ -139,4 +141,10 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
     ))).flat())
   );
   return buildPagination(0, null, resolvedObjects.map((r) => ({ node: r })), resolvedObjects.length);
+};
+
+export const knowledgeAddFromInvestigation = async (context, user, { containerId, workspaceId }) => {
+  const investigation = await findInvestigationById(context, user, workspaceId);
+  const containerInput = { toIds: investigation.investigated_entities_ids, relationship_type: 'object' };
+  return await stixCoreObjectAddRelations(context, user, containerId, containerInput);
 };

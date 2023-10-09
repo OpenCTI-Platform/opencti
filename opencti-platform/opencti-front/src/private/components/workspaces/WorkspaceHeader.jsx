@@ -21,12 +21,18 @@ import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Autocomplete from '@mui/material/Autocomplete';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
+import { useHistory } from 'react-router-dom';
+import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import {
   commitMutation,
   fetchQuery,
   MESSAGING$,
 } from '../../../relay/environment';
-import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
@@ -34,6 +40,8 @@ import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
+import ItemIcon from '../../../components/ItemIcon';
+import investigationToContainerAdd from '../../../utils/ContainerUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -87,6 +95,25 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
     workspace(id: $id) {
       toStixReportBundle
+    }
+  }
+`;
+
+const workspaceHeaderContainersQuery = graphql`
+  query WorkspaceHeaderContainersQuery($search: String) {
+    containers(
+      search: $search
+      filters: [{ key: entity_type, values: ["Container"] }]
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          representative {
+            main
+          }
+        }
+      }
     }
   }
 `;
@@ -159,6 +186,55 @@ const WorkspaceHeader = ({
           const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}`;
           fileDownload(blob, fileName, 'application/json');
         }
+      });
+  };
+
+  const [displayTurnToReportOrCaseContainer, setDisplayTurnToReportOrCaseContainer] = useState(false);
+  const [containerCreation, setContainerCreation] = useState(false);
+  const [targetContainerId, setTargetContainerId] = useState('');
+  const [containers, setContainers] = useState([]);
+  const [actionsInputs, setActionsInputs] = useState({});
+  const history = useHistory();
+  const handleChangeActionInputValues = (event, value) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    setActionsInputs({
+      ...actionsInputs || {},
+      values: Array.isArray(value) ? value : [value],
+    });
+    setTargetContainerId(value[0].value);
+  };
+
+  const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
+  const handleCloseUpdate = () => {
+    setActionsInputs({});
+  };
+
+  const handleLaunchUpdate = () => {
+    handleCloseUpdate();
+    investigationToContainerAdd(workspace.id, targetContainerId, history);
+  };
+
+  const searchContainers = (event, newValue) => {
+    if (!event) return;
+    setActionsInputs({
+      ...actionsInputs,
+      inputValue: newValue ?? '',
+    });
+    fetchQuery(workspaceHeaderContainersQuery, {
+      search: newValue ?? '',
+    })
+      .toPromise()
+      .then(({ containers: { edges } }) => {
+        const elements = edges.map(({ node }) => node);
+        const containersFromElements = elements.map(({ representative, entity_type, id }) => ({
+          label: representative.main,
+          type: entity_type,
+          value: id,
+        }));
+        setContainers([...containersFromElements]);
       });
   };
 
@@ -319,7 +395,7 @@ const WorkspaceHeader = ({
           <ToggleButtonGroup size="small" color="primary" exclusive={true}>
             <ToggleButton
                 aria-label="Label"
-                onClick={handleOpenAddInContainer}
+                onClick={handleOpenTurnToReportOrCaseContainer}
                 size="small"
                 value="turn-to-report-or-case"
             >
@@ -403,7 +479,7 @@ const WorkspaceHeader = ({
               >
                 <Form style={{ float: 'right' }}>
                   <Field
-                    component={TextField}
+                    component={MUITextField}
                     name="new_tag"
                     autoFocus={true}
                     placeholder={t('New tag')}
@@ -415,6 +491,103 @@ const WorkspaceHeader = ({
           </Slide>
         </Security>
       </div>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        fullWidth={true}
+        maxWidth="sm"
+        TransitionComponent={Transition}
+        open={displayTurnToReportOrCaseContainer}
+        onClose={() => setDisplayTurnToReportOrCaseContainer(false)}
+      >
+        <DialogTitle>{t('Turn to Report or Case')}</DialogTitle>
+        <DialogContent>
+          <StixDomainObjectCreation
+            inputValue={actionsInputs?.inputValue || ''}
+            open={containerCreation}
+            display={true}
+            speeddial={true}
+            stixDomainObjectTypes={['Container']}
+            handleClose={() => setContainerCreation(false)}
+            isInWorkspace={true}
+            creationCallback={({ name, id, entity_type }) => {
+              const element = {
+                label: name,
+                value: id,
+                type: entity_type,
+              };
+              setContainers([...(containers ?? []), element]);
+              handleChangeActionInputValues(null, [
+                ...(actionsInputs?.values ?? []),
+                element,
+              ]);
+            }}
+          />
+          <Autocomplete
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ?? '')
+            }
+            value={actionsInputs?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <MUITextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={(event) => searchContainers(event)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={containers}
+            onInputChange={(event) => searchContainers(event)}
+            inputValue={actionsInputs?.inputValue || ''}
+            onChange={(event, value) => handleChangeActionInputValues(event, value)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+            disableClearable
+          />
+          <IconButton
+              onClick={() => setContainerCreation(true)}
+              edge="end"
+              style={{ position: 'absolute', top: 68, right: 48 }}
+              size="large"
+          >
+            <Add />
+          </IconButton>
+        </DialogContent>
+        <DialogActions>
+          <Button
+              onClick={() => setDisplayTurnToReportOrCaseContainer(false)}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={() => {
+              setDisplayTurnToReportOrCaseContainer(false);
+              setActionsInputs({
+                ...actionsInputs,
+                type: 'ADD',
+                fieldType: 'ATTRIBUTE',
+                field: 'container-object',
+              });
+              handleLaunchUpdate();
+            }}
+          >
+            {t('Add')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <div className="clearfix" />
     </div>
   );
