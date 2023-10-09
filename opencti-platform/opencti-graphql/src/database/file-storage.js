@@ -89,7 +89,7 @@ export const deleteBucket = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
-  const up = await loadFile(context, user, id);
+  const up = await loadFile(user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -108,7 +108,7 @@ export const deleteFiles = async (context, user, ids) => {
   return true;
 };
 
-export const downloadFile = async (context, id) => {
+export const downloadFile = async (id) => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -147,7 +147,7 @@ export const storeFileConverter = (user, file) => {
   };
 };
 
-export const loadFile = async (context, user, filename) => {
+export const loadFile = async (user, filename) => {
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
@@ -203,7 +203,7 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
   }
   const filteredObjects = storageObjects.filter((obj) => !isFileObjectExcluded(obj.Key));
   // Load file metadata with 5 // call maximum
-  return BluePromise.map(filteredObjects, (f) => loadFile(context, user, f.Key), { concurrency: 5 });
+  return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
@@ -255,7 +255,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   const key = `${path}/${filename}`;
   let existingFile = null;
   try {
-    existingFile = await loadFile(context, user, key);
+    existingFile = await loadFile(user, key);
   } catch {
     // do nothing
   }

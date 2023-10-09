@@ -22,7 +22,7 @@ const Root = () => {
   } else if (!useIsHiddenEntity('Grouping')) {
     redirect = 'groupings';
   } else if (!useIsHiddenEntity('Malware-Analysis')) {
-    redirect = 'malwareAnalyses';
+    redirect = 'malware_analyses';
   } else if (!useIsHiddenEntity('Note')) {
     redirect = 'notes';
   } else {

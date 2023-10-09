@@ -17887,7 +17887,7 @@ export type Query = {
   ruleManagerInfo?: Maybe<RuleManager>;
   rules?: Maybe<Array<Maybe<Rule>>>;
   runtimeAttributes?: Maybe<AttributeConnection>;
-  schemaAttributes?: Maybe<AttributeConnection>;
+  schemaAttributeNames?: Maybe<AttributeConnection>;
   schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
@@ -19294,7 +19294,7 @@ export type QueryRuntimeAttributesArgs = {
 };
 
 
-export type QuerySchemaAttributesArgs = {
+export type QuerySchemaAttributeNamesArgs = {
   elementType: Array<InputMaybe<Scalars['String']['input']>>;
 };
 
@@ -35415,7 +35415,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ruleManagerInfo?: Resolver<Maybe<ResolversTypes['RuleManager']>, ParentType, ContextType>;
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
   runtimeAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QueryRuntimeAttributesArgs, 'attributeName'>>;
-  schemaAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributesArgs, 'elementType'>>;
+  schemaAttributeNames?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributeNamesArgs, 'elementType'>>;
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;

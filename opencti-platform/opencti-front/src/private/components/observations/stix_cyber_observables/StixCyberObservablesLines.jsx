@@ -93,7 +93,7 @@ export const stixCyberObservablesLinesSubTypesQuery = graphql`
 
 export const stixCyberObservablesLinesAttributesQuery = graphql`
   query StixCyberObservablesLinesAttributesQuery($elementType: [String]!) {
-    schemaAttributes(elementType: $elementType) {
+    schemaAttributeNames(elementType: $elementType) {
       edges {
         node {
           value

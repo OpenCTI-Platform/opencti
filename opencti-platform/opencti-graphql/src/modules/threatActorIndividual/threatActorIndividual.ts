@@ -76,15 +76,15 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       upsert: false,
       label: 'Threat actor types'
     },
-    { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'last_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true, label: 'First seen' },
+    { name: 'last_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true, label: 'Last seen' },
     { name: 'goals', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
     { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
     { name: 'sophistication', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'resource_level', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'resource_level', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Resource level' },
+    { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Primary motivation' },
+    { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true, label: 'Secondary motivations' },
+    { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false, label: 'Personal motivations' },
   ],
   relations: [
     {

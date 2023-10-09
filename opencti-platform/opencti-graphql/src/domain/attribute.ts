@@ -161,6 +161,6 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
   return elAttributeValues(context, user, attributeName, opts);
 };
 
-export const getSchemaAttributeValues = (elementTypes: string[]) => {
+export const getSchemaAttributeNames = (elementTypes: string[]) => {
   return queryAttributeNames(elementTypes);
 };

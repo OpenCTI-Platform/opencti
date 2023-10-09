@@ -451,7 +451,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
-  const up = await loadFile(context, user, fileId);
+  const up = await loadFile(user, fileId);
   const entityId = up.metaData.entity_id;
   const externalReferenceId = up.metaData.external_reference_id;
   const previous = await storeLoadByIdWithRefs(context, user, entityId);

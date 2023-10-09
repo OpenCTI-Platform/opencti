@@ -145,9 +145,9 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       await publishFileRead(executeContext, auth, data);
-      const stream = await downloadFile(executeContext, file);
+      const stream = await downloadFile(file);
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
@@ -166,7 +166,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       await publishFileRead(executeContext, auth, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
@@ -177,7 +177,7 @@ const createApp = async (app) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(executeContext, file);
+      const stream = await downloadFile(file);
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e?.message);
@@ -195,7 +195,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(auth, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
