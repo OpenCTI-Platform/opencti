@@ -58,6 +58,7 @@ export interface ExecutionEnvelop {
     duration: number,
     bundle: StixBundle,
     patch: Operation[],
+    error: string,
   }
 }
 
@@ -72,10 +73,10 @@ type ObservationFn = {
   previousStepId: string | undefined,
   stepId: string,
   previousBundle?: StixBundle | null
-  bundle?: StixBundle
+  bundle?: StixBundle | null
   error?: string
 };
-const registerStepObservation = async ({ executionId, playbookId, start, end, diff, previousStepId, stepId, previousBundle, bundle, message, status } : ObservationFn) => {
+const registerStepObservation = async ({ executionId, playbookId, start, end, diff, previousStepId, stepId, error, previousBundle, bundle, message, status } : ObservationFn) => {
   const patch = previousBundle && bundle ? jsonpatch.compare(previousBundle, bundle) : [];
   const bundlePatch = previousStepId ? { patch } : { bundle };
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -91,6 +92,7 @@ const registerStepObservation = async ({ executionId, playbookId, start, end, di
       in_timestamp: start,
       out_timestamp: end,
       duration: diff,
+      error,
       ...bundlePatch
     }
   };
@@ -126,8 +128,8 @@ export const playbookExecutor = async ({
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
   if (nextStep.component.is_internal || isExternalCallback) {
     let execution: PlaybookExecution;
+    const baseBundle = R.clone(isExternalCallback ? previousStepBundle : bundle);
     try {
-      const baseBundle = R.clone(isExternalCallback ? previousStepBundle : bundle);
       execution = await nextStep.component.executor({
         executionId,
         dataInstanceId,
@@ -146,7 +148,7 @@ export const playbookExecutor = async ({
         message: `${nextStep.component.name.trim()} successfully executed in ${duration.humanize()}`,
         status: 'success',
         executionId,
-        previousStepId: previousStep?.instance?.id,
+        previousStepId: execution.output_port ? previousStep?.instance?.id : undefined,
         stepId: nextStep.instance.id,
         start: start.toISOString(),
         end: end.toISOString(),
@@ -156,23 +158,26 @@ export const playbookExecutor = async ({
         bundle: execution.bundle
       };
       await registerStepObservation(observation);
-    } catch (executionError) {
+    } catch (error) {
       // Error executing the step, register
+      const executionError = error as Error;
       logApp.error('Error executing playbook', { error: executionError });
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
+      const logError = { message: executionError.message, stack: executionError.stack, name: executionError.name };
       const observation: ObservationFn = {
         message: `${nextStep.component.name.trim()} fail execution in ${duration.humanize()}`,
         status: 'error',
         executionId,
-        previousStepId: previousStep?.instance?.id,
+        previousStepId: undefined,
         stepId: nextStep.instance.id,
         start: start.toISOString(),
         end: end.toISOString(),
         diff: durationDiff,
         playbookId,
-        error: JSON.stringify(executionError)
+        bundle: baseBundle,
+        error: JSON.stringify(logError, null, 2)
       };
       await registerStepObservation(observation);
       return;

@@ -250,7 +250,7 @@ const PlaybookHeaderComponent = ({
                           dense={true}
                           button={true}
                           sx={{ pl: 4 }}
-                          onClick={() => setRawData(step.bundle_or_patch)}
+                          onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
                         >
                           <ListItemIcon>
                             <Tooltip title={t(step.status)}>
@@ -319,6 +319,7 @@ const PlaybookHeader = createRefetchContainer(
             out_timestamp
             duration
             bundle_or_patch
+            error
           }
         }
       }

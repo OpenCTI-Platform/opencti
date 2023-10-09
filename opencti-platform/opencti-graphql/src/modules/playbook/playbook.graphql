@@ -6,6 +6,7 @@ type PlayBookExecutionStep {
     out_timestamp: String
     duration: Int
     bundle_or_patch: String
+    error: String
 }
 
 type PlayBookExecution {

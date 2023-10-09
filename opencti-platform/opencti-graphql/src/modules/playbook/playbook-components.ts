@@ -347,11 +347,13 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 
 interface ContainerWrapperConfiguration extends PlaybookComponentConfiguration {
   container_type: string
+  all: boolean
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
   properties: {
-    container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] }
+    container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] },
+    all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false }
   },
   required: ['container_type'],
 };
@@ -372,25 +374,29 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const created = now();
-    const containerType = playbookNode.configuration.container_type;
-    if (containerType && isStixDomainObjectContainer(containerType)) {
+    const { container_type, all } = playbookNode.configuration;
+    if (container_type && isStixDomainObjectContainer(container_type)) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const containerData = {
         name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
         created,
         published: created,
       };
-      const standardId = generateStandardId(containerType, containerData);
+      const standardId = generateStandardId(container_type, containerData);
       const storeContainer = {
         internal_id: uuidv4(),
         standard_id: standardId,
-        entity_type: containerType,
+        entity_type: container_type,
         spec_version: STIX_SPEC_VERSION,
-        parent_types: getParentTypes(containerType),
+        parent_types: getParentTypes(container_type),
         ...containerData
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
-      container.object_refs = [baseData.id];
+      if (all) {
+        container.object_refs = bundle.objects.map((o: StixObject) => o.id);
+      } else {
+        container.object_refs = [baseData.id];
+      }
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -513,6 +519,7 @@ interface UpdateValueConfiguration {
 }
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
   actions: { op: 'add' | 'replace' | 'remove', attribute: string, value: UpdateValueConfiguration[] }[]
+  all: boolean
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
   type: 'object',
@@ -540,6 +547,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
         required: ['op', 'attribute', 'value'],
       }
     },
+    all: { type: 'boolean', $ref: 'Manipulate all elements included in the bundle', default: false },
   },
   required: ['actions'],
 };
@@ -550,12 +558,11 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   icon: 'edit',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'not-impacted', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const { actions } = playbookNode.configuration;
+    const { actions, all } = playbookNode.configuration;
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType:string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
@@ -577,13 +584,25 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       }
       return undefined;
     };
-    const { type } = baseData.extensions[STIX_EXT_OCTI];
-    const standardOperations = actions
-      .map((action) => ({ action, multiple: isAttributeMultiple(type, action.attribute), path: computeAttributePath(type, action.attribute) }))
-      .filter(({ path, multiple }) => multiple !== undefined && isNotEmptyField(path))
-      .map(({ action, path, multiple }) => ({ op: action.op, path, value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value }));
-    if (standardOperations.length > 0) {
-      jsonpatch.applyPatch(baseData, standardOperations);
+    const patchOperations = [];
+    for (let index = 0; index < bundle.objects.length; index += 1) {
+      const element = bundle.objects[index];
+      if (all || element.id === dataInstanceId) {
+        const { type } = element.extensions[STIX_EXT_OCTI];
+        const elementOperations = actions
+          .map((action) => ({
+            action,
+            multiple: isAttributeMultiple(type, action.attribute),
+            path: `/objects/${index}${computeAttributePath(type, action.attribute)}`
+          }))
+          .filter(({ path, multiple }) => multiple !== undefined && isNotEmptyField(path))
+          .map(({ action, path, multiple }) => ({ op: action.op, path, value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value }));
+        patchOperations.push(...elementOperations);
+      }
+    }
+    // Apply operations if needed
+    if (patchOperations.length > 0) {
+      jsonpatch.applyPatch(bundle, patchOperations);
       return { output_port: 'out', bundle };
     }
     return { output_port: 'unmodified', bundle };
@@ -753,7 +772,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicator
 };
 const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConfiguration> = {
   id: 'PLAYBOOK_CREATE_INDICATOR_COMPONENT',
-  name: 'Create indicator',
+  name: 'Promote observable to indicator',
   description: 'Create an indicator based on an observable',
   icon: 'indicator',
   is_entry_point: false,
@@ -842,8 +861,8 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservab
 };
 const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableConfiguration> = {
   id: 'PLAYBOOK_CREATE_OBSERVABLE_COMPONENT',
-  name: 'Create observable',
-  description: 'Create an observable based on an indicator',
+  name: 'Extract observables from indicator',
+  description: 'Create observables based on an indicator',
   icon: 'observable',
   is_entry_point: false,
   is_internal: true,

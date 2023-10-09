@@ -17081,6 +17081,7 @@ export type PlayBookExecutionStep = {
   __typename?: 'PlayBookExecutionStep';
   bundle_or_patch?: Maybe<Scalars['String']['output']>;
   duration?: Maybe<Scalars['Int']['output']>;
+  error?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   in_timestamp?: Maybe<Scalars['String']['output']>;
   message?: Maybe<Scalars['String']['output']>;
@@ -35027,6 +35028,7 @@ export type PlayBookExecutionResolvers<ContextType = any, ParentType extends Res
 export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecutionStep'] = ResolversParentTypes['PlayBookExecutionStep']> = ResolversObject<{
   bundle_or_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   in_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
