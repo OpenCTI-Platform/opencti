@@ -27370,6 +27370,7 @@ export type UserAddInput = {
   account_status?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   firstname?: InputMaybe<Scalars['String']['input']>;
+  groups?: InputMaybe<Array<Scalars['ID']['input']>>;
   language?: InputMaybe<Scalars['String']['input']>;
   lastname?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];

@@ -1414,6 +1414,7 @@ input UserAddInput {
   account_status: String
   account_lock_after_date: DateTime
   unit_system: String
+  groups: [ID!]
 }
 input UserLoginInput {
   email: String!
@@ -13698,8 +13699,8 @@ type Mutation {
   statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])

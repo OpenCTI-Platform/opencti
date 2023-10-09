@@ -111,16 +111,11 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
   const onReset = () => handleClose();
 
 
-  const grantableGroups =  [
-      {
-        label: 'Knowledge Group',
-        value: '123456'
-      }
-    ];
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       omit(['confirmation']),
       R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
+      R.assoc('groups', R.pluck('value', values.groups)),
     )(values);
     commitMutation({
       mutation: userMutation,
@@ -170,10 +165,6 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
             <Typography variant="h6">{t('Create a user')}</Typography>
           </div>
           <div className={classes.container}>
-            <Alert severity="info">
-              {t('User will be created with default groups.')}
-            </Alert>
-            <br />
             <Formik
               initialValues={{
                 name: '',

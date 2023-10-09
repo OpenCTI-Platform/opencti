@@ -1481,6 +1481,7 @@ input UserAddInput {
   account_status: String
   account_lock_after_date: DateTime
   unit_system: String
+  groups: [ID!]
 }
 
 scalar user_email_String_NotNull_minLength_5_format_email

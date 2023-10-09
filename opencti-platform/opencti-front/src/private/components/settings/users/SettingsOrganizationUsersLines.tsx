@@ -104,6 +104,7 @@ SettingsOrganizationUsersLinesProps
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       isOrganizationAdmin={isOrganizationAdmin}
+      organization={data.organization}
     />
   );
 };

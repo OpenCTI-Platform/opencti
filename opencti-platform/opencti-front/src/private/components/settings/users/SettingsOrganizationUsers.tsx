@@ -19,7 +19,7 @@ import SettingsOrganizationUsersLines, {
 } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import IconButton from '@mui/material/IconButton';
-import { AddCircleOutlined, CampaignOutlined } from '@mui/icons-material';
+import { AddCircleOutlined, AddOutlined, CampaignOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import TriggerLiveCreation from '@components/profile/triggers/TriggerLiveCreation';
 import UserCreation from '@components/settings/users/UserCreation';
@@ -136,7 +136,7 @@ MembersListContainerProps
           size="large"
           color="secondary"
         >
-          <AddCircleOutlined fontSize="small" />
+          <AddOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
       <SettingsOrganizationUserCreation
