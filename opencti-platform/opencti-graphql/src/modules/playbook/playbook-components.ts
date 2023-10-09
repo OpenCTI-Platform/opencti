@@ -269,21 +269,18 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
     const context = executionContext('playbook_components');
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
     const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
-    const matchedElements = [];
+    const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
       const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
-      if (isMatch) matchedElements.push(bundleElement);
-    }
-    let newDataInstanceId: string | undefined = dataInstanceId;
-    if (matchedElements.filter((n) => n.id === dataInstanceId).length === 0) {
-      newDataInstanceId = matchedElements.at(0)?.id ?? undefined;
+      if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
     }
     const newBundle = { ...bundle, objects: matchedElements };
-    return { output_port: 'out', bundle: newBundle, newDataInstanceId };
+    return { output_port: 'out', bundle: newBundle };
   }
 };
 
@@ -761,7 +758,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
   icon: 'indicator',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -830,7 +827,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
         }
       }
     }
-    return { output_port: 'undefined', bundle };
+    return { output_port: 'unmodified', bundle };
   }
 };
 interface CreateObservableConfiguration extends PlaybookComponentConfiguration {
@@ -850,7 +847,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
   icon: 'observable',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -860,12 +857,12 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
     if (all) {
       indicators.push(...bundle.objects);
     }
-    for (let index = 0; index < indicators.length; index += 1) {
-      const indicator = indicators[index] as StixIndicator;
+    for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
+      const indicator = indicators[indexIndicator] as StixIndicator;
       if (indicator.type === 'indicator') {
         const observables = extractObservablesFromIndicatorPattern(indicator.pattern);
-        for (let index2 = 0; index2 < observables.length; index2 += 1) {
-          const observable = observables[index2];
+        for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
+          const observable = observables[indexObservable];
           const stixObservable = {
             ...observable,
             type: convertTypeToStixType(observable.type),
@@ -901,9 +898,10 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           } as StixRelation;
           bundle.objects.push(relationship);
         }
+        return { output_port: 'out', bundle };
       }
     }
-    return { output_port: 'out', bundle };
+    return { output_port: 'unmodified', bundle };
   }
 };
 // endregion
