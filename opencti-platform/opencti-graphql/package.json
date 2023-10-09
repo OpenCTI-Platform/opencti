@@ -62,7 +62,7 @@
     "apollo-server-core": "3.12.1",
     "apollo-server-express": "3.12.1",
     "async-lock": "1.4.0",
-    "axios": "1.5.0",
+    "axios": "1.5.1",
     "axios-cookiejar-support": "4.0.7",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
