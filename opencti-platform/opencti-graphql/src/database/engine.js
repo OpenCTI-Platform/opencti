@@ -2389,7 +2389,8 @@ export const elUpdateElement = async (instance) => {
   // Update the element it self
   const esData = prepareElementForIndexing(instance);
   // Set the cache
-  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: esData });
+  const dataToReplace = R.dissoc('representative', esData);
+  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
