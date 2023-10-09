@@ -225,9 +225,7 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations));
-  const importConnsPerFormat = connectors
-    ? scopesConn(connectors)
-    : {};
+  const importConnsPerFormat = scopesConn(connectors);
 
   const handleSelectConnector = (_, value) => {
     setSelectedConnector(connectors.find((c) => c.id === value));
