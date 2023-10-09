@@ -83,6 +83,7 @@ import {
   AccountMultipleOutline,
   AccountGroupOutline,
   Group,
+  FilterVariant,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -336,6 +337,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <MemoryOutlined style={style} fontSize={fontSize} role="img" />;
     case 'notification':
       return <NotificationsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'observable':
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':
@@ -368,8 +370,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
-    case 'filter':
+    case 'reduce':
       return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'filter':
+      return <FilterVariant style={style} fontSize={fontSize} role="img" />;
     case 'stream':
       return (
         <CastConnectedOutlined style={style} fontSize={fontSize} role="img" />

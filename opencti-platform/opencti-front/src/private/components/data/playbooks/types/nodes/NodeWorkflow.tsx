@@ -29,7 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   name: {
     maxWidth: 100,
-    fontSize: 11,
+    fontSize: 10,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -40,7 +40,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.5)'
         : 'rgba(0, 0, 0, 0.5)',
-    fontSize: 9,
+    fontSize: 8,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',

@@ -83,50 +83,55 @@ export const stixCyberObservablesTimeSeries = (context, user, args) => {
 // endregion
 
 // region mutations
-
+export const generateKeyValueForIndicator = (entityType, indicatorName, observable) => {
+  let key = entityType;
+  let value = indicatorName;
+  if (isStixCyberObservableHashedObservable(entityType)) {
+    if (observable.hashes) {
+      key = '';
+      value = '';
+      if (observable.hashes['SHA-256']) {
+        key = `${entityType}_sha256`;
+        value = observable.hashes['SHA-256'];
+      }
+      if (observable.hashes['SHA-512']) {
+        key = `${entityType}_sha512`;
+        value = observable.hashes['SHA-512'];
+      }
+      if (observable.hashes['SHA-1']) {
+        key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
+        value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
+      }
+      if (observable.hashes.MD5) {
+        key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
+        value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
+      }
+    } else if (observable.name) {
+      key = `${entityType}_name`;
+    }
+  } else if (observable.pid) {
+    key = `${entityType}_pid`;
+  } else if (observable.subject) {
+    key = `${entityType}_subject`;
+    value = observable.subject;
+  } else if (observable.body) {
+    key = `${entityType}_body`;
+    value = observable.body;
+  }
+  if (key.includes('StixFile')) {
+    key = key.replaceAll('StixFile', 'File');
+  }
+  if (key.includes('Artifact')) {
+    key = key.replaceAll('Artifact', 'File');
+  }
+  return { key, value };
+};
 const createIndicatorFromObservable = async (context, user, input, observable) => {
   try {
     let entityType = observable.entity_type;
-    let key = entityType;
     const indicatorName = observableValue(observable);
-    let value = indicatorName;
-    if (isStixCyberObservableHashedObservable(entityType)) {
-      if (observable.hashes) {
-        key = '';
-        value = '';
-        if (observable.hashes['SHA-256']) {
-          key = `${entityType}_sha256`;
-          value = observable.hashes['SHA-256'];
-        }
-        if (observable.hashes['SHA-512']) {
-          key = `${entityType}_sha512`;
-          value = observable.hashes['SHA-512'];
-        }
-        if (observable.hashes['SHA-1']) {
-          key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
-          value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
-        }
-        if (observable.hashes.MD5) {
-          key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
-          value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
-        }
-      } else if (observable.name) {
-        key = `${entityType}_name`;
-      }
-    } else if (observable.pid) {
-      key = `${entityType}_pid`;
-    } else if (observable.subject) {
-      key = `${entityType}_subject`;
-      value = observable.subject;
-    } else if (observable.body) {
-      key = `${entityType}_body`;
-      value = observable.body;
-    }
-    if (key.includes('StixFile')) {
-      key = key.replaceAll('StixFile', 'File');
-    }
+    const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable);
     if (key.includes('Artifact')) {
-      key = key.replaceAll('Artifact', 'File');
       entityType = 'StixFile';
     }
     const pattern = await createStixPattern(context, user, key, value);

@@ -179,6 +179,10 @@ export const playbookExecutor = async ({
     }
     // Send the result to the next component if needed
     if (execution.output_port) {
+      let newDataInstanceId = dataInstanceId;
+      if (execution.newDataInstanceId) {
+        newDataInstanceId = execution.newDataInstanceId;
+      }
       // Find the next op for this attachment
       const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port);
       for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
@@ -193,7 +197,7 @@ export const playbookExecutor = async ({
         await playbookExecutor({
           executionId,
           playbookId,
-          dataInstanceId,
+          dataInstanceId: newDataInstanceId,
           definition,
           previousStep: { component: fromConnector, instance: fromInstance },
           nextStep: { component: nextConnector, instance: nextInstance },

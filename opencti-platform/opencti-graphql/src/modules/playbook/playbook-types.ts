@@ -51,7 +51,7 @@ export interface NodeInstance<T extends PlaybookComponentConfiguration> {
   configuration: T
 }
 
-export interface PlaybookExecution { output_port: string | undefined, bundle: StixBundle }
+export interface PlaybookExecution { output_port: string | undefined, newDataInstanceId?: string | undefined, bundle: StixBundle }
 
 export interface PlaybookExecutionStep<T extends PlaybookComponentConfiguration> {
   component: PlaybookComponent<PlaybookComponentConfiguration>,

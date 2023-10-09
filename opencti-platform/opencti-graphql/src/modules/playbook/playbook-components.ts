@@ -16,13 +16,19 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type PlaybookComponent, type PlaybookComponentConfiguration, type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK } from './playbook-types';
+import {
+  type BasicStoreEntityPlaybook,
+  ENTITY_TYPE_PLAYBOOK,
+  type PlaybookComponent,
+  type PlaybookComponentConfiguration
+} from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
   executionContext,
-  INTERNAL_USERS, isUserCanAccessStixElement,
+  INTERNAL_USERS,
+  isUserCanAccessStixElement,
   SYSTEM_USER
 } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
@@ -36,15 +42,16 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
 } from '../../schema/general';
-import { convertStoreToStix } from '../../database/stix-converter';
+import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
 import type { StoreCommon } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
-import { now, utcDate } from '../../utils/format';
+import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import type {
   StixCampaign,
   StixContainer,
   StixIncident,
+  StixIndicator,
   StixInfrastructure,
   StixMalware,
   StixReport,
@@ -56,7 +63,7 @@ import {
   ENTITY_TYPE_INDICATOR,
   isStixDomainObjectContainer
 } from '../../schema/stixDomainObject';
-import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-common';
+import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -87,6 +94,12 @@ import {
 import { storeNotificationEvent } from '../../database/redis';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthUser } from '../../types/user';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { createStixPattern } from '../../python/pythonBridge';
+import { generateKeyValueForIndicator } from '../../domain/stixCyberObservable';
+import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
+import type { StixRelation } from '../../types/stix-sro';
+import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -234,6 +247,46 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   }
 };
 
+interface ReduceConfiguration extends PlaybookComponentConfiguration {
+  filters: string
+}
+const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = {
+  type: 'object',
+  properties: {
+    filters: { type: 'string' },
+  },
+  required: ['filters'],
+};
+const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
+  id: 'PLAYBOOK_REDUCING_COMPONENT',
+  name: 'Reduce knowledge',
+  description: 'Reduce STIX data according to the filter (keep only matching)',
+  icon: 'reduce',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
+  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+    const context = executionContext('playbook_components');
+    const { filters } = playbookNode.configuration;
+    const jsonFilters = JSON.parse(filters);
+    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+    const matchedElements = [];
+    for (let index = 0; index < bundle.objects.length; index += 1) {
+      const bundleElement = bundle.objects[index];
+      const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+      if (isMatch) matchedElements.push(bundleElement);
+    }
+    let newDataInstanceId: string | undefined = dataInstanceId;
+    if (matchedElements.filter((n) => n.id === dataInstanceId).length === 0) {
+      newDataInstanceId = matchedElements.at(0)?.id ?? undefined;
+    }
+    const newBundle = { ...bundle, objects: matchedElements };
+    return { output_port: 'out', bundle: newBundle, newDataInstanceId };
+  }
+};
+
 interface ConnectorConfiguration extends PlaybookComponentConfiguration {
   connector: string
 }
@@ -341,6 +394,15 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
       container.object_refs = [baseData.id];
+      if (baseData.object_marking_refs) {
+        container.object_marking_refs = baseData.object_marking_refs;
+      }
+      if ((<StixDomainObject>baseData).labels) {
+        container.labels = (<StixDomainObject>baseData).labels;
+      }
+      if ((<StixDomainObject>baseData).created_by_ref) {
+        container.created_by_ref = (<StixDomainObject>baseData).created_by_ref;
+      }
       bundle.objects.push(container);
     }
     return { output_port: 'out', bundle };
@@ -682,6 +744,168 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     return { output_port: undefined, bundle };
   }
 };
+interface CreateIndicatorConfiguration extends PlaybookComponentConfiguration {
+  all: boolean
+}
+const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicatorConfiguration> = {
+  type: 'object',
+  properties: {
+    all: { type: 'boolean', $ref: 'Create indicator from all observables in the bundle', default: false },
+  },
+  required: [],
+};
+const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConfiguration> = {
+  id: 'PLAYBOOK_CREATE_INDICATOR_COMPONENT',
+  name: 'Create indicator',
+  description: 'Create an indicator based on an observable',
+  icon: 'indicator',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
+  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+    const { all } = playbookNode.configuration;
+    const context = executionContext('playbook_components');
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const observables = [baseData];
+    if (all) {
+      observables.push(...bundle.objects);
+    }
+    for (let index = 0; index < observables.length; index += 1) {
+      const observable = observables[index] as StixCyberObject;
+      let { type } = observable.extensions[STIX_EXT_OCTI];
+      if (isStixCyberObservable(type)) {
+        const indicatorName = observableValue({ ...observable, entity_type: type });
+        const { key, value } = generateKeyValueForIndicator(type, indicatorName, observable);
+        if (key.includes('Artifact')) {
+          type = 'StixFile';
+        }
+        const pattern = await createStixPattern(context, AUTOMATION_MANAGER_USER, key, value);
+        if (pattern) {
+          const indicatorData = {
+            name: indicatorName,
+            pattern,
+            extensions: {
+              [STIX_EXT_OCTI]: {
+                main_observable_type: type,
+                score: observable.extensions[STIX_EXT_OCTI_SCO].score
+              }
+            }
+          };
+          const indicatorStandardId = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorData);
+          const storeIndicator = {
+            internal_id: uuidv4(),
+            standard_id: indicatorStandardId,
+            entity_type: ENTITY_TYPE_INDICATOR,
+            spec_version: STIX_SPEC_VERSION,
+            parent_types: getParentTypes(ENTITY_TYPE_INDICATOR),
+            ...indicatorData
+          } as StoreCommon;
+          const indicator = convertStoreToStix(storeIndicator) as StixIndicator;
+          if (observable.object_marking_refs) {
+            indicator.object_marking_refs = observable.object_marking_refs;
+          }
+          if (observable.extensions[STIX_EXT_OCTI_SCO].labels) {
+            indicator.labels = observable.extensions[STIX_EXT_OCTI_SCO].labels;
+          }
+          if (observable.extensions[STIX_EXT_OCTI_SCO].created_by_ref) {
+            indicator.created_by_ref = observable.extensions[STIX_EXT_OCTI_SCO].created_by_ref;
+          }
+          if (observable.extensions[STIX_EXT_OCTI_SCO].external_references) {
+            indicator.external_references = observable.extensions[STIX_EXT_OCTI_SCO].external_references;
+          }
+          bundle.objects.push(indicator);
+          const relationship = {
+            id: uuidv4(),
+            type: 'relationship',
+            source_ref: indicator.id,
+            target_ref: observable.id,
+            relationship_type: RELATION_BASED_ON,
+            created: now(),
+            modified: now()
+          } as StixRelation;
+          bundle.objects.push(relationship);
+          return { output_port: 'out', bundle };
+        }
+      }
+    }
+    return { output_port: 'undefined', bundle };
+  }
+};
+interface CreateObservableConfiguration extends PlaybookComponentConfiguration {
+  all: boolean
+}
+const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservableConfiguration> = {
+  type: 'object',
+  properties: {
+    all: { type: 'boolean', $ref: 'Create observable from all indicators in the bundle', default: false },
+  },
+  required: [],
+};
+const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableConfiguration> = {
+  id: 'PLAYBOOK_CREATE_OBSERVABLE_COMPONENT',
+  name: 'Create observable',
+  description: 'Create an observable based on an indicator',
+  icon: 'observable',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
+  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+    const { all } = playbookNode.configuration;
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const indicators = [baseData];
+    if (all) {
+      indicators.push(...bundle.objects);
+    }
+    for (let index = 0; index < indicators.length; index += 1) {
+      const indicator = indicators[index] as StixIndicator;
+      if (indicator.type === 'indicator') {
+        const observables = extractObservablesFromIndicatorPattern(indicator.pattern);
+        for (let index2 = 0; index2 < observables.length; index2 += 1) {
+          const observable = observables[index2];
+          const stixObservable = {
+            ...observable,
+            type: convertTypeToStixType(observable.type),
+            extensions: {
+              [STIX_EXT_OCTI_SCO]: {
+                description: indicator.description
+                  ? indicator.description
+                  : `Simple observable of indicator {${indicator.name || indicator.pattern}}`
+              }
+            }
+          } as StixCyberObject;
+          if (indicator.object_marking_refs) {
+            stixObservable.object_marking_refs = indicator.object_marking_refs;
+          }
+          if (indicator.created_by_ref) {
+            stixObservable.extensions[STIX_EXT_OCTI_SCO].created_by_ref = indicator.created_by_ref;
+          }
+          if (indicator.labels) {
+            stixObservable.extensions[STIX_EXT_OCTI_SCO].labels = indicator.labels;
+          }
+          if (indicator.external_references) {
+            stixObservable.extensions[STIX_EXT_OCTI_SCO].external_references = indicator.external_references;
+          }
+          bundle.objects.push(stixObservable);
+          const relationship = {
+            id: uuidv4(),
+            type: 'relationship',
+            source_ref: indicator.id,
+            target_ref: stixObservable.id,
+            relationship_type: RELATION_BASED_ON,
+            created: now(),
+            modified: now()
+          } as StixRelation;
+          bundle.objects.push(relationship);
+        }
+      }
+    }
+    return { output_port: 'out', bundle };
+  }
+};
 // endregion
 
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
@@ -695,5 +919,8 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
   [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT,
-  [PLAYBOOK_NOTIFIER_COMPONENT.id]: PLAYBOOK_NOTIFIER_COMPONENT
+  [PLAYBOOK_NOTIFIER_COMPONENT.id]: PLAYBOOK_NOTIFIER_COMPONENT,
+  [PLAYBOOK_CREATE_INDICATOR_COMPONENT.id]: PLAYBOOK_CREATE_INDICATOR_COMPONENT,
+  [PLAYBOOK_REDUCING_COMPONENT.id]: PLAYBOOK_REDUCING_COMPONENT,
+  [PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id]: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT,
 };
