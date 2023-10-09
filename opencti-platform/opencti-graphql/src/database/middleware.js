@@ -177,7 +177,19 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
-import { BYPASS, BYPASS_REFERENCE, executionContext, INTERNAL_USERS, isBypassUser, isUserCanAccessStoreElement, KNOWLEDGE_ORGANIZATION_RESTRICT, RULE_MANAGER_USER, SYSTEM_USER, userFilterStoreElements, validateUserAccessOperation } from '../utils/access';
+import {
+  BYPASS_REFERENCE,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserCanAccessStoreElement,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  RULE_MANAGER_USER,
+  SYSTEM_USER,
+  userFilterStoreElements,
+  validateUserAccessOperation
+} from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
@@ -1787,7 +1799,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
-    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
       if (!isNoReferenceKey && isEmptyField(opts.references)) {
@@ -1933,7 +1945,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         }
       } else {
         // Special access check for RELATION_GRANTED_TO meta
-        if (relType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+        if (relType === RELATION_GRANTED_TO && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
         }
         const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
@@ -2165,7 +2177,7 @@ export const fillDefaultValues = (user, input, entitySetting) => {
 
 const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
-    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {
@@ -2631,7 +2643,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
-    if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!user.inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations
@@ -2962,7 +2974,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     if (input[inputField] || relType === RELATION_GRANTED_TO) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
-        if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]) {
+        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!user.inside_platform_organization) {
           // If user is not part of the platform organization, put its own organizations
@@ -3012,10 +3024,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     relations: relToCreate, // Added meta relationships
   };
 };
-const userHaveCapability = (user, capability) => {
-  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
-};
+
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
   // Region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
