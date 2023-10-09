@@ -76,6 +76,7 @@ export default function CheckboxesField({
         }}>
           {items.map((item) => (
             <FormControlLabel
+              key={item.label}
               label={item.label}
               control={(
                 <Checkbox
