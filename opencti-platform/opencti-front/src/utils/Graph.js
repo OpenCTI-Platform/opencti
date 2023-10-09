@@ -902,88 +902,7 @@ export const buildGraphData = (objects, graphData, t) => {
     ),
     R.map((n) => (n.from?.relationship_type ? n.from.id : n.to.id)),
   )(objects);
-  const nodes = R.pipe(
-    R.filter(
-      (n) => !n.parent_types.includes('basic-relationship')
-        || R.includes(n.id, relationshipsIdsInNestedRelationship),
-    ),
-    R.map((n) => R.assoc('number_keys', R.keys(n).length, n)),
-    R.sortWith([R.descend(R.prop('number_keys'))]),
-    R.uniqBy(R.prop('id')),
-    R.map((n) => ({
-      id: n.id,
-      val:
-        graphLevel[
-          n.parent_types.includes('basic-relationship')
-            ? 'relationship'
-            : n.entity_type
-        ] || graphLevel.Unknown,
-      name: `${
-        n.relationship_type
-          ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
-            'Created the',
-          )} ${dateFormat(n.created)}\n${t('Start time')} ${
-            isNone(n.start_time || n.first_seen)
-              ? '-'
-              : dateFormat(n.start_time || n.first_seen)
-          }\n${t('Stop time')} ${
-            isNone(n.stop_time || n.last_seen)
-              ? '-'
-              : dateFormat(n.stop_time || n.last_seen)
-          }`
-          : defaultValue(n, true)
-      }\n${dateFormat(defaultDate(n))}`,
-      defaultDate: jsDate(defaultDate(n)),
-      label: n.parent_types.includes('basic-relationship')
-        ? t(`relationship_${n.relationship_type}`)
-        : truncate(
-          defaultValue(n),
-          n.entity_type === 'Attack-Pattern' ? 30 : 20,
-        ),
-      img:
-        graphImages[
-          n.parent_types.includes('basic-relationship')
-            ? 'relationship'
-            : n.entity_type
-        ] || graphImages.Unknown,
-      rawImg:
-        graphRawImages[
-          n.parent_types.includes('basic-relationship')
-            ? 'relationship'
-            : n.entity_type
-        ] || graphRawImages.Unknown,
-      color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
-      parent_types: n.parent_types,
-      entity_type: n.entity_type,
-      relationship_type: n.relationship_type,
-      fromId: n.from?.id,
-      fromType: n.from?.entity_type,
-      toId: n.to?.id,
-      toType: n.to?.entity_type,
-      isObservable: !!n.observable_value,
-      isNestedInferred:
-        (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
-      markedBy:
-        !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
-          ? R.map(
-            (m) => ({ id: m.node.id, definition: m.node.definition }),
-            n.objectMarking.edges,
-          )
-          : [
-            {
-              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-              definition: t('None'),
-              definition_type: t('None'),
-            },
-          ],
-      createdBy:
-        !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
-          ? n.createdBy
-          : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
-      fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
-      fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
-    })),
-  )(objects);
+
   const normalLinks = R.pipe(
     R.filter(
       (n) => n.parent_types.includes('basic-relationship')
@@ -1112,6 +1031,120 @@ export const buildGraphData = (objects, graphData, t) => {
     R.flatten,
   )(objects);
   const links = R.concat(normalLinks, nestedLinks);
+
+  // Map to know how many links are displayed for each node
+  const nodesLinksCounter = new Map();
+  links.forEach((link) => {
+    const from = link.source_id;
+    const to = link.target_id;
+    if (nodesLinksCounter.has(from)) {
+      nodesLinksCounter.set(from, nodesLinksCounter.get(from) + 1);
+    } else {
+      nodesLinksCounter.set(from, 1);
+    }
+    if (nodesLinksCounter.has(to)) {
+      nodesLinksCounter.set(to, nodesLinksCounter.get(to) + 1);
+    } else {
+      nodesLinksCounter.set(to, 1);
+    }
+  });
+
+  const nodes = R.pipe(
+    R.filter(
+      (n) => !n.parent_types.includes('basic-relationship')
+        || R.includes(n.id, relationshipsIdsInNestedRelationship),
+    ),
+    R.map((n) => R.assoc('number_keys', R.keys(n).length, n)),
+    R.sortWith([R.descend(R.prop('number_keys'))]),
+    R.uniqBy(R.prop('id')),
+    R.map((n) => {
+      let numberOfConnectedElement;
+      if (n.numberOfConnectedElement !== undefined) {
+        // The diff between all connections less the ones displayed in the graph.
+        numberOfConnectedElement = n.numberOfConnectedElement - (nodesLinksCounter.get(n.id) ?? 0);
+      } else if (!n.parent_types.includes('Stix-Meta-Object') && !n.parent_types.includes('Identity')) {
+        // Keep undefined for Meta and Identity objects to display a '?' while the query
+        // to fetch real count is loading.
+        numberOfConnectedElement = 0;
+      }
+
+      return {
+        id: n.id,
+        val:
+          graphLevel[
+            n.parent_types.includes('basic-relationship')
+              ? 'relationship'
+              : n.entity_type
+          ] || graphLevel.Unknown,
+        name: `${
+          n.relationship_type
+            ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
+              'Created the',
+            )} ${dateFormat(n.created)}\n${t('Start time')} ${
+              isNone(n.start_time || n.first_seen)
+                ? '-'
+                : dateFormat(n.start_time || n.first_seen)
+            }\n${t('Stop time')} ${
+              isNone(n.stop_time || n.last_seen)
+                ? '-'
+                : dateFormat(n.stop_time || n.last_seen)
+            }`
+            : defaultValue(n, true)
+        }\n${dateFormat(defaultDate(n))}`,
+        defaultDate: jsDate(defaultDate(n)),
+        label: n.parent_types.includes('basic-relationship')
+          ? t(`relationship_${n.relationship_type}`)
+          : truncate(
+            defaultValue(n),
+            n.entity_type === 'Attack-Pattern' ? 30 : 20,
+          ),
+        img:
+          graphImages[
+            n.parent_types.includes('basic-relationship')
+              ? 'relationship'
+              : n.entity_type
+          ] || graphImages.Unknown,
+        rawImg:
+          graphRawImages[
+            n.parent_types.includes('basic-relationship')
+              ? 'relationship'
+              : n.entity_type
+          ] || graphRawImages.Unknown,
+        color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
+        parent_types: n.parent_types,
+        entity_type: n.entity_type,
+        relationship_type: n.relationship_type,
+        fromId: n.from?.id,
+        fromType: n.from?.entity_type,
+        toId: n.to?.id,
+        toType: n.to?.entity_type,
+        isObservable: !!n.observable_value,
+        numberOfConnectedElement,
+        isNestedInferred:
+          (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
+        markedBy:
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+            ? R.map(
+              (m) => ({ id: m.node.id, definition: m.node.definition }),
+              n.objectMarking.edges,
+            )
+            : [
+              {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            ],
+        createdBy:
+          !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
+            ? n.createdBy
+            : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
+        fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
+        fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
+      };
+    }),
+  )(objects);
+
   return {
     nodes,
     links,
@@ -1121,11 +1154,11 @@ export const buildGraphData = (objects, graphData, t) => {
 export const nodePaint = (
   colors,
   {
-    // eslint-disable-next-line camelcase
     label,
     img,
     x,
     y,
+    numberOfConnectedElement,
   },
   color,
   ctx,
@@ -1136,6 +1169,7 @@ export const nodePaint = (
   ctx.fillStyle = color;
   ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
   ctx.fill();
+
   if (selected) {
     ctx.lineWidth = 0.8;
     ctx.strokeStyle = colors.selected;
@@ -1145,12 +1179,26 @@ export const nodePaint = (
     ctx.strokeStyle = colors.inferred;
     ctx.stroke();
   }
+
   const size = 8;
   ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
   ctx.font = '4px Roboto';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
+
+  if (numberOfConnectedElement === undefined || numberOfConnectedElement > 0) {
+    ctx.beginPath();
+    ctx.fillStyle = itemColor('numberOfConnectedElement');
+    ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    let numberLabel = '?';
+    if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
+    if (numberOfConnectedElement > 99) numberLabel = 99;
+    if (numberLabel !== '?') numberLabel = `${numberLabel}~`;
+    ctx.fillText(numberLabel, x + 4, y - 4.5);
+  }
 };
 
 export const nodeAreaPaint = ({ name, x, y }, color, ctx) => {

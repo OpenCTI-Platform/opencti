@@ -22,6 +22,7 @@ import {
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
   stixCoreObjectImportPush,
+  stixCoreObjectsConnectedNumber,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsExportAsk,
@@ -115,6 +116,7 @@ const stixCoreObjectResolvers = {
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject, prefixMimeType),
     pendingFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, 'import/pending/', stixCoreObject),
     exportFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject),
+    numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, context) => ({

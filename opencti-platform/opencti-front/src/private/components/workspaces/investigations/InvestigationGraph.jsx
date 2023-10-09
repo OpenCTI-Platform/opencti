@@ -341,6 +341,28 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
     }
 `;
 
+// To count the number of relationships for MetaObjects and Identities.
+//
+// /!\ It counts only rels that point towards given ids. So the value may not be
+// exactly the total number of rels in some cases when entities (Identities) also
+// have relations where there are the source of the relation.
+// This issue can be fixed by making a second query fetching the count in the
+// other direction. TODO Call this query.
+const investigationGraphCountRelToQuery = graphql`
+  query InvestigationGraphStixCountRelToQuery($objectIds: [String!]!) {
+    stixRelationshipsDistribution(
+      field: "internal_id"
+      isTo: true
+      operation: count
+      toId: $objectIds
+      relationship_type: "stix-relationship"
+    ) {
+      label
+      value
+    }
+  }
+`;
+
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
     $elementId: String!
@@ -426,6 +448,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCoreObject {
               created_at
               updated_at
+              numberOfConnectedElement
               createdBy {
                 ... on Identity {
                   id
@@ -670,6 +693,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCoreObject {
               created_at
               updated_at
+              numberOfConnectedElement
               createdBy {
                 ... on Identity {
                   id
@@ -954,6 +978,9 @@ class InvestigationGraphComponent extends Component {
       params,
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+
+    this.fetchObjectRelCounts(this.graphObjects);
+
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       selectRectangleModeFree: R.propOr(
@@ -1089,6 +1116,65 @@ class InvestigationGraphComponent extends Component {
           value: encodeGraphData(positions),
         },
       },
+    });
+  }
+
+  /**
+   * Fetch the number of relations each meta-object and identities have
+   * in the list of objects.
+   *
+   * (i) Why are we fetching counts only for those entities ?
+   * - Fetching everything will have a cost as some entities may have
+   *   a (very) lot of relationships.
+   * - For other entities we use a trick by counting the number of properties
+   *   starting with 'rel_' they have (data we got when retrieving objects so it's free).
+   *
+   * @param objects The list of objects.
+   */
+  async fetchObjectRelCounts(objects) {
+    // Keep only meta-objects and identities.
+    const objectIds = (objects ?? [])
+      .filter((object) => (
+        object.parent_types.includes('Stix-Meta-Object')
+        || object.parent_types.includes('Identity')
+      ))
+      .map((object) => object.id);
+
+    if (objectIds.length === 0) return;
+
+    const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
+      investigationGraphCountRelToQuery,
+      { objectIds },
+    ).toPromise();
+
+    // For each object, add the number of relations it has in our objects data.
+    relCounts.forEach(({ label, value }) => {
+      const object = this.graphObjects.find((obj) => obj.id === label);
+      if (object) {
+        this.graphObjects = [
+          ...this.graphObjects.filter((obj) => obj.id !== label),
+          {
+            ...object,
+            numberOfConnectedElement: value,
+          },
+        ];
+      }
+    });
+
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.workspace.graph_data),
+      this.props.t,
+    );
+    this.setState({
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
+      ),
     });
   }
 
@@ -1497,40 +1583,37 @@ class InvestigationGraphComponent extends Component {
   }
 
   async handleDeleteSelected() {
-    // Remove selected links
+    let idsToRemove = [];
+
+    // Retrieve selected links
     const selectedLinks = Array.from(this.selectedLinks);
-    const selectedLinksIds = R.map((n) => n.id, selectedLinks);
-    const toIds = R.filter(
+    const selectedLinksIds = R.filter(
       (n) => n !== undefined,
-      R.map((n) => n.id, this.selectedLinks),
+      R.map((n) => n.id, selectedLinks),
     );
-    commitMutation({
-      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-      variables: {
-        id: this.props.workspace.id,
-        input: {
-          key: 'investigated_entities_ids',
-          value: toIds,
-          operation: 'remove',
-        },
-      },
-    });
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedLinksIds),
       this.graphObjects,
     );
-    this.selectedLinks.clear();
+    idsToRemove = [...idsToRemove, ...selectedLinksIds];
 
-    // Remove selected nodes
+    // Retrieve selected nodes
     const selectedNodes = Array.from(this.selectedNodes);
     const selectedNodesIds = R.filter(
       (n) => n !== undefined,
       R.map((n) => n.id, selectedNodes),
     );
+    idsToRemove = [...idsToRemove, ...selectedNodesIds];
+
+    // Retrieve links of selected nodes
     const relationshipsToRemove = R.filter(
       (n) => R.includes(n.from?.id, selectedNodesIds)
         || R.includes(n.to?.id, selectedNodesIds),
       this.graphObjects,
+    );
+    const relationshipsToIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, relationshipsToRemove),
     );
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedNodesIds)
@@ -1538,37 +1621,23 @@ class InvestigationGraphComponent extends Component {
         && !R.includes(n.to?.id, selectedNodesIds),
       this.graphObjects,
     );
-    const relationshipsToIds = R.filter(
-      (n) => n !== undefined,
-      R.map((n) => n.id, relationshipsToRemove),
-    );
+    idsToRemove = [...idsToRemove, ...relationshipsToIds];
+
     commitMutation({
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
       variables: {
         id: this.props.workspace.id,
         input: {
           key: 'investigated_entities_ids',
-          value: relationshipsToIds,
+          value: idsToRemove,
           operation: 'remove',
         },
       },
     });
-    const nodesToIds = R.filter(
-      (n) => n !== undefined,
-      R.map((n) => n.id, selectedNodes),
-    );
-    commitMutation({
-      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-      variables: {
-        id: this.props.workspace.id,
-        input: {
-          key: 'investigated_entities_ids',
-          value: nodesToIds,
-          operation: 'remove',
-        },
-      },
-    });
+
+    this.selectedLinks.clear();
     this.selectedNodes.clear();
+
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(this.props.workspace.graph_data),
@@ -1801,6 +1870,7 @@ class InvestigationGraphComponent extends Component {
         });
       newElementsIds = [...R.map((k) => k.id, newElements), ...newElementsIds];
       this.graphObjects = [...newElements, ...this.graphObjects];
+      this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
       this.graphData = buildGraphData(
@@ -1949,6 +2019,7 @@ class InvestigationGraphComponent extends Component {
       this.graphObjects,
     );
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => {
@@ -2366,6 +2437,7 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on StixCoreObject {
                 created_at
+                numberOfConnectedElement
                 createdBy {
                   ... on Identity {
                     id
