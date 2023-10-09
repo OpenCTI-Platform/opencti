@@ -21527,6 +21527,7 @@ export type SessionDetail = {
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
+  analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   enterprise_edition?: Maybe<Scalars['DateTime']['output']>;
@@ -35976,6 +35977,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
+  analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

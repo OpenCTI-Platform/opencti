@@ -15,6 +15,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'rea
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { usePage } from 'use-analytics';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
@@ -264,6 +265,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     null,
   );
   const data = usePreloadedQuery(topBarQuery, queryRef);
+  const page = usePage();
   const handleNewNotificationsNumber = (
     response: TopBarNotificationNumberSubscription$data | null | undefined,
   ) => {
@@ -292,6 +294,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       sub.unsubscribe();
     };
   });
+  useEffect(() => {
+    page();
+  }, [location.pathname]);
   const [menuOpen, setMenuOpen] = useState<{
     open: boolean;
     anchorEl: HTMLButtonElement | null;

@@ -34,6 +34,7 @@ import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
+import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 
 const useStyles = makeStyles({
@@ -102,6 +103,7 @@ const settingsQuery = graphql`
       enterprise_edition
       otp_mandatory
       ...SettingsMessages_settingsMessages
+      analytics_google_analytics_v4
     }
     about {
       version
@@ -145,6 +147,7 @@ export const settingsMutationFieldPatch = graphql`
         platform_login_message
         platform_banner_text
         platform_banner_level
+        analytics_google_analytics_v4
       }
     }
   }
@@ -190,6 +193,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_login_message: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
+  analytics_google_analytics_v4: Yup.string().nullable(),
 });
 
 const Settings = () => {
@@ -307,7 +311,8 @@ const Settings = () => {
                       style={{ marginTop: 15 }}
                     >
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -450,7 +455,8 @@ const Settings = () => {
                     <div className="clearfix" />
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -621,7 +627,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -827,7 +834,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -1061,6 +1069,11 @@ const Settings = () => {
                   <Grid item={true} xs={12} style={{ marginTop: 30 }}>
                     <SettingsMessages settings={settings} />
                   </Grid>
+                  {isEnterpriseEdition
+                    && <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+                      <SettingsAnalytics settings={settings} handleChangeFocus={handleChangeFocus} handleSubmitField={handleSubmitField} />
+                    </Grid>
+                  }
                 </Grid>
               </>
             );

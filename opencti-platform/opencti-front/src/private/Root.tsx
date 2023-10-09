@@ -1,6 +1,9 @@
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { AnalyticsProvider } from 'use-analytics';
+import googleAnalytics from '@analytics/google-analytics';
+import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
@@ -74,6 +77,7 @@ const rootPrivateQuery = graphql`
       ...AppIntlProvider_settings
       ...PasswordPolicies
       ...Policies
+      analytics_google_analytics_v4
     }
     about {
       version
@@ -139,6 +143,7 @@ interface RootComponentProps {
 }
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
+  const [analyticsInstance, setAnalyticsInstance] = useState(Analytics({ app: 'opencti' }));
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
   const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs, schemaRelationsTypesMapping } = queryData;
   const schema = {
@@ -150,6 +155,19 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
+
+  useEffect(() => {
+    setAnalyticsInstance(Analytics({
+      app: 'opencti',
+      plugins: [
+        googleAnalytics({
+          measurementIds: [queryData.settings.analytics_google_analytics_v4],
+          enabled: !!queryData.settings.analytics_google_analytics_v4,
+        }),
+      ],
+    }));
+  }, [queryData.settings]);
+
   return (
     <UserContext.Provider
       value={{
@@ -164,7 +182,9 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <Index settings={settings} />
+            <AnalyticsProvider instance={analyticsInstance}>
+              <Index settings={settings} />
+            </AnalyticsProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

@@ -4,6 +4,7 @@
   "private": true,
   "main": "src/index.tsx",
   "dependencies": {
+    "@analytics/google-analytics": "^1.0.7",
     "@ckeditor/ckeditor5-react": "6.1.0",
     "@date-io/date-fns": "2.17.0",
     "@emotion/react": "11.11.1",
@@ -17,6 +18,7 @@
     "@rjsf/core": "5.13.0",
     "@rjsf/mui": "5.13.0",
     "@rjsf/utils": "5.13.0",
+    "analytics": "^0.8.9",
     "apexcharts": "3.42.0",
     "axios": "1.5.1",
     "ckeditor5-custom-build": "0.0.1",
@@ -79,6 +81,7 @@
     "typeface-ibm-plex-sans": "1.1.13",
     "typeface-roboto": "1.1.13",
     "unified": "11.0.3",
+    "use-analytics": "^1.1.0",
     "uuid": "9.0.1",
     "yup": "1.2.0"
   },
