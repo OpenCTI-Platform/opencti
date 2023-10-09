@@ -5,7 +5,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
-import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined, } from '@mui/icons-material';
+import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
@@ -18,6 +18,17 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import makeStyles from '@mui/styles/makeStyles';
+import {
+  StixDomainObjectThreatKnowledgeReportsNumberQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
+import {
+  StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
+import {
+  StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
+  StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,18 +45,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import { truncate } from '../../../../utils/String';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
-import {
-  StixDomainObjectThreatKnowledgeReportsNumberQuery$data
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
-import {
-  StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
-import {
-  StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
-  StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
 import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -58,13 +58,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginBottom: 20,
     borderRadius: 6,
     position: 'relative',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  itemIconSecondary: {
-    marginRight: 0,
-    color: theme.palette.secondary.main,
   },
   number: {
     marginTop: 10,
@@ -83,13 +76,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
     top: 35,
     right: 20,
-  },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 70px 0',
-    padding: '15px 15px 15px 15px',
-    borderRadius: 6,
   },
   export: {
     float: 'right',
@@ -155,22 +141,22 @@ interface StixDomainObjectThreatKnowledgeProps {
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatKnowledgeProps> = ({
-   stixDomainObjectId,
-   stixDomainObjectType,
-   displayObservablesStats,
- }) => {
+  stixDomainObjectId,
+  stixDomainObjectType,
+  displayObservablesStats,
+}) => {
   const classes = useStyles();
   const { n, t } = useFormatter();
   const LOCAL_STORAGE_KEY = `view-stix-domain-object-${stixDomainObjectId}`;
   const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
-      {
-        filters: {},
-        searchTerm: '',
-        sortBy: 'created',
-        orderAsc: false,
-        openExports: false,
-      },
+    {
+      filters: {},
+      searchTerm: '',
+      sortBy: 'created',
+      orderAsc: false,
+      openExports: false,
+    },
   );
   const {
     filters,
@@ -212,7 +198,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
     stixDomainObjectType,
   )}/${stixDomainObjectId}/knowledge`;
   const buildPaginationOptions = () => {
-    let toTypes: string[] = [];
+    let toTypes: string[];
     if (filters?.entity_type && filters.entity_type.length > 0) {
       if (filters.entity_type.filter((o) => o.id === 'all').length > 0) {
         toTypes = [];
@@ -246,13 +232,14 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
       ...rawPaginationOptions,
       elementId: stixDomainObjectId,
       elementWithTargetTypes: toTypes.filter(
-          (x) => x.toLowerCase() !== stixDomainObjectType),
+        (x) => x.toLowerCase() !== stixDomainObjectType,
+      ),
       filters: convertFilters(finalFilters),
     };
     if (viewType === 'timeline') {
       finalPaginationOptions.relationship_type = nestedRelationships
-          ? ['stix-relationship']
-          : ['stix-core-relationship', 'stix-sighting-relationship'];
+        ? ['stix-relationship']
+        : ['stix-core-relationship', 'stix-sighting-relationship'];
       finalPaginationOptions.orderBy = timeField === 'technical' ? 'created_at' : 'start_time';
       finalPaginationOptions.orderMode = 'desc';
     } else {

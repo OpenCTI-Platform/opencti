@@ -1,4 +1,5 @@
 import React from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
@@ -15,7 +16,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -57,8 +57,8 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   }
   if (authorId) additionalFilters.push({ key: 'createdBy', values: [authorId] });
   if (
-      stixDomainObjectOrStixCoreRelationship
-      && stixDomainObjectOrStixCoreRelationship.id
+    stixDomainObjectOrStixCoreRelationship
+    && stixDomainObjectOrStixCoreRelationship.id
   ) {
     additionalFilters.push({
       key: 'objectContains',
