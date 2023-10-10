@@ -9,6 +9,7 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useGranted, {
+  KNOWLEDGE_KNUPDATE,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
 
@@ -32,6 +33,7 @@ const ProcessingMenu = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   return (
     <Drawer
       variant="permanent"
@@ -56,14 +58,16 @@ const ProcessingMenu = () => {
             <ListItemText primary={t('Automation')} />
           </MenuItem>
         )}
-        <MenuItem
-          component={Link}
-          to={'/dashboard/data/processing/tasks'}
-          selected={location.pathname === '/dashboard/data/processing/tasks'}
-          dense={false}
-        >
-          <ListItemText primary={t('Tasks')} />
-        </MenuItem>
+        {isKnowledgeUpdate && (
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/processing/tasks'}
+            selected={location.pathname === '/dashboard/data/processing/tasks'}
+            dense={false}
+          >
+            <ListItemText primary={t('Tasks')} />
+          </MenuItem>
+        )}
       </MenuList>
     </Drawer>
   );
