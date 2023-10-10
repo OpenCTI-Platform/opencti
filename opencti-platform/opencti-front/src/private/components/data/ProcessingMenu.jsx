@@ -58,7 +58,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t('Automation')} />
           </MenuItem>
         )}
-        {isKnowledgeUpdate && (
+        {isKnowledgeUpdater && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/tasks'}
