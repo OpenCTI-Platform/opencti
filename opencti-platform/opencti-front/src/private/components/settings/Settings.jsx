@@ -563,7 +563,7 @@ const Settings = () => {
                               {t(
                                 'For all other usages, you (and your organization) should have entered in a',
                               )}{' '}
-                              <a href="https://www.filigran.io/en/company/connect-with-us/contact-us">
+                              <a href="https://filigran.io/offering/subscribe" target="_blank">
                                 {t('Filigran Enterprise agreement')}
                               </a>
                               .
