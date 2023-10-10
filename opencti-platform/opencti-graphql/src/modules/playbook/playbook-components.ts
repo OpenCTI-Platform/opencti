@@ -160,7 +160,8 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
 export interface StreamConfiguration extends PlaybookComponentConfiguration {
   create: boolean,
   update: boolean,
-  delete: boolean
+  delete: boolean,
+  filters: string
 }
 const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> = {
   type: 'object',
@@ -168,6 +169,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> 
     create: { type: 'boolean', default: true },
     update: { type: 'boolean', default: false },
     delete: { type: 'boolean', default: false },
+    filters: { type: 'string' },
   },
   required: ['create', 'update', 'delete'],
 };

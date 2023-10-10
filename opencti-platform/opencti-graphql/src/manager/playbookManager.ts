@@ -42,24 +42,32 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
+import { convertFiltersFrontendFormat, isStixMatchFilters } from '../utils/filtering';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
 
+// Only way to force the step_literal checking
+// Don't try to understand, just trust
+function keyStep<V>(k: `step_${string}`, v: V): { [P in `step_${string}`]: V } {
+  return { [k]: v } as any; // Trust the entry checking
+}
+interface ExecutionEnvelopStep {
+  message: string,
+  previous_step_id?: string,
+  status: 'success' | 'error',
+  in_timestamp: string,
+  out_timestamp: string,
+  duration: number,
+  bundle?: StixBundle | null,
+  patch?: Operation[],
+  error?: string,
+}
 export interface ExecutionEnvelop {
   playbook_id: string
   playbook_execution_id: string
   last_execution_step: string | undefined
-  [k: `step_${string}`]: {
-    message: string,
-    status: 'success' | 'error',
-    in_timestamp: string,
-    out_timestamp: string,
-    duration: number,
-    bundle: StixBundle,
-    patch: Operation[],
-    error: string,
-  }
+  [k: `step_${string}`]: ExecutionEnvelopStep
 }
 
 type ObservationFn = {
@@ -70,7 +78,7 @@ type ObservationFn = {
   start: string,
   end: string,
   diff: number,
-  previousStepId: string | undefined,
+  previousStepId?: string,
   stepId: string,
   previousBundle?: StixBundle | null
   bundle?: StixBundle | null
@@ -79,22 +87,21 @@ type ObservationFn = {
 const registerStepObservation = async ({ executionId, playbookId, start, end, diff, previousStepId, stepId, error, previousBundle, bundle, message, status } : ObservationFn) => {
   const patch = previousBundle && bundle ? jsonpatch.compare(previousBundle, bundle) : [];
   const bundlePatch = previousStepId ? { patch } : { bundle };
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  const step: ExecutionEnvelopStep = {
+    message,
+    status,
+    previous_step_id: previousStepId,
+    in_timestamp: start,
+    out_timestamp: end,
+    duration: diff,
+    error,
+    ...bundlePatch
+  };
   const envelop: ExecutionEnvelop = {
     playbook_execution_id: executionId,
     playbook_id: playbookId,
     last_execution_step: stepId,
-    [`step_${stepId}`]: {
-      message,
-      status,
-      previous_step_id: previousStepId,
-      in_timestamp: start,
-      out_timestamp: end,
-      duration: diff,
-      error,
-      ...bundlePatch
-    }
+    ...keyStep(`step_${stepId}`, step)
   };
   await redisPlaybookUpdate(envelop);
 };
@@ -250,13 +257,16 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             throw UnsupportedError('Invalid playbook, entry point needed');
           }
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-          let validStreamEvent = false;
-          const { update, create, delete: deletion } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
-          if (type === 'create' && create === true) validStreamEvent = true;
-          if (type === 'update' && update === true) validStreamEvent = true;
-          if (type === 'delete' && deletion === true) validStreamEvent = true;
+          const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+          const jsonFilters = JSON.parse(filters ?? '{}');
+          let validEventType = false;
+          if (type === 'create' && create === true) validEventType = true;
+          if (type === 'update' && update === true) validEventType = true;
+          if (type === 'delete' && deletion === true) validEventType = true;
+          const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+          const isMatch = await isStixMatchFilters(context, SYSTEM_USER, data, adaptedFilters);
           // 02. Execute the component
-          if (validStreamEvent) {
+          if (validEventType && isMatch) {
             const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
             const bundle: StixBundle = { id: uuidv4(), spec_version: STIX_SPEC_VERSION, type: 'bundle', objects: [data] };
             await playbookExecutor({
