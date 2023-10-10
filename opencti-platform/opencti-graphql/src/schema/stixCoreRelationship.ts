@@ -47,13 +47,14 @@ export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI
 export const RELATION_PUBLISHES = 'publishes'; // Extension (OpenCTI)
 export const RELATION_AMPLIFIES = 'amplifies'; // Extension (OpenCTI)
 export const RELATION_SUBNARRATIVE_OF = 'subnarrative-of'; // Extension (OpenCTI)
+export const RELATION_EMPLOYED_BY = 'employed-by'; // Extension (OpenCTI)
+export const RELATION_RESIDES_IN = 'resides-in'; // Extension (OpenCTI)
+export const RELATION_CITIZEN_OF = 'citizen-of'; // Extension (OpenCTI)
+export const RELATION_NATIONAL_OF = 'national-of'; // Extension (OpenCTI)
+
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
-export const RELATION_EMPLOYED_BY = 'employed-by'; // Extension (TIM)
-export const RELATION_RESIDES_IN = 'resides-in'; // Extension (TIM)
-export const RELATION_CITIZEN_OF = 'citizen-of'; // Extension (TIM)
-export const RELATION_NATIONAL_OF = 'national-of'; // Extension (TIM)
 // endregion
 
 export const STIX_CORE_RELATIONSHIPS = [
