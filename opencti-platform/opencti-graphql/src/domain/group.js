@@ -24,9 +24,11 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { findGrantableGroups } from '../modules/organization/organization-domain';
+import { findAdministratedOrganizationsByUser } from './user';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
@@ -41,7 +43,19 @@ export const findById = (context, user, groupId) => {
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = (context, user, args) => {
+export const findAll = async (context, user, args) => {
+  // TODO Filter groups
+  // if user is orga_admin && pas set_access
+  // recupérer grantable_groups
+  // return ces groupes
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
+    const groups = [];
+    for (const orga of administratedOrganizations) {
+      groups.push(findGrantableGroups(context, context.user, orga));
+    }
+    return groups.flat();
+  }
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 

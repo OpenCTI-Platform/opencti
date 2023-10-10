@@ -11,6 +11,7 @@ import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } 
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { OrganizationAddInput } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
+import { BYPASS, isUserHasCapability, ORGA_ADMIN, SETTINGS, SETTINGS_SET_ACCESSES } from '../../utils/access';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -60,8 +61,8 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   await editAuthorizedAuthorities(context, user, organizationId, organization.authorized_authorities);
 };
 
-export const findGrantableGroups = async (context, user, current) => {
-  const groups = await internalFindByIds(context, context.user, current.grantable_groups);
+export const findGrantableGroups = async (context, user, organization) => {
+  const groups = await internalFindByIds(context, context.user, organization.grantable_groups);
   return groups;
 };
 // endregion
@@ -71,6 +72,9 @@ export const batchSectors = (context: AuthContext, user: AuthUser, organizationI
   return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 export const batchMembers = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // TODO return filtered list
+  }
   return batchListThroughGetFrom(context, user, organizationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, opts);
 };
 export const batchSubOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {

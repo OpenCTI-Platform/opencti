@@ -14,6 +14,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
+import GroupField from '@components/common/form/GroupField';
+import { convertGrantableGroups } from '@components/settings/organizations/SettingsOrganizationEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -24,8 +26,7 @@ import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import GroupField from "@components/common/form/GroupField";
-import { convertGrantableGroups } from "@components/settings/organizations/SettingsOrganizationEdition";
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -37,11 +38,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
   },
   buttons: {
     marginTop: 20,
@@ -92,13 +88,14 @@ const userValidation = (t) => Yup.object().shape({
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
+  groups: Yup.array().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_users',
+    'Pagination_organization_members',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -109,7 +106,6 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
   const { t } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose();
-
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
@@ -123,15 +119,7 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('userAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_organization_members', paginationOptions, 'userAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -176,7 +164,7 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
                 confirmation: '',
                 objectOrganization: [{
                   label: organization.name,
-                  value: organization.id
+                  value: organization.id,
                 }],
                 account_status: 'Active',
                 account_lock_after_date: null,

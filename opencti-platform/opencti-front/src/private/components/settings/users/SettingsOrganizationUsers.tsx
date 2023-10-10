@@ -4,6 +4,10 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery } from 'react-relay';
+import IconButton from '@mui/material/IconButton';
+import { AddOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -18,12 +22,6 @@ import SettingsOrganizationUsersLines, {
   settingsOrganizationUsersLinesQuery,
 } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
-import IconButton from '@mui/material/IconButton';
-import { AddCircleOutlined, AddOutlined, CampaignOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import TriggerLiveCreation from '@components/profile/triggers/TriggerLiveCreation';
-import UserCreation from '@components/settings/users/UserCreation';
-import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -53,31 +51,20 @@ MembersListContainerProps
   const {
     viewStorage,
     helpers,
-    paginationOptions: paginationOptionsFromStorage,
+    paginationOptions,
   } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
     `view-organization-${organization.id}-users`,
     {
-      id: organization.id,
-      searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      count: 25,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
     },
     undefined,
     true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
-  const paginationOptions = {
-    ...paginationOptionsFromStorage,
-    count: 25,
-  };
   const queryRef = useQueryLoading<SettingsOrganizationUsersLinesQuery>(
     settingsOrganizationUsersLinesQuery,
-    paginationOptions,
+    { ...paginationOptions, id: organization.id },
   );
   const dataColumns = {
     name: {

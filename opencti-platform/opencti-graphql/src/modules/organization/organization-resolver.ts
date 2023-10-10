@@ -37,7 +37,7 @@ const organizationResolvers: Resolvers = {
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
-    grantable_groups: (current, _, context) => findGrantableGroups(context, context.user, current),
+    grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
