@@ -33,6 +33,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
 import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -291,6 +292,19 @@ const PlaybookAddComponentsContent = ({
                 value: value.value,
                 patch_value: value.value,
               },
+            ])
+            }
+          />
+        );
+      case 'x_opencti_detection':
+        return (
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name={`actions-${i}-value`}
+            label={t('Value')}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
             ])
             }
           />
@@ -610,8 +624,10 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value}
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)}
+                        isOptionEqualToValue={(option, value) => option.const === value
+                        }
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
+                        }
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
@@ -646,11 +662,13 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value}
+                        isOptionEqualToValue={(option, value) => option.const === value
+                        }
                         onInternalChange={(name, value) => setFieldValue(
                           name,
                           value.map((n) => (n.const ? n.const : n)),
-                        )}
+                        )
+                        }
                         noFieldUpdate={true}
                         options={v.items.oneOf}
                         textfieldprops={{
