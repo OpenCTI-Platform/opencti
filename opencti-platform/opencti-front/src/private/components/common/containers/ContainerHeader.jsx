@@ -609,7 +609,8 @@ const ContainerHeader = (props) => {
     if (type === 'threats-arsenal' && selectedEntity) {
       // create all targets relationships
       setApplying([...applying, type]);
-      const resolvedArsenal = resolveArsenal(objects);
+      const selectedObjectType = objects.filter((n) => n.id === selectedEntity[type]).at(0).entity_type;
+      const resolvedArsenal = resolveArsenal(objects).filter((n) => n.entity_type !== selectedObjectType);
       const createdRelationships = await Promise.all(
         resolvedArsenal.map((arsenal) => {
           const values = {
