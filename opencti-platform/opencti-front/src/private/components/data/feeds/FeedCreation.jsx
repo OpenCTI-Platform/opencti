@@ -625,7 +625,7 @@ const FeedCreation = (props) => {
                                           render={({ props: resultProps }) => {
                                             if (
                                               resultProps
-                                              && resultProps.schemaAttributes
+                                              && resultProps.schemaAttributeNames
                                             ) {
                                               let attributes = R.pipe(
                                                 R.map((n) => n.node),
@@ -637,7 +637,7 @@ const FeedCreation = (props) => {
                                                     && !n.value.startsWith('i_'),
                                                 ),
                                               )(
-                                                resultProps.schemaAttributes
+                                                resultProps.schemaAttributeNames
                                                   .edges,
                                               );
                                               if (

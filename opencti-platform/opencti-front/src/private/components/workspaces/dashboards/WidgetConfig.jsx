@@ -1400,7 +1400,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               render={({ props: resultProps }) => {
                                 if (
                                   resultProps
-                                  && resultProps.schemaAttributes
+                                  && resultProps.schemaAttributeNames
                                 ) {
                                   let attributes = R.pipe(
                                     R.map((n) => n.node),
@@ -1410,7 +1410,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                         ignoredAttributesInDashboards,
                                       ) && !n.value.startsWith('i_'),
                                     ),
-                                  )(resultProps.schemaAttributes.edges);
+                                  )(resultProps.schemaAttributeNames.edges);
                                   if (
                                     attributes.filter(
                                       (n) => n.value === 'hashes',

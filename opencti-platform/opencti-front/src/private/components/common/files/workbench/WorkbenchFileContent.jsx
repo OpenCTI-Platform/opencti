@@ -1631,7 +1631,7 @@ const WorkbenchFileContentComponent = ({
         query={workbenchFileContentAttributesQuery}
         variables={{ elementType: [type] }}
         render={({ props }) => {
-          if (props && props.schemaAttributes) {
+          if (props && props.schemaAttributeNames) {
             const initialValues = {
               createdBy: convertCreatedByRef(entity),
               objectMarking: convertMarkings(entity),
@@ -1641,7 +1641,7 @@ const WorkbenchFileContentComponent = ({
             const attributes = R.filter(
               (n) => R.includes(
                 n,
-                R.map((o) => o.node.value, props.schemaAttributes.edges),
+                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
               ),
               workbenchAttributes,
             );
@@ -2103,7 +2103,7 @@ const WorkbenchFileContentComponent = ({
         query={workbenchFileContentAttributesQuery}
         variables={{ elementType: ['stix-core-relationship'] }}
         render={({ props }) => {
-          if (props && props.schemaAttributes) {
+          if (props && props.schemaAttributeNames) {
             const initialValues = {
               createdBy: convertCreatedByRef(relationship),
               objectMarking: convertMarkings(relationship),
@@ -2113,7 +2113,7 @@ const WorkbenchFileContentComponent = ({
             const attributes = R.filter(
               (n) => R.includes(
                 n,
-                R.map((o) => o.node.value, props.schemaAttributes.edges),
+                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
               ),
               workbenchAttributes,
             );
@@ -2312,7 +2312,7 @@ const WorkbenchFileContentComponent = ({
         query={workbenchFileContentAttributesQuery}
         variables={{ elementType: [observableType] }}
         render={({ props }) => {
-          if (props && props.schemaAttributes) {
+          if (props && props.schemaAttributeNames) {
             const initialValues = {
               createdBy: convertCreatedByRef(observable),
               objectMarking: convertMarkings(observable),
@@ -2324,7 +2324,7 @@ const WorkbenchFileContentComponent = ({
               R.filter(
                 (n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_'),
               ),
-            )(props.schemaAttributes.edges);
+            )(props.schemaAttributeNames.edges);
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
                 initialValues[attribute] = observable[attribute]
@@ -2568,7 +2568,7 @@ const WorkbenchFileContentComponent = ({
         query={workbenchFileContentAttributesQuery}
         variables={{ elementType: [containerType] }}
         render={({ props }) => {
-          if (props && props.schemaAttributes) {
+          if (props && props.schemaAttributeNames) {
             const initialValues = {
               createdBy: convertCreatedByRef(container),
               objectMarking: convertMarkings(container),
@@ -2578,7 +2578,7 @@ const WorkbenchFileContentComponent = ({
             const attributes = R.filter(
               (n) => R.includes(
                 n,
-                R.map((o) => o.node.value, props.schemaAttributes.edges),
+                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
               ),
               workbenchAttributes,
             );

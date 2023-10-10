@@ -535,7 +535,7 @@ const FeedEditionContainer = (props) => {
                                         render={({ props: resultProps }) => {
                                           if (
                                             resultProps
-                                            && resultProps.schemaAttributes
+                                            && resultProps.schemaAttributeNames
                                           ) {
                                             let attributes = R.pipe(
                                               R.map((n) => n.node),
@@ -546,7 +546,7 @@ const FeedEditionContainer = (props) => {
                                                 ) && !n.value.startsWith('i_'),
                                               ),
                                             )(
-                                              resultProps.schemaAttributes.edges,
+                                              resultProps.schemaAttributeNames.edges,
                                             );
                                             if (
                                               attributes.filter(

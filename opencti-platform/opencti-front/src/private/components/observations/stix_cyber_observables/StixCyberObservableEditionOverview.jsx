@@ -249,7 +249,7 @@ const StixCyberObservableEditionOverviewComponent = ({
       query={stixCyberObservablesLinesAttributesQuery}
       variables={{ elementType: [stixCyberObservable.entity_type] }}
       render={({ props }) => {
-        if (props && props.schemaAttributes) {
+        if (props && props.schemaAttributeNames) {
           const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
             ? ''
             : {
@@ -280,7 +280,7 @@ const StixCyberObservableEditionOverviewComponent = ({
               (n) => !includes(n.value, ignoredAttributes)
                 && !n.value.startsWith('i_'),
             ),
-          )(props.schemaAttributes.edges);
+          )(props.schemaAttributeNames.edges);
           for (const attribute of attributes) {
             if (includes(attribute.value, dateAttributes)) {
               initialValues[attribute.value] = stixCyberObservable[

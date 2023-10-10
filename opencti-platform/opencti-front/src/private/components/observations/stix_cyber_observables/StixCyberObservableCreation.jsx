@@ -408,7 +408,7 @@ const StixCyberObservableCreation = ({
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: [status.type] }}
         render={({ props }) => {
-          if (props && props.schemaAttributes) {
+          if (props && props.schemaAttributeNames) {
             const baseCreatedBy = defaultCreatedBy
               ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
               : undefined;
@@ -431,7 +431,7 @@ const StixCyberObservableCreation = ({
                 (n) => !includes(n.value, ignoredAttributes)
                   && !n.value.startsWith('i_'),
               ),
-            )(props.schemaAttributes.edges);
+            )(props.schemaAttributeNames.edges);
             for (const attribute of attributes) {
               if (isVocabularyField(status.type, attribute.value)) {
                 initialValues[attribute.value] = null;
