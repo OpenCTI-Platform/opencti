@@ -235,7 +235,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
-import {cleanMarkings, handleMarkingOperations} from '../utils/markingDefinition-utils';
+import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 
