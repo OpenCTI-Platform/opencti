@@ -33,7 +33,6 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
 import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {

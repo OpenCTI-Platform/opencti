@@ -43,7 +43,7 @@ import {
   INPUT_MARKINGS,
 } from '../../schema/general';
 import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
-import type { StoreCommon } from '../../types/store';
+import type { BasicStoreEntity, StoreCommon } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
@@ -84,7 +84,7 @@ import {
 } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { stixLoadByIds } from '../../database/middleware';
+import { listThroughGetFrom, listThroughGetTo, stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import {
   convertToNotificationUser,
@@ -614,6 +614,8 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
 };
 
 const DATE_SEEN_RULE = 'seen_dates';
+const RESOLVE_INDICATORS = 'resolve_indicators';
+const RESOLVE_OBSERVABLES = 'resolve_observables';
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
 const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
 type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
@@ -627,7 +629,9 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
       type: 'string',
       $ref: 'Rule to apply',
       oneOf: [
-        { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' }
+        { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' },
+        { const: RESOLVE_INDICATORS, title: 'Resolve indicators based on observables' },
+        { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on' }
       ]
     },
   },
@@ -648,6 +652,32 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { type } = baseData.extensions[STIX_EXT_OCTI];
     const { rule } = playbookNode.configuration;
+    if (rule === RESOLVE_INDICATORS) {
+      if (isStixCyberObservable(type)) {
+        const indicators = await listThroughGetFrom(
+          context,
+          AUTOMATION_MANAGER_USER,
+          [baseData.extensions[STIX_EXT_OCTI].id],
+          RELATION_BASED_ON,
+          ENTITY_TYPE_INDICATOR
+        );
+        bundle.objects.push(...indicators.map((indicator: BasicStoreEntity) => convertStoreToStix(indicator)));
+        return { output_port: 'out', bundle };
+      }
+    }
+    if (rule === RESOLVE_OBSERVABLES) {
+      if (type === ENTITY_TYPE_INDICATOR) {
+        const observables = await listThroughGetTo(
+          context,
+          AUTOMATION_MANAGER_USER,
+          [baseData.extensions[STIX_EXT_OCTI].id],
+          RELATION_BASED_ON,
+          ABSTRACT_STIX_CYBER_OBSERVABLE
+        );
+        bundle.objects.push(...observables.map((observable: BasicStoreEntity) => convertStoreToStix(observable)));
+        return { output_port: 'out', bundle };
+      }
+    }
     if (rule === DATE_SEEN_RULE) {
       // DATE_SEEN_RULE is only triggered on report creation / update
       if (type === ENTITY_TYPE_CONTAINER_REPORT) {
