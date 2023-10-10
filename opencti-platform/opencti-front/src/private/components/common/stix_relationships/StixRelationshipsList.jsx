@@ -262,6 +262,9 @@ const stixRelationshipsListQuery = graphql`
               ... on Case {
                 name
               }
+              ... on Report {
+                name
+              }
               ... on StixRelationship {
                 id
                 relationship_type
@@ -384,6 +387,14 @@ const stixRelationshipsListQuery = graphql`
                   }
                   ... on Case {
                     name
+                  }
+                  ... on Report {
+                    name
+                  }
+                  ... on ExternalReference {
+                    source_name
+                    url
+                    external_id
                   }
                   ... on StixCyberObservable {
                     observable_value
@@ -549,6 +560,14 @@ const stixRelationshipsListQuery = graphql`
                           ... on Case {
                             name
                           }
+                          ... on Report {
+                            name
+                          }
+                          ... on ExternalReference {
+                            source_name
+                            url
+                            external_id
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -677,6 +696,14 @@ const stixRelationshipsListQuery = graphql`
                       ... on Case {
                         name
                       }
+                      ... on Report {
+                        name
+                      }
+                      ... on ExternalReference {
+                        source_name
+                        url
+                        external_id
+                      }
                     }
                     to {
                       ... on BasicObject {
@@ -780,6 +807,14 @@ const stixRelationshipsListQuery = graphql`
                       }
                       ... on Case {
                         name
+                      }
+                      ... on Report {
+                        name
+                      }
+                      ... on ExternalReference {
+                        source_name
+                        url
+                        external_id
                       }
                       ... on ObservedData {
                         name
@@ -937,6 +972,11 @@ const stixRelationshipsListQuery = graphql`
                               }
                               ... on Case {
                                 name
+                              }
+                              ... on ExternalReference {
+                                source_name
+                                url
+                                external_id
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -1342,6 +1382,18 @@ const stixRelationshipsListQuery = graphql`
                       ... on Case {
                         name
                       }
+                      ... on Report {
+                        name
+                      }
+                      ... on ExternalReference {
+                        source_name
+                        url
+                        external_id
+                      }
+                      ... on MarkingDefinition {
+                        definition_type
+                        definition
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -1501,6 +1553,15 @@ const stixRelationshipsListQuery = graphql`
                               }
                               ... on Case {
                                 name
+                              }
+                              ... on ExternalReference {
+                                source_name
+                                url
+                                external_id
+                              }
+                              ... on MarkingDefinition {
+                                definition_type
+                                definition
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -1775,6 +1836,15 @@ const stixRelationshipsListQuery = graphql`
                               }
                               ... on Case {
                                 name
+                              }
+                              ... on ExternalReference {
+                                source_name
+                                url
+                                external_id
+                              }
+                              ... on MarkingDefinition {
+                                definition_type
+                                definition
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -2057,6 +2127,15 @@ const stixRelationshipsListQuery = graphql`
                           ... on Case {
                             name
                           }
+                          ... on ExternalReference {
+                            source_name
+                            url
+                            external_id
+                          }
+                          ... on MarkingDefinition {
+                            definition_type
+                            definition
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -2847,6 +2926,18 @@ const stixRelationshipsListQuery = graphql`
                       ... on Case {
                         name
                       }
+                      ... on Report {
+                        name
+                      }
+                      ... on ExternalReference {
+                        source_name
+                        url
+                        external_id
+                      }
+                      ... on MarkingDefinition {
+                        definition_type
+                        definition
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -3120,6 +3211,18 @@ const stixRelationshipsListQuery = graphql`
                       }
                       ... on Case {
                         name
+                      }
+                      ... on Report {
+                        name
+                      }
+                      ... on ExternalReference {
+                        source_name
+                        url
+                        external_id
+                      }
+                      ... on MarkingDefinition {
+                        definition_type
+                        definition
                       }
                       ... on StixCyberObservable {
                         observable_value
@@ -3417,6 +3520,18 @@ const stixRelationshipsListQuery = graphql`
             ... on Case {
               name
             }
+            ... on Report {
+              name
+            }
+            ... on ExternalReference {
+              source_name
+              url
+              external_id
+            }
+            ... on MarkingDefinition {
+              definition_type
+              definition
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -3577,6 +3692,18 @@ const stixRelationshipsListQuery = graphql`
                     ... on Case {
                       name
                     }
+                    ... on Report {
+                      name
+                    }
+                    ... on ExternalReference {
+                      source_name
+                      url
+                      external_id
+                    }
+                    ... on MarkingDefinition {
+                      definition_type
+                      definition
+                    }
                     ... on StixCyberObservable {
                       observable_value
                       x_opencti_description
@@ -3702,6 +3829,18 @@ const stixRelationshipsListQuery = graphql`
                 ... on Case {
                   name
                 }
+                ... on Report {
+                  name
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  external_id
+                }
+                ... on MarkingDefinition {
+                  definition_type
+                  definition
+                }
               }
               to {
                 ... on BasicObject {
@@ -3805,6 +3944,18 @@ const stixRelationshipsListQuery = graphql`
                 }
                 ... on Case {
                   name
+                }
+                ... on Report {
+                  name
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  external_id
+                }
+                ... on MarkingDefinition {
+                  definition_type
+                  definition
                 }
               }
             }
@@ -3914,6 +4065,18 @@ const stixRelationshipsListQuery = graphql`
             ... on Case {
               name
             }
+            ... on Report {
+              name
+            }
+            ... on ExternalReference {
+              source_name
+              url
+              external_id
+            }
+            ... on MarkingDefinition {
+              definition_type
+              definition
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -4074,6 +4237,18 @@ const stixRelationshipsListQuery = graphql`
                     ... on Case {
                       name
                     }
+                    ... on Report {
+                      name
+                    }
+                    ... on ExternalReference {
+                      source_name
+                      url
+                      external_id
+                    }
+                    ... on MarkingDefinition {
+                      definition_type
+                      definition
+                    }
                     ... on StixCyberObservable {
                       observable_value
                       x_opencti_description
@@ -4185,6 +4360,18 @@ const stixRelationshipsListQuery = graphql`
                 ... on Case {
                   name
                 }
+                ... on Report {
+                  name
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  external_id
+                }
+                ... on MarkingDefinition {
+                  definition_type
+                  definition
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -4277,6 +4464,18 @@ const stixRelationshipsListQuery = graphql`
                 }
                 ... on Case {
                   name
+                }
+                ... on Report {
+                  name
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  external_id
+                }
+                ... on MarkingDefinition {
+                  definition_type
+                  definition
                 }
                 ... on StixCyberObservable {
                   observable_value
@@ -4397,6 +4596,7 @@ const StixRelationshipsList = ({
                                 style={{
                                   width: '10%',
                                   display: 'flex',
+                                  paddingRight: 2,
                                 }}
                               >
                                 <ItemIcon
@@ -4406,15 +4606,20 @@ const StixRelationshipsList = ({
                                   }
                                   variant="inline"
                                 />
+                                {/* eslint-disable-next-line no-nested-ternary */}
                                 {stixRelationship.from
-                                  ? t(
-                                    `entity_${stixRelationship.from.entity_type}`,
-                                  )
+                                  ? stixRelationship.from.relationship_type
+                                    ? t(
+                                      `relationship_${stixRelationship.from.entity_type}`,
+                                    )
+                                    : t(
+                                      `entity_${stixRelationship.from.entity_type}`,
+                                    )
                                   : t('Restricted')}
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '18%' }}
+                                style={{ width: '18%', paddingRight: 2 }}
                               >
                                 <code>
                                   {stixRelationship.from
@@ -4426,6 +4631,7 @@ const StixRelationshipsList = ({
                                 className={classes.bodyItem}
                                 style={{
                                   width: '10%',
+                                  paddingRight: 2,
                                 }}
                               >
                                 <i>
@@ -4439,6 +4645,7 @@ const StixRelationshipsList = ({
                                 style={{
                                   width: '10%',
                                   display: 'flex',
+                                  paddingRight: 2,
                                 }}
                               >
                                 <ItemIcon
@@ -4448,15 +4655,20 @@ const StixRelationshipsList = ({
                                   }
                                   variant="inline"
                                 />
+                                {/* eslint-disable-next-line no-nested-ternary */}
                                 {stixRelationship.to
-                                  ? t(
-                                    `entity_${stixRelationship.to.entity_type}`,
-                                  )
+                                  ? stixRelationship.to.relationship_type
+                                    ? t(
+                                      `relationship_${stixRelationship.to.entity_type}`,
+                                    )
+                                    : t(
+                                      `entity_${stixRelationship.to.entity_type}`,
+                                    )
                                   : t('Restricted')}
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '18%' }}
+                                style={{ width: '18%', paddingRight: 2 }}
                               >
                                 <code>
                                   {stixRelationship.to
@@ -4466,13 +4678,13 @@ const StixRelationshipsList = ({
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '10%' }}
+                                style={{ width: '10%', paddingRight: 2 }}
                               >
                                 {fsd(stixRelationship[dateAttribute])}
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '15%' }}
+                                style={{ width: '12%', paddingRight: 2 }}
                               >
                                 {R.pathOr(
                                   '',
@@ -4480,7 +4692,10 @@ const StixRelationshipsList = ({
                                   stixRelationship,
                                 )}
                               </div>
-                              <div className={classes.bodyItem}>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '10%', paddingRight: 2 }}
+                              >
                                 <ItemMarkings
                                   variant="inList"
                                   markingDefinitionsEdges={

@@ -432,6 +432,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'service-dll':
     case 'dynamic-analysis-of':
     case 'contains':
+    case 'created-by':
+    case 'object-marking':
+    case 'object-label':
+    case 'object':
     case 'exfiltrates-to':
     case 'exploits':
     case 'investigates':
