@@ -6133,16 +6133,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "chalk@npm:3.0.0"
-  dependencies:
-    ansi-styles: ^4.1.0
-    supports-color: ^7.1.0
-  checksum: 8e3ddf3981c4da405ddbd7d9c8d91944ddf6e33d6837756979f7840a29272a69a5189ecae0ff84006750d6d1e92368d413335eab4db5476db6e6703a1d1e0505
-  languageName: node
-  linkType: hard
-
 "chalk@npm:^4.0.0, chalk@npm:^4.0.2, chalk@npm:^4.1.0, chalk@npm:^4.1.1, chalk@npm:^4.1.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
@@ -6813,13 +6803,6 @@ __metadata:
   version: 6.1.0
   resolution: "detect-indent@npm:6.1.0"
   checksum: ab953a73c72dbd4e8fc68e4ed4bfd92c97eb6c43734af3900add963fd3a9316f3bc0578b018b24198d4c31a358571eff5f0656e81a1f3b9ad5c547d58b2d093d
-  languageName: node
-  linkType: hard
-
-"diff-match-patch@npm:^1.0.0":
-  version: 1.0.5
-  resolution: "diff-match-patch@npm:1.0.5"
-  checksum: 841522d01b09cccbc4e4402cf61514a81b906349a7d97b67222390f2d35cf5df277cb23959eeed212d5e46afb5629cebab41b87918672c5a05c11c73688630e3
   languageName: node
   linkType: hard
 
@@ -9476,7 +9459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-deep-equals@npm:^2.1.1":
+"js-deep-equals@npm:2.1.1":
   version: 2.1.1
   resolution: "js-deep-equals@npm:2.1.1"
   dependencies:
@@ -9556,7 +9539,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-to-plain-text@npm:^1.1.3":
+"json-to-plain-text@npm:1.1.3":
   version: 1.1.3
   resolution: "json-to-plain-text@npm:1.1.3"
   dependencies:
@@ -9591,18 +9574,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsondiffpatch@npm:0.5.0":
-  version: 0.5.0
-  resolution: "jsondiffpatch@npm:0.5.0"
-  dependencies:
-    chalk: ^3.0.0
-    diff-match-patch: ^1.0.0
-  bin:
-    jsondiffpatch: bin/jsondiffpatch
-  checksum: 5f8bed0cd0e732a12f42d9eac85207fa171849f27d7053df6e38382a3f22bfb53e4d78933c0bbf985496fc3fd87088965fab276e0dbf9f96030401264b31c5ad
-  languageName: node
-  linkType: hard
-
 "jsonify@npm:^0.0.1":
   version: 0.0.1
   resolution: "jsonify@npm:0.0.1"
@@ -9610,7 +9581,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonpath-plus@npm:^7.2.0":
+"jsonpath-plus@npm:7.2.0":
   version: 7.2.0
   resolution: "jsonpath-plus@npm:7.2.0"
   checksum: 05f447339d29be861e307d6e812aec1b9b88a3ba6bba286966a4e8bed3e752bee3d715eabfc21dce968be85ccb48bf79d2c1af78da7b9b74cd1b446d4d5d02f5
@@ -10805,10 +10776,9 @@ __metadata:
     ioredis: 5.3.2
     ipaddr.js: 2.1.0
     iterall: 1.3.0
-    js-deep-equals: ^2.1.1
-    json-to-plain-text: ^1.1.3
-    jsondiffpatch: 0.5.0
-    jsonpath-plus: ^7.2.0
+    js-deep-equals: 2.1.1
+    json-to-plain-text: 1.1.3
+    jsonpath-plus: 7.2.0
     jwt-decode: 3.1.2
     lru-cache: 7.18.3
     merge-graphql-schemas: 1.7.8
