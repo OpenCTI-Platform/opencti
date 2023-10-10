@@ -507,9 +507,14 @@ const WorkspaceHeader = ({
             open={containerCreation}
             display={true}
             speeddial={true}
-            stixDomainObjectTypes={['Container']}
+            stixDomainObjectTypes={[
+              'Report',
+              'Grouping',
+              'Case-Incident',
+              'Case-Rfi',
+              'Case-Rft',
+            ]}
             handleClose={() => setContainerCreation(false)}
-            isInWorkspace={true}
             creationCallback={({ name, id, entity_type }) => {
               const element = {
                 label: name,

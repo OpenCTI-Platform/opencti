@@ -120,14 +120,8 @@ const sharedUpdater = (
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-const buildEntityTypes = (t, queryData, stixDomainObjectTypes, isInWorkspace) => {
+const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
   const choices = (queryData.sdoTypes?.edges ?? [])
-    .filter((edge) => {
-      if (isInWorkspace) {
-        return edge.node.id !== 'Observed-Data';
-      }
-      return !!edge.node.id;
-    })
     .map((edge) => ({
       label: t(`entity_${edge.node.label}`),
       value: edge.node.label,
@@ -179,7 +173,6 @@ const StixDomainPanel = ({
   inputValue,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  isInWorkspace,
 }) => {
   const { t } = useFormatter();
   const queryData = usePreloadedQuery(
@@ -190,7 +183,6 @@ const StixDomainPanel = ({
     t,
     queryData,
     stixDomainObjectTypes,
-    isInWorkspace,
   );
   const [type, setType] = useState(availableEntityTypes.at(0).value);
   const baseCreatedBy = defaultCreatedBy
@@ -676,7 +668,6 @@ const StixDomainObjectCreation = ({
   handleClose,
   paginationKey,
   paginationOptions,
-  isInWorkspace,
 }) => {
   const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
@@ -737,7 +728,6 @@ const StixDomainObjectCreation = ({
             defaultMarkingDefinitions={defaultMarkingDefinitions}
             stixDomainObjectTypes={stixDomainObjectTypes}
             creationUpdater={creationUpdater}
-            isInWorkspace={isInWorkspace}
             onClose={speeddial ? handleClose : stateHandleClose}
           />
         </React.Suspense>
