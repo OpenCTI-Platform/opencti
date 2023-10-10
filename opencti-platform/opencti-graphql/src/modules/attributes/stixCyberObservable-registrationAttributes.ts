@@ -58,7 +58,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_EMAIL_ADDR]: [
     { name: 'value', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Display name' },
   ],
   [ENTITY_EMAIL_MESSAGE]: [
     { name: 'is_multipart', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
@@ -75,12 +75,12 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'content_disposition', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [
-    { name: 'mime_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'mime_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Mime type' },
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'payload_bin', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'payload_bin', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Payload' },
     { name: 'url', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'encryption_algorithm', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'decryption_key', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'encryption_algorithm', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Algorithm' },
+    { name: 'decryption_key', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Description key' },
     { name: 'x_opencti_additional_names', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
@@ -171,7 +171,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     // windows-service-ext
     { name: 'service_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'descriptions', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false, label: 'Display name' },
     { name: 'group_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'start_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'service_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -195,7 +195,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'credential', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'account_login', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'account_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'display_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Display name' },
     { name: 'is_service_account', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'is_privileged', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'can_escalate_privs', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
@@ -234,7 +234,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_BANK_ACCOUNT]: [
     { name: 'iban', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'bic', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'account_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'account_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false, label: 'Account number' },
   ],
   [ENTITY_PHONE_NUMBER]: [
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -248,9 +248,9 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_MEDIA_CONTENT]: [
     { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'content', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'media_category', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'media_category', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Media category' },
     { name: 'url', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'publication_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'publication_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: true, label: 'Publication date' },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixCyberObservablesAttributes);

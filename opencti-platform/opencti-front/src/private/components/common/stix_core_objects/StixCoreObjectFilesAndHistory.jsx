@@ -280,7 +280,7 @@ const StixCoreObjectFilesAndHistory = ({
               onClose={handleCloseImport}
               fullWidth={true}
             >
-              <DialogTitle>{t('Launch an import bbb')}</DialogTitle>
+              <DialogTitle>{t('Launch an import')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={SelectField}
@@ -488,11 +488,11 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
         active
         connector_scope
         updated_at
-          configurations {
-              id
-              name,
-              configuration
-          }
+        configurations {
+            id
+            name,
+            configuration
+        }
       }
     `,
   },

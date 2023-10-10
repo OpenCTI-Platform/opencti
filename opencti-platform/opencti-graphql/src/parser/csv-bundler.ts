@@ -5,11 +5,13 @@ import { sanitized, validate } from '../modules/internal/csvMapper/csvMapper-uti
 import { BundleBuilder } from './bundle-creator';
 import { type InputType, mappingProcess } from './csv-mapper';
 import { convertStoreToStix } from '../database/stix-converter';
-import type { StoreCommon } from '../types/store';
+import type { BasicStoreBase, StoreCommon } from '../types/store';
 import { entityType } from '../schema/attribute-definition';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { validateInputCreation } from '../schema/schema-validator';
 import { parsingProcess } from './csv-parser';
+import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
+import { objects } from '../schema/stixRefRelationship';
 
 const validateInput = async (context: AuthContext, user: AuthUser, inputs: Record<string, InputType>[]) => {
   await Promise.all(inputs.map(async (input) => {
@@ -23,7 +25,7 @@ const validateInput = async (context: AuthContext, user: AuthUser, inputs: Recor
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
-export const bundleProcess = async (context: AuthContext, user: AuthUser, content: Buffer | string, mapper: BasicStoreEntityCsvMapper) => {
+export const bundleProcess = async (context: AuthContext, user: AuthUser, content: Buffer | string, mapper: BasicStoreEntityCsvMapper, entity?: BasicStoreBase) => {
   await validate(context, mapper);
   const sanitizedMapper = sanitized(mapper);
 
@@ -50,5 +52,15 @@ export const bundleProcess = async (context: AuthContext, user: AuthUser, conten
       }
     })));
   }
+  // Handle container
+  if (entity && isStixDomainObjectContainer(entity.entity_type)) {
+    const refs = bundleBuilder.ids();
+    const stixEntity = {
+      ...convertStoreToStix(entity),
+      [objects.stixName]: refs
+    };
+    bundleBuilder.addObject(stixEntity);
+  }
+
   return bundleBuilder.build();
 };

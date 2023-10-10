@@ -78,6 +78,7 @@ export const operatingSystems: Omit<RelationRefDefinition, 'checker'> = {
   mandatoryType: 'no',
   multiple: true,
   datable: true,
+  label: 'Operating System'
 };
 
 export const samples: Omit<RelationRefDefinition, 'checker'> = {

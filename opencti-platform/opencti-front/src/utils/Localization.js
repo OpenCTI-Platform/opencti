@@ -3277,7 +3277,7 @@ const i18n = {
       Description: 'Description',
       'Is family': 'Est une famille',
       'Is family?': 'Est une famille ?',
-      'Architecture execution env.': "Env. d'éxécution,",
+      'Architecture execution env.': "Env. d'éxécution",
       'Implementation languages': "Langages d'implémentation",
       'This sector does not have any description.':
         "Ce secteur n'a aucune description.",
@@ -8317,6 +8317,7 @@ const i18n = {
       'entity_Phone-Number': 'Phone number',
       'entity_Payment-Card': 'Payment card',
       'entity_Media-Content': 'Media content',
+      entity_Vocabulary: 'Vocabulary',
       // Relations
       relationship_All: 'All types of relationship',
       'relationship_service-dll': 'service dll',

@@ -16,9 +16,16 @@ export class BundleBuilder {
     this.objects = [];
   }
 
+  addObject(object: StixObject) {
+    this.objects.push(object);
+    return this;
+  }
   addObjects(objects: StixObject[]) {
     this.objects.push(...objects);
     return this;
+  }
+  ids() {
+    return this.objects.map((o) => o.id);
   }
 
   build(): StixBundle {

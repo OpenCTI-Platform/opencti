@@ -20,47 +20,60 @@ import {
 import { xOpenctiLinkedTo } from '../schema/stixRefRelationship';
 
 export const INTERNAL_ATTRIBUTES = [
+  // ID
   internalId.name,
   standardId.name,
   xOpenctiStixIds.name,
-  creators.name,
-  entityType.name,
-  specVersion.name,
+  'external_id',
+  iAliasedIds.name,
+
+  // Auditing
   createdAt.name,
   updatedAt.name,
-  created.name,
   modified.name,
+
+  // Technical
+
+  created.name,
+  entityType.name,
+  'relationship_type',
+  specVersion.name,
+
+  'identity_class',
+  creators.name,
   files.name,
   lang.name,
   revoked.name,
-  xOpenctiAliases.name,
   aliases.name,
-  iAliasedIds.name,
-  'x_opencti_graph_data',
-  'x_opencti_workflow_id',
   entityLocationType.name,
-  'external_id',
   'i_inference_weight',
-  'relationship_type',
+  'content_mapping',
+  'casetemplate',
+  'default_dashboard',
+  'default_hidden_types',
+
+  // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',
   'x_mitre_id',
-  'content_mapping',
-  'casetemplate',
+  'x_opencti_graph_data',
+
+  // X - OpenCTI
+  xOpenctiAliases.name,
+  'x_opencti_workflow_id',
+  'x_opencti_detection',
   'x_opencti_threat_hunting',
   'x_opencti_log_sources',
   'x_opencti_firstname',
   'x_opencti_lastname',
-  'identity_class',
-  'default_dashboard',
-  'default_hidden_types',
+  'x_opencti_score',
   'x_opencti_base_score',
   'x_opencti_base_severity',
   'x_opencti_attack_vector',
   'x_opencti_integrity_impact',
   'x_opencti_availability_impact',
   'x_opencti_confidentiality_impact',
-
+  'x_opencti_additional_names',
 ];
 
 export const INTERNAL_REFS = [

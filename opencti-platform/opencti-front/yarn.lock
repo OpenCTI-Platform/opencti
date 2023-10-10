@@ -5048,7 +5048,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-syntax-highlighter@npm:^15.5.7":
+"@types/react-syntax-highlighter@npm:15.5.7":
   version: 15.5.7
   resolution: "@types/react-syntax-highlighter@npm:15.5.7"
   dependencies:
@@ -14834,7 +14834,7 @@ __metadata:
     "@types/react-dom": 18.2.7
     "@types/react-relay": 14.1.5
     "@types/react-router-dom": 5.3.3
-    "@types/react-syntax-highlighter": ^15.5.7
+    "@types/react-syntax-highlighter": 15.5.7
     "@types/react-test-renderer": 18.0.2
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.4
@@ -14909,7 +14909,7 @@ __metadata:
     react-relay-network-modern: 6.2.2
     react-router-dom: 5.3.4
     react-router-dom-v5-compat: 6.16.0
-    react-syntax-highlighter: ^15.5.0
+    react-syntax-highlighter: 15.5.0
     react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
     react-virtualized: 9.22.5
@@ -16640,7 +16640,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-syntax-highlighter@npm:^15.5.0":
+"react-syntax-highlighter@npm:15.5.0":
   version: 15.5.0
   resolution: "react-syntax-highlighter@npm:15.5.0"
   dependencies:

@@ -19,6 +19,7 @@ import { resolveUserById } from '../../domain/user';
 import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
+import { internalLoadById } from '../../database/middleware-loader';
 
 const connectorConfig: ConnectorConfig = {
   id: 'IMPORT_CSV_BUILT_IN_CONNECTOR',
@@ -42,6 +43,8 @@ const initImportCsvConnector = () => {
     const applicantId = messageParsed.internal.applicant_id;
     const fileId = messageParsed.event.file_id;
     const applicantUser = await resolveUserById(context, applicantId);
+    const entityId = messageParsed.event.entity_id;
+    const entity = entityId ? await internalLoadById(context, applicantUser, entityId) : undefined;
 
     try {
       const csvMapper = parseCsvMapper(JSON.parse(messageParsed.configuration));
@@ -58,7 +61,7 @@ const initImportCsvConnector = () => {
         })
           .on('end', async () => {
             const string = chunks.join('');
-            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper);
+            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, entity);
             await updateExpectationsNumber(context, applicantUser, workId, 1);
 
             const validateBeforeImport = connectorConfig.config.validate_before_import;
@@ -69,7 +72,7 @@ const initImportCsvConnector = () => {
                 filename: `${workId}.json`,
                 mimetype: 'application/json',
               };
-              await upload(context, applicantUser, 'import/pending', file, {});
+              await upload(context, applicantUser, 'import/pending', file, {entity});
 
               await reportExpectation(context, applicantUser, workId);
             } else {
