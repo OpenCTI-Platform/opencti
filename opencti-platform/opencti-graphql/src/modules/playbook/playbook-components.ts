@@ -43,7 +43,7 @@ import {
   INPUT_MARKINGS,
 } from '../../schema/general';
 import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
-import type { BasicStoreEntity, StoreCommon } from '../../types/store';
+import type { BasicStoreRelation, StoreCommon } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
@@ -67,7 +67,7 @@ import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, Sti
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { listAllEntities, storeLoadById } from '../../database/middleware-loader';
+import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -84,7 +84,7 @@ import {
 } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { listThroughGetFrom, listThroughGetTo, stixLoadByIds } from '../../database/middleware';
+import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import {
   convertToNotificationUser,
@@ -140,20 +140,10 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   configuration_schema: PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   executor: async ({ bundle, playbookNode }) => {
-    switch (playbookNode.configuration.level) {
-      case 'info':
-        logApp.info('[PLAYBOOK MANAGER] Logger component output', { bundle });
-        break;
-      case 'warning':
-        logApp.warn('[PLAYBOOK MANAGER] Logger component output', { bundle });
-        break;
-      case 'error':
-        logApp.error('[PLAYBOOK MANAGER] Logger component output', { bundle });
-        break;
-      default:
-        logApp.debug('[PLAYBOOK MANAGER] Logger component output', { bundle });
+    if (playbookNode.configuration.level) {
+      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', { bundle });
     }
-    return { output_port: 'out', bundle };
+    return { output_port: 'out', bundle, forceBundleTracking: true };
   }
 };
 
@@ -184,7 +174,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   configuration_schema: PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   schema: async () => PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   executor: async ({ bundle }) => {
-    return ({ output_port: 'out', bundle });
+    return ({ output_port: 'out', bundle, forceBundleTracking: true });
   }
 };
 
@@ -616,6 +606,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
 };
 
 const DATE_SEEN_RULE = 'seen_dates';
+const RESOLVE_CONTAINER = 'resolve_container';
 const RESOLVE_INDICATORS = 'resolve_indicators';
 const RESOLVE_OBSERVABLES = 'resolve_observables';
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
@@ -632,8 +623,9 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
       $ref: 'Rule to apply',
       oneOf: [
         { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' },
-        { const: RESOLVE_INDICATORS, title: 'Resolve indicators based on observables' },
-        { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on' }
+        { const: RESOLVE_INDICATORS, title: 'Resolve indicators based on observables (add in bundle)' },
+        { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on (add in bundle)' },
+        { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' }
       ]
     },
   },
@@ -652,32 +644,34 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const { type } = baseData.extensions[STIX_EXT_OCTI];
+    const { id, type } = baseData.extensions[STIX_EXT_OCTI];
     const { rule } = playbookNode.configuration;
     if (rule === RESOLVE_INDICATORS) {
+      // RESOLVE_INDICATORS is for now only triggered on observable creation / update
       if (isStixCyberObservable(type)) {
-        const indicators = await listThroughGetFrom(
-          context,
-          AUTOMATION_MANAGER_USER,
-          [baseData.extensions[STIX_EXT_OCTI].id],
-          RELATION_BASED_ON,
-          ENTITY_TYPE_INDICATOR
-        );
-        bundle.objects.push(...indicators.map((indicator: BasicStoreEntity) => convertStoreToStix(indicator)));
-        return { output_port: 'out', bundle };
+        // Observable <-- (based on) -- Indicator
+        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR] };
+        const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
+        if (targetIds.length > 0) {
+          const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          bundle.objects.push(...indicators);
+          return { output_port: 'out', bundle };
+        }
       }
     }
     if (rule === RESOLVE_OBSERVABLES) {
+      // RESOLVE_OBSERVABLES is for now only triggered on indicator creation / update
       if (type === ENTITY_TYPE_INDICATOR) {
-        const observables = await listThroughGetTo(
-          context,
-          AUTOMATION_MANAGER_USER,
-          [baseData.extensions[STIX_EXT_OCTI].id],
-          RELATION_BASED_ON,
-          ABSTRACT_STIX_CYBER_OBSERVABLE
-        );
-        bundle.objects.push(...observables.map((observable: BasicStoreEntity) => convertStoreToStix(observable)));
-        return { output_port: 'out', bundle };
+        // Indicator (based on) --> Observable
+        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] };
+        const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
+        if (targetIds.length > 0) {
+          const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          bundle.objects.push(...observables);
+          return { output_port: 'out', bundle };
+        }
       }
     }
     if (rule === DATE_SEEN_RULE) {
@@ -707,6 +701,20 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
             });
           if (elementsToPatch.length > 0) {
             bundle.objects.push(...elementsToPatch);
+            return { output_port: 'out', bundle };
+          }
+        }
+      }
+    }
+    if (rule === RESOLVE_CONTAINER) {
+      // DATE_SEEN_RULE is only triggered on report creation / update
+      if (isStixDomainObjectContainer(type)) {
+        // Handle first seen synchro for reports creation / modification
+        const container = baseData as StixContainer;
+        if (container.object_refs.length > 0) {
+          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, container.object_refs);
+          if (elements.length > 0) {
+            bundle.objects.push(...elements);
             return { output_port: 'out', bundle };
           }
         }

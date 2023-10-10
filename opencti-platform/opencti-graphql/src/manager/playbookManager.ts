@@ -83,25 +83,26 @@ type ObservationFn = {
   previousBundle?: StixBundle | null
   bundle?: StixBundle | null
   error?: string
+  forceBundleTracking: boolean
 };
-const registerStepObservation = async ({ executionId, playbookId, start, end, diff, previousStepId, stepId, error, previousBundle, bundle, message, status } : ObservationFn) => {
-  const patch = previousBundle && bundle ? jsonpatch.compare(previousBundle, bundle) : [];
-  const bundlePatch = previousStepId ? { patch } : { bundle };
+const registerStepObservation = async (data: ObservationFn) => {
+  const patch = data.previousBundle && data.bundle ? jsonpatch.compare(data.previousBundle, data.bundle) : [];
+  const bundlePatch = data.previousStepId && !data.forceBundleTracking ? { patch } : { bundle: data.bundle };
   const step: ExecutionEnvelopStep = {
-    message,
-    status,
-    previous_step_id: previousStepId,
-    in_timestamp: start,
-    out_timestamp: end,
-    duration: diff,
-    error,
+    message: data.message,
+    status: data.status,
+    previous_step_id: data.previousStepId,
+    in_timestamp: data.start,
+    out_timestamp: data.end,
+    duration: data.diff,
+    error: data.error,
     ...bundlePatch
   };
   const envelop: ExecutionEnvelop = {
-    playbook_execution_id: executionId,
-    playbook_id: playbookId,
-    last_execution_step: stepId,
-    ...keyStep(`step_${stepId}`, step)
+    playbook_execution_id: data.executionId,
+    playbook_id: data.playbookId,
+    last_execution_step: data.stepId,
+    ...keyStep(`step_${data.stepId}`, step)
   };
   await redisPlaybookUpdate(envelop);
 };
@@ -155,14 +156,15 @@ export const playbookExecutor = async ({
         message: `${nextStep.component.name.trim()} successfully executed in ${duration.humanize()}`,
         status: 'success',
         executionId,
-        previousStepId: execution.output_port ? previousStep?.instance?.id : undefined,
+        previousStepId: previousStep?.instance?.id,
         stepId: nextStep.instance.id,
         start: start.toISOString(),
         end: end.toISOString(),
         diff: durationDiff,
         playbookId,
         previousBundle: baseBundle,
-        bundle: execution.bundle
+        bundle: execution.bundle,
+        forceBundleTracking: execution.forceBundleTracking ?? false
       };
       await registerStepObservation(observation);
     } catch (error) {
@@ -184,7 +186,8 @@ export const playbookExecutor = async ({
         diff: durationDiff,
         playbookId,
         bundle: baseBundle,
-        error: JSON.stringify(logError, null, 2)
+        error: JSON.stringify(logError, null, 2),
+        forceBundleTracking: false
       };
       await registerStepObservation(observation);
       return;
