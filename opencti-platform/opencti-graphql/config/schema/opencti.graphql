@@ -90,10 +90,6 @@ enum EditOperation {
   replace
   remove
 }
-enum SimpleEditOperation {
-  replace
-  remove
-}
 input EditInput {
   key: String! # Field name to change
   object_path: String # Path to apply change (for complex object)

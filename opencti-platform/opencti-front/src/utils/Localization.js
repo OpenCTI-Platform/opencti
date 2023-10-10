@@ -2153,8 +2153,6 @@ const i18n = {
       Gender: 'Género',
       'Marital Status': 'Estado civil',
       'Job Title': 'Título profesional',
-      'Height (Inches)': 'Altura (pulgadas)',
-      'Height (Centimeters)': 'Altura (Centímetros)',
       'Date Seen': 'Fecha visto',
       'Add a height': 'Añadir una altura',
       'Weight (Pounds)': 'Peso (Libras)',
@@ -2169,13 +2167,9 @@ const i18n = {
       'Known observed hair color(s) for the Identity.':
         'Color(es) de cabello observado(s) conocido(s) para la Identidad.',
       Height: 'Altura',
-      Heights: 'Alturas',
       'Known observed height(s) for the Identity.':
         'Altura(s) observada(s) conocida(s) para la Identidad.',
       Weight: 'Peso',
-      Weights: 'Pesos',
-      'Known observed weight(s) for the Identity.':
-        'Peso(s) observado(s) conocido(s) para la Identidad.',
       'The value must be a string': 'El valor debe ser una cadena.',
     },
     'fr-fr': {
@@ -4335,8 +4329,6 @@ const i18n = {
       Gender: 'Genre',
       'Marital Status': 'État civil',
       'Job Title': 'Titre d\'emploi',
-      'Height (Inches)': 'Hauteur (pouces)',
-      'Height (Centimeters)': 'Hauteur (Centimètres)',
       'Date Seen': 'Date de visualisation',
       'Add a height': 'Ajouter une hauteur',
       'Weight (Pounds)': 'Poids (livres)',
@@ -4351,13 +4343,9 @@ const i18n = {
       'Known observed hair color(s) for the Identity.':
         'Couleur(s) de cheveux observée(s) connue(s) pour l\'Identité.',
       Height: 'Hauteur',
-      Heights: 'Hauteurs',
       'Known observed height(s) for the Identity.':
         'Hauteur(s) observée(s) connue(s) pour l\'identité.',
       Weight: 'Poid',
-      Weights: 'Poids',
-      'Known observed weight(s) for the Identity.':
-        'Poids(s) observé(s) connu(s) pour l\'identité.',
       'The value must be a string': 'La valeur doit être une chaîne',
     },
     'ja-jp': {
@@ -6437,8 +6425,6 @@ const i18n = {
       Gender: '性別',
       'Marital Status': '配偶者の有無',
       'Job Title': '職名',
-      'Height (Inches)': '高さ (インチ)',
-      'Height (Centimeters)': '身長 (センチメートル)',
       'Date Seen': '見た日',
       'Add a height': '高さを追加する',
       'Weight (Pounds)': '重量 (ポンド)',
@@ -6453,13 +6439,9 @@ const i18n = {
       'Known observed hair color(s) for the Identity.':
         'アイデンティティの既知の観察された髪の色。',
       Height: '身長',
-      Heights: '身長',
       'Known observed height(s) for the Identity.':
         'アイデンティティの既知の観測高さ。',
       Weight: '重さ',
-      Weights: '重さ',
-      'Known observed weight(s) for the Identity.':
-        'ID の既知の観測された重み。',
       'The value must be a string': '値は文字列である必要があります',
     },
     'zh-cn': {
@@ -8437,8 +8419,6 @@ const i18n = {
       Gender: '性别',
       'Marital Status': '婚姻状况',
       'Job Title': '职称',
-      'Height (Inches)': '高度（英寸）',
-      'Height (Centimeters)': '高度（厘米）',
       'Date Seen': '观看日期',
       'Add a height': '添加高度',
       'Weight (Pounds)': '重量（磅）',
@@ -8453,13 +8433,9 @@ const i18n = {
       'Known observed hair color(s) for the Identity.':
         '已知观察到的身份的头发颜色。',
       Height: '高度',
-      Heights: '高度',
       'Known observed height(s) for the Identity.':
         '已知的身份观测高度。',
       Weight: '重量',
-      Weights: '重量',
-      'Known observed weight(s) for the Identity.':
-        '已知的身份观测权重。',
       'The value must be a string': '该值必须是字符串',
     },
     'en-us': {
