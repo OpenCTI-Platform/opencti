@@ -8924,7 +8924,7 @@ type Mutation {
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign
   campaignEdit(id: ID!): CampaignEditMutations
-  containerEdit(id: ID!, workspaceId: ID): ContainerEditMutations
+  containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput!): Note
   userNoteAdd(input: NoteUserAddInput!): Note
   noteEdit(id: ID!): NoteEditMutations

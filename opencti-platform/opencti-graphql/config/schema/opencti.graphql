@@ -13761,7 +13761,7 @@ type Mutation {
   campaignAdd(input: CampaignAddInput!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   campaignEdit(id: ID!): CampaignEditMutations
   ############### Containers
-  containerEdit(id: ID!, workspaceId: ID): ContainerEditMutations
+  containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   userNoteAdd(input: NoteUserAddInput!): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   noteEdit(id: ID!): NoteEditMutations

@@ -13280,7 +13280,6 @@ export type MutationCityEditArgs = {
 
 export type MutationContainerEditArgs = {
   id: Scalars['ID']['input'];
-  workspaceId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
