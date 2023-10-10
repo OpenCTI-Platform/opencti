@@ -1437,7 +1437,8 @@ const WorkbenchFileContentComponent = ({
       containerElementsIds = R.uniq(
         R.values(indexedStixObjects)
           .filter(
-            (n) => !Object.keys(containerDeselectedElements || {}).includes(n.id),
+            (n) => !Object.keys(containerDeselectedElements || {}).includes(n.id)
+              && n.type !== 'marking-definition',
           )
           .map((n) => n.id),
       );
@@ -2653,7 +2654,10 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, markdownAttributes)) {
+                        if (
+                          R.includes(attribute, markdownAttributes)
+                          || (containerType === 'Note' && attribute === 'content')
+                        ) {
                           return (
                             <Field
                               component={MarkdownField}
