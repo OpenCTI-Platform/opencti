@@ -1,26 +1,32 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import React, { FunctionComponent } from 'react';
+import * as R from 'ramda';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVertOutlined, HelpOutlined } from '@mui/icons-material';
+import { HelpOutlined, MoreVertOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import {
+  EntityStixSightingRelationshipLine_node$key,
+} from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
+import {
+  EntityStixSightingRelationshipsLinesPaginationQuery$variables,
+} from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
+import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import { DataColumns } from '../../../../components/list_lines';
+import { Theme } from '../../../../components/Theme';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -56,23 +62,208 @@ const styles = (theme) => ({
     paddingRight: 10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+}));
 
-class EntityStixSightingRelationshipLineComponent extends Component {
-  render() {
-    const { nsdt, t, classes, dataColumns, node, paginationOptions, isTo } = this.props;
-    const entity = isTo ? node.from : node.to;
-    const restricted = entity === null;
-    const entityLink = entity ? `${resolveLink(entity.entity_type)}/${entity.id}` : undefined;
-    const link = `${entityLink}/knowledge/sightings/${node.id}`;
-    return (
+const EntityStixSightingRelationshipLineFragment = graphql`
+    fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
+        id
+        entity_type
+        parent_types
+        x_opencti_negative
+        attribute_count
+        confidence
+        first_seen
+        last_seen
+        description
+        is_inferred
+        x_opencti_inferences {
+            rule {
+                id
+                name
+            }
+        }
+        from {
+            ... on StixObject {
+                id
+                entity_type
+                parent_types
+                created_at
+                updated_at
+            }
+            ... on AttackPattern {
+                name
+                description
+                x_mitre_id
+                killChainPhases {
+                    edges {
+                        node {
+                            id
+                            phase_name
+                            x_opencti_order
+                        }
+                    }
+                }
+            }
+            ... on Campaign {
+                name
+                description
+            }
+            ... on CourseOfAction {
+                name
+                description
+            }
+            ... on Individual {
+                name
+                description
+            }
+            ... on Organization {
+                name
+                description
+            }
+            ... on Sector {
+                name
+                description
+            }
+            ... on System {
+                name
+                description
+            }
+            ... on Indicator {
+                name
+                description
+            }
+            ... on Infrastructure {
+                name
+                description
+            }
+            ... on IntrusionSet {
+                name
+                description
+            }
+            ... on Position {
+                name
+                description
+            }
+            ... on City {
+                name
+                description
+            }
+            ... on AdministrativeArea {
+                name
+                description
+            }
+            ... on Country {
+                name
+                description
+            }
+            ... on Region {
+                name
+                description
+            }
+            ... on Malware {
+                name
+                description
+            }
+            ... on ThreatActor {
+                name
+                description
+            }
+            ... on Tool {
+                name
+                description
+            }
+            ... on Vulnerability {
+                name
+                description
+            }
+            ... on Incident {
+                name
+                description
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+        }
+        to {
+            ... on StixObject {
+                id
+                entity_type
+                parent_types
+                created_at
+                updated_at
+            }
+            ... on Individual {
+                name
+                description
+            }
+            ... on Organization {
+                name
+                description
+            }
+            ... on Sector {
+                name
+                description
+            }
+            ... on System {
+                name
+                description
+            }
+            ... on Position {
+                name
+                description
+            }
+            ... on City {
+                name
+                description
+            }
+            ... on AdministrativeArea {
+                name
+                description
+            }
+            ... on Country {
+                name
+                description
+            }
+            ... on Region {
+                name
+                description
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+        }
+    }
+`;
+
+interface EntityStixSightingRelationshipLineProps {
+  dataColumns: DataColumns;
+  node: EntityStixSightingRelationshipLine_node$key;
+  onLabelClick: () => void;
+  isTo: boolean;
+  paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
+}
+
+export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSightingRelationshipLineProps> = (
+  {
+    dataColumns,
+    node,
+    paginationOptions,
+    isTo,
+  },
+) => {
+  const classes = useStyles();
+  const { t, nsdt } = useFormatter();
+  const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
+    EntityStixSightingRelationshipLineFragment,
+    node,
+  );
+  const entity = isTo ? data.from : data.to;
+  const restricted = entity === null;
+  const entityLink = (entity?.entity_type) ? `${resolveLink(entity.entity_type)}/${entity.id}` : undefined;
+  const link = `${entityLink}/knowledge/sightings/${data.id}`;
+  return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
@@ -93,12 +284,12 @@ class EntityStixSightingRelationshipLineComponent extends Component {
               >
                 <Chip
                   classes={{
-                    root: node.x_opencti_negative
+                    root: data.x_opencti_negative
                       ? classes.negative
                       : classes.positive,
                   }}
                   label={
-                    node.x_opencti_negative
+                    data.x_opencti_negative
                       ? t('False positive')
                       : t('True positive')
                   }
@@ -108,7 +299,7 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.attribute_count.width }}
               >
-                {node.attribute_count}
+                {data.attribute_count}
               </div>
               <div
                 className={classes.bodyItem}
@@ -130,239 +321,52 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsdt(node.first_seen)}
+                {nsdt(data.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsdt(node.last_seen)}
+                {nsdt(data.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
+                <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          {node.is_inferred ? (
+          {data.is_inferred ? (
             <Tooltip
               title={
-                t('Inferred knowledge based on the rule ')
-                + R.head(node.x_opencti_inferences).rule.name
+                `${t('Inferred knowledge based on the rule ')}
+                ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`
               }
             >
               <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
             </Tooltip>
           ) : (
             <StixSightingRelationshipPopover
-              stixSightingRelationshipId={node.id}
+              stixSightingRelationshipId={data.id}
               paginationOptions={paginationOptions}
               disabled={restricted}
             />
           )}
         </ListItemSecondaryAction>
       </ListItem>
-    );
-  }
-}
-
-EntityStixSightingRelationshipLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
-  isTo: PropTypes.bool,
-  entityLink: PropTypes.string,
+  );
 };
 
-const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
-  EntityStixSightingRelationshipLineComponent,
-  {
-    node: graphql`
-      fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
-        id
-        entity_type
-        parent_types
-        x_opencti_negative
-        attribute_count
-        confidence
-        first_seen
-        last_seen
-        description
-        is_inferred
-        x_opencti_inferences {
-          rule {
-            id
-            name
-          }
-        }
-        from {
-          ... on StixObject {
-            id
-            entity_type
-            parent_types
-            created_at
-            updated_at
-          }
-          ... on AttackPattern {
-            name
-            description
-            x_mitre_id
-            killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
-            }
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on AdministrativeArea {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-        }
-        to {
-          ... on StixObject {
-            id
-            entity_type
-            parent_types
-            created_at
-            updated_at
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on AdministrativeArea {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-        }
-      }
-    `,
-  },
-);
-
-export const EntityStixSightingRelationshipLine = compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixSightingRelationshipLineFragment);
-
-class EntityStixSightingRelationshipLineDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
+export const EntityStixSightingRelationshipLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
+  const classes = useStyles();
+  return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <HelpOutlined />
@@ -454,16 +458,5 @@ class EntityStixSightingRelationshipLineDummyComponent extends Component {
           <MoreVertOutlined />
         </ListItemSecondaryAction>
       </ListItem>
-    );
-  }
-}
-
-EntityStixSightingRelationshipLineDummyComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  classes: PropTypes.object,
+  );
 };
-
-export const EntityStixSightingRelationshipLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixSightingRelationshipLineDummyComponent);

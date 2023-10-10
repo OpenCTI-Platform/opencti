@@ -185,7 +185,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   saveParameters(refreshGraphData = false) {
-    this.props.saveViewParameters({ zoom: this.zoom, ...this.state });
+    this.props.saveViewParameters?.({ zoom: this.zoom, ...this.state });
     if (refreshGraphData) {
       this.setState({
         graphData: applyFilters(
