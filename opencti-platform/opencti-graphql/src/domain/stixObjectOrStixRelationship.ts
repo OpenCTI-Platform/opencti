@@ -42,11 +42,12 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   // Update data
   await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
 
-  const relationData = await buildRelationData(context, user, { from: stixObjectOrRelationship, to, relationship_type: input.relationship_type });
+  const { element } = await buildRelationData(context, user, { from: stixObjectOrRelationship, to, relationship_type: input.relationship_type });
 
-  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, relationData.element, user);
-
-  return relationData.element;
+  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, element, user);
+  // TODO
+  // We know that is type StoreRelation but will require to have all the objects typed for all add relation mutations...
+  return element as any;
 };
 export const stixObjectOrRelationshipAddRefRelations = async (
   context: AuthContext,
