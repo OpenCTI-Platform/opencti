@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as R from 'ramda';
 import fileDownload from 'js-file-download';
 import { Field, Form, Formik } from 'formik';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
@@ -41,7 +41,7 @@ import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import ItemIcon from '../../../components/ItemIcon';
-import investigationToContainerAdd from '../../../utils/ContainerUtils';
+import investigationToContainerAdd, { investigationToContainerMutation } from '../../../utils/ContainerUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -95,25 +95,6 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
     workspace(id: $id) {
       toStixReportBundle
-    }
-  }
-`;
-
-const workspaceHeaderContainersQuery = graphql`
-  query WorkspaceHeaderContainersQuery($search: String) {
-    containers(
-      search: $search
-      filters: [{ key: entity_type, values: ["Container"] }]
-    ) {
-      edges {
-        node {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-      }
     }
   }
 `;
@@ -194,6 +175,8 @@ const WorkspaceHeader = ({
   const [targetContainerId, setTargetContainerId] = useState('');
   const [containers, setContainers] = useState([]);
   const [actionsInputs, setActionsInputs] = useState({});
+  const [newValue, setNewValue] = useState('');
+  const [commitInvestigationToContainerAdd] = useMutation(investigationToContainerMutation);
   const history = useHistory();
   const handleChangeActionInputValues = (event, value) => {
     if (event) {
@@ -214,28 +197,46 @@ const WorkspaceHeader = ({
 
   const handleLaunchUpdate = () => {
     handleCloseUpdate();
-    investigationToContainerAdd(workspace.id, targetContainerId, history);
+    investigationToContainerAdd(workspace.id, targetContainerId, history, commitInvestigationToContainerAdd);
   };
 
-  const searchContainers = (event, newValue) => {
+  const searchContainersData = useLazyLoadQuery(
+    graphql`
+      query WorkspaceHeaderContainersQuery($search: String) {
+        containers(
+          search: $search
+          filters: [{ key: entity_type, values: ["Container"] }]
+      ) {
+        edges {
+          node {
+            id
+            entity_type
+            representative {
+              main
+            }
+          }
+        }
+        }
+      }
+    `,
+    { search: newValue ?? '' },
+  );
+  const searchContainers = (event, incomingValue) => {
     if (!event) return;
+    setNewValue(incomingValue);
     setActionsInputs({
       ...actionsInputs,
-      inputValue: newValue ?? '',
+      inputValue: incomingValue ?? '',
     });
-    fetchQuery(workspaceHeaderContainersQuery, {
-      search: newValue ?? '',
-    })
-      .toPromise()
-      .then(({ containers: { edges } }) => {
-        const elements = edges.map(({ node }) => node);
-        const containersFromElements = elements.map(({ representative, entity_type, id }) => ({
-          label: representative.main,
-          type: entity_type,
-          value: id,
-        }));
-        setContainers([...containersFromElements]);
-      });
+
+    const { containers: { edges } } = searchContainersData;
+    const elements = edges.map(({ node }) => node);
+    const containersFromElements = elements.map(({ representative, entity_type, id }) => ({
+      label: representative.main,
+      type: entity_type,
+      value: id,
+    }));
+    setContainers([...containersFromElements]);
   };
 
   return (
