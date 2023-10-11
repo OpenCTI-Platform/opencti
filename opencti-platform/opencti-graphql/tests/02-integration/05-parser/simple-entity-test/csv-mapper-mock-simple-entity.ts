@@ -27,7 +27,7 @@ export const csvMapperMockSimpleEntity: Partial<BasicStoreEntityCsvMapper> = {
           column: {
             column_name: 'AG',
             configuration: {
-              seperator: ',',
+              separator: ',',
             }
           },
         },

@@ -5,7 +5,7 @@ import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
 export const ENTITY_TYPE_CSV_MAPPER = 'CsvMapper';
 
 interface AttributeColumnConfiguration {
-  seperator?: string
+  separator?: string
   pattern_date?: string
   timezone?: string
 }
