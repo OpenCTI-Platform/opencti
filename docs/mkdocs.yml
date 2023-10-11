@@ -164,6 +164,7 @@ nav:
       - Background tasks: usage/background-tasks.md
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md
+      - Automation: usage/automation.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
       - Export in structured format: usage/export-structured.md
