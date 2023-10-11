@@ -437,6 +437,14 @@ export const addUser = async (context, user, newUser) => {
   if (existingUser) {
     throw FunctionalError('User already exists', { email: userEmail });
   }
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // user is Organization Admin
+    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
+    const groupIds = R.uniq(administratedOrganizations.map((orga) => orga.grantable_groups).flat());
+    if (!newUser.groups.every((group) => groupIds.includes(group))) {
+      throw FunctionalError('User not in the right group(s)', { email: userEmail });
+    }
+  }
   // Create the user
   let userPassword = newUser.password;
   // If user is external and password is not specified, associate a random password
