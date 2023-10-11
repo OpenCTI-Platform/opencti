@@ -2,6 +2,7 @@ import { ExtendedThemeOptions } from './Theme';
 import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo.png';
 import { fileUri } from '../relay/environment';
+import { EE_COLOR, hexToRGB } from '../utils/Colors';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#0a1929';
 
@@ -17,6 +18,7 @@ const ThemeDark = (
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
+  borderRadius: 2,
   palette: {
     mode: 'dark',
     common: { white: '#ffffff' },
@@ -28,6 +30,10 @@ const ThemeDark = (
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },
     chip: { main: '#ffffff' },
+    ee: {
+      main: EE_COLOR,
+      background: hexToRGB(EE_COLOR, 0.3),
+    },
     background: {
       default: background || THEME_DARK_DEFAULT_BACKGROUND,
       paper: paper || '#001e3c',

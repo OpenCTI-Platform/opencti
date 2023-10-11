@@ -12,7 +12,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import EnterpriseEdition from '@components/common/EnterpriseEdition';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -335,9 +335,7 @@ const SettingsOrganization = ({
         ) : (
           <Grid item={true} xs={12} style={{ marginTop: 30 }}>
             <EnterpriseEdition
-              message={
-                'You need to activate OpenCTI enterprise edition to access organization administration.'
-              }
+              feature={t('Organization sharing')}
             />
           </Grid>
         )}

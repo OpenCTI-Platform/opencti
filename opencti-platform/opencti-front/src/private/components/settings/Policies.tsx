@@ -1,12 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import {
-  graphql,
-  useFragment,
-  useMutation,
-  usePreloadedQuery,
-  PreloadedQuery,
-} from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
@@ -20,7 +14,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import EEPaper from '@components/common/entreprise_edition/EEPaper';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
@@ -174,29 +170,28 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Platform main organization')}
+                      {t('Platform main organization')} <EEChip />
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <EEPaper classes={{ root: classes.paper }} variant="outlined">
                       <Alert severity="warning">
                         {t(
                           'When you set a platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
                         )}
                       </Alert>
-
-                      <Tooltip title={!isEnterpriseEdition ? t('You need to activate OpenCTI enterprise edition to use this feature.') : null}>
+                      <EETooltip>
                         <span>
-                              <ObjectOrganizationField
-                                  name="platform_organization"
-                                  disabled={!isEnterpriseEdition}
-                                  label={'Platform organization'}
-                                  onChange={(name: string, value: Option) => handleSubmitField(name, value || null)}
-                                  style={{ width: '100%', marginTop: 20 }}
-                                  multiple={false}
-                                  outlined={false}
-                              />
+                          <ObjectOrganizationField
+                            name="platform_organization"
+                            disabled={!isEnterpriseEdition}
+                            label={'Platform organization'}
+                            onChange={(name: string, value: Option) => handleSubmitField(name, value || null)}
+                            style={{ width: '100%', marginTop: 20 }}
+                            multiple={false}
+                            outlined={false}
+                          />
                         </span>
-                      </Tooltip>
-                    </Paper>
+                      </EETooltip>
+                    </EEPaper>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>

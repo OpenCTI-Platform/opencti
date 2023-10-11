@@ -1230,6 +1230,7 @@ type Settings implements InternalObject & BasicObject {
   platform_banner_level: String
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
+  platform_whitemark: Boolean
   platform_demo: Boolean
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
@@ -11550,7 +11551,6 @@ input WorkspaceDuplicateInput {
   description: String
   manifest: String
   tags: [String]
-  authorized_members: [MemberAccessInput!]
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

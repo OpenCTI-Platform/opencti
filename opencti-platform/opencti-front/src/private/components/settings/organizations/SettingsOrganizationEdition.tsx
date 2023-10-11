@@ -6,6 +6,7 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
@@ -20,6 +21,7 @@ import DashboardField from '../../common/form/DashboardField';
 import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
@@ -105,6 +107,8 @@ const SettingsOrganizationEdition = ({
   enableReferences = false,
 }: SettingsOrganizationEditionProps) => {
   const { t } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -285,13 +289,15 @@ const SettingsOrganizationEdition = ({
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <GroupField
-                  name="grantable_groups"
-                  label={t('Grantable groups by Organization administrators')}
-                  multiple={true}
-                  onChange={editor.changeGrantableGroups}
-                  containerStyle={{ width: '100%' }}
-                  style={{ marginTop: 20 }}
-                />{enableReferences && (
+                name="grantable_groups"
+                label={<>{t('Grantable groups by Organization administrators')}<EEChip feature={t('Organization sharing')} /></>}
+                multiple={true}
+                onChange={editor.changeGrantableGroups}
+                containerStyle={{ width: '100%', backgroundColor: 'red' }}
+                style={{ marginTop: 20 }}
+                disabled={!isEnterpriseEdition}
+              />
+              {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting || !isValid || !dirty}
@@ -300,7 +306,7 @@ const SettingsOrganizationEdition = ({
                   values={values.references}
                   id={organization.id}
                 />
-                )}
+              )}
             </Form>
           )}
         </Formik>

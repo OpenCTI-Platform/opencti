@@ -23,8 +23,9 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import { AccountBalanceOutlined } from '@mui/icons-material';
-import EnterpriseEdition from '../../common/EnterpriseEdition';
+import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../../components/i18n';
 
 const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(
@@ -67,8 +68,11 @@ const userEditionOrganizationsAdminRemoveMutation = graphql`
 
 const UserEditionOrganizationsAdminComponent = ({ user }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { t } = useFormatter();
+
   const [promoteMemberMutation] = useMutation(userEditionOrganizationsAdminAddMutation);
   const [demoteMemberMutation] = useMutation(userEditionOrganizationsAdminRemoveMutation);
+
   const handleToggle = (organizationId, event) => {
     if (event.target.checked) {
       promoteMemberMutation({
@@ -89,7 +93,7 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
     }
   };
   if (!isEnterpriseEdition) {
-    return <div style={{ marginTop: 20 }}><EnterpriseEdition/></div>;
+    return <div style={{ marginTop: 20 }}><EnterpriseEdition feature={t('Organization sharing')} /></div>;
   }
   return (
       <List>

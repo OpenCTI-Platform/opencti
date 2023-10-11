@@ -18,9 +18,10 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { isEmptyField } from '../../../../../utils/utils';
-import EnterpriseEdition from '../../../common/EnterpriseEdition';
+import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import { RootAlertingQuery } from './__generated__/RootAlertingQuery.graphql';
 import Alerting from './Alerting';
+import { useFormatter } from '../../../../../components/i18n';
 
 export const rootQuery = graphql`
   query RootAlertingQuery {
@@ -42,8 +43,9 @@ const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({
     rootQuery,
     queryRef,
   );
+  const { t } = useFormatter();
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition />;
+    return <EnterpriseEdition feature={t('Activity')} />;
   }
   return <Alerting />;
 };

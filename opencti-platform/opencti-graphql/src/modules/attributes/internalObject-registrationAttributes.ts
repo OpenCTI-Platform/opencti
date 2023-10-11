@@ -61,6 +61,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_words', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'password_policy_min_lowercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'password_policy_min_uppercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'platform_whitemark', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'enterprise_edition', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'activity_listeners_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'messages', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: settingsMessages },

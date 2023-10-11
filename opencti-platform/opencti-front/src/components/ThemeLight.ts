@@ -2,6 +2,7 @@ import { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo.png';
+import { EE_COLOR, hexToRGB } from '../utils/Colors';
 
 const ThemeLight = (
   logo: string | null,
@@ -15,6 +16,7 @@ const ThemeLight = (
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
+  borderRadius: 2,
   palette: {
     mode: 'light',
     common: { white: '#ffffff' },
@@ -26,6 +28,10 @@ const ThemeLight = (
     primary: { main: primary || '#007fff' },
     secondary: { main: secondary || '#d81b60' },
     chip: { main: '#000000' },
+    ee: {
+      main: EE_COLOR,
+      background: hexToRGB(EE_COLOR, 0.3),
+    },
     background: {
       default: background || '#ffffff',
       paper: paper || '#f3f6f9',

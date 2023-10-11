@@ -2,7 +2,7 @@ import React from 'react';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
-import EnterpriseEdition from '../common/EnterpriseEdition';
+import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import UsersLines, { usersLinesQuery } from './users/UsersLines';
@@ -103,9 +103,7 @@ const Users = () => {
       ) : (
         <Grid item={true} xs={12}>
           <EnterpriseEdition
-            message={
-              'You need to activate OpenCTI enterprise edition to access organization administration.'
-            }
+            feature="Organization sharing"
           />
         </Grid>
       )}

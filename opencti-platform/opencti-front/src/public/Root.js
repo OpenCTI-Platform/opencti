@@ -10,6 +10,7 @@ import Login from './components/Login';
 const rootPublicQuery = graphql`
   query RootPublicQuery {
     settings {
+      enterprise_edition
       platform_theme
       platform_login_message
       platform_banner_text

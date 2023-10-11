@@ -54,9 +54,10 @@ interface FormikFeedbackAddInput {
 const FEEDBACK_TYPE = 'Feedback';
 
 const FeedbackCreation: FunctionComponent<{
-  openDrawer: boolean;
-  handleCloseDrawer: () => void;
-}> = ({ openDrawer, handleCloseDrawer }) => {
+  openDrawer: boolean
+  handleCloseDrawer: () => void
+  initialValue?: Partial<FormikFeedbackAddInput>
+}> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { me } = useAuth();
@@ -106,6 +107,7 @@ const FeedbackCreation: FunctionComponent<{
       objects: [],
       file: undefined,
       objectLabel: [],
+      ...initialValue,
     },
     { rating: 5 },
   );

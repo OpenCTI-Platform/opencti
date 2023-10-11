@@ -1,82 +1,85 @@
-import React, { FunctionComponent, useState } from "react";
-import Button from "@mui/material/Button";
-import { useTheme } from "@mui/styles";
-import { Facebook, Github, Google, KeyOutline } from "mdi-material-ui";
-import Markdown from "react-markdown";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import makeStyles from "@mui/styles/makeStyles";
-import Checkbox from "@mui/material/Checkbox";
-import { APP_BASE_PATH, fileUri } from "../../relay/environment";
-import logo from "../../static/images/logo.png";
-import LoginForm from "./LoginForm";
-import OTPForm from "./OTPForm";
-import OtpActivationComponent from "./OtpActivation";
-import { Theme } from "../../components/Theme";
-import { LoginRootPublicQuery$data } from "../__generated__/LoginRootPublicQuery.graphql";
-import { useFormatter } from "../../components/i18n";
-import { isNotEmptyField } from "../../utils/utils";
-import useDimensions from "../../utils/hooks/useDimensions";
-import { Alert, AlertTitle } from "@mui/material";
-import SystemBanners from "./SystemBanners";
+import React, { FunctionComponent, useState } from 'react';
+import Button from '@mui/material/Button';
+import { useTheme } from '@mui/styles';
+import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
+import Markdown from 'react-markdown';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
+import { APP_BASE_PATH, fileUri } from '../../relay/environment';
+import logo from '../../static/images/logo.png';
+import logo_filigran from '../../static/images/logo_filigran.png';
+import LoginForm from './LoginForm';
+import OTPForm from './OTPForm';
+import OtpActivationComponent from './OtpActivation';
+import { Theme } from '../../components/Theme';
+import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
+import { useFormatter } from '../../components/i18n';
+import { isNotEmptyField } from '../../utils/utils';
+import useDimensions from '../../utils/hooks/useDimensions';
+import { Alert, AlertTitle } from '@mui/material';
+import SystemBanners from './SystemBanners';
+import classNames from 'classnames';
+import Typography from '@mui/material/Typography';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
-    textAlign: "center",
-    margin: "0 auto",
-    width: "80%",
+    textAlign: 'center',
+    margin: '0 auto',
+    width: '80%',
   },
   login: {
-    textAlign: "center",
-    margin: "0 auto",
+    textAlign: 'center',
+    margin: '0 auto',
     maxWidth: 500,
   },
   appBar: {
-    borderTopLeftRadius: "10px",
-    borderTopRightRadius: "10px",
+    borderTopLeftRadius: '10px',
+    borderTopRightRadius: '10px',
   },
   logo: {
     width: 200,
-    margin: "0px 0px 50px 0px",
+    margin: '0px 0px 50px 0px',
   },
   button: {
     margin: theme.spacing(1),
-    color: "#009688",
-    borderColor: "#009688",
-    "&:hover": {
-      backgroundColor: "rgba(0, 121, 107, .1)",
-      borderColor: "#00796b",
-      color: "#00796b",
+    color: '#009688',
+    borderColor: '#009688',
+    '&:hover': {
+      backgroundColor: 'rgba(0, 121, 107, .1)',
+      borderColor: '#00796b',
+      color: '#00796b',
     },
   },
   buttonGoogle: {
     margin: theme.spacing(1),
-    color: "#f44336",
-    borderColor: "#f44336",
-    "&:hover": {
-      backgroundColor: "rgba(189, 51, 46, .1)",
-      borderColor: "#bd332e",
-      color: "#bd332e",
+    color: '#f44336',
+    borderColor: '#f44336',
+    '&:hover': {
+      backgroundColor: 'rgba(189, 51, 46, .1)',
+      borderColor: '#bd332e',
+      color: '#bd332e',
     },
   },
   buttonFacebook: {
     margin: theme.spacing(1),
-    color: "#4267b2",
-    borderColor: "#4267b2",
-    "&:hover": {
-      backgroundColor: "rgba(55, 74, 136, .1)",
-      borderColor: "#374a88",
-      color: "#374a88",
+    color: '#4267b2',
+    borderColor: '#4267b2',
+    '&:hover': {
+      backgroundColor: 'rgba(55, 74, 136, .1)',
+      borderColor: '#374a88',
+      color: '#374a88',
     },
   },
   buttonGithub: {
     margin: theme.spacing(1),
-    color: "#5b5b5b",
-    borderColor: "#5b5b5b",
-    "&:hover": {
-      backgroundColor: "rgba(54, 54, 54, .1)",
-      borderColor: "#363636",
-      color: "#363636",
+    color: '#5b5b5b',
+    borderColor: '#5b5b5b',
+    '&:hover': {
+      backgroundColor: 'rgba(54, 54, 54, .1)',
+      borderColor: '#363636',
+      color: '#363636',
     },
   },
   iconSmall: {
@@ -84,19 +87,32 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 20,
   },
   paper: {
-    margin: "0 auto 20px auto",
+    margin: '0 auto 20px auto',
     padding: 10,
-    textAlign: "center",
+    textAlign: 'center',
     maxWidth: 500,
   },
   loginLogo: {
     mode: theme.palette.mode,
   },
+  bottomMarginLogo: {
+    marginBottom: 20,
+  },
+  byFiligran: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  byFiligranLogo: {
+    marginRight: 10
+  },
+  byFiligranText: {
+    margin: 'auto 0',
+  },
 }));
 
 interface LoginProps {
   type: string;
-  settings: LoginRootPublicQuery$data["settings"];
+  settings: LoginRootPublicQuery$data['settings'];
 }
 
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
@@ -104,13 +120,15 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const theme = useTheme<Theme>();
   const { t } = useFormatter();
   const { dimension } = useDimensions();
+  const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+
   const renderExternalAuthButton = (provider: string | null) => {
     switch (provider) {
-      case "facebook":
+      case 'facebook':
         return <Facebook className={classes.iconSmall} />;
-      case "google":
+      case 'google':
         return <Google className={classes.iconSmall} />;
-      case "github":
+      case 'github':
         return <Github className={classes.iconSmall} />;
       default:
         return <KeyOutline className={classes.iconSmall} />;
@@ -119,11 +137,11 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   const renderExternalAuthClassName = (provider: string | null) => {
     switch (provider) {
-      case "facebook":
+      case 'facebook':
         return classes.buttonFacebook;
-      case "google":
+      case 'google':
         return classes.buttonGoogle;
-      case "github":
+      case 'github':
         return classes.buttonGithub;
       default:
         return classes.button;
@@ -137,7 +155,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       type: string | null;
     }>
   ) => (
-    <div style={{ marginTop: 10, marginBottom: 20}}>
+    <div style={{ marginTop: 10, marginBottom: 20 }}>
       {authButtons.map((value, index) => (
         <Button
           key={`${value.provider}_${index}`}
@@ -157,22 +175,22 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const consentMessage = settings.platform_consent_message;
   const consentConfirmText = settings.platform_consent_confirm_text
     ? settings.platform_consent_confirm_text
-    : t("I have read and comply with the above statement");
+    : t('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
   const loginLogo =
-    theme.palette.mode === "dark"
+    theme.palette.mode === 'dark'
       ? settings.platform_theme_dark_logo_login
       : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
-  const isAuthForm = providers.filter((p) => p?.type === "FORM").length > 0;
-  const authSSOs = providers.filter((p) => p.type === "SSO");
+  const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
+  const authSSOs = providers.filter((p) => p.type === 'SSO');
   const isAuthButtons = authSSOs.length > 0;
   const isLoginMessage = isNotEmptyField(loginMessage);
   const isConsentMessage = isNotEmptyField(consentMessage);
   let loginHeight = 280;
-  if (type === "2FA_ACTIVATION") {
+  if (type === '2FA_ACTIVATION') {
     loginHeight = 80;
-  } else if (type === "2FA_VALIDATION") {
+  } else if (type === '2FA_VALIDATION') {
     loginHeight = 200;
   } else if (isAuthButtons && isAuthForm && isLoginMessage) {
     loginHeight = 400;
@@ -192,9 +210,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const handleChange = () => {
     setChecked(!checked);
     // Auto scroll to bottom of unhidden/re-hidden login options.
-    window.setTimeout(function() {
+    window.setTimeout(function () {
       const scrollingElement = (document.scrollingElement ?? document.body);
-       scrollingElement.scrollTop = scrollingElement.scrollHeight;
+      scrollingElement.scrollTop = scrollingElement.scrollHeight;
     }, 1);
   };
   // Session expiration automatic logout functions
@@ -213,15 +231,24 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       handleExpiredChange();
     }
   }
+
   sessionExpiredUrlKeys();
+
+  const isWhitemarkEnable = !settings.platform_whitemark || !isEnterpriseEdition
 
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }}>
       <img
         src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
         alt="logo"
-        className={classes.logo}
+        className={classNames({ [classes.logo]: true, [classes.bottomMarginLogo]: isWhitemarkEnable })}
       />
+      {isWhitemarkEnable && (
+        <div className={classNames([classes.byFiligran, classes.bottomMarginLogo])}>
+          <img width={20} height={20} src={logo_filigran} className={classes.byFiligranLogo} />
+          <Typography variant="h4" className={classes.byFiligranText}>by Filigran</Typography>
+        </div>
+      )}
       {expired && expired === true && (
         <Paper classes={{ root: classes.paper }} style={{ backgroundImage: 'none', backgroundColor: 'transparent', boxShadow: 'none' }}>
           <Alert severity="warning">
@@ -236,7 +263,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isConsentMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined" >
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{consentMessage}</Markdown>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Markdown>{consentConfirmText}</Markdown>
@@ -268,7 +295,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   );
 
   const authScreen = () => {
-    if (type === "2FA_VALIDATION") {
+    if (type === '2FA_VALIDATION') {
       return (
         <div>
           <img
@@ -282,7 +309,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </div>
       );
     }
-    if (type === "2FA_ACTIVATION") {
+    if (type === '2FA_ACTIVATION') {
       return <OtpActivationComponent />;
     }
     return loginScreen();

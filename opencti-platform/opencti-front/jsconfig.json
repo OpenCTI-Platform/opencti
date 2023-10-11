@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "paths": {
-      "@components/*": ["src/private/components/*"]
-    }
-  }
-}

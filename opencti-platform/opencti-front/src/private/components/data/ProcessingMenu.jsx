@@ -5,6 +5,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -57,7 +58,7 @@ const ProcessingMenu = () => {
             )}
             dense={false}
           >
-            <ListItemText primary={t('Automation')} />
+            <ListItemText primary={<EEMenu>{t('Automation')}</EEMenu>} />
           </MenuItem>
         )}
         {isKnowledgeUpdater && (
