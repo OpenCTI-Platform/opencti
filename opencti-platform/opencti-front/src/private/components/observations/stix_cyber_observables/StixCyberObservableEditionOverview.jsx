@@ -209,12 +209,12 @@ const StixCyberObservableEditionOverviewComponent = ({
       });
     }
   };
-  const handleChangeObjectMarking = (name, values) => {
+  const handleChangeObjectMarking = (name, values, operation) => {
     if (!enableReferences) {
       const currentMarkingDefinitions = convertMarkings(stixCyberObservable);
       const added = difference(values, currentMarkingDefinitions);
       const removed = difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
+      if (added.length > 0 && operation !== 'replace') {
         commitMutation({
           mutation: stixCyberObservableMutationRelationAdd,
           variables: {
@@ -226,7 +226,15 @@ const StixCyberObservableEditionOverviewComponent = ({
           },
         });
       }
-      if (removed.length > 0) {
+      if (operation === 'replace') {
+        commitMutation({
+          mutation: stixCyberObservableMutationFieldPatch,
+          variables: {
+            id: stixCyberObservable.id,
+            input: [{ key: name, value: values.map((m) => m.value), operation }],
+          },
+        });
+      } else if (removed.length > 0) {
         commitMutation({
           mutation: stixCyberObservableMutationRelationDelete,
           variables: {

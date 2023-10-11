@@ -237,12 +237,12 @@ const StixDomainObjectEditionContainer = (props) => {
     }
   };
 
-  const handleChangeObjectMarking = (name, values) => {
+  const handleChangeObjectMarking = (name, values, operation) => {
     if (!enableReferences) {
       const currentMarkingDefinitions = convertMarkings(stixDomainObject);
       const added = R.difference(values, currentMarkingDefinitions);
       const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
+      if (added.length > 0 && operation !== 'replace') {
         commitMutation({
           mutation: stixDomainObjectMutationRelationAdd,
           variables: {
@@ -254,7 +254,15 @@ const StixDomainObjectEditionContainer = (props) => {
           },
         });
       }
-      if (removed.length > 0) {
+      if (operation === 'replace') {
+        commitMutation({
+          mutation: stixDomainObjectMutationFieldPatch,
+          variables: {
+            id: stixDomainObject.id,
+            input: [{ key: name, value: values.map((m) => m.value), operation }],
+          },
+        });
+      } else if (removed.length > 0) {
         commitMutation({
           mutation: stixDomainObjectMutationRelationDelete,
           variables: {
