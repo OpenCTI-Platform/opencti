@@ -50,8 +50,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+export interface RepresentationFormEntityOption extends Option {
+  value: string;
+  label: string;
+  type: string;
+  id: string;
+}
+
 interface CsvMapperRepresentationFormProps {
-  idx: number;
+  index: number;
   availableEntityTypes: { value: string, type: string, id: string, label: string }[];
   representationData: Representation;
   representations: Representation[];
@@ -62,7 +69,7 @@ interface CsvMapperRepresentationFormProps {
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationFormProps> = ({
-  idx,
+  index,
   availableEntityTypes = [],
   representationData,
   representations,
@@ -97,6 +104,7 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
     setRepresentation(newRepresentation);
     onChange(newRepresentation);
   };
+
   const handleChangeEntityType = (name: string, option: Option | null) => {
     if (option === null) {
       return;
@@ -165,7 +173,7 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
       >
         <div className={classes.container}>
           <Typography>
-            {t(representationLabel(idx, representation))}
+            {t(representationLabel(index, representation))}
           </Typography>
           <Tooltip title={t('Delete')}>
             <IconButton
@@ -185,15 +193,15 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
         >
           {() => (
             <>
-              <MUIAutocomplete
-                selectOnFocus={true}
-                openOnFocus={true}
-                autoSelect={false}
-                autoHighlight={true}
-                getOptionLabel={(option: Option) => t(`${prefixLabel}${option.label}`)}
+              <MUIAutocomplete<RepresentationFormEntityOption>
+                selectOnFocus
+                openOnFocus
+                autoHighlight
+                getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
                 noOptionsText={t('No available options')}
                 options={availableEntityTypes}
                 groupBy={(option) => t(option.type) ?? t('Unknown')}
+                value={availableEntityTypes.find((e) => e.id === representation.target.entity_type)}
                 inputValue={inputLabel(inputValue)}
                 onInputChange={(event) => searchType(event)}
                 onChange={(_, value) => handleChangeEntityType('target.entity_type', value)}

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
@@ -10,7 +10,9 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
 import { SelectChangeEvent } from '@mui/material/Select';
-import CsvMapperRepresentationForm from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
+import CsvMapperRepresentationForm, {
+  RepresentationFormEntityOption,
+} from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -63,18 +65,27 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
   const [open, setOpen] = useState(false);
 
   const { schema } = useAuth();
-  const { sdos, scos, smos, sros } = schema;
-  const availableEntityTypes = sdos.map((sdo) => ({ ...sdo, value: sdo.id, type: 'entity_Stix-Domain-Objects' }))
-    .concat(scos.map((sco) => ({ ...sco, value: sco.id, type: 'entity_Stix-Cyber-Observables' })))
-    .concat(smos.map((smo) => ({ ...smo, value: smo.id, type: 'entity_Stix-Meta-Objects' })));
-  const availableRelationshipTypes = sros.map((sro) => ({ ...sro, value: sro.id, type: 'entity_Stix-Core-Relationship' }));
+  const [availableEntityTypes, setAvailableEntityTypes] = useState<RepresentationFormEntityOption[]>([]);
+  const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<RepresentationFormEntityOption[]>([]);
+
+  // load the available types once in state
+  useEffect(() => {
+    const { sdos, scos, smos, sros } = schema;
+    const entityTypes = sdos.map((sdo) => ({ ...sdo, value: sdo.id, type: 'entity_Stix-Domain-Objects' }))
+      .concat(scos.map((sco) => ({ ...sco, value: sco.id, type: 'entity_Stix-Cyber-Observables' })))
+      .concat(smos.map((smo) => ({ ...smo, value: smo.id, type: 'entity_Stix-Meta-Objects' })));
+    const relationshipTypes = sros.map((sro) => ({ ...sro, value: sro.id, type: 'entity_Stix-Core-Relationship' }));
+
+    setAvailableEntityTypes(entityTypes);
+    setAvailableRelationshipTypes(relationshipTypes);
+  }, [schema]);
 
   // -- EVENTS --
 
   const onAddEntityRepresentation = (setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newRepresentations = [...entityRepresentations, representationInitialization('entity')];
-    setEntityRepresentations(newRepresentations);
-    setFieldValue('representations', [...newRepresentations, ...relationshipRepresentations]);
+    const newEntityRepresentations = [...entityRepresentations, representationInitialization('entity')];
+    setEntityRepresentations(newEntityRepresentations);
+    setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
   };
   const onAddRelationshipRepresentation = (setFieldValue: (field: string, value: Representation[]) => void) => {
     const newRepresentations = [...relationshipRepresentations, representationInitialization('relationship')];
@@ -84,37 +95,36 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
 
   const onChangeEntityRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
     const representation = entityRepresentations.find((r) => r.id === value.id);
-    let newRepresentations;
+    let newEntityRepresentations;
     if (representation) {
-      newRepresentations = entityRepresentations.map((r) => (r.id === value.id ? value : r));
+      newEntityRepresentations = entityRepresentations.map((r) => (r.id === value.id ? value : r));
     } else {
-      newRepresentations = [...entityRepresentations, value];
+      newEntityRepresentations = [...entityRepresentations, value];
     }
-    setEntityRepresentations(newRepresentations);
-    setFieldValue('representations', [...newRepresentations, ...relationshipRepresentations]);
+    setEntityRepresentations(newEntityRepresentations);
+    setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
   };
   const onChangeRelationshipRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
     const representation = relationshipRepresentations.find((r) => r.id === value.id);
-    let newRepresentations;
+    let newRelationshipRepresentations;
     if (representation) {
-      newRepresentations = relationshipRepresentations.map((r) => (r.id === value.id ? value : r));
+      newRelationshipRepresentations = relationshipRepresentations.map((r) => (r.id === value.id ? value : r));
     } else {
-      newRepresentations = [...relationshipRepresentations, value];
+      newRelationshipRepresentations = [...relationshipRepresentations, value];
     }
-    setRelationshipRepresentations(newRepresentations);
-    setFieldValue('representations', [...entityRepresentations, ...newRepresentations]);
+    setRelationshipRepresentations(newRelationshipRepresentations);
+    setFieldValue('representations', [...entityRepresentations, ...newRelationshipRepresentations]);
   };
 
   const onDeleteEntityRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
     const newEntityRepresentations = entityRepresentations.filter((r) => r.id !== value.id);
     setEntityRepresentations(newEntityRepresentations);
-
     setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
   };
   const onDeleteRelationshipRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newRepresentations = relationshipRepresentations.filter((r) => r.id !== value.id);
-    setRelationshipRepresentations(newRepresentations);
-    setFieldValue('representations', [...entityRepresentations, ...newRepresentations]);
+    const newRelationshipRepresentations = relationshipRepresentations.filter((r) => r.id !== value.id);
+    setRelationshipRepresentations(newRelationshipRepresentations);
+    setFieldValue('representations', [...entityRepresentations, ...newRelationshipRepresentations]);
   };
 
   // -- ERRORS --
@@ -162,18 +172,18 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
               </Tooltip>
             </div>
             <div style={{ marginTop: 20 }}>
-                <Typography>
-                    {t('Csv separator')}
-                </Typography>
+              <Typography>
+                  {t('Csv separator')}
+              </Typography>
               <div className={classes.center}>
                 <Field
-                    checked={values.separator === ','}
-                    component={Radio}
-                    type="radio"
-                    name="separator"
-                    label="Comma"
-                    value=","
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                  checked={values.separator === ','}
+                  component={Radio}
+                  type="radio"
+                  name="separator"
+                  label="Comma"
+                  value=","
+                  onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
                 />
                 <Typography>
                   {t('Comma')}
@@ -181,13 +191,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
               </div>
               <div className={classes.center}>
                 <Field
-                    checked={values.separator === ';'}
-                    component={Radio}
-                    type="radio"
-                    name="separator"
-                    label="Semicolon"
-                    value=";"
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                  checked={values.separator === ';'}
+                  component={Radio}
+                  type="radio"
+                  name="separator"
+                  label="Semicolon"
+                  value=";"
+                  onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
                 />
                 <Typography>
                   {t('Semicolon')}
@@ -197,7 +207,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
             <div className={classes.center} style={{ marginTop: 20 }}>
               <Typography
                 variant="h3"
-                gutterBottom={true}
+                gutterBottom
                 style={{ marginBottom: 0 }}
               >
                 {t('Representations for entity')}
@@ -212,11 +222,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
               </IconButton>
             </div>
             {entityRepresentations.map((representation, idx) => (
-              <div key={`entity-${idx}`}
-                   style={{ marginTop: 20, display: 'flex' }}>
+              <div
+                key={`entity-${idx}`}
+                style={{ marginTop: 20, display: 'flex' }}
+              >
                 <CsvMapperRepresentationForm
                   key={representation.id}
-                  idx={idx + 1}
+                  index={idx}
                   availableEntityTypes={availableEntityTypes}
                   representationData={representation}
                   representations={entityRepresentations}
@@ -230,7 +242,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
             <div className={classes.center} style={{ marginTop: 20 }}>
               <Typography
                 variant="h3"
-                gutterBottom={true}
+                gutterBottom
                 style={{ marginBottom: 0 }}
               >
                 {t('Representations for relationship')}
@@ -245,11 +257,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
               </IconButton>
             </div>
             {relationshipRepresentations.map((representation, idx) => (
-              <div key={`relationship-${idx}`}
-                   style={{ marginTop: 20, display: 'flex' }}>
+              <div
+                key={`relationship-${idx}`}
+                style={{ marginTop: 20, display: 'flex' }}
+              >
                 <CsvMapperRepresentationForm
                   key={representation.id}
-                  idx={entityRepresentations.length + idx + 1}
+                  index={entityRepresentations.length + idx}
                   availableEntityTypes={availableRelationshipTypes}
                   representationData={representation}
                   representations={entityRepresentations}

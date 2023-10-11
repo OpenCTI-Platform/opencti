@@ -24,7 +24,7 @@ export const representationInitialization = (type: CsvMapperRepresentationType) 
 // -- GETTER --
 
 export const representationLabel = (idx: number, representation: Representation) => {
-  const number = `#${idx}`;
+  const number = `#${idx + 1}`; // 0-based internally, 1-based for display
   if (isEmptyField(representation.target.entity_type)) {
     return `${number} New ${representation.type} representation`;
   }
