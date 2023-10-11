@@ -129,7 +129,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     setAnchorEl(null);
   };
 
-  function promoteMember() {
+  const promoteMember = () => {
     promoteMemberMutation({
       variables: {
         id: organization.id,
@@ -138,9 +138,9 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       },
       onCompleted: handleClose,
     });
-  }
+  };
 
-  function demoteMember() {
+  const demoteMember = () => {
     demoteMemberMutation({
       variables: {
         id: organization.id,
@@ -149,7 +149,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       },
       onCompleted: handleClose,
     });
-  }
+  };
 
   return (
     <ListItem
