@@ -12,7 +12,7 @@ import { addBookmark,
   addUser, assignOrganizationToUser,
   authenticateUser, batchCreator, batchGroups, batchOrganizations,
   batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks,
-  deleteBookmark, findAdministratedOrganizationsByMe, findAdministratedOrganizationsByUser, findAll, findAllMembers, findAssignees, findById, findCapabilities,
+  deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities,
   findCreators, findDefaultDashboards, findParticipants, findRoleById, findRoles, meEditField,
   otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation,
   roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation,
@@ -53,7 +53,6 @@ const userResolvers = {
     objectOrganization: (current, args, context) => organizationsLoader.load(current.id, context, context.user, { ...args, withInferences: false }),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    administrated_organizations: (current, _, context) => findAdministratedOrganizationsByUser(context, context.user, current),
   },
   Member: {
     name: (current, _, context) => {
@@ -70,7 +69,6 @@ const userResolvers = {
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
-    administrated_organizations: (current, _, context) => findAdministratedOrganizationsByMe(context, context.user, current),
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),

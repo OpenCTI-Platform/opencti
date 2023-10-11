@@ -18,15 +18,7 @@ import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../conf
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listAllEntities,
-  listAllEntitiesForFilter,
-  listAllRelations,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -39,17 +31,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import {
-  BYPASS,
-  executionContext,
-  INTERNAL_USERS,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  REDACTED_USER,
-  SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
@@ -133,8 +115,7 @@ export const findById = async (context, user, userId) => {
 export const findAll = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
-    const organisationIds = administratedOrganizations.map((orga) => orga.id);
+    const organisationIds = (user.administrated_organizations ?? []).map((orga) => orga.id);
     const users = await listThroughGetFrom(context, user, organisationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { paginate: false, batched: false });
     return buildPagination(
       0,
@@ -439,8 +420,7 @@ export const addUser = async (context, user, newUser) => {
   }
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
-    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
-    const groupIds = R.uniq(administratedOrganizations.map((orga) => orga.grantable_groups).flat());
+    const groupIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
     if (!newUser.groups.every((group) => groupIds.includes(group))) {
       throw FunctionalError('User not in the right group(s)', { email: userEmail });
     }
@@ -984,7 +964,8 @@ export const buildCompleteUser = async (context, client) => {
   const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
   const [capabilities] = await Promise.all([capabilitiesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
-  if (organizations.find((o) => o.authorized_authorities?.includes(client.id))) {
+  const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
+  if (administrated_organizations.length > 0) {
     capabilities.push(virtualOrganizationAdminCapability);
   }
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
@@ -1203,16 +1184,6 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
   const dashboards = await internalFindByIds(context, user, ids, { type: ENTITY_TYPE_WORKSPACE });
   // Sort dashboards the same order as the fetched ids
   return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
-};
-export const findAdministratedOrganizationsByMe = async (context, user, currentUser) => {
-  return currentUser.organizations.filter((o) => o.authorized_authorities?.includes(currentUser.id));
-};
-
-export const findAdministratedOrganizationsByUser = async (context, user, current) => {
-  const batchOpts = { batched: false, paginate: false, withInferences: false };
-
-  const organizations = await batchOrganizations(context, SYSTEM_USER, current.id, batchOpts);
-  return organizations.filter((o) => o.authorized_authorities?.includes(current.id));
 };
 
 // region context

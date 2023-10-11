@@ -12043,8 +12043,6 @@ type Query {
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
-  groupsForMember(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
-  @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth

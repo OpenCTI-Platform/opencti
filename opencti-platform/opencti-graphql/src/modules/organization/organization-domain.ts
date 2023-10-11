@@ -11,7 +11,8 @@ import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } 
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { OrganizationAddInput } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
-import { BYPASS, isUserHasCapability, ORGA_ADMIN, SETTINGS, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -38,12 +39,22 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
   const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
+  const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
-  if (!members.map((m) => m.id).includes(memberId)) {
+  if (!updatedUser) {
     throw FunctionalError('User is not part of the organization');
   }
   // Add user to organization admins list
-  return await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
+  const updated = await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `Promoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+  });
+  return updated;
 };
 
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
@@ -58,7 +69,16 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   // Remove user from organization admins list
   const indexOfMember = (organization.authorized_authorities ?? []).indexOf(memberId);
   (organization.authorized_authorities ?? []).splice(indexOfMember, 1);
-  return await editAuthorizedAuthorities(context, user, organizationId, (organization.authorized_authorities ?? []));
+  const updated = await editAuthorizedAuthorities(context, user, organizationId, (organization.authorized_authorities ?? []));
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `Demoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+  });
+  return updated;
 };
 
 export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization) => {
