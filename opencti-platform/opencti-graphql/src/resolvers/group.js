@@ -4,7 +4,7 @@ import { elBatchIds } from '../database/engine';
 import { batchLoader } from '../database/middleware';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { addGroup } from '../domain/grant';
-import { batchMarkingDefinitions, batchMembers, batchRoles, defaultMarkingDefinitions, findAll, findById, groupAddRelation, groupCleanContext, groupDelete, groupDeleteRelation, groupEditContext, groupEditDefaultMarking, groupEditField, } from '../domain/group';
+import { batchMarkingDefinitions, batchMembers, batchRoles, defaultMarkingDefinitions, findAll, findById, findGroupsForMember, groupAddRelation, groupCleanContext, groupDelete, groupDeleteRelation, groupEditContext, groupEditDefaultMarking, groupEditField, } from '../domain/group';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 
@@ -17,6 +17,7 @@ const groupResolvers = {
   Query: {
     group: (_, { id }, context) => findById(context, context.user, id),
     groups: (_, args, context) => findAll(context, context.user, args),
+    groupsForMember: (_, args, context) => findGroupsForMember(context, context.user, args),
   },
   Group: {
     allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),

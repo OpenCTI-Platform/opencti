@@ -17,7 +17,7 @@ import {
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
-import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
+import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import {
   internalFindByIds,
   internalLoadById,
@@ -130,7 +130,16 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAll = (context, user, args) => {
+export const findAll = async (context, user, args) => {
+  // if user is orga_admin && not set_access
+
+  const allUsers = await listEntities(context, user, [ENTITY_TYPE_USER], args);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
+    const organisationIds = administratedOrganizations.map((orga) => orga.id);
+    const users = await listThroughGetFrom(context, user, organisationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { paginate: false });
+    return users;
+  }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 

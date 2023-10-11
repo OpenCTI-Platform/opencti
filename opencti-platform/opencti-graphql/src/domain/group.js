@@ -50,13 +50,18 @@ export const findAll = async (context, user, args) => {
   // return ces groupes
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
-    const groups = [];
-    for (const orga of administratedOrganizations) {
-      groups.push(findGrantableGroups(context, context.user, orga));
-    }
-    return groups.flat();
+    const groupsIds = administratedOrganizations.map((orga) => orga.grantable_groups).flat();
+    return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
+};
+
+export const findGroupsForMember = async (context, user, args) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
+    const groupsIds = administratedOrganizations.map((orga) => orga.grantable_groups).flat();
+    return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
+  }
 };
 
 export const batchMembers = async (context, user, groupIds, opts = {}) => {
