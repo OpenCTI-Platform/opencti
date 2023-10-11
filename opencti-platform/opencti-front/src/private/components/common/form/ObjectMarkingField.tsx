@@ -54,6 +54,11 @@ interface ObjectMarkingFieldProps {
   setFieldValue?: (name: string, values: Option[]) => void
 }
 
+interface OptionValues {
+  currentValues: Option[],
+  valueToReplace: Option
+}
+
 const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   name,
   style,
@@ -65,7 +70,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [newMarking, setNewMarking] = useState<Option[] | undefined>(undefined);
+  const [newMarking, setNewMarking] = useState<Option[] | OptionValues | undefined>(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
 
   const { me } = useAuth();
@@ -74,19 +79,34 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const optionSorted = allowedMarkingDefinitions.sort((a, b) => {
     if (a.definition_type === b.definition_type) {
       return (a.x_opencti_order < b.x_opencti_order ? -1 : 1);
-    } return (a.definition_type < b.definition_type ? -1 : 1);
+    }
+    return (a.definition_type < b.definition_type ? -1 : 1);
   });
   const handleClose = () => {
     setNewMarking(undefined);
   };
   const handleCancellation = () => {
-    newMarking?.pop();
-    setFieldValue?.(name, newMarking as Option[]);
-    setNewMarking(undefined);
+    if (operation === 'replace') {
+      const { currentValues } = newMarking as OptionValues;
+      currentValues.pop();
+      setFieldValue?.(name, currentValues);
+    } else {
+      (newMarking as Option[]).pop();
+      setFieldValue?.(name, newMarking as Option[]);
+    }
+    handleClose();
   };
   const submitUpdate = () => {
-    onChange(name, newMarking as Option[], operation);
-    handleClose();
+    if (operation === 'replace') {
+      const { currentValues, valueToReplace } = newMarking as OptionValues;
+      const markingsToReplace = currentValues.filter((marking: { value: unknown; }) => marking.value !== valueToReplace.value);
+      onChange(name, markingsToReplace as Option[], operation);
+      setOperation(undefined);
+      handleClose();
+    } else {
+      onChange(name, newMarking as Option[], operation);
+      handleClose();
+    }
   };
   const handleOnChange = (n: string, values: Option[]) => {
     const valueAdded = values[values.length - 1];
@@ -95,7 +115,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
     if (valueToReplace) {
       if ((valueToReplace.x_opencti_order ?? 0) > (valueAdded.x_opencti_order ?? 0)) {
         setOperation('replace');
-        setNewMarking(values.filter((marking) => marking.value !== valueToReplace.value));
+        setNewMarking({ currentValues: values, valueToReplace });
       } else {
         setNewMarking(values);
         setOperation(undefined);
@@ -104,57 +124,57 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   };
 
   const renderOption: RenderOption = (props, option) => (
-      <li {...props}>
-          <div className={classes.icon} style={{ color: option.color }}>
-              <ItemIcon type="Marking-Definition" color={option.color}/>
-          </div>
-          <div className={classes.text}>{option.label}</div>
-      </li>
+        <li {...props}>
+            <div className={classes.icon} style={{ color: option.color }}>
+                <ItemIcon type="Marking-Definition" color={option.color}/>
+            </div>
+            <div className={classes.text}>{option.label}</div>
+        </li>
   );
 
   return (
-      <>
-        <Field
-            component={AutocompleteField}
-            style={style}
-            name={name}
-            multiple={true}
-            disabled={disabled}
-            textfieldprops={{
-              variant: 'standard',
-              label: label ?? t('Markings'),
-              helperText: helpertext,
-            }}
-            noOptionsText={t('No available options')}
-            options={optionSorted}
-            onChange={typeof onChange === 'function' ? handleOnChange : null}
-            renderOption={renderOption}
-        />
-         <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={!!newMarking}
-            keepMounted={true}
-            TransitionComponent={Transition}
-            onClose={handleClose}
-         >
-          <DialogContent>
-            <DialogContentText>
-              {t('You are about to change the marking with another rank.')}
-            </DialogContentText>
-              <DialogContentText>
-              {t('Are you sure you want to make the change?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-             <Button onClick={handleCancellation}>
-              {t('Cancel')}
-             </Button>
-             <Button color="secondary" onClick={submitUpdate}>
-              {t('Replace')}
-             </Button>
-          </DialogActions>
-         </Dialog>
-      </>
+        <>
+            <Field
+                component={AutocompleteField}
+                style={style}
+                name={name}
+                multiple={true}
+                disabled={disabled}
+                textfieldprops={{
+                  variant: 'standard',
+                  label: label ?? t('Markings'),
+                  helperText: helpertext,
+                }}
+                noOptionsText={t('No available options')}
+                options={optionSorted}
+                onChange={typeof onChange === 'function' ? handleOnChange : null}
+                renderOption={renderOption}
+            />
+            <Dialog
+                PaperProps={{ elevation: 1 }}
+                open={!!newMarking}
+                keepMounted={true}
+                TransitionComponent={Transition}
+                onClose={handleClose}
+            >
+                <DialogContent>
+                    <DialogContentText>
+                        {t('You are about to change the marking with another rank.')}
+                    </DialogContentText>
+                    <DialogContentText>
+                        {t('Are you sure you want to make the change?')}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancellation}>
+                        {t('Cancel')}
+                    </Button>
+                    <Button color="secondary" onClick={submitUpdate}>
+                        {t('Replace')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
   );
 };
 
