@@ -36,3 +36,27 @@ You can export your investigation in PDF or image format.
 You can also download all the content of your investigation graph in a **Report** stix bundle (investigation is automatically converted).
 
 ![Investigation export](assets/investigation-export.png)
+
+## Turn your investigation to Report or Case
+
+You can turn your investigation to :
+- a grouping
+- an incident response
+- a report
+- a request for information
+- a request for takedown
+
+![investigation-turn-to-report-or-case.png](assets/investigation-turn-to-report-or-case.png)
+
+Either, you create a new report or case
+![investigation-turn-to-report-or-case-dialog-new-entity.png](assets/investigation-turn-to-report-or-case-dialog-new-entity.png)
+
+![investigation-turn-to-report-or-case-dialog-new-entity-form.png](assets/investigation-turn-to-report-or-case-dialog-new-entity-form.png)
+
+Or, you select an existing entity
+![investigation-turn-to-report-or-case-dialog-entity-selection.png](assets/investigation-turn-to-report-or-case-dialog-entity-selection.png)
+
+![investigation-turn-to-report-or-case-dialog-entity-selection-add.png](assets/investigation-turn-to-report-or-case-dialog-entity-selection-add.png)
+
+Once you have clicked on the `ADD` button, the browser will be redirected to the `Knowledge` tab of your new entity.
+![investigation-turn-to-report-or-case-success.png](assets/investigation-turn-to-report-or-case-success.png)
