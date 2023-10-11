@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
-import CsvMappers from '@components/data/CsvMappers';
+import CsvMappers from './CsvMappers';
 import Security from '../../../utils/Security';
 import Connectors from './Connectors';
 import Entities from './Entities';
