@@ -131,14 +131,17 @@ export const findById = async (context, user, userId) => {
 };
 
 export const findAll = async (context, user, args) => {
-  // if user is orga_admin && not set_access
-
-  const allUsers = await listEntities(context, user, [ENTITY_TYPE_USER], args);
+  // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const administratedOrganizations = await findAdministratedOrganizationsByUser(context, context.user, user);
     const organisationIds = administratedOrganizations.map((orga) => orga.id);
-    const users = await listThroughGetFrom(context, user, organisationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { paginate: false });
-    return users;
+    const users = await listThroughGetFrom(context, user, organisationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { paginate: false, batched: false });
+    return buildPagination(
+      0,
+      null,
+      users.map((n) => ({ node: n })),
+      users.length
+    );
   }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
