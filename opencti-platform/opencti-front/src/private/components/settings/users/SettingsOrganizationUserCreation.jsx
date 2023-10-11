@@ -1,16 +1,13 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as R from 'ramda';
 import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
+import Drawer from '../../common/drawer/Drawer';
 import GroupField from '../../common/form/GroupField';
 import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,35 +23,12 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -118,170 +92,151 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
   };
 
   return (
-      <>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
+    <Drawer
+      open={open}
+      title={t('Create a user')}
+      onClose={handleClose}
+    >
+      <Formik
+        initialValues={{
+          name: '',
+          user_email: '',
+          firstname: '',
+          lastname: '',
+          description: '',
+          password: '',
+          confirmation: '',
+          objectOrganization: [{
+            label: organization.name,
+            value: organization.id,
+          }],
+          account_status: 'Active',
+          account_lock_after_date: null,
+        }}
+        validationSchema={userValidation(t)}
+        onSubmit={onSubmit}
+        onReset={onReset}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form>
+            <Field
+              component={TextField}
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="user_email"
+              label={t('Email address')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="firstname"
+              label={t('Firstname')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="lastname"
+              label={t('Lastname')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+            />
+            <PasswordPolicies />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="password"
+              label={t('Password')}
+              type="password"
+              style={{ marginTop: 20 }}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="confirmation"
+              label={t('Confirmation')}
+              type="password"
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <ObjectOrganizationField
+              disabled
+              outlined={false}
+              name="objectOrganization"
+              label="Organizations"
+              style={fieldSpacingContainerStyle}
+            />
+            <GroupField
+              name="groups"
+              label={t('Add a group')}
+              multiple={true}
+              containerStyle={{ width: '100%' }}
+              predefinedGroups={convertGrantableGroups(organization)}
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="account_status"
+              label={t('Account Status')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
             >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a user')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                user_email: '',
-                firstname: '',
-                lastname: '',
-                description: '',
-                password: '',
-                confirmation: '',
-                objectOrganization: [{
-                  label: organization.name,
-                  value: organization.id,
-                }],
-                account_status: 'Active',
-                account_lock_after_date: null,
+              {settings.platform_user_statuses.map((s) => {
+                return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
+              })}
+            </Field>
+            <Field
+              component={DateTimePickerField}
+              name="account_lock_after_date"
+              TextFieldProps={{
+                label: t('Account Expire Date'),
+                style: fieldSpacingContainerStyle,
+                variant: 'standard',
+                fullWidth: true,
               }}
-              validationSchema={userValidation(t)}
-              onSubmit={onSubmit}
-              onReset={onReset}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form>
-                  <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="user_email"
-                    label={t('Email address')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="firstname"
-                    label={t('Firstname')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="lastname"
-                    label={t('Lastname')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows={4}
-                    style={{ marginTop: 20 }}
-                  />
-                  <PasswordPolicies/>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password"
-                    label={t('Password')}
-                    type="password"
-                    style={{ marginTop: 20 }}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="confirmation"
-                    label={t('Confirmation')}
-                    type="password"
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <ObjectOrganizationField
-                    disabled
-                    outlined={false}
-                    name="objectOrganization"
-                    label="Organizations"
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <GroupField
-                    name="groups"
-                    label={t('Add a group')}
-                    multiple={true}
-                    containerStyle={{ width: '100%' }}
-                    predefinedGroups={convertGrantableGroups(organization)}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="account_status"
-                    label={t('Account Status')}
-                    fullWidth={true}
-                    containerstyle={fieldSpacingContainerStyle}
-                    >
-                    {settings.platform_user_statuses.map((s) => {
-                      return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
-                    })}
-                  </Field>
-                  <Field
-                    component={DateTimePickerField}
-                    name="account_lock_after_date"
-                    TextFieldProps={{
-                      label: t('Account Expire Date'),
-                      style: fieldSpacingContainerStyle,
-                      variant: 'standard',
-                      fullWidth: true,
-                    }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </>
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 
