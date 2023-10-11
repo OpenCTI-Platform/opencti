@@ -2247,6 +2247,8 @@ class InvestigationGraphComponent extends Component {
                           node.color,
                           ctx,
                           this.selectedNodes.has(node),
+                          false,
+                          true,
                         )
                       }
                       nodePointerAreaPaint={nodeAreaPaint}
