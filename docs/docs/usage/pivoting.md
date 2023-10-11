@@ -58,5 +58,5 @@ Or, you select an existing entity
 
 ![investigation-turn-to-report-or-case-dialog-entity-selection-add.png](assets/investigation-turn-to-report-or-case-dialog-entity-selection-add.png)
 
-Once you have clicked on the `ADD` button, the browser will be redirected to the `Knowledge` tab of your new entity.
+Once you have clicked on the `ADD` button, the browser will be redirected to the `Knowledge` tab of the Report or Cases you added the content of your investigation. If you added it to multiple reports or cases, you will be redirected to the first of the list.
 ![investigation-turn-to-report-or-case-success.png](assets/investigation-turn-to-report-or-case-success.png)
