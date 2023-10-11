@@ -12,43 +12,37 @@ export type CheckboxesItem = {
   value: string
 };
 
-type Props = FieldProps<CheckboxesItem[]> & {
+type CheckboxesFieldProps = FieldProps<CheckboxesItem[]> & {
   label: string
   items: CheckboxesItem[]
   maxHeight?: string
 };
 
-export default function CheckboxesField({
+const CheckboxesField = ({
   form,
   field,
   label,
   items,
   maxHeight = '300px',
-}: Props) {
+}: CheckboxesFieldProps) => {
   const { t } = useFormatter();
 
   const { setFieldValue } = form;
   const { name, value } = field;
 
-  function isChecked(val: CheckboxesItem) {
-    return value.includes(val);
-  }
+  const isChecked = (val: CheckboxesItem) => value.includes(val);
 
-  function toggle(val: CheckboxesItem) {
+  const toggle = (val: CheckboxesItem) => {
     if (isChecked(val)) {
       setFieldValue(name, value.filter((v) => v !== val));
     } else {
       setFieldValue(name, [...value, val]);
     }
-  }
+  };
 
-  function checkAll() {
-    setFieldValue(name, [...items]);
-  }
+  const checkAll = () => setFieldValue(name, [...items]);
 
-  function checkNone() {
-    setFieldValue(name, []);
-  }
+  const checkNone = () => setFieldValue(name, []);
 
   return (
       <FormControl component="fieldset" name={name}>
@@ -90,4 +84,6 @@ export default function CheckboxesField({
         </FormGroup>
       </FormControl>
   );
-}
+};
+
+export default CheckboxesField;

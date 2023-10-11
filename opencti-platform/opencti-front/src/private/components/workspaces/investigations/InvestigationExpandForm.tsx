@@ -86,7 +86,7 @@ type FormData = {
   reset_filters: boolean,
 };
 
-type Props = {
+type InvestigationExpandFormProps = {
   links: {
     source: {
       id: string
@@ -110,12 +110,12 @@ type Props = {
   onReset: () => void
 };
 
-export default function InvestigationExpandForm({
+const InvestigationExpandForm = ({
   links,
   selectedNodes,
   onSubmit,
   onReset,
-}: Props) {
+}: InvestigationExpandFormProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -205,7 +205,7 @@ export default function InvestigationExpandForm({
 
   // Fetch all possible relationships linked to the nodes to expand.
   useEffect(() => {
-    async function fetchRelationships() {
+    const fetchRelationships = async () => {
       if (selectedNodes.length === 0) return;
       const nodeIds = Array.from(selectedNodes).map((node) => node.id);
 
@@ -255,13 +255,13 @@ export default function InvestigationExpandForm({
             value: label,
           })),
       );
-    }
+    };
     fetchRelationships();
   }, [selectedNodes, existingRels, setRelationships]);
 
   // Fetch all possible targets connected to the nodes to expand.
   useEffect(() => {
-    async function fetchTargets() {
+    const fetchTargets = async () => {
       if (selectedNodes.length === 0) return;
       const nodeIds = Array.from(selectedNodes).map((node) => node.id);
 
@@ -339,7 +339,7 @@ export default function InvestigationExpandForm({
             value: label,
           })),
       );
-    }
+    };
     fetchTargets();
   }, [selectedNodes, existingTargets, setTargets]);
 
@@ -400,4 +400,6 @@ export default function InvestigationExpandForm({
       )}
     </Formik>
   );
-}
+};
+
+export default InvestigationExpandForm;
