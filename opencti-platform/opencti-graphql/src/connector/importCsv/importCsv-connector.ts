@@ -72,7 +72,7 @@ const initImportCsvConnector = () => {
                 filename: `${workId}.json`,
                 mimetype: 'application/json',
               };
-              await upload(context, applicantUser, 'import/pending', file, {entity});
+              await upload(context, applicantUser, 'import/pending', file, { entity });
 
               await reportExpectation(context, applicantUser, workId);
             } else {

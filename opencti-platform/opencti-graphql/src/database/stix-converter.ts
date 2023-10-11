@@ -417,7 +417,7 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
     latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
     longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
     precision: instance.precision,
-    region:  instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
+    region: instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
     country: instance.entity_type === ENTITY_TYPE_LOCATION_COUNTRY ? instance.name : undefined,
     city: instance.entity_type === ENTITY_TYPE_LOCATION_CITY ? instance.name : undefined,
     street_address: instance.street_address,
