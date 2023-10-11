@@ -33,3 +33,13 @@ This option can be deactivated to have a permanent Announcement.
 ![Broadcast message display not dismissible](assets/broadcast_message_display_notdismissible.png)
 
 ⚠️ Only one Announcement is displayed at a time. Dismissible Announcement are displayed first, then the latest not dismissible Announcement.
+
+## Analytics
+
+!!! tip "Enterprise edition"
+
+    Analytics is available under the "Filigran entreprise edition" license.
+
+    [Please read the dedicated page to have all information](../enterprise.md)
+
+Configure analytics providers (at the moment only Google analytics v4).
