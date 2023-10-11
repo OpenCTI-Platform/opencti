@@ -1,18 +1,9 @@
-import React, { Component, FunctionComponent, useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer, useFragment } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  PersonOutlined,
-  AccountCircleOutlined,
-  KeyboardArrowRightOutlined,
-  HorizontalRule,
-  Security, MoreVertOutlined, AdminPanelSettingsOutlined,
-} from '@mui/icons-material';
-import { compose } from 'ramda';
+import { AccountCircleOutlined, AdminPanelSettingsOutlined, KeyboardArrowRightOutlined, MoreVertOutlined, PersonOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
@@ -20,11 +11,11 @@ import { SettingsOrganizationUserLine_node$key } from '@components/settings/user
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { externalReferenceEditionOverviewFocus } from '@components/analyses/external_references/ExternalReferenceEditionOverview';
+import { ListItemSecondaryAction } from '@mui/material';
+import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
-import inject18n, { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
@@ -75,10 +66,11 @@ export const organizationMutationAdminAdd = graphql`
   mutation SettingsOrganizationUserLineAdminAddMutation(
     $id: ID!
     $memberId: String!
+    $userEmail: String!
   ) {
     organizationAdminAdd(id: $id, memberId: $memberId) {
       id
-      members{
+      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
         edges {
           node {
             id
@@ -93,10 +85,11 @@ export const organizationMutationAdminRemove = graphql`
   mutation SettingsOrganizationUserLineAdminRemoveMutation(
     $id: ID!
     $memberId: String!
+    $userEmail: String!
   ) {
     organizationAdminRemove(id: $id, memberId: $memberId) {
       id
-      members{
+      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
         edges {
           node {
             id
@@ -109,9 +102,9 @@ export const organizationMutationAdminRemove = graphql`
 `;
 
 interface SettingsOrganizationUserLineComponentProps {
-  dataColumns: DataColumns;
-  node: SettingsOrganizationUserLine_node$key;
-  organization: any;
+  dataColumns: DataColumns
+  node: SettingsOrganizationUserLine_node$key
+  organization: SettingsOrganization_organization$data
 }
 
 export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, organization }) => {
@@ -121,11 +114,13 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
 
   const user = useFragment(UserLineFragment, node);
   const { me } = useAuth();
-  // TODO the condition should be "member is admin of this organization" - Do it in the backend: add property for user
-  const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).length > 0;
+  const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).map(({ id }) => id).includes(organization.id);
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const external = user.external === true;
+
+  const [promoteMemberMutation] = useMutation(organizationMutationAdminAdd);
+  const [demoteMemberMutation] = useMutation(organizationMutationAdminRemove);
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -135,118 +130,76 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   };
 
   function promoteMember() {
-    commitMutation({
-      mutation: organizationMutationAdminAdd,
+    promoteMemberMutation({
       variables: {
         id: organization.id,
         memberId: user.id,
+        userEmail: user.user_email,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onCompleted: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
+      onCompleted: handleClose,
     });
-    handleClose();
   }
 
   function demoteMember() {
-    commitMutation({
-      mutation: organizationMutationAdminRemove,
+    demoteMemberMutation({
       variables: {
         id: organization.id,
         memberId: user.id,
+        userEmail: user.user_email,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onCompleted: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
+      onCompleted: handleClose,
     });
-    handleClose();
   }
+
   return (
-    <ListItem>
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={`/dashboard/settings/accesses/users/${user.id}`}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <AccountCircleOutlined /> : (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined color="success"/> : <PersonOutlined/>)}
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {user.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.user_email.width }}
-              >
-                {user.user_email}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.firstname.width }}
-              >
-                {user.firstname}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.lastname.width }}
-              >
-                {user.lastname}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.otp.width }}
-              >
-                {user.otp_activated ? (
-                  <Security fontSize="small" color="secondary" />
-                ) : (
-                  <HorizontalRule fontSize="small" color="primary" />
-                )}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                {fd(user.created_at)}
-              </div>
-            </div>
-          }
-        />
-      </ListItem>
-      <ListItemIcon classes={{ root: classes.goIcon }}>
-        {userHasSettingsAcesses
-          ? <>
-            <IconButton
-              onClick={handleOpen}
-              aria-haspopup="true"
-              style={{ marginTop: 3 }}
-              size="large"
-            >
-              <MoreVertOutlined />
-            </IconButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-              { memberIsOrganizationAdmin
-                ? <MenuItem onClick={demoteMember}>{t('Demote as simple member')}</MenuItem>
-                : <MenuItem onClick={promoteMember}>{t('Promote as Organization Admin')}</MenuItem>
-              }
-            </Menu>
-        </>
-          : <KeyboardArrowRightOutlined/>
-        }
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`/dashboard/settings/accesses/users/${user.id}`}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        {external && <AccountCircleOutlined />)}
+        {!external && (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined color="success" /> : <PersonOutlined />)}
       </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(user, { fd })}
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <ListItemSecondaryAction>
+        {userHasSettingsAcesses
+          ? (
+            <>
+              <IconButton
+                onClick={handleOpen}
+                aria-haspopup="true"
+                style={{ marginTop: 3 }}
+                size="large"
+              >
+                <MoreVertOutlined />
+              </IconButton>
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                {memberIsOrganizationAdmin
+                  ? <MenuItem onClick={demoteMember}>{t('Demote as simple member')}</MenuItem>
+                  : <MenuItem onClick={promoteMember}>{t('Promote as Organization Admin')}</MenuItem>
+                }
+              </Menu>
+            </>
+          ) : <KeyboardArrowRightOutlined />
+        }
+      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -270,72 +223,20 @@ export const SettingsOrganizationUserLineDummy = ({
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.user_email.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.firstname.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.lastname.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.otp.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={40}
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
-            </div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
           </div>
         }
       />

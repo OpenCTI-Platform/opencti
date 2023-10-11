@@ -96,27 +96,29 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
   user: graphql`
     fragment UserEdition_user on User
     @argumentDefinitions(
-        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
-        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-        organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
-        organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+      rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+      groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+      groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+      organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
       external
       ...UserEditionOverview_user
       @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
       )
       ...UserEditionPassword_user
       ...UserEditionGroups_user
       @arguments(
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
       )
       editContext {
         name

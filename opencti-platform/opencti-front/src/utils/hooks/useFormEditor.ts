@@ -185,7 +185,7 @@ const useFormEditor = (
   };
   const changeGrantableGroups = (name: string, values: Option[]) => {
     validate(name, values, () => {
-    const finalValues = values.map((v) => v.value);
+      const finalValues = values.map((v) => v.value);
       commitFieldPatch({
         variables: {
           id: data.id,
@@ -194,7 +194,6 @@ const useFormEditor = (
       });
     });
   };
-
 
   return {
     changeMarking,

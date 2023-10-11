@@ -1,15 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { UserLine, UserLineDummy } from './UserLine';
+import { SettingsOrganizationUserLine, SettingsOrganizationUserLineDummy } from '@components/settings/users/SettingsOrganizationUserLine';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  SettingsOrganizationUsersLinesQuery,
-  SettingsOrganizationUsersLinesQuery$variables,
-} from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
+import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuery$variables } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
 import { SettingsOrganizationUsersLines_data$key } from './__generated__/SettingsOrganizationUsersLines_data.graphql';
-import { SettingsOrganizationUserLine, SettingsOrganizationUserLineDummy } from '@components/settings/users/SettingsOrganizationUserLine';
 
 export const settingsOrganizationUsersLinesQuery = graphql`
   query SettingsOrganizationUsersLinesQuery(

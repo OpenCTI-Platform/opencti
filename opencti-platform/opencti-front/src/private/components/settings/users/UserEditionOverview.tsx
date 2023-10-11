@@ -16,7 +16,7 @@ import { UserEditionOverview_user$data } from './__generated__/UserEditionOvervi
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { BYPASS, ORGA_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -86,22 +86,18 @@ interface UserEditionOverviewComponentProps {
   } | null)[]
   | null;
 }
-const isOnlyOrganizationAdmin = (user) => {
-  const userCapabilities = user.capabilities.map((n) => n.name);
-  return userCapabilities.includes(ORGA_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
-};
 
 const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t } = useFormatter();
-  const { settings, me } = useAuth();
+  const { settings } = useAuth();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
   const [commitGroupDelete] = useMutation(userMutationGroupDelete);
 
-  const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin(me)
+  const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
 

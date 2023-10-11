@@ -43,7 +43,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     throw FunctionalError('User is not part of the organization');
   }
   // Add user to organization admins list
-  await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
+  return await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
 };
 
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
@@ -58,7 +58,7 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   // Remove user from organization admins list
   const indexOfMember = (organization.authorized_authorities ?? []).indexOf(memberId);
   (organization.authorized_authorities ?? []).splice(indexOfMember, 1);
-  await editAuthorizedAuthorities(context, user, organizationId, (organization.authorized_authorities ?? []));
+  return await editAuthorizedAuthorities(context, user, organizationId, (organization.authorized_authorities ?? []));
 };
 
 export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization) => {

@@ -53,10 +53,9 @@ class GroupField extends Component {
   }
 
   searchGroups() {
-    if(this.props.predefinedGroups) {
-      this.setState({groups: this.props.predefinedGroups})
-    }
-    else {
+    if (this.props.predefinedGroups) {
+      this.setState({ groups: this.props.predefinedGroups });
+    } else {
       fetchQuery(groupsQuery)
         .toPromise()
         .then((data) => {

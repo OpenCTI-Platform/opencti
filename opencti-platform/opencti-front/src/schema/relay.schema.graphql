@@ -12171,7 +12171,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_reliability: String
   x_opencti_organization_type: String
   sectors: SectorConnection
-  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: [UsersFiltering]): UserConnection
   authorized_authorities: [String]
   grantable_groups: [Group]
   subOrganizations: OrganizationConnection

@@ -16730,6 +16730,7 @@ export type OrganizationJobsArgs = {
 
 export type OrganizationMembersArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<Array<InputMaybe<UsersFiltering>>>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<UsersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;

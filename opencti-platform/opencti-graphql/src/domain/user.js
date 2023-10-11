@@ -984,7 +984,7 @@ export const buildCompleteUser = async (context, client) => {
   const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
   const [capabilities] = await Promise.all([capabilitiesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
-  if (organizations.find((o) => o.authorized_authorities.includes(client.id))) {
+  if (organizations.find((o) => o.authorized_authorities?.includes(client.id))) {
     capabilities.push(virtualOrganizationAdminCapability);
   }
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
@@ -1205,14 +1205,14 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
   return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 };
 export const findAdministratedOrganizationsByMe = async (context, user, currentUser) => {
-  return currentUser.organizations.filter((o) => o.authorized_authorities.includes(currentUser.id));
+  return currentUser.organizations.filter((o) => o.authorized_authorities?.includes(currentUser.id));
 };
 
 export const findAdministratedOrganizationsByUser = async (context, user, current) => {
   const batchOpts = { batched: false, paginate: false, withInferences: false };
 
   const organizations = await batchOrganizations(context, SYSTEM_USER, current.id, batchOpts);
-  return organizations.filter((o) => o.authorized_authorities.includes(current.id));
+  return organizations.filter((o) => o.authorized_authorities?.includes(current.id));
 };
 
 // region context

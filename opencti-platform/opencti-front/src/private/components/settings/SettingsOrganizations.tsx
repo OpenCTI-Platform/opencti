@@ -22,7 +22,11 @@ const SettingsOrganizations = () => {
   const classes = useStyles();
   const { me } = useAuth();
   const LOCAL_STORAGE_KEY = 'view-settings-organizations';
-  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptionsFromStorage,
+  } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     sortBy: 'name',
     orderAsc: false,

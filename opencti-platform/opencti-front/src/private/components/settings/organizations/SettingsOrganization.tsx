@@ -25,7 +25,7 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles({
