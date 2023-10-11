@@ -33,7 +33,7 @@ export const findAll = async (context, user, args) => {
   // recupérer grantable_groups
   // return ces groupes
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const groupsIds = (user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat();
+    const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
     return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);

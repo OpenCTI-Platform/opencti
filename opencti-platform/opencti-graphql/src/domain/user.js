@@ -108,8 +108,23 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // TODO To check with Adrien
+    const myOrgasIds = (await findAdministratedOrganizationsByUser(context, user, user.id)).map((organization) => organization.id);
+    // if no organization in common with the logged user
+    if (!data.objectOrganization.find((orgaId) => myOrgasIds.includes(orgaId))) {
+      throw ForbiddenAccess();
+    }
+  }
   const withoutPassword = data ? R.dissoc('password', data) : data;
   return buildCompleteUser(context, withoutPassword);
+};
+
+export const findAdministratedOrganizationsByUser = async (context, user, userId) => {
+  const batchOpts = { batched: false, paginate: false, withInferences: false };
+
+  const organizations = await batchOrganizations(context, SYSTEM_USER, userId, batchOpts);
+  return organizations.filter((o) => o.authorized_authorities?.includes(userId));
 };
 
 export const findAll = async (context, user, args) => {
@@ -422,7 +437,7 @@ export const addUser = async (context, user, newUser) => {
     // user is Organization Admin
     const groupIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
     if (!newUser.groups.every((group) => groupIds.includes(group))) {
-      throw FunctionalError('User not in the right group(s)', { email: userEmail });
+      throw ForbiddenAccess();
     }
   }
   // Create the user
@@ -982,6 +997,7 @@ export const buildCompleteUser = async (context, client) => {
     groups,
     organizations,
     allowed_organizations,
+    administrated_organizations,
     individual_id: individualId,
     inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,

@@ -160,7 +160,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       to={`/dashboard/settings/accesses/users/${user.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {external && <AccountCircleOutlined />)}
+        {external && <AccountCircleOutlined />}
         {!external && (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined color="success" /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
