@@ -143,7 +143,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
         validationSchema={csvMapperValidation(t)}
         onSubmit={onSubmit}
       >
-        {({ submitForm, isSubmitting, isValid, setFieldValue, values }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -288,7 +288,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={isSubmitting || !isValid}
+                disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
                 {csvMapper.id ? t('Update') : t('Create')}
