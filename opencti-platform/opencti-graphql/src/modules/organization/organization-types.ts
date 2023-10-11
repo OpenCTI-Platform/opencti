@@ -10,7 +10,7 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   x_opencti_reliability: string
   sectors: string[]
   default_dashboard: string
-  authorized_authorities: string[]
+  authorized_authorities?: string[]
   grantable_groups: string[]
   [RELATION_PARTICIPATE_TO]: string[]
 }

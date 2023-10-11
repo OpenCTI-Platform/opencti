@@ -43,7 +43,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     throw FunctionalError('User is not part of the organization');
   }
   // Add user to organization admins list
-  await editAuthorizedAuthorities(context, user, organizationId, [...organization.authorized_authorities, memberId]);
+  await editAuthorizedAuthorities(context, user, organizationId, [...(organization.authorized_authorities ?? []), memberId]);
 };
 
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
@@ -56,14 +56,13 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
     throw FunctionalError('User is not part of the organization');
   }
   // Remove user from organization admins list
-  const indexOfMember = organization.authorized_authorities.indexOf(memberId);
-  organization.authorized_authorities.splice(indexOfMember, 1);
-  await editAuthorizedAuthorities(context, user, organizationId, organization.authorized_authorities);
+  const indexOfMember = (organization.authorized_authorities ?? []).indexOf(memberId);
+  (organization.authorized_authorities ?? []).splice(indexOfMember, 1);
+  await editAuthorizedAuthorities(context, user, organizationId, (organization.authorized_authorities ?? []));
 };
 
-export const findGrantableGroups = async (context, user, organization) => {
-  const groups = await internalFindByIds(context, context.user, organization.grantable_groups);
-  return groups;
+export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization) => {
+  return internalFindByIds(context, user, organization.grantable_groups);
 };
 // endregion
 

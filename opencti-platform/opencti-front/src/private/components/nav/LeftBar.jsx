@@ -450,7 +450,7 @@ const LeftBar = () => {
               {
                 // TODO when user is not orga_admin and doesn't have SETTINGS_CAPA?
                 (isOrganizationAdmin && !isGrantedToSettings) ? (
-                  <StyledTooltip title={!navOpen && t('Organizations')} placement="right">
+                  <StyledTooltip title={!navOpen && t('Settings')} placement="right">
                     <MenuItem
                       component={Link}
                       to="/dashboard/settings/accesses/organizations"
@@ -458,6 +458,15 @@ const LeftBar = () => {
                       classes={{ root: classes.menuItem }}
                       style={{ marginBottom: 50 }}
                     >
+                      <ListItemIcon style={{ minWidth: 20 }}>
+                        <CogOutline />
+                      </ListItemIcon>
+                      {navOpen && (
+                        <ListItemText
+                          classes={{ primary: classes.menuItemText }}
+                          primary={t('Settings')}
+                        />
+                      )}
                     </MenuItem>
                   </StyledTooltip>
                 )
@@ -471,6 +480,15 @@ const LeftBar = () => {
                         classes={{ root: classes.menuItem }}
                         style={{ marginBottom: 50 }}
                       >
+                        <ListItemIcon style={{ minWidth: 20 }}>
+                          <CogOutline />
+                        </ListItemIcon>
+                        {navOpen && (
+                          <ListItemText
+                            classes={{ primary: classes.menuItemText }}
+                            primary={t('Settings')}
+                          />
+                        )}
                       </MenuItem>
                 </StyledTooltip>
                   )

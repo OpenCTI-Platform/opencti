@@ -4,14 +4,11 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
-import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import GroupField from '@components/common/form/GroupField';
@@ -91,18 +88,8 @@ const userValidation = (t) => Yup.object().shape({
   groups: Yup.array().required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_organization_members',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose, organization }) => {
-  const { settings, me } = useAuth();
+  const { settings } = useAuth();
   const { t } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose();
@@ -119,7 +106,7 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_organization_members', paginationOptions, 'userAdd');
+        insertNode(store, 'Pagination_organization_members', paginationOptions, 'userAdd', organization.id);
       },
       setSubmitting,
       onCompleted: () => {

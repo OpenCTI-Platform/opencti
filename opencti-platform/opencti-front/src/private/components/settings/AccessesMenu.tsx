@@ -93,7 +93,7 @@ const AccessesMenu: FunctionComponent = () => {
                 path: '/dashboard/settings/accesses/users',
                 label: 'Users',
                 icon: <PermIdentityOutlined fontSize="medium" />,
-              }
+              },
             ]
           }
         />

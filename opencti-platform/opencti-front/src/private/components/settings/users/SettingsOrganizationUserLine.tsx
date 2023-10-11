@@ -128,7 +128,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
 
   const user = useFragment(UserLineFragment, node);
   const { me } = useAuth();
-  // TODO the condition should be "member is admin of this organization"
+  // TODO the condition should be "member is admin of this organization" - Do it in the backend: add property for user
   const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).length > 0;
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
@@ -235,7 +235,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       </ListItem>
       <ListItemIcon classes={{ root: classes.goIcon }}>
         {userHasSettingsAcesses
-        ? <>
+          ? <>
             <IconButton
               onClick={handleOpen}
               aria-haspopup="true"
@@ -251,8 +251,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
               }
             </Menu>
         </>
-          :
-          <KeyboardArrowRightOutlined/>
+          : <KeyboardArrowRightOutlined/>
         }
       </ListItemIcon>
     </ListItem>
