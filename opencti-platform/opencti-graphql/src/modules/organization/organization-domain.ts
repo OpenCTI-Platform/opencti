@@ -47,7 +47,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
 };
 
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
-  // Get Orga and membersq
+  // Get Orga and members
   const organization = await findById(context, user, organizationId);
   const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
 

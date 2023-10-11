@@ -78,7 +78,14 @@ export const organizationMutationAdminAdd = graphql`
   ) {
     organizationAdminAdd(id: $id, memberId: $memberId) {
       id
-      authorized_authorities
+      members{
+        edges {
+          node {
+            id
+            ...SettingsOrganizationUserLine_node
+          }
+        }
+      }
     }
   }
 `;
@@ -89,25 +96,11 @@ export const organizationMutationAdminRemove = graphql`
   ) {
     organizationAdminRemove(id: $id, memberId: $memberId) {
       id
-      authorized_authorities
-    }
-  }
-`;
-const userMutationRemoveFromOrganization = graphql`
-  mutation SettingsOrganizationUserLineRemoveFromOrganizationMutation(
-    $id: ID!
-    $organizationId: ID!
-  ) {
-    userEdit(id: $id) {
-      organizationDelete(organizationId: $organizationId) {
-        id
-        name
-        objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
+      members{
+        edges {
+          node {
+            id
+            ...SettingsOrganizationUserLine_node
           }
         }
       }
