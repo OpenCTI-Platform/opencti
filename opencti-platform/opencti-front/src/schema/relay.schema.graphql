@@ -1217,6 +1217,17 @@ enum GroupsOrdering {
   updated_at
 }
 
+enum GroupsFilter {
+  user_id
+}
+
+input GroupsFiltering {
+  key: [GroupsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
 type GroupConnection {
   pageInfo: PageInfo!
   edges: [GroupEdge]
@@ -8161,6 +8172,7 @@ type Query {
   settings: Settings!
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+  groupsForMember(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   me: MeUser!
   otpGeneration: OtpElement

@@ -7957,6 +7957,17 @@ export enum GroupingsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum GroupsFilter {
+  UserId = 'user_id'
+}
+
+export type GroupsFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<GroupsFilter>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
 export enum GroupsOrdering {
   AutoNewMarking = 'auto_new_marking',
   CreatedAt = 'created_at',
@@ -18044,6 +18055,7 @@ export type Query = {
   groupingsNumber?: Maybe<Number>;
   groupingsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   groups?: Maybe<GroupConnection>;
+  groupsForMember?: Maybe<GroupConnection>;
   identities?: Maybe<IdentityConnection>;
   identity?: Maybe<Identity>;
   importFiles?: Maybe<FileConnection>;
@@ -18842,6 +18854,15 @@ export type QueryGroupingsTimeSeriesArgs = {
 
 
 export type QueryGroupsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GroupsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGroupsForMemberArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<GroupsOrdering>;
@@ -29301,6 +29322,8 @@ export type ResolversTypes = ResolversObject<{
   GroupingsFilter: GroupingsFilter;
   GroupingsFiltering: GroupingsFiltering;
   GroupingsOrdering: GroupingsOrdering;
+  GroupsFilter: GroupsFilter;
+  GroupsFiltering: GroupsFiltering;
   GroupsOrdering: GroupsOrdering;
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
@@ -30120,6 +30143,7 @@ export type ResolversParentTypes = ResolversObject<{
   GroupingConnection: Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupingEdge']>>> };
   GroupingEdge: Omit<GroupingEdge, 'node'> & { node: ResolversParentTypes['Grouping'] };
   GroupingsFiltering: GroupingsFiltering;
+  GroupsFiltering: GroupsFiltering;
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
@@ -35824,6 +35848,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupingsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryGroupingsNumberArgs>>;
   groupingsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryGroupingsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
+  groupsForMember?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsForMemberArgs>>;
   identities?: Resolver<Maybe<ResolversTypes['IdentityConnection']>, ParentType, ContextType, Partial<QueryIdentitiesArgs>>;
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;

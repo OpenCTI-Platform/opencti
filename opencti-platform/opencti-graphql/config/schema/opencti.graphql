@@ -1153,6 +1153,17 @@ enum GroupsOrdering {
   created_at
   updated_at
 }
+enum GroupsFilter {
+  user_id
+}
+
+input GroupsFiltering {
+  key: [GroupsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
 type GroupConnection {
   pageInfo: PageInfo!
   edges: [GroupEdge]
@@ -12031,6 +12042,8 @@ type Query {
   settings: Settings!
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+  @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  groupsForMember(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
