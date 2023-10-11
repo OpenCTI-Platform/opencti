@@ -14,12 +14,14 @@ import { useHistory } from 'react-router-dom';
 import {
   WorkspaceTurnToContainerDialogQuery,
 } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogQuery.graphql';
-import investigationToContainerAdd, {
-  investigationToContainerMutation,
-} from '../../../utils/ContainerUtils';
+import {
+  WorkspaceTurnToContainerDialogMutation,
+} from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
+import { resolveLink } from '../../../utils/Entity';
+import { handleError } from '../../../relay/environment';
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
@@ -49,6 +51,17 @@ interface StixContainer {
   id?: string;
 }
 
+const investigationToContainerMutation = graphql`
+  mutation WorkspaceTurnToContainerDialogMutation($containerId: ID!, $workspaceId: ID!) {
+    containerEdit(id: $containerId) {
+      knowledgeAddFromInvestigation(workspaceId: $workspaceId) {
+        id
+        entity_type
+      }
+    }
+  }
+`;
+
 const WorkspaceTurnToContainerDialog: FunctionComponent<
 WorkspaceTurnToContainerDialogProps
 > = ({
@@ -62,7 +75,7 @@ WorkspaceTurnToContainerDialogProps
   const [actionsInputs, setActionsInputs] = useState<ActionInputs | null>(null);
   const [targetContainerId, setTargetContainerId] = useState('');
   const [newValue, setNewValue] = useState('');
-  const [commitInvestigationToContainerAdd] = useMutation(
+  const [commitInvestigationToContainerAdd] = useMutation<WorkspaceTurnToContainerDialogMutation>(
     investigationToContainerMutation,
   );
   const history = useHistory();
@@ -71,12 +84,17 @@ WorkspaceTurnToContainerDialogProps
   };
   const handleLaunchUpdate = () => {
     handleCloseUpdate();
-    investigationToContainerAdd(
-      workspace.id,
-      targetContainerId,
-      history,
-      commitInvestigationToContainerAdd,
-    );
+    commitInvestigationToContainerAdd({
+      variables: { containerId: targetContainerId, workspaceId: workspace.id || '' },
+      onCompleted: (data) => {
+        const id = data.containerEdit?.knowledgeAddFromInvestigation?.id;
+        const entityType = data.containerEdit?.knowledgeAddFromInvestigation?.entity_type || '';
+        history.push(`${resolveLink(entityType.toString())}/${id}/knowledge/graph`);
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
   };
 
   const searchContainersData = useLazyLoadQuery<WorkspaceTurnToContainerDialogQuery>(
