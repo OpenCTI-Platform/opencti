@@ -12,6 +12,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { InformationOutline } from 'mdi-material-ui';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -25,7 +26,7 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles({
@@ -90,6 +91,12 @@ const settingsOrganizationFragment = graphql`
     grantable_groups {
       id
       name
+      roles{
+        name
+        capabilities {
+          name
+        }
+      }
     }
     editContext {
       name
@@ -116,6 +123,7 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
+  const capabilitiesPerGroup = new Map(organization.grantable_groups?.map((group) => [group.id, group.roles?.map((role) => role?.capabilities?.map((capa) => capa.name)).flat()]));
   const isOrganizationAdmin = (me.administrated_organizations ?? []).map((orga) => orga?.id).includes(organization.id);
   return (
     <div className={classes.container}>
@@ -257,6 +265,11 @@ const SettingsOrganization = ({
                             <ItemIcon type="Group" />
                           </ListItemIcon>
                           <ListItemText primary={group.name} />
+                          { (capabilitiesPerGroup?.get(group.id)?.includes(SETTINGS_SETACCESSES) || capabilitiesPerGroup?.get(group.id)?.includes(BYPASS))
+                            && <Tooltip title={'This Group allows user to bypass restriction. It should not be added here.'}>
+                              <WarningOutlined color="warning" />
+                            </Tooltip>
+                          }
                         </ListItem>
                       ))}
                     </List>
