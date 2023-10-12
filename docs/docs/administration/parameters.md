@@ -32,7 +32,7 @@ This option can be deactivated to have a permanent Announcement.
 
 ![Broadcast message display not dismissible](assets/broadcast_message_display_notdismissible.png)
 
-⚠️ Only one Announcement is displayed at a time. Dismissible Announcement are displayed first, then the latest not dismissible Announcement.
+⚠️ Only one Announcement is displayed at a time. Dismissible Announcements are displayed first, then the latest not dismissible Announcement.
 
 ## Analytics
 
