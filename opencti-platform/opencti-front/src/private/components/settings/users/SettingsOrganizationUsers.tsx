@@ -35,10 +35,9 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface MembersListContainerProps {
   organization: SettingsOrganization_organization$data
-  isOrganizationAdmin: boolean
 }
 
-const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization, isOrganizationAdmin = false }) => {
+const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [openAddUser, setOpenAddUser] = useState(false);

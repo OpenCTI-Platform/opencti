@@ -123,7 +123,7 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
-  const capabilitiesPerGroup = new Map(organization.grantable_groups?.map((group) => [group.id, group.roles?.map((role) => role?.capabilities?.map((capa) => capa.name)).flat()]));
+  const capabilitiesPerGroup = new Map(organization.grantable_groups?.map((group) => [group.id, group.roles?.map((role) => role?.capabilities?.map((capa) => capa?.name)).flat()]));
   const isOrganizationAdmin = (me.administrated_organizations ?? []).map((orga) => orga?.id).includes(organization.id);
   return (
     <div className={classes.container}>
