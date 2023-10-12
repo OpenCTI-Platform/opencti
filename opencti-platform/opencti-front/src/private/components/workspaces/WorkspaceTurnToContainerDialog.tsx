@@ -25,7 +25,7 @@ import { handleError } from '../../../relay/environment';
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
-  displayTurnToReportOrCaseContainer: boolean;
+  open: boolean;
   handleClose: () => void;
   React.SetStateAction<boolean>
   >;
