@@ -448,7 +448,6 @@ const LeftBar = () => {
           </Security>
           <Security needs={[SETTINGS, ORGA_ADMIN]}>
               {
-                // TODO when user is not orga_admin and doesn't have SETTINGS_CAPA?
                 (isOrganizationAdmin && !isGrantedToSettings) ? (
                   <StyledTooltip title={!navOpen && t('Settings')} placement="right">
                     <MenuItem

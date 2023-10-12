@@ -102,9 +102,6 @@ export const batchSectors = (context: AuthContext, user: AuthUser, organizationI
   return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 export const batchMembers = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // TODO return filtered list
-  }
   return batchListThroughGetFrom(context, user, organizationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, opts);
 };
 export const batchSubOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
