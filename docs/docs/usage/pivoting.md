@@ -13,7 +13,7 @@ In your workspace, you can add entities that you want to investigate, visualize 
 
 ![Investigation workspace](assets/investigation-workspace.png)
 
-You can see next to them a bullet with a number inside. It is a visual indication that shows you how many entities have relationships with this one.
+You can see next to them a bullet with a number inside. It is a visual indication showing you how many entities are linked to this one and not displayed in the graph yet.
 Note that this number is an approximation of the number of entities. That's why there is a `~` next to the number.
 
 No bullet displayed means: nothing to expand from this node.
