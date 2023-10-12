@@ -5,7 +5,7 @@ import {
   batchMembers,
   batchParentOrganizations,
   batchSectors,
-  batchSubOrganizations, editAuthorizedAuthorities,
+  batchSubOrganizations, buildAdministratedOrganizations, editAuthorizedAuthorities,
   findAll,
   findById, findGrantableGroups, organizationAdminAdd, organizationAdminRemove
 } from './organization-domain';
@@ -38,6 +38,9 @@ const organizationResolvers: Resolvers = {
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
+  },
+  User: {
+    administrated_organizations: (user, _, context) => buildAdministratedOrganizations(context, context.user, user),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

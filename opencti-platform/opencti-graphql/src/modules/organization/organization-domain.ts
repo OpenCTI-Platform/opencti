@@ -1,5 +1,5 @@
 import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, patchAttribute } from '../../database/middleware';
-import { type EntityOptions, internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
@@ -9,9 +9,9 @@ import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
+import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { BYPASS, isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 
@@ -85,6 +85,16 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
 export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization: BasicStoreEntityOrganization) => {
   // This will be removed when group is a module and types are correctly defined
   return internalFindByIds(context, user, organization.grantable_groups) as unknown as ResolversTypes['Group'][];
+};
+
+export const buildAdministratedOrganizations = async (context: AuthContext, user: AuthUser, member: BasicObject) => {
+  let organizations: BasicStoreEntityOrganization[];
+  if (isUserHasCapability(user, BYPASS) || isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    organizations = await listAllEntities(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION]);
+  } else {
+    organizations = user.administrated_organizations as BasicStoreEntityOrganization[];
+  }
+  return (organizations ?? []).filter((o) => o.authorized_authorities?.includes(member.id));
 };
 // endregion
 

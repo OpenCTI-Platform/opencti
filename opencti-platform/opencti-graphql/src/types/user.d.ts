@@ -33,6 +33,7 @@ interface AuthUser extends BasicStoreIdentifier {
   groups: Array<Group>;
   organizations: Array<BasicStoreCommon>;
   allowed_organizations: Array<BasicStoreCommon>;
+  administrated_organizations: Array<BasicStoreCommon>;
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
   default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>;

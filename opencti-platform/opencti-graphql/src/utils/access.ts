@@ -72,7 +72,8 @@ export const SYSTEM_USER: AuthUser = {
   all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
-  account_status: ACCOUNT_STATUS_ACTIVE
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -95,6 +96,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -117,6 +119,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const AUTOMATION_MANAGER_USER: AuthUser = {
@@ -139,9 +142,11 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const REDACTED_USER: AuthUser = {
+  administrated_organizations: [],
   entity_type: 'User',
   id: REDACTED_USER_UUID,
   internal_id: REDACTED_USER_UUID,
