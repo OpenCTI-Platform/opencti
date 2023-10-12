@@ -99,8 +99,10 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const submitUpdate = () => {
     if (operation === 'replace') {
       const { currentValues, valueToReplace } = newMarking as OptionValues;
-      const markingsToReplace = currentValues.filter((marking: { value: unknown; }) => marking.value !== valueToReplace.value);
-      onChange(name, markingsToReplace as Option[], operation);
+      const markingAdded = currentValues[currentValues.length - 1];
+      const markingsReplace = currentValues.filter((marking) => marking.definition_type !== valueToReplace.definition_type).concat([markingAdded]);
+
+      onChange(name, markingsReplace as Option[], operation);
       setOperation(undefined);
       handleClose();
     } else {
