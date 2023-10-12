@@ -1,24 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
-import {
-  daysAgo,
-  monthsAgo,
-  yearsAgo,
-  dayStartDate,
-  parse,
-} from '../../../../utils/Time';
+import { daysAgo, dayStartDate, monthsAgo, parse, yearsAgo } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import Security from '../../../../utils/Security';
-import useGranted, {
-  EXPLORE_EXUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WidgetPopover from './WidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WidgetConfig from './WidgetConfig';
@@ -64,8 +56,6 @@ import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
 const useStyles = makeStyles(() => ({
   container: {
     margin: '0 -20px 0 -20px',
@@ -80,7 +70,10 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const COL_WIDTH = 30;
+
 const DashboardComponent = ({ workspace, noToolbar }) => {
+  const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), []);
   const classes = useStyles();
   const isExploreEditor = useGranted([EXPLORE_EXUPDATE]);
   const [manifest, setManifest] = useState(
@@ -140,7 +133,28 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
     saveManifest(newManifest);
   };
+  const getMaxY = () => {
+    const maxY = Object.values(manifest.widgets).reduce(
+      (max, n) => (n.layout.y > max ? n.layout.y : max),
+      0,
+    );
+    return maxY;
+  };
+  const getMaxX = () => {
+    const y = getMaxY();
+    const maxX = Object.values(manifest.widgets).filter((n) => n.layout.y === y).reduce(
+      (max, n) => (n.layout.x > max ? n.layout.x : max),
+      0,
+    );
+    return maxX + 4;
+  };
   const handleAddWidget = (widgetManifest) => {
+    let maxX = getMaxX();
+    let maxY = getMaxY();
+    if (maxX >= COL_WIDTH - 4) {
+      maxX = 0;
+      maxY += 2;
+    }
     const newManifest = R.assoc(
       'widgets',
       R.assoc(
@@ -149,8 +163,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           'layout',
           {
             i: widgetManifest.id,
-            x: 0,
-            y: 0,
+            x: maxX,
+            y: maxY,
             w: 4,
             h: 2,
             minW: 2,
@@ -724,7 +738,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             margin={[20, 20]}
             rowHeight={50}
             breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
-            cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
+            cols={{ lg: COL_WIDTH, md: COL_WIDTH, sm: COL_WIDTH, xs: COL_WIDTH, xxs: COL_WIDTH }}
             isDraggable={false}
             isResizable={false}
           >
@@ -763,7 +777,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           margin={[20, 20]}
           rowHeight={50}
           breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
-          cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
+          cols={{ lg: COL_WIDTH, md: COL_WIDTH, sm: COL_WIDTH, xs: COL_WIDTH, xxs: COL_WIDTH }}
           isDraggable={!noToolbar}
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
