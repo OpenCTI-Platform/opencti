@@ -8,23 +8,19 @@ import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
-import TriggersLines, {
-  triggersLinesQuery,
-} from '../../profile/triggers/TriggersLines';
+import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
 import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  TriggerFilter,
-  TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables,
-} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggerFilter, TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../../components/list_lines';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
+import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -113,48 +109,52 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openDigest, setOpenDigest] = useState(false);
   return (
     <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left', marginRight: 12 }}
-      >
-        {t('Triggers and Digests')}
-      </Typography>
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
-        />
-      </div>
-      <Tooltip title={t('Add a live trigger')}>
-        <IconButton
-          aria-label="Add"
-          className={classes.createButton}
-          onClick={() => setOpenLive(true)}
-          size="large"
-          color="secondary"
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{ float: 'left', marginRight: 12 }}
         >
-          <CampaignOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <TriggerLiveCreation
-        paginationOptions={paginationOptions}
-        open={openLive}
-        handleClose={() => setOpenLive(false)}
-        recipientId={recipientId}
-      />
-      <Tooltip title={t('Add a regular digest')}>
-        <IconButton
-          aria-label="Add"
-          className={classes.createButton}
-          onClick={() => setOpenDigest(true)}
-          size="large"
-          color="secondary"
-        >
-          <BackupTableOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
+          {t('Triggers and Digests')}
+        </Typography>
+        <div style={{ float: 'right', marginTop: -12 }}>
+          <SearchInput
+            variant="thin"
+            onSubmit={helpers.handleSearch}
+            keyword={searchTerm}
+          />
+        </div>
+      <Security needs={[SETTINGS]}>
+        <>
+          <Tooltip title={t('Add a live trigger')}>
+            <IconButton
+              aria-label="Add"
+              className={classes.createButton}
+              onClick={() => setOpenLive(true)}
+              size="large"
+              color="secondary"
+            >
+              <CampaignOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <TriggerLiveCreation
+            paginationOptions={paginationOptions}
+            open={openLive}
+            handleClose={() => setOpenLive(false)}
+            recipientId={recipientId}
+          />
+          <Tooltip title={t('Add a regular digest')}>
+            <IconButton
+              aria-label="Add"
+              className={classes.createButton}
+              onClick={() => setOpenDigest(true)}
+              size="large"
+              color="secondary"
+            >
+              <BackupTableOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      </Security>
       <div className="clearfix" />
       <Paper
         ref={ref}

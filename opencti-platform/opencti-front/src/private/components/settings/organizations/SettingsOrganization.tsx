@@ -258,7 +258,7 @@ const SettingsOrganization = ({
                           dense={true}
                           divider={true}
                           button={true}
-                          component={Link}
+                          component={isOrganizationAdmin ? undefined : Link}
                           to={`/dashboard/settings/accesses/groups/${group.id}`}
                         >
                           <ListItemIcon>

@@ -5,11 +5,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import {
-  DeleteOutlined,
-  DeleteForeverOutlined,
-  EditOutlined,
-} from '@mui/icons-material';
+import { DeleteForeverOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -51,6 +47,9 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
+import { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -223,6 +222,7 @@ interface UserProps {
 const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const classes = useStyles();
   const { t, nsdt, fsd, fldt } = useFormatter();
+  const { me } = useAuth();
   const theme = useTheme();
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
@@ -247,6 +247,8 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       subscription.unsubscribe();
     };
   }, []);
+  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
+  const userHasSettingsCapability = userCapabilities.includes(SETTINGS) || userCapabilities.includes(BYPASS);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
@@ -439,7 +441,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         dense={true}
                         divider={true}
                         button={true}
-                        component={Link}
+                        component={userHasSettingsCapability ? Link : undefined}
                         to={`/dashboard/settings/accesses/roles/${role?.id}`}
                       >
                         <ListItemIcon>
@@ -463,7 +465,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         dense={true}
                         divider={true}
                         button={true}
-                        component={Link}
+                        component={userHasSettingsCapability ? Link : undefined}
                         to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
                       >
                         <ListItemIcon>
@@ -507,15 +509,17 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 >
                   {t('Sessions')}
                 </Typography>
-                <IconButton
-                  color="secondary"
-                  aria-label="Delete all"
-                  onClick={handleOpenKillSessions}
-                  classes={{ root: classes.floatingButton }}
-                  size="small"
-                >
-                  <DeleteForeverOutlined fontSize="small" />
-                </IconButton>
+                <Security needs={[SETTINGS]}>
+                  <IconButton
+                    color="secondary"
+                    aria-label="Delete all"
+                    onClick={handleOpenKillSessions}
+                    classes={{ root: classes.floatingButton }}
+                    size="small"
+                  >
+                    <DeleteForeverOutlined fontSize="small" />
+                  </IconButton>
+                </Security>
                 <div className="clearfix" />
                 <FieldOrEmpty source={orderedSessions}>
                   <List style={{ marginTop: -2 }}>
@@ -708,31 +712,32 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayKillSessions}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseKillSessions}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t('Do you want to kill all the sessions of this user?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseKillSessions} disabled={killing}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSessions}
-            color="secondary"
-            disabled={killing}
-          >
-            {t('Kill all')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+        <Dialog
+          open={displayKillSessions}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={handleCloseKillSessions}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to kill all the sessions of this user?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseKillSessions} disabled={killing}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={submitKillSessions}
+              color="secondary"
+              disabled={killing}
+            >
+              {t('Kill all')}
+            </Button>
+          </DialogActions>
+        </Dialog>
     </div>
   );
 };
