@@ -5,17 +5,12 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
+import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from './i18n';
 
-export type CheckboxesItem = {
+type CheckboxesFieldProps = FieldProps<Option[]> & {
   label: string
-  value: string
-};
-
-type CheckboxesFieldProps = FieldProps<CheckboxesItem[]> & {
-  label: string
-  items: CheckboxesItem[]
-  maxHeight?: string
+  items: Option[]
 };
 
 const CheckboxesField = ({
@@ -23,16 +18,15 @@ const CheckboxesField = ({
   field,
   label,
   items,
-  maxHeight = '300px',
 }: CheckboxesFieldProps) => {
   const { t } = useFormatter();
 
   const { setFieldValue } = form;
   const { name, value } = field;
 
-  const isChecked = (val: CheckboxesItem) => value.includes(val);
+  const isChecked = (val: Option) => value.includes(val);
 
-  const toggle = (val: CheckboxesItem) => {
+  const toggle = (val: Option) => {
     if (isChecked(val)) {
       setFieldValue(name, value.filter((v) => v !== val));
     } else {
@@ -64,7 +58,7 @@ const CheckboxesField = ({
         </ButtonGroup>
 
         <FormGroup sx={{
-          maxHeight,
+          maxHeight: '300px',
           flexWrap: 'nowrap',
           overflowY: 'auto',
         }}>

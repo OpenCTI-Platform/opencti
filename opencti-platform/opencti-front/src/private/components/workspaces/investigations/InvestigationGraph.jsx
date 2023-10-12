@@ -2027,8 +2027,8 @@ class InvestigationGraphComponent extends Component {
                 PaperProps={{ elevation: 1 }}
                 open={openExpandElements}
                 onClose={this.handleCloseExpandElements.bind(this)}
-                fullWidth={true}
-                maxWidth="xs"
+                fullWidth={false}
+                maxWidth="sm"
               >
                 <InvestigationExpandForm
                   links={graphData.links}

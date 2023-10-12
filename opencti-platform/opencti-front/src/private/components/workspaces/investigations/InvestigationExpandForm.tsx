@@ -7,6 +7,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { Option } from '@components/common/form/ReferenceField';
 import SwitchField from '../../../../components/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -18,7 +19,7 @@ import {
 import {
   InvestigationExpandFormRelDistributionQuery,
 } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
-import CheckboxesField, { CheckboxesItem } from '../../../../components/CheckboxesField';
+import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // The number of elements targeted by the given
@@ -78,16 +79,17 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     gap: 24,
   },
-  paperHeight: {
+  fallback: {
     minHeight: 200,
+    minWidth: 200,
     display: 'flex',
     alignItems: 'center',
   },
 }));
 
 type FormData = {
-  entity_types: CheckboxesItem[],
-  relationship_types: CheckboxesItem[],
+  entity_types: Option[],
+  relationship_types: Option[],
   reset_filters: boolean,
 };
 
@@ -148,8 +150,8 @@ const InvestigationExpandFormContent = ({
   );
 
   // List of items that are given to the Checkboxes component in the form.
-  const [targets, setTargets] = useState<CheckboxesItem[]>([]);
-  const [relationships, setRelationships] = useState<CheckboxesItem[]>([]);
+  const [targets, setTargets] = useState<Option[]>([]);
+  const [relationships, setRelationships] = useState<Option[]>([]);
 
   // Nodes and edges we have in our graph.
   // // Used to compute the difference between total count returned by
@@ -430,21 +432,23 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
     loadDistributionToQuery({ ids });
   }, [props.selectedNodes]);
 
-  return (
-    <div className={classes.paperHeight}>
-      {(distributionRelQueryRef && distributionFromQueryRef && distributionToQueryRef) ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-          <InvestigationExpandFormContent
-            {...props}
-            distributionRelQueryRef={distributionRelQueryRef}
-            distributionFromQueryRef={distributionFromQueryRef}
-            distributionToQueryRef={distributionToQueryRef}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement}/>
-      )}
+  const Fallback = (
+    <div className={classes.fallback}>
+      <Loader variant={LoaderVariant.inElement}/>
     </div>
+  );
+
+  return (distributionRelQueryRef && distributionFromQueryRef && distributionToQueryRef) ? (
+    <Suspense fallback={Fallback}>
+      <InvestigationExpandFormContent
+        {...props}
+        distributionRelQueryRef={distributionRelQueryRef}
+        distributionFromQueryRef={distributionFromQueryRef}
+        distributionToQueryRef={distributionToQueryRef}
+      />
+    </Suspense>
+  ) : (
+    Fallback
   );
 };
 
