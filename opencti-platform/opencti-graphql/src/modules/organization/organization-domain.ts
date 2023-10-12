@@ -88,7 +88,7 @@ export const findGrantableGroups = async (context: AuthContext, user: AuthUser, 
 
 export const buildAdministratedOrganizations = async (context: AuthContext, user: AuthUser, member: BasicObject) => {
   let organizations: BasicStoreEntityOrganization[];
-  if (isUserHasCapability(user, BYPASS) || isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+  if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     organizations = await listAllEntities(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION]);
   } else {
     organizations = user.administrated_organizations as BasicStoreEntityOrganization[];

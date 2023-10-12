@@ -121,7 +121,7 @@ export const findById = async (context, user, userId) => {
 
 export const findAll = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && !isUserHasCapability(user, BYPASS)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const organisationIds = user.administrated_organizations.map((orga) => orga.id);
     const users = R.uniq((await listThroughGetFrom(
       context,
