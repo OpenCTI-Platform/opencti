@@ -1361,7 +1361,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
-  administrated_organizations: [Organization]!
+  administrated_organizations: [Organization!]!
   unit_system: UnitSystem
   # Technical
   editContext: [EditUserContext!]

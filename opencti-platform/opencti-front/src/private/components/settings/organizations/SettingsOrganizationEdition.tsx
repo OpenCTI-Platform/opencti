@@ -136,7 +136,7 @@ interface SettingsOrganizationEditionProps {
   enableReferences?: boolean;
 }
 
-export const convertGrantableGroups = (organization) => (organization?.grantable_groups ?? []).map((n) => ({
+export const convertGrantableGroups = (organization: SettingsOrganization_organization$data) => (organization?.grantable_groups ?? []).map((n) => ({
   label: n.name,
   value: n.id,
 }));

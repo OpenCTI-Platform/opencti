@@ -1429,7 +1429,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
-  administrated_organizations: [Organization]!
+  administrated_organizations: [Organization!]!
   unit_system: UnitSystem
   editContext: [EditUserContext!]
 }
@@ -12172,7 +12172,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: [UsersFiltering]): UserConnection
   authorized_authorities: [String]
-  grantable_groups: [Group]
+  grantable_groups: [Group!]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace

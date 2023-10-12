@@ -17,6 +17,7 @@ import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuer
 import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
+import { DataColumns } from '../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -59,7 +60,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     settingsOrganizationUsersLinesQuery,
     { ...paginationOptions, id: organization.id },
   );
-  const dataColumns = {
+  const dataColumns: DataColumns = {
     name: {
       label: 'Name',
       width: '20%',

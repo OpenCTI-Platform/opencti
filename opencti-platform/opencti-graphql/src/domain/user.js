@@ -555,7 +555,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       }
       // If moving to unexpired status and expiration date is already in the past, reset the value
       if (R.head(input.value) !== ACCOUNT_STATUS_EXPIRED && userToUpdate.account_lock_after_date
-          && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
+        && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
         inputs.push({ key: 'account_lock_after_date', value: [null] });
       }
     }

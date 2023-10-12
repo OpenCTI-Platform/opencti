@@ -85,7 +85,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user })
           <UserEditionPassword user={user} context={editContext} />
         )}
         {currentTab === 2 && (
-          <UserEditionGroups user={user} context={editContext} />
+          <UserEditionGroups user={user} />
         )}
       </div>
     </>

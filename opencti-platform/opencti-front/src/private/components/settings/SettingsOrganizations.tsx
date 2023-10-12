@@ -33,7 +33,7 @@ const SettingsOrganizations = () => {
   });
 
   const userIsOrganizationAdmin = (me.administrated_organizations ?? []).length > 0;
-  const paginationOptions = {
+  const paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables = {
     ...paginationOptionsFromStorage,
     filters: userIsOrganizationAdmin ? [{ key: ['authorized_authorities'], values: [me.id] }] : undefined,
   };
