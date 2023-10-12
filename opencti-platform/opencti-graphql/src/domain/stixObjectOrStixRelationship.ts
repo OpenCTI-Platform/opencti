@@ -2,7 +2,7 @@ import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD } from '../database/utils';
 import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { buildRelationData, createRelations, deleteRelationsByFromAndTo, patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
@@ -37,8 +37,13 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   // Create relation
   const fromType = stixObjectOrRelationship.entity_type;
   const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromType, input.relationship_type);
-  const patch = { [fieldName as string]: [input.toId] };
-  const operations = { [fieldName as string]: UPDATE_OPERATION_ADD };
+
+  if (!fieldName) {
+    throw UnsupportedError('This relationship type is not supported', { relationship_type: input.relationship_type });
+  }
+
+  const patch = { [fieldName]: [input.toId] };
+  const operations = { [fieldName]: UPDATE_OPERATION_ADD };
   // Update data
   await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
 
