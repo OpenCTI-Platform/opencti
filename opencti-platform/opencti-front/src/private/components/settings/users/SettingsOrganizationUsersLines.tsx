@@ -98,7 +98,7 @@ SettingsOrganizationUsersLinesProps
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      organization={data.organization}
+      entityId={data.organization?.id}
     />
   );
 };

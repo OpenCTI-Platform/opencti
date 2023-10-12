@@ -104,17 +104,17 @@ export const organizationMutationAdminRemove = graphql`
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns
   node: SettingsOrganizationUserLine_node$key
-  organization: SettingsOrganization_organization$data
+  entityId: string
 }
 
-export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, organization }) => {
+export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, entityId: organizationId }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const user = useFragment(UserLineFragment, node);
   const { me } = useAuth();
-  const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).map(({ id }) => id).includes(organization.id);
+  const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).map(({ id }) => id).includes(organizationId);
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const external = user.external === true;
@@ -132,7 +132,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   const promoteMember = () => {
     promoteMemberMutation({
       variables: {
-        id: organization.id,
+        id: organizationId,
         memberId: user.id,
         userEmail: user.user_email,
       },
@@ -143,7 +143,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   const demoteMember = () => {
     demoteMemberMutation({
       variables: {
-        id: organization.id,
+        id: organizationId,
         memberId: user.id,
         userEmail: user.user_email,
       },
