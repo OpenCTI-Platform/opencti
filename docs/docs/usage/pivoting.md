@@ -13,16 +13,27 @@ In your workspace, you can add entities that you want to investigate, visualize 
 
 ![Investigation workspace](assets/investigation-workspace.png)
 
+You can see next to them a bullet with a number inside. It is a visual indication showing you how many entities are linked to this one and not displayed in the graph yet.
+Note that this number is an approximation of the number of entities. That's why there is a `~` next to the number.
+
+No bullet displayed means there is nothing to expand from this node.
+
 ## Add and expand an entity
 
 You can add any existing entity of the platform to your investigation.
 
 ![Investigation bottom right menu](assets/investigation-bottom-right-menu.png)
 
-Once added, you can select the entity, and see its details in the right. 
-In this bottom right menu, right next to "Add en entity", you can expand the selected entity and select the number of linked entities you want to see in your investigation.
+Once added, you can select the entity, and see its details in the panel that appears on the right of the screen.
+
+
+In the same menu as above, right next to "Add en entity", you can expand the selected entity. Clicking on the menu icon open a new window where you can choose which type of entities and relationships you want to expand.
+
+For each type of entity or relationship, the number of elements that will be added into the investigation graph is displayed in parentheses. This time there is no `~` symbol as the number is exact.
 
 ![Investigation expand entity](assets/investigation-expand-entity.png)
+
+For example, in the image above, selecting target _Malware_ and relationship _Uses_ means: expand in my investigation graph all _Malwares_ linked to this node with a relationship of type _Uses_.
 
 ## Add a relationship
 
