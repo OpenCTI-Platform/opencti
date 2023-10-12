@@ -165,7 +165,6 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
                 dataColumns={dataColumns}
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
-                isOrganizationAdmin={isOrganizationAdmin}
               />
             </React.Suspense>
           )}

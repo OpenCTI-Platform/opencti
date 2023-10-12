@@ -148,7 +148,6 @@ class ListLinesContent extends Component {
       contentMapping,
       contentMappingData,
       bypassEditionRestriction,
-      isOrganizationAdmin,
       organization,
     } = this.props;
     const edge = dataList[index];
@@ -192,7 +191,6 @@ class ListLinesContent extends Component {
             contentMapping={contentMapping}
             contentMappingData={contentMappingData}
             bypassEditionRestriction={bypassEditionRestriction}
-            isOrganizationAdmin={isOrganizationAdmin}
             organization={organization}
           />
         ) : (
@@ -219,7 +217,6 @@ class ListLinesContent extends Component {
             contentMapping,
             contentMappingData,
             bypassEditionRestriction,
-            isOrganizationAdmin,
             organization,
           })
         )}
@@ -361,7 +358,6 @@ ListLinesContent.propTypes = {
   contentMapping: PropTypes.object,
   contentMappingData: PropTypes.object,
   bypassEditionRestriction: PropTypes.bool,
-  isOrganizationAdmin: PropTypes.bool,
   organization: PropTypes.object,
 };
 

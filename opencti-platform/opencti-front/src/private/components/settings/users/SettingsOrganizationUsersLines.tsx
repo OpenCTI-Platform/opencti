@@ -69,14 +69,13 @@ interface SettingsOrganizationUsersLinesProps {
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<SettingsOrganizationUsersLinesQuery>;
   paginationOptions: SettingsOrganizationUsersLinesQuery$variables;
-  isOrganizationAdmin: boolean;
 }
 
 const nbOfRowsToLoad = 50;
 
 const SettingsOrganizationUsersLines: FunctionComponent<
 SettingsOrganizationUsersLinesProps
-> = ({ dataColumns, queryRef, paginationOptions, isOrganizationAdmin }) => {
+> = ({ dataColumns, queryRef, paginationOptions }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   SettingsOrganizationUsersLinesQuery,
   SettingsOrganizationUsersLines_data$key
@@ -99,7 +98,6 @@ SettingsOrganizationUsersLinesProps
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      isOrganizationAdmin={isOrganizationAdmin}
       organization={data.organization}
     />
   );
