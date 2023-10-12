@@ -123,14 +123,14 @@ export const findAll = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && !isUserHasCapability(user, BYPASS)) {
     const organisationIds = user.administrated_organizations.map((orga) => orga.id);
-    return await listThroughGetFrom(
+    const users = R.uniq((await listThroughGetFrom(
       context,
       user,
       organisationIds,
       RELATION_PARTICIPATE_TO,
       ENTITY_TYPE_USER,
-      { paginate: true, batched: false }
-    );
+    )).map((n) => ({ node: n })));
+    return buildPagination(0, null, users, users.length);
   }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
