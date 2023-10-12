@@ -3,23 +3,23 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import { graphql } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import SwitchField from '../../../../components/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery } from '../../../../relay/environment';
 import {
-  InvestigationExpandFormTargetsDistributionFromQuery$data,
+  InvestigationExpandFormTargetsDistributionFromQuery,
 } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
 import {
-  InvestigationExpandFormTargetsDistributionToQuery$data,
+  InvestigationExpandFormTargetsDistributionToQuery,
 } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
 import {
-  InvestigationExpandFormRelDistributionQuery$data,
+  InvestigationExpandFormRelDistributionQuery,
 } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import CheckboxesField, { CheckboxesItem } from '../../../../components/CheckboxesField';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -78,6 +78,11 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     gap: 24,
   },
+  paperHeight: {
+    minHeight: 200,
+    display: 'flex',
+    alignItems: 'center',
+  },
 }));
 
 type FormData = {
@@ -110,14 +115,37 @@ type InvestigationExpandFormProps = {
   onReset: () => void
 };
 
-const InvestigationExpandForm = ({
+// Refs of queries instantiated by the wrapper (bottom of the file).
+type InvestigationExpandFormContentProps = InvestigationExpandFormProps & {
+  distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>
+  distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>
+  distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>
+};
+
+const InvestigationExpandFormContent = ({
   links,
   selectedNodes,
   onSubmit,
   onReset,
-}: InvestigationExpandFormProps) => {
+  distributionRelQueryRef,
+  distributionFromQueryRef,
+  distributionToQueryRef,
+}: InvestigationExpandFormContentProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
+
+  const distributionRel = usePreloadedQuery(
+    investigationExpandFormRelDistributionQuery,
+    distributionRelQueryRef,
+  );
+  const distributionFrom = usePreloadedQuery(
+    investigationExpandFormTargetsDistributionFromQuery,
+    distributionFromQueryRef,
+  );
+  const distributionTo = usePreloadedQuery(
+    investigationExpandFormTargetsDistributionToQuery,
+    distributionToQueryRef,
+  );
 
   // List of items that are given to the Checkboxes component in the form.
   const [targets, setTargets] = useState<CheckboxesItem[]>([]);
@@ -203,145 +231,110 @@ const InvestigationExpandForm = ({
     setExistingRels(countRels);
   }, [links, setExistingRels, setExistingTargets]);
 
-  // Fetch all possible relationships linked to the nodes to expand.
   useEffect(() => {
-    const fetchRelationships = async () => {
-      if (selectedNodes.length === 0) return;
-      const nodeIds = Array.from(selectedNodes).map((node) => node.id);
-
-      const { stixRelationshipsDistribution } = await fetchQuery(
-        investigationExpandFormRelDistributionQuery,
-        { ids: nodeIds },
-      ).toPromise() as InvestigationExpandFormRelDistributionQuery$data;
-
-      // A map where each key of the Map is a relationship type and
-      // the associated value is a Set of ids of the elements in
-      // relation with all selected nodes.
-      //
-      // Used to compute the difference between total count returned by
-      // the query and what is already displayed in the graph.
-      const existingRelsSelected = new Map<string, Set<string>>();
-      nodeIds.forEach((node) => {
-        const nodeRels = existingRels.get(node);
-        if (nodeRels) {
-          nodeRels.forEach((value, key) => {
-            const current = existingRelsSelected.get(key);
-            if (current !== undefined) {
-              value.forEach((val) => current.add(val));
-            } else {
-              existingRelsSelected.set(key, new Set(value));
-            }
-          });
-        }
-      });
-
-      const nonNullDistribution = (stixRelationshipsDistribution ?? [])
-        // Use of flatMap() to do both filter() and map() in one step.
-        .flatMap((rel) => (rel ? [{
-          label: rel.label,
-          // Decrease from the count of already displayed elements.
-          // toLowerCase() because relationship names are pascalized
-          // in elAggregationRelationsCount().
-          value: (rel.value ?? 0) - (existingRelsSelected.get(rel.label.toLowerCase()) ?? new Set()).size,
-        }] : []))
-        // Remove from the list entities with nothing to add.
-        .filter(({ value }) => value > 0)
-        .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
-
-      setRelationships(
-        nonNullDistribution
-          .map(({ label, value }) => ({
-            label: `${label} (${value})`,
-            value: label,
-          })),
-      );
-    };
-    fetchRelationships();
-  }, [selectedNodes, existingRels, setRelationships]);
-
-  // Fetch all possible targets connected to the nodes to expand.
-  useEffect(() => {
-    const fetchTargets = async () => {
-      if (selectedNodes.length === 0) return;
-      const nodeIds = Array.from(selectedNodes).map((node) => node.id);
-
-      // A map where each key of the Map is a target type and
-      // the associated value is the number of the elements in
-      // relation with all selected nodes.
-      //
-      // Used to compute the difference between total count returned by
-      // the query and what is already displayed in the graph.
-      const existingTargetsSelected = new Map<string, number>();
-      nodeIds.forEach((node) => {
-        const nodeTargets = existingTargets.get(node);
-        if (nodeTargets) {
-          nodeTargets.forEach((value, key) => {
-            const current = existingTargetsSelected.get(key);
-            if (current !== undefined) {
-              existingTargetsSelected.set(key, current + value);
-            } else {
-              existingTargetsSelected.set(key, value);
-            }
-          });
-        }
-      });
-
-      // We make 2 queries to fetch the count of targets because to have relevant results we
-      // need to tell to the query which direction to use in the relationship. And we want
-      // both directions.
-      const distributions = await Promise.all([
-        // Query to fetch count of relationships sources
-        fetchQuery(
-          investigationExpandFormTargetsDistributionFromQuery,
-          { ids: nodeIds },
-        ).toPromise() as Promise<InvestigationExpandFormTargetsDistributionFromQuery$data>,
-        // Query to fetch count of relationships destinations
-        fetchQuery(
-          investigationExpandFormTargetsDistributionToQuery,
-          { ids: nodeIds },
-        ).toPromise() as Promise<InvestigationExpandFormTargetsDistributionToQuery$data>,
-      ]);
-
-      // Merge both 'from' relationships and 'to' relationships.
-      const distribution: { label: string, value: number }[] = [];
-      distributions.forEach(({ stixRelationshipsDistribution }) => {
-        stixRelationshipsDistribution?.forEach((newTarget) => {
-          if (newTarget) {
-            const target = distribution.find((item) => item.label === newTarget.label);
-            if (target) {
-              target.value += (newTarget.value ?? 0);
-            } else {
-              distribution.push({
-                label: newTarget.label,
-                value: newTarget.value ?? 0,
-              });
-            }
+    // A map where each key of the Map is a relationship type and
+    // the associated value is a Set of ids of the elements in
+    // relation with all selected nodes.
+    //
+    // Used to compute the difference between total count returned by
+    // the query and what is already displayed in the graph.
+    const existingRelsSelected = new Map<string, Set<string>>();
+    selectedNodes.forEach((node) => {
+      const nodeRels = existingRels.get(node.id);
+      if (nodeRels) {
+        nodeRels.forEach((value, key) => {
+          const current = existingRelsSelected.get(key);
+          if (current !== undefined) {
+            value.forEach((val) => current.add(val));
+          } else {
+            existingRelsSelected.set(key, new Set(value));
           }
         });
+      }
+    });
+
+    const nonNullDistribution = (distributionRel.stixRelationshipsDistribution ?? [])
+      // Use of flatMap() to do both filter() and map() in one step.
+      .flatMap((rel) => (rel ? [{
+        label: rel.label,
+        // Decrease from the count of already displayed elements.
+        // toLowerCase() because relationship names are pascalized
+        // in elAggregationRelationsCount().
+        value: (rel.value ?? 0) - (existingRelsSelected.get(rel.label.toLowerCase()) ?? new Set()).size,
+      }] : []))
+      // Remove from the list entities with nothing to add.
+      .filter(({ value }) => value > 0)
+      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+    setRelationships(
+      nonNullDistribution
+        .map(({ label, value }) => ({
+          label: `${label} (${value})`,
+          value: label,
+        })),
+    );
+  }, [distributionRel, selectedNodes, existingRels, setRelationships]);
+
+  useEffect(() => {
+    // A map where each key of the Map is a target type and
+    // the associated value is the number of the elements in
+    // relation with all selected nodes.
+    //
+    // Used to compute the difference between total count returned by
+    // the query and what is already displayed in the graph.
+    const existingTargetsSelected = new Map<string, number>();
+    selectedNodes.forEach((node) => {
+      const nodeTargets = existingTargets.get(node.id);
+      if (nodeTargets) {
+        nodeTargets.forEach((value, key) => {
+          const current = existingTargetsSelected.get(key);
+          if (current !== undefined) {
+            existingTargetsSelected.set(key, current + value);
+          } else {
+            existingTargetsSelected.set(key, value);
+          }
+        });
+      }
+    });
+
+    // Merge both 'from' relationships and 'to' relationships.
+    const distribution: { label: string, value: number }[] = [];
+    [distributionFrom, distributionTo].forEach(({ stixRelationshipsDistribution }) => {
+      stixRelationshipsDistribution?.forEach((newTarget) => {
+        if (newTarget) {
+          const target = distribution.find((item) => item.label === newTarget.label);
+          if (target) {
+            target.value += (newTarget.value ?? 0);
+          } else {
+            distribution.push({
+              label: newTarget.label,
+              value: newTarget.value ?? 0,
+            });
+          }
+        }
       });
+    });
 
-      const graphDistribution = distribution
-        .map((target) => ({
-          label: target.label,
-          // Decrease from the count of already displayed elements.
-          // toLowerCase() because relationship names are pascalized
-          // in elAggregationRelationsCount().
-          value: target.value - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
-        }))
-        // Remove from the list entities with nothing to add.
-        .filter(({ value }) => value > 0)
-        .sort((a, b) => a.label.localeCompare(b.label));
+    const graphDistribution = distribution
+      .map((target) => ({
+        label: target.label,
+        // Decrease from the count of already displayed elements.
+        // toLowerCase() because relationship names are pascalized
+        // in elAggregationRelationsCount().
+        value: target.value - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
+      }))
+      // Remove from the list entities with nothing to add.
+      .filter(({ value }) => value > 0)
+      .sort((a, b) => a.label.localeCompare(b.label));
 
-      setTargets(
-        graphDistribution
-          .map(({ label, value }) => ({
-            label: `${label} (${value})`,
-            value: label,
-          })),
-      );
-    };
-    fetchTargets();
-  }, [selectedNodes, existingTargets, setTargets]);
+    setTargets(
+      graphDistribution
+        .map(({ label, value }) => ({
+          label: `${label} (${value})`,
+          value: label,
+        })),
+    );
+  }, [distributionFrom, distributionTo, selectedNodes, existingTargets, setTargets]);
 
   return (
     <Formik<FormData>
@@ -399,6 +392,59 @@ const InvestigationExpandForm = ({
         </Form>
       )}
     </Formik>
+  );
+};
+
+// Wrapper component that prepares queries.
+const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
+  const classes = useStyles();
+
+  // Number of relations grouped by type of relation.
+  const [
+    distributionRelQueryRef,
+    loadDistributionRelQuery,
+  ] = useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
+    investigationExpandFormRelDistributionQuery,
+  );
+
+  // Number of targets source of a relation grouped by entity type.
+  const [
+    distributionFromQueryRef,
+    loadDistributionFromQuery,
+  ] = useQueryLoader<InvestigationExpandFormTargetsDistributionFromQuery>(
+    investigationExpandFormTargetsDistributionFromQuery,
+  );
+
+  // Number of targets destination of a relation grouped by entity type.
+  const [
+    distributionToQueryRef,
+    loadDistributionToQuery,
+  ] = useQueryLoader<InvestigationExpandFormTargetsDistributionToQuery>(
+    investigationExpandFormTargetsDistributionToQuery,
+  );
+
+  useEffect(() => {
+    const ids = Array.from(props.selectedNodes).map((node) => node.id);
+    loadDistributionRelQuery({ ids });
+    loadDistributionFromQuery({ ids });
+    loadDistributionToQuery({ ids });
+  }, [props.selectedNodes]);
+
+  return (
+    <div className={classes.paperHeight}>
+      {(distributionRelQueryRef && distributionFromQueryRef && distributionToQueryRef) ? (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+          <InvestigationExpandFormContent
+            {...props}
+            distributionRelQueryRef={distributionRelQueryRef}
+            distributionFromQueryRef={distributionFromQueryRef}
+            distributionToQueryRef={distributionToQueryRef}
+          />
+        </Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement}/>
+      )}
+    </div>
   );
 };
 
