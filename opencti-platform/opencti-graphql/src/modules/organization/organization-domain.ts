@@ -21,7 +21,6 @@ export const findById = (context: AuthContext, user: AuthUser, organizationId: s
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityOrganization>) => {
-  // TODO add include_authorized_authorities to filter
   return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
 
