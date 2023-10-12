@@ -421,7 +421,7 @@ const WorkspaceHeader = ({
       </div>
       <WorkspaceTurnToContainerDialog
         workspace={workspace}
-        displayTurnToReportOrCaseContainer={displayTurnToReportOrCaseContainer}
+        open={displayTurnToReportOrCaseContainer}
         setDisplayTurnToReportOrCaseContainer={
           setDisplayTurnToReportOrCaseContainer
         }
