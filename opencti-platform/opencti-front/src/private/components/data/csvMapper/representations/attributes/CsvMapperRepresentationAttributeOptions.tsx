@@ -1,9 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useFormatter } from '../../../../../../components/i18n';
 import TextField from '../../../../../../components/TextField';
 
@@ -15,27 +16,44 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CsvMapperRepresentationAttributeOptionsProps {
-  attribute: Attribute;
-  onChange: (attribute: Attribute, name: string, value: string | string[] | boolean | null) => void;
+  attribute: AttributeWithMetadata;
+  indexRepresentation: number
 }
 
 const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepresentationAttributeOptionsProps> = ({
   attribute,
-  onChange,
+  indexRepresentation,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+
+  const formikContext = useFormikContext<CsvMapper>();
+  const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
+  const indexAttribute = selectedAttributes.findIndex((a) => a.key === attribute.key);
+
+  const onChange = (name: string, value: string) => {
+    formikContext.setFieldValue(
+      `representations[${indexRepresentation}].attributes[${indexAttribute}].column.configuration`,
+      { [name]: value },
+    );
+  };
+
+  // we disabled the option if the attribute is not in the mapper
+  // user must select a column before being able to set an option
+  const enabled = !!selectedAttributes.find((a) => a.key === attribute.key);
 
   return (
     <div>
       {attribute.type === 'date'
         && <div className={classes.container}>
           <Field style={{ margin: 0 }}
-                 component={TextField}
-                 type="standard"
-                 name="column.configuration.pattern_date"
-                 onChange={(name: string, value: string) => onChange(attribute, name, value)}
-                 placeholder={t('Date pattern')}
+             disabled={!enabled}
+             component={TextField}
+             type="standard"
+             name="pattern_date"
+             value={selectedAttributes[indexAttribute]?.column?.configuration?.pattern_date || ''}
+             onChange={onChange}
+             placeholder={t('Date pattern')}
           />
           <Tooltip
             title={t(
@@ -53,11 +71,13 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
       {attribute.multiple
         && <div className={classes.container}>
           <Field style={{ margin: 0 }}
-                 component={TextField}
-                 type="standard"
-                 name="column.configuration.separator"
-                 onChange={(name: string, value: string) => onChange(attribute, name, value)}
-                 placeholder={t('List separator')}
+             disabled={!enabled}
+             component={TextField}
+             type="standard"
+             name="separator"
+             value={selectedAttributes[indexAttribute]?.column?.configuration?.separator || ''}
+             onChange={onChange}
+             placeholder={t('List separator')}
           />
           <Tooltip
             title={t(

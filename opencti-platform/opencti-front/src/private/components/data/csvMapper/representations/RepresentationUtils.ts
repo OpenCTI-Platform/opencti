@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Representation } from '@components/data/csvMapper/representations/Representation';
-import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useMapAttributes } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import {
@@ -17,18 +17,19 @@ export const representationInitialization = (type: CsvMapperRepresentationType) 
     target: {
       entity_type: '',
     },
-    attributes: [] as Attribute[],
+    attributes: [] as AttributeWithMetadata[],
   } as Representation;
 };
 
 // -- GETTER --
 
-export const representationLabel = (idx: number, representation: Representation) => {
+export const representationLabel = (idx: number, representation: Representation, t: (message: string) => string) => {
   const number = `#${idx + 1}`; // 0-based internally, 1-based for display
   if (isEmptyField(representation.target.entity_type)) {
     return `${number} New ${representation.type} representation`;
   }
-  return `${number} ${representation.target.entity_type}`;
+  const prefix = representation.type === 'entity' ? 'entity_' : 'relationship_';
+  return `${number} ${t(`${prefix}${representation.target.entity_type}`)}`;
 };
 
 export const getEntityRepresentations = (csvMapper: CsvMapper) => {

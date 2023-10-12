@@ -28,6 +28,10 @@ const csvMapperEditionContainerFragment = graphql`
         key
         column {
           column_name
+          configuration {
+            separator
+            pattern_date  
+          }
         }
         based_on {
           representations

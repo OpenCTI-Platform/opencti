@@ -6,7 +6,9 @@ import CsvMapperRepresentationAttributeOptions
   from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { useFormikContext } from 'formik';
+import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 
@@ -30,20 +32,24 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CsvMapperRepresentationAttributeFormProps {
-  attribute: Attribute;
+  indexRepresentation: number;
+  attribute: AttributeWithMetadata;
   label: string;
-  onChange: (attribute: Attribute, name: string, value: string | string[] | boolean | null) => void;
   handleErrors: (key: string, value: string | null) => void;
 }
 
 const CsvMapperRepresentationAttributeForm: FunctionComponent<CsvMapperRepresentationAttributeFormProps> = ({
+  indexRepresentation,
   attribute,
   label,
-  onChange,
   handleErrors,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+
+  const formikContext = useFormikContext<CsvMapper>();
+  const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
+  const indexAttribute = selectedAttributes.findIndex((a) => a.key === attribute.key);
 
   const options = alphabet(1);
 
@@ -69,8 +75,19 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<CsvMapperRepresent
     }
   }, [errors]);
 
-  const onValueChange = (value: string | null) => {
-    onChange(attribute, 'column.column_name', value);
+  const onValueChange = async (value: string | null) => {
+    if (indexAttribute === -1) {
+      // this attribute was not set yet, initialize
+      const newSelectedAttribute: Attribute = { key: attribute.key, column: { column_name: value }, based_on: null };
+      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes`, [...selectedAttributes, newSelectedAttribute]);
+    } else if (value === null) {
+      // if the column index becomes unset, remove the attributes from selection in formik
+      selectedAttributes.splice(indexAttribute, 1);
+      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes`, selectedAttributes);
+    } else {
+      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes[${indexAttribute}].column.column_name`, value);
+    }
+
     manageErrors(value);
   };
 
@@ -87,7 +104,8 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<CsvMapperRepresent
           autoSelect={false}
           autoHighlight
           options={options}
-          defaultValue={attribute.column?.column_name}
+          // attribute might be unselected yet, but we need value=null as this is a controlled component
+          value={formikContext.values.representations[indexRepresentation].attributes[indexAttribute]?.column?.column_name || null}
           onChange={(_, value) => onValueChange(value)}
           renderInput={(params) => (
             <MuiTextField
@@ -103,7 +121,7 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<CsvMapperRepresent
         />
       </div>
       <div>
-        <CsvMapperRepresentationAttributeOptions attribute={attribute} onChange={onChange}/>
+        <CsvMapperRepresentationAttributeOptions attribute={attribute} indexRepresentation={indexRepresentation}/>
       </div>
     </div>
   );

@@ -28,7 +28,6 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
   onClose,
 }) => {
   const [commitUpdateMutation] = useMutation(csvMapperEditionPatch);
-
   const initialValues: CsvMapper = {
     id: csvMapper.id,
     name: csvMapper.name,

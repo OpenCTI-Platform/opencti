@@ -18,11 +18,7 @@ import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
-import {
-  getEntityRepresentations,
-  getRelationshipRepresentations,
-  representationInitialization,
-} from './representations/RepresentationUtils';
+import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
 import { Representation } from './representations/Representation';
 
@@ -60,10 +56,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
 
   // -- INIT --
 
-  const [entityRepresentations, setEntityRepresentations] = useState<Representation[]>(getEntityRepresentations(csvMapper));
-  const [relationshipRepresentations, setRelationshipRepresentations] = useState<Representation[]>(getRelationshipRepresentations(csvMapper));
+  // accordion state
   const [open, setOpen] = useState(false);
 
+  // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<RepresentationFormEntityOption[]>([]);
   const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<RepresentationFormEntityOption[]>([]);
@@ -82,49 +78,15 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
 
   // -- EVENTS --
 
-  const onAddEntityRepresentation = (setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newEntityRepresentations = [...entityRepresentations, representationInitialization('entity')];
-    setEntityRepresentations(newEntityRepresentations);
-    setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
+  const onAddEntityRepresentation = (setFieldValue: (field: string, value: Representation[]) => void, values: CsvMapper) => {
+    // we must insert the entity before the relationships as the list is sorted
+    const entities = values.representations.filter((r) => r.type === 'entity');
+    const relationships = values.representations.filter((r) => r.type === 'relationship');
+    setFieldValue('representations', [...entities, representationInitialization('entity'), ...relationships]);
   };
-  const onAddRelationshipRepresentation = (setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newRepresentations = [...relationshipRepresentations, representationInitialization('relationship')];
-    setRelationshipRepresentations(newRepresentations);
-    setFieldValue('representations', [...entityRepresentations, ...newRepresentations]);
-  };
-
-  const onChangeEntityRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
-    const representation = entityRepresentations.find((r) => r.id === value.id);
-    let newEntityRepresentations;
-    if (representation) {
-      newEntityRepresentations = entityRepresentations.map((r) => (r.id === value.id ? value : r));
-    } else {
-      newEntityRepresentations = [...entityRepresentations, value];
-    }
-    setEntityRepresentations(newEntityRepresentations);
-    setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
-  };
-  const onChangeRelationshipRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
-    const representation = relationshipRepresentations.find((r) => r.id === value.id);
-    let newRelationshipRepresentations;
-    if (representation) {
-      newRelationshipRepresentations = relationshipRepresentations.map((r) => (r.id === value.id ? value : r));
-    } else {
-      newRelationshipRepresentations = [...relationshipRepresentations, value];
-    }
-    setRelationshipRepresentations(newRelationshipRepresentations);
-    setFieldValue('representations', [...entityRepresentations, ...newRelationshipRepresentations]);
-  };
-
-  const onDeleteEntityRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newEntityRepresentations = entityRepresentations.filter((r) => r.id !== value.id);
-    setEntityRepresentations(newEntityRepresentations);
-    setFieldValue('representations', [...newEntityRepresentations, ...relationshipRepresentations]);
-  };
-  const onDeleteRelationshipRepresentation = (value: Representation, setFieldValue: (field: string, value: Representation[]) => void) => {
-    const newRelationshipRepresentations = relationshipRepresentations.filter((r) => r.id !== value.id);
-    setRelationshipRepresentations(newRelationshipRepresentations);
-    setFieldValue('representations', [...entityRepresentations, ...newRelationshipRepresentations]);
+  const onAddRelationshipRepresentation = (setFieldValue: (field: string, value: Representation[]) => void, values: CsvMapper) => {
+    // always added at the end
+    setFieldValue('representations', [...values.representations, representationInitialization('relationship')]);
   };
 
   // -- ERRORS --
@@ -138,169 +100,167 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
   return (
     <>
       <Formik<CsvMapper>
-        enableReinitialize={true}
+        enableReinitialize
         initialValues={csvMapper}
         validationSchema={csvMapperValidation(t)}
         onSubmit={onSubmit}
       >
-        {({ submitForm, isSubmitting, setFieldValue, values }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth
-            />
-            <div className={classes.center} style={{ marginTop: 20 }}>
+        {({ submitForm, isSubmitting, setFieldValue, values }) => {
+          const entities = values.representations.filter((r) => r.type === 'entity');
+          const relationships = values.representations.filter((r) => r.type === 'relationship');
+
+          return (
+            <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
-                component={SwitchField}
-                type="checkbox"
-                name="has_header"
-                label={t('My csv file contains header')}
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth
               />
-              <Tooltip
-                title={t(
-                  'If this option is selected, we will skip the first line of your csv file',
-                )}
-              >
-                <InformationOutline
-                  fontSize="small"
-                  color="primary"
-                  style={{ cursor: 'default' }}
+              <div className={classes.center} style={{ marginTop: 20 }}>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="has_header"
+                  label={t('My csv file contains header')}
                 />
-              </Tooltip>
-            </div>
-            <div style={{ marginTop: 20 }}>
-              <Typography>
+                <Tooltip
+                  title={t(
+                    'If this option is selected, we will skip the first line of your csv file',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
+              </div>
+              <div style={{ marginTop: 20 }}>
+                <Typography>
                   {t('Csv separator')}
-              </Typography>
-              <div className={classes.center}>
-                <Field
-                  checked={values.separator === ','}
-                  component={Radio}
-                  type="radio"
-                  name="separator"
-                  label="Comma"
-                  value=","
-                  onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
-                />
-                <Typography>
-                  {t('Comma')}
                 </Typography>
+                <div className={classes.center}>
+                  <Field
+                    checked={values.separator !== ';'} // if unset, this is the default option
+                    component={Radio}
+                    type="radio"
+                    name="separator"
+                    label="Comma"
+                    value=","
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                  />
+                  <Typography>
+                    {t('Comma')}
+                  </Typography>
+                </div>
+                <div className={classes.center}>
+                  <Field
+                    checked={values.separator === ';'}
+                    component={Radio}
+                    type="radio"
+                    name="separator"
+                    label="Semicolon"
+                    value=";"
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                  />
+                  <Typography>
+                    {t('Semicolon')}
+                  </Typography>
+                </div>
               </div>
-              <div className={classes.center}>
-                <Field
-                  checked={values.separator === ';'}
-                  component={Radio}
-                  type="radio"
-                  name="separator"
-                  label="Semicolon"
-                  value=";"
-                  onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
-                />
-                <Typography>
-                  {t('Semicolon')}
+              <div className={classes.center} style={{ marginTop: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom
+                  style={{ marginBottom: 0 }}
+                >
+                  {t('Representations for entity')}
                 </Typography>
+                <IconButton
+                  color="secondary"
+                  aria-label="Add"
+                  onClick={() => onAddEntityRepresentation(setFieldValue, values)}
+                  size="large"
+                >
+                  <Add fontSize="small"/>
+                </IconButton>
               </div>
-            </div>
-            <div className={classes.center} style={{ marginTop: 20 }}>
-              <Typography
-                variant="h3"
-                gutterBottom
-                style={{ marginBottom: 0 }}
-              >
-                {t('Representations for entity')}
-              </Typography>
-              <IconButton
-                color="secondary"
-                aria-label="Add"
-                onClick={() => onAddEntityRepresentation(setFieldValue)}
-                size="large"
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            </div>
-            {entityRepresentations.map((representation, idx) => (
-              <div
-                key={`entity-${idx}`}
-                style={{ marginTop: 20, display: 'flex' }}
-              >
-                <CsvMapperRepresentationForm
-                  key={representation.id}
-                  index={idx}
-                  availableEntityTypes={availableEntityTypes}
-                  representationData={representation}
-                  representations={entityRepresentations}
-                  onChange={(value) => onChangeEntityRepresentation(value, setFieldValue)}
-                  onDelete={(value) => onDeleteEntityRepresentation(value, setFieldValue)}
-                  handleRepresentationErrors={handleRepresentationErrors}
-                  prefixLabel='entity_'
-                />
+              {entities.map((representation, idx) => (
+                <div
+                  key={`entity-${idx}`}
+                  style={{ marginTop: 20, display: 'flex' }}
+                >
+                  <CsvMapperRepresentationForm
+                    key={representation.id}
+                    index={idx}
+                    availableTypes={availableEntityTypes}
+                    handleRepresentationErrors={handleRepresentationErrors}
+                    prefixLabel='entity_'
+                  />
+                </div>
+              ))}
+              <div className={classes.center} style={{ marginTop: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom
+                  style={{ marginBottom: 0 }}
+                >
+                  {t('Representations for relationship')}
+                </Typography>
+                <IconButton
+                  color="secondary"
+                  aria-label="Add"
+                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
+                  size="large"
+                >
+                  <Add fontSize="small"/>
+                </IconButton>
               </div>
-            ))}
-            <div className={classes.center} style={{ marginTop: 20 }}>
-              <Typography
-                variant="h3"
-                gutterBottom
-                style={{ marginBottom: 0 }}
-              >
-                {t('Representations for relationship')}
-              </Typography>
-              <IconButton
-                color="secondary"
-                aria-label="Add"
-                onClick={() => onAddRelationshipRepresentation(setFieldValue)}
-                size="large"
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            </div>
-            {relationshipRepresentations.map((representation, idx) => (
-              <div
-                key={`relationship-${idx}`}
-                style={{ marginTop: 20, display: 'flex' }}
-              >
-                <CsvMapperRepresentationForm
-                  key={representation.id}
-                  index={entityRepresentations.length + idx}
-                  availableEntityTypes={availableRelationshipTypes}
-                  representationData={representation}
-                  representations={entityRepresentations}
-                  onChange={(value) => onChangeRelationshipRepresentation(value, setFieldValue)}
-                  onDelete={(value) => onDeleteRelationshipRepresentation(value, setFieldValue)}
-                  handleRepresentationErrors={handleRepresentationErrors}
-                  prefixLabel='relationship_'
-                />
-              </div>
-            ))}
-            <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setOpen(true)}
-                classes={{ root: classes.button }}
-                disabled={hasError}
-              >
-                {t('Test')}
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
+              {relationships.map((representation, idx) => (
+                <div
+                  key={`relationship-${idx}`}
+                  style={{ marginTop: 20, display: 'flex' }}
+                >
+                  <CsvMapperRepresentationForm
+                    key={representation.id}
+                    index={entities.length + idx}
+                    availableTypes={availableRelationshipTypes}
+                    handleRepresentationErrors={handleRepresentationErrors}
+                    prefixLabel='relationship_'
+                  />
+                </div>
+              ))}
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpen(true)}
+                  classes={{ root: classes.button }}
+                  disabled={hasError}
+                >
+                  {t('Test')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {csvMapper.id ? t('Update') : t('Create')}
-              </Button>
-            </div>
-            <CsvMapperTestDialog
-              open={open}
-              onClose={() => setOpen(false)}
-              configuration={JSON.stringify(values)}
-            />
-          </Form>
-        )}
+                  classes={{ root: classes.button }}
+                >
+                  {csvMapper.id ? t('Update') : t('Create')}
+                </Button>
+              </div>
+              <CsvMapperTestDialog
+                open={open}
+                onClose={() => setOpen(false)}
+                configuration={JSON.stringify(values)}
+              />
+            </Form>
+          );
+        }
+        }
       </Formik>
     </>
   );

@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Formik } from 'formik';
+import { useFormikContext } from 'formik';
 import { useQueryLoader } from 'react-relay';
 import CsvMapperRepresentationAttributesForm, {
   schemaAttributesQuery,
 } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
-import * as R from 'ramda';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
@@ -19,16 +18,14 @@ import classNames from 'classnames';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import { Representation } from '@components/data/csvMapper/representations/Representation';
-import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
 import {
   CsvMapperRepresentationAttributesFormQuery,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
+import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useFormatter } from '../../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { Theme } from '../../../../../components/Theme';
-import { isEmptyField } from '../../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
@@ -59,30 +56,22 @@ export interface RepresentationFormEntityOption extends Option {
 
 interface CsvMapperRepresentationFormProps {
   index: number;
-  availableEntityTypes: { value: string, type: string, id: string, label: string }[];
-  representationData: Representation;
-  representations: Representation[];
-  onChange: (value: Representation) => void;
-  onDelete: (value: Representation) => void;
+  availableTypes: { value: string, type: string, id: string, label: string }[];
   handleRepresentationErrors: (key: string, value: boolean) => void;
   prefixLabel: string;
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationFormProps> = ({
   index,
-  availableEntityTypes = [],
-  representationData,
-  representations,
-  onChange,
-  onDelete,
+  availableTypes = [],
   handleRepresentationErrors,
   prefixLabel,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const [representation, setRepresentation] = useState<Representation>(representationData);
-  const [inputValue, setInputValue] = useState(representationData.target.entity_type);
+  const formikContext = useFormikContext<CsvMapper>();
+  const representation = formikContext.values.representations[index];
 
   // -- ERRORS --
   const [hasError, setHasError] = useState<boolean>(false);
@@ -96,24 +85,19 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
 
   // -- EVENTS --
 
-  const handleChange = (...changes: { name: string, value: string | Attribute[] }[]) => {
-    let newRepresentation = representation;
-    changes.forEach((change) => {
-      newRepresentation = R.assocPath(change.name.split('.'), change.value, newRepresentation);
-    });
-    setRepresentation(newRepresentation);
-    onChange(newRepresentation);
+  const handleChangeEntityType = async (option: Option | null) => {
+    if (option === null) {
+      // reset this representation
+      await formikContext.setFieldValue(`representations[${index}]`, { ...representation, attributes: [], target: { entity_type: null } });
+    } else {
+      await formikContext.setFieldValue(`representations[${index}]`, { ...representation, attributes: [], target: { entity_type: option.value } });
+    }
   };
 
-  const handleChangeEntityType = (name: string, option: Option | null) => {
-    if (option === null) {
-      return;
-    }
-    const type = option.type === 'entity_Stix-Core-Relationship' ? 'relationship' : 'entity';
-    const typeChange = { name: 'type', value: type };
-    const { value } = option;
-    setInputValue(value);
-    handleChange({ name, value }, typeChange);
+  const onDelete = async () => {
+    const newRepresentations = formikContext.values.representations;
+    newRepresentations.splice(index, 1);
+    await formikContext.setFieldValue('representations', newRepresentations);
   };
 
   // -- ATTRIBUTES --
@@ -122,6 +106,7 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
     schemaAttributesQuery,
   );
 
+  // reload the attributes when the entity type changes
   useEffect(
     () => {
       if (representation.target.entity_type) {
@@ -140,22 +125,12 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
     });
   };
 
-  // -- UTILS --
-
-  const inputLabel = (value: string) => {
-    const entityType = availableEntityTypes.find((entity) => entity.value === value);
-    return isEmptyField(entityType) ? value : t(`${prefixLabel}${value}`);
-  };
-
   // -- MUI Autocomplete --
 
   const searchType = (event: React.SyntheticEvent) => {
     const selectChangeEvent = event as SelectChangeEvent;
     const value = selectChangeEvent?.target.value ?? '';
-    if (event !== null) {
-      setInputValue(value);
-    }
-    return availableEntityTypes.filter((type) => type.value.includes(value) || t(`${prefixLabel}${type.label}`).includes(value));
+    return availableTypes.filter((type) => type.value.includes(value) || t(`${prefixLabel}${type.label}`).includes(value));
   };
 
   return (
@@ -173,12 +148,12 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
       >
         <div className={classes.container}>
           <Typography>
-            {t(representationLabel(index, representation))}
+            {representationLabel(index, representation, t)}
           </Typography>
           <Tooltip title={t('Delete')}>
             <IconButton
               color="error"
-              onClick={() => onDelete(representation)}
+              onClick={onDelete}
             >
               <DeleteOutlined fontSize="small"/>
             </IconButton>
@@ -186,70 +161,58 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
         </div>
       </AccordionSummary>
       <AccordionDetails style={{ width: '100%' }}>
-        <Formik
-          key={representation.id}
-          initialValues={representation}
-          onSubmit={() => {}}
-        >
-          {() => (
-            <>
-              <MUIAutocomplete<RepresentationFormEntityOption>
-                selectOnFocus
-                openOnFocus
-                autoHighlight
-                getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
-                noOptionsText={t('No available options')}
-                options={availableEntityTypes}
-                groupBy={(option) => t(option.type) ?? t('Unknown')}
-                value={availableEntityTypes.find((e) => e.id === representation.target.entity_type)}
-                inputValue={inputLabel(inputValue)}
-                onInputChange={(event) => searchType(event)}
-                onChange={(_, value) => handleChangeEntityType('target.entity_type', value)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={t('Entity type')}
-                    variant="outlined"
-                    size="small"
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props}>
-                    <div className={classes.icon}>
-                      <ItemIcon type={option.label} />
-                    </div>
-                    <div className={classes.text}>{t(`${prefixLabel}${option.label}`)}</div>
-                  </li>
-                )}
+        <>
+          <MUIAutocomplete<RepresentationFormEntityOption>
+            selectOnFocus
+            openOnFocus
+            autoHighlight
+            getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
+            noOptionsText={t('No available options')}
+            options={availableTypes}
+            groupBy={(option) => t(option.type) ?? t('Unknown')}
+            value={availableTypes.find((e) => e.id === representation.target.entity_type) || null}
+            onInputChange={(event) => searchType(event)}
+            onChange={(_, value) => handleChangeEntityType(value)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={t('Entity type')}
+                variant="outlined"
+                size="small"
               />
-              {queryRef && (
-                <React.Suspense
-                  fallback={<Loader variant={LoaderVariant.inElement} />}
-                >
-                  <div style={{ marginTop: 20 }}>
-                    <CsvMapperRepresentationAttributesForm
-                      queryRef={queryRef}
-                      entityType={representation.target.entity_type}
-                      representations={representations}
-                      attributes={representation.attributes}
-                      setAttributes={(attributes) => handleChange({ name: 'attributes', value: attributes })}
-                      handleErrors={handleErrors}
-                    />
-                  </div>
-                </React.Suspense>
-              )}
-              <div style={{ textAlign: 'right', marginTop: '20px' }}>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => onDelete(representation)}
-                >
-                  {t('Delete')}
-                </Button>
-              </div>
-            </>
-          )}
-        </Formik>
+            )}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.label} />
+                </div>
+                <div className={classes.text}>{t(`${prefixLabel}${option.label}`)}</div>
+              </li>
+            )}
+          />
+            {queryRef && (
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+              >
+                <div style={{ marginTop: 20 }}>
+                   <CsvMapperRepresentationAttributesForm
+                     index={index}
+                     queryRef={queryRef}
+                     handleErrors={handleErrors}
+                   />
+                </div>
+              </React.Suspense>
+            )}
+          <div style={{ textAlign: 'right', marginTop: '20px' }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={onDelete}
+            >
+              {t('Delete')}
+            </Button>
+          </div>
+        </>
       </AccordionDetails>
     </Accordion>
   );

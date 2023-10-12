@@ -1,24 +1,23 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import { Formik } from 'formik';
-import * as R from 'ramda';
+import { useFormikContext } from 'formik';
+
 import CsvMapperRepresentationAttributeForm
   from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeForm';
-import CsvMapperRepresentationBasedOnForm
-  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationBasedOnForm';
+
 import {
-  attributeLabel,
+  getAttributeLabel,
   convertFromSchemaAttribute,
-  entityTypeAttributeFrom,
-  entityTypeAttributeTo,
 } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
-import { Representation } from '@components/data/csvMapper/representations/Representation';
 import {
   CsvMapperRepresentationAttributesFormQuery,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
+import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import CsvMapperRepresentationAttributeRefForm
+  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeRefForm';
 import { useFormatter } from '../../../../../../components/i18n';
-import { Attribute } from './Attribute';
+import { AttributeWithMetadata } from './Attribute';
 
 export const schemaAttributesQuery = graphql`
   query CsvMapperRepresentationAttributesFormQuery($entityType: String!) {
@@ -33,108 +32,93 @@ export const schemaAttributesQuery = graphql`
 `;
 
 interface CsvMapperRepresentationAttributesFormProps {
+  index: number;
   queryRef: PreloadedQuery<CsvMapperRepresentationAttributesFormQuery>;
-  entityType: string;
-  representations: Representation[];
-  attributes: Attribute[];
-  setAttributes: (attributes: Attribute[]) => void;
   handleErrors: (key: string, value: string | null) => void;
 }
 
 const CsvMapperRepresentationAttributesForm: FunctionComponent<CsvMapperRepresentationAttributesFormProps> = ({
+  index,
   queryRef,
-  entityType,
-  representations,
-  attributes,
-  setAttributes,
   handleErrors,
 }) => {
   const { t } = useFormatter();
 
+  const formikContext = useFormikContext<CsvMapper>();
+  const representation = formikContext.values.representations[index];
+  const entityType = representation.target.entity_type;
+  const { attributes: selectedAttributes } = representation;
+
   // -- INIT --
 
+  // some fields are not present in the csv mapper but in the schema
+  // we enhance these attributes with the schema data, to use in our form
   const { schemaAttributes } = usePreloadedQuery<CsvMapperRepresentationAttributesFormQuery>(
     schemaAttributesQuery,
     queryRef,
   );
 
-  const computeSelectedAttributes = () => {
-    const computedAttributes: Attribute[] = [];
+  // we build the full list of attributes for this entity type
+  const addMetadataToAttributes = () => {
+    const computedAttributes: AttributeWithMetadata[] = [];
     schemaAttributes.forEach((schemaAttribute) => {
-      if (schemaAttribute) {
-        const existingAttribute = attributes.find((a) => schemaAttribute.name === a.key);
-        if (!existingAttribute) {
-          computedAttributes.push(convertFromSchemaAttribute(schemaAttribute));
-        } else {
-          computedAttributes.push({
-            ...existingAttribute,
-            type: schemaAttribute.type,
-            mandatory: schemaAttribute.mandatory,
-            multiple: schemaAttribute.multiple,
-          });
-        }
+      const existingAttribute = selectedAttributes.find((a) => schemaAttribute.name === a.key);
+      if (!existingAttribute) {
+        // init the attribute (unset by user)
+        computedAttributes.push(convertFromSchemaAttribute(schemaAttribute));
+      } else {
+        // the existing CSV Mapper data are enhanced with schema metadata
+        computedAttributes.push({
+          ...existingAttribute,
+          type: schemaAttribute.type,
+          mandatory: schemaAttribute.mandatory,
+          multiple: schemaAttribute.multiple,
+        });
       }
     });
     return computedAttributes.sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory));
   };
 
-  const [selectedAttributes, setSelectedAttributes] = useState<Attribute[]>(computeSelectedAttributes());
-
-  const fromType = entityTypeAttributeFrom(selectedAttributes, representations);
-  const toType = entityTypeAttributeTo(selectedAttributes, representations);
+  const [attributesWithMetadata, setAttributesWithMetadata] = useState<AttributeWithMetadata[]>([]);
 
   // -- EVENTS --
 
   useEffect(() => {
-    setSelectedAttributes(computeSelectedAttributes);
-  }, [schemaAttributes]);
+    // rebuild the enhanced attributes on changes of schema (should be only at start)
+    // or on changes of values (on formik context updated)
+    setAttributesWithMetadata(addMetadataToAttributes());
+  }, [schemaAttributes, selectedAttributes]);
 
-  const handleChangeValue = (attribute: Attribute, name: string, value: string | string[] | boolean | null) => {
-    const newAttribute = R.assocPath(name.split('.'), value, attribute);
-    const newAttributes = selectedAttributes.map((a) => {
-      if (a.key === newAttribute.key) {
-        return newAttribute;
-      }
-      return a;
-    });
-    setSelectedAttributes(newAttributes);
-    setAttributes(newAttributes);
-  };
+  if (entityType === null) {
+    // if the entity type gets unset, we display nothing
+    // when user will select a new entity type, attributes will be fetched
+    return null;
+  }
 
   return (
     <>
-      {selectedAttributes.map((attribute) => (
-        <Formik
-          key={attribute.key}
-          initialValues={attribute}
-          onSubmit={() => {}}
-        >
-          {() => {
-            if (attribute.type === 'ref') {
-              return (
-                <CsvMapperRepresentationBasedOnForm
-                  basedOn={attribute}
-                  fromType={fromType}
-                  toType={toType}
-                  label={t(attributeLabel(attribute, schemaAttributes)).toLowerCase()}
-                  entityType={entityType}
-                  representations={representations}
-                  onChange={handleChangeValue}
-                  handleErrors={handleErrors}
-                />
-              );
-            }
-            return (
-              <CsvMapperRepresentationAttributeForm
-                attribute={attribute}
-                label={t(attributeLabel(attribute, schemaAttributes)).toLowerCase()}
-                onChange={handleChangeValue}
-                handleErrors={handleErrors}
-              />
-            );
-          }}
-        </Formik>
-      ))}
+      {attributesWithMetadata.map((availableAttribute) => {
+        if (availableAttribute.type === 'ref') {
+          return (
+            <CsvMapperRepresentationAttributeRefForm
+              key={availableAttribute.key}
+              indexRepresentation={index}
+              attribute={availableAttribute}
+              label={t(getAttributeLabel(availableAttribute, schemaAttributes)).toLowerCase()}
+              handleErrors={handleErrors}
+            />
+          );
+        }
+        return (
+          <CsvMapperRepresentationAttributeForm
+            key={availableAttribute.key}
+            indexRepresentation={index}
+            attribute={availableAttribute}
+            label={t(getAttributeLabel(availableAttribute, schemaAttributes)).toLowerCase()}
+            handleErrors={handleErrors}
+          />
+        );
+      })}
     </>
   );
 };

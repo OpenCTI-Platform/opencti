@@ -1,4 +1,4 @@
-import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { Representation } from '@components/data/csvMapper/representations/Representation';
 import {
   CsvMapperRepresentationAttributesFormQuery$data,
@@ -54,37 +54,31 @@ export const convertFromSchemaAttribute = (schemaAttribute: {
 
 // -- GETTER --
 
-export const attributeLabel = (attribute: Attribute, schemaAttributes: CsvMapperRepresentationAttributesFormQuery$data['schemaAttributes']) => {
+// try to compute a label from the attribute schema
+// Cascading attempts if the following fields exist : label, then name, then key
+export const getAttributeLabel = (attribute: AttributeWithMetadata, schemaAttributes: CsvMapperRepresentationAttributesFormQuery$data['schemaAttributes']) => {
   const foundAttribute = schemaAttributes?.find((attr) => attr.name === attribute.key);
   const label = foundAttribute?.label ?? foundAttribute?.name;
   return label ?? attribute.key;
 };
 
-export const basedOnValue = (basedOn: Attribute, representations: Representation[]) => {
+// based_on.representations is an array of ids
+// this function gives the corresponding array of Representation objects
+export const getBasedOnRepresentations = (basedOn: AttributeWithMetadata, representations: Representation[]) => {
   const values = basedOn.based_on?.representations?.map((r) => representations.find((o) => o.id === r)) ?? [];
   return values.filter((v) => v !== undefined) as Representation[];
 };
 
-export const entityTypeAttributeFrom = (attributes: Attribute[], representations: Representation[]) => {
-  const from = attributes.find((attr) => attr.key === 'from');
+// get the entity type of a given ref "from" or "to"
+// (refs links to an existing representation)
+export const getEntityTypeForRef = (attributes: Attribute[], representations: Representation[], keyRef: 'from' | 'to') => {
+  const ref = attributes.find((attr) => attr.key === keyRef);
   let fromType: string | undefined;
-  if (from && isNotEmptyField(from.based_on?.representations)) {
-    const firstRepresentation = from.based_on?.representations[0];
-    if (firstRepresentation) {
-      fromType = representations.find((r) => r.id === firstRepresentation)?.target.entity_type;
+  if (ref && isNotEmptyField(ref.based_on?.representations)) {
+    const firstRepresentationId = ref.based_on?.representations[0];
+    if (firstRepresentationId) {
+      fromType = representations.find((r) => r.id === firstRepresentationId)?.target.entity_type;
     }
   }
   return fromType;
-};
-
-export const entityTypeAttributeTo = (attributes: Attribute[], representations: Representation[]) => {
-  const to = attributes.find((attr) => attr.key === 'to');
-  let toType: string | undefined;
-  if (to && isNotEmptyField(to.based_on?.representations)) {
-    const firstRepresentation = to.based_on?.representations[0];
-    if (firstRepresentation) {
-      toType = representations.find((r) => r.id === firstRepresentation)?.target.entity_type;
-    }
-  }
-  return toType;
 };
