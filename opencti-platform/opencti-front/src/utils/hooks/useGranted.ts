@@ -30,7 +30,7 @@ export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const isOnlyOrganizationAdmin = () => {
   const { me: user } = useAuth();
   const userCapabilities = user.capabilities.map((n) => n.name);
-  return userCapabilities.includes(ORGA_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
+  return userCapabilities.includes(ORGA_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS);
 };
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
