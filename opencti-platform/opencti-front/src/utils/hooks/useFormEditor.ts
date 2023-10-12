@@ -189,7 +189,7 @@ const useFormEditor = (
       commitFieldPatch({
         variables: {
           id: data.id,
-          input: [{ key: 'grantable_groups', value: finalValues || '' }],
+          input: [{ key: 'grantable_groups', value: finalValues }],
         },
       });
     });

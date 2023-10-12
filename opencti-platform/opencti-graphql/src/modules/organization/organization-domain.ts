@@ -9,10 +9,11 @@ import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { OrganizationAddInput } from '../../generated/graphql';
+import type { OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
+import type { BasicStoreEntity } from '../../types/store';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -38,7 +39,7 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
 export const organizationAdminAdd = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
+  const members: BasicStoreEntity[] = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
@@ -52,7 +53,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     event_scope: 'update',
     event_access: 'administration',
     message: `Promoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
   });
   return updated;
 };
@@ -60,10 +61,10 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
-
+  const members: BasicStoreEntity[] = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
+  const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
-  if (!members.map((m) => m.id).includes(memberId)) {
+  if (!updatedUser) {
     throw FunctionalError('User is not part of the organization');
   }
   // Remove user from organization admins list
@@ -76,13 +77,14 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `Demoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
   });
   return updated;
 };
 
-export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization) => {
-  return internalFindByIds(context, user, organization.grantable_groups);
+export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization: BasicStoreEntityOrganization) => {
+  // This will be removed when group is a module and types are correctly defined
+  return internalFindByIds(context, user, organization.grantable_groups) as unknown as ResolversTypes['Group'][];
 };
 // endregion
 

@@ -9167,7 +9167,7 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
-  organizationEditAuthorizedAuthorities(id: ID!, input: [String]!): Organization
+  organizationEditAuthorizedAuthorities(id: ID!, input: [String!]!): Organization
   organizationAdminAdd(id: ID!, memberId: String!): Organization
   organizationAdminRemove(id: ID!, memberId: String!): Organization
 }
@@ -12276,6 +12276,7 @@ type MeOrganizationConnection {
   pageInfo: PageInfo!
   edges: [MeOrganizationEdge!]!
 }
+
 
 
 

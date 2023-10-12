@@ -13975,7 +13975,7 @@ export type MutationOrganizationDeleteArgs = {
 
 export type MutationOrganizationEditAuthorizedAuthoritiesArgs = {
   id: Scalars['ID']['input'];
-  input: Array<InputMaybe<Scalars['String']['input']>>;
+  input: Array<Scalars['String']['input']>;
 };
 
 
