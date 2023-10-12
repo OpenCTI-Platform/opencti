@@ -11,7 +11,7 @@ import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } 
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
-import { BYPASS, isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 
