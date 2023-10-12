@@ -256,10 +256,10 @@ ExternalReferenceFileImportViewerBaseProps
                             fullWidth={true}
                             containerstyle={{ marginTop: 20, width: '100%' }}
                         >
-                            {selectedConnector?.configurations.map((config, i) => {
+                            {selectedConnector?.configurations.map((config) => {
                               return (
                                     <MenuItem
-                                        key={i}
+                                        key={config.id}
                                         value={config.configuration}
                                     >
                                         {config.name}

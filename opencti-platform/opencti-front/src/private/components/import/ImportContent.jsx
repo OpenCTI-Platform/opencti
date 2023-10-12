@@ -547,10 +547,10 @@ class ImportContentComponent extends Component {
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
-                        {this.state.selectedConnector.configurations.map((config, i) => {
+                        {this.state.selectedConnector.configurations.map((config) => {
                           return (
                             <MenuItem
-                              key={i}
+                              key={config.id}
                               value={config.configuration}
                             >
                               {config.name}
