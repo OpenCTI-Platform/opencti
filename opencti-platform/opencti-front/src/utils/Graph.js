@@ -1164,6 +1164,7 @@ export const nodePaint = (
   ctx,
   selected = false,
   inferred = false,
+  showNbConnectedElements = false,
 ) => {
   ctx.beginPath();
   ctx.fillStyle = color;
@@ -1187,16 +1188,20 @@ export const nodePaint = (
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
 
-  if (numberOfConnectedElement === undefined || numberOfConnectedElement > 0) {
+  const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
+  if (showNbConnectedElements && validConnectedElements) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
-    ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
+    ctx.arc(x + 4, y - 5, 4, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
     let numberLabel = '?';
     if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
-    if (numberOfConnectedElement > 99) numberLabel = 99;
-    if (numberLabel !== '?') numberLabel = `${numberLabel}~`;
+    if (numberLabel !== '?') {
+      numberLabel = numberOfConnectedElement > 99
+        ? '99+'
+        : `~${numberLabel}`;
+    }
     ctx.fillText(numberLabel, x + 4, y - 4.5);
   }
 };

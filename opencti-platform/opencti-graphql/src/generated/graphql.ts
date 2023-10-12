@@ -19503,6 +19503,7 @@ export type QueryStixCoreRelationshipsArgs = {
 
 
 export type QueryStixCoreRelationshipsDistributionArgs = {
+  aggregateOnConnections?: InputMaybe<Scalars['Boolean']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
@@ -19846,6 +19847,7 @@ export type QueryStixRelationshipsArgs = {
 
 
 export type QueryStixRelationshipsDistributionArgs = {
+  aggregateOnConnections?: InputMaybe<Scalars['Boolean']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
