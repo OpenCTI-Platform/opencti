@@ -858,14 +858,14 @@ describe('Upsert and merge entities', () => {
       name: 'THREAT_SOURCE_01',
       goals: ['MY GOAL'],
       createdBy: organizationThreatSource.id,
-      objectMarking: [clearMarking /* TLP:1 */, mitreMarking],
+      objectMarking: [clearMarking, mitreMarking],
       objectLabel: ['report', 'opinion', 'malware'],
     };
     const source01 = await createThreat(sourceInput01);
     // source 02
     const sourceInput02 = {
       name: 'THREAT_SOURCE_02',
-      objectMarking: [testMarking /* TLP:3 */, mitreMarking],
+      objectMarking: [testMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     };
     let source02 = await createThreat(sourceInput02);
@@ -878,7 +878,7 @@ describe('Upsert and merge entities', () => {
     });
     source02 = await storeLoadById(testContext, ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // source 03
-    const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [amberMarking] /* TLP:3 */, objectLabel: ['note', 'malware'] };
+    const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [amberMarking], objectLabel: ['note', 'malware'] };
     let source03 = await createThreat(sourceInput03);
     await createRelation(testContext, ADMIN_USER, {
       fromId: source03.internal_id,
@@ -891,7 +891,7 @@ describe('Upsert and merge entities', () => {
     // source 04
     const sourceInput04 = {
       name: 'THREAT_SOURCE_04',
-      objectMarking: [clearMarking], /* TLP:1 */
+      objectMarking: [clearMarking],
       objectLabel: ['report', 'opinion', 'note', 'malware', 'identity'],
     };
     const source04 = await createThreat(sourceInput04);
@@ -1035,11 +1035,11 @@ describe('Upsert and merge entities', () => {
     });
     const sha1 = await createFile({
       hashes: { 'SHA-1': SHA1 },
-      objectMarking: [clearMarking /* TLP:1 */, mitreMarking] /* S:0 */,
+      objectMarking: [clearMarking, mitreMarking] /* S:0 */,
     });
     const sha256 = await createFile({
       hashes: { 'SHA-256': SHA256 },
-      objectMarking: [testMarking /* TLP:3 */, mitreMarking] /* S:0 */,
+      objectMarking: [testMarking, mitreMarking] /* S:0 */,
     });
     // merge by update
     const sha1Input = { key: 'hashes.SHA-1', value: [SHA1] };

@@ -15,9 +15,9 @@ export const cleanMarkings = async (context, values) => {
   }).flat();
 };
 
-// eslint-disable-next-line @typescript-eslint/default-param-last
-export const handleMarkingOperations = async (context, currentMarkings = [], refs, operation) => {
+export const handleMarkingOperations = async (context, currentMarkings, refs, operation) => {
   try {
+    const markings = currentMarkings ?? [];
     // Get all marking definitions
     const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
     // Get object entries from markings Map, convert into array without duplicate values
@@ -27,7 +27,7 @@ export const handleMarkingOperations = async (context, currentMarkings = [], ref
 
     const operationUpdated = { operation, refs };
 
-    const markingsInCommon = currentMarkings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
+    const markingsInCommon = markings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
 
     if (operation === UPDATE_OPERATION_ADD) {
       // If it is a new type, we add it
@@ -39,14 +39,14 @@ export const handleMarkingOperations = async (context, currentMarkings = [], ref
       }
 
       // We have some type in common with different order
-      if (markingsAddedCleaned.some((mark) => currentMarkings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
-        const markingsToKeep = await cleanMarkings(context, [...currentMarkings, ...markingsAddedCleaned]);
+      if (markingsAddedCleaned.some((mark) => markings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
+        const markingsToKeep = await cleanMarkings(context, [...markings, ...markingsAddedCleaned]);
 
         const markingsAddedHasHigherOrder = markingsToKeep
-          .some((markingAdded) => currentMarkings
+          .some((markingAdded) => markings
             .some((currentMarking) => currentMarking.definition_type && markingAdded.x_opencti_order && markingAdded.x_opencti_order > currentMarking.x_opencti_order));
 
-        const markingsNotInCommon = markingsToKeep.filter((item) => !currentMarkings.some((m) => m.definition_type === item.definition_type));
+        const markingsNotInCommon = markingsToKeep.filter((item) => !markings.some((m) => m.definition_type === item.definition_type));
 
         // If some of the added item has a higher rank than before, replace
         if (markingsAddedHasHigherOrder) {
