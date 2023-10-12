@@ -9,9 +9,13 @@ import { parseCsvMapper } from './csvMapper-utils';
 // -- UTILS --
 
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
-  const csvMapper = parseCsvMapper(JSON.parse(configuration));
-  const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper);
-  return bundle.objects;
+  try {
+    const csvMapper = parseCsvMapper(JSON.parse(configuration));
+    const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper);
+    return bundle.objects;
+  } catch (error: any) {
+    return error.stack;
+  }
 };
 
 // -- CRUD --
