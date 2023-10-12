@@ -27,13 +27,18 @@ const formatValue = (value: string, type: AttrType, column: AttributeColumn) => 
     const formattedValue = Number(value);
     return Number.isNaN(formattedValue) ? null : formattedValue;
   } if (type === 'date') {
-    if (isNotEmptyField(pattern_date)) {
-      if (isNotEmptyField(timezone)) {
-        return moment(value, pattern_date as string, timezone as string).toISOString();
+    try {
+      moment.suppressDeprecationWarnings = true;
+      if (isNotEmptyField(pattern_date)) {
+        if (isNotEmptyField(timezone)) {
+          return moment(value, pattern_date as string, timezone as string).toISOString();
+        }
+        return moment(value, pattern_date as string).toISOString();
       }
-      return moment(value, pattern_date as string).toISOString();
+      return moment(value).toISOString();
+    } catch (error: any) {
+      return null;
     }
-    return moment(value).toISOString();
   }
   return value;
 };

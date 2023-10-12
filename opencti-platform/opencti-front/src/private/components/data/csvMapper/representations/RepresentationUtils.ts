@@ -26,10 +26,11 @@ export const representationInitialization = (type: CsvMapperRepresentationType) 
 export const representationLabel = (idx: number, representation: Representation, t: (message: string) => string) => {
   const number = `#${idx + 1}`; // 0-based internally, 1-based for display
   if (isEmptyField(representation.target.entity_type)) {
-    return `${number} New ${representation.type} representation`;
+    return `${number} ${t(`New ${representation.type} representation`)}`;
   }
   const prefix = representation.type === 'entity' ? 'entity_' : 'relationship_';
-  return `${number} ${t(`${prefix}${representation.target.entity_type}`)}`;
+  const label = `${t(`${prefix}${representation.target.entity_type}`)}`;
+  return `${number} ${label[0].toUpperCase()}${label.slice(1)}`;
 };
 
 export const getEntityRepresentations = (csvMapper: CsvMapper) => {

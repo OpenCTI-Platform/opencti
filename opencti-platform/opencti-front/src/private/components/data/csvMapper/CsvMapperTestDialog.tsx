@@ -11,6 +11,7 @@ import {
 } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
   query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
@@ -33,15 +34,22 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
 
   const [value, setValue] = useState<string>('');
   const [result, setResult] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onChange = async (field: string, v: string | File | undefined) => {
     if (field === 'file' && v instanceof File) {
-      const fileValue = await v.text();
-      setValue(fileValue);
+      if (v.type === 'text/csv') {
+        const fileValue = await v.text();
+        setValue(fileValue);
+      } else {
+        setValue('');
+        setResult('');
+      }
     }
   };
 
   const onTest = () => {
+    setLoading(true);
     fetchQuery(csvMapperTestQuery, {
       configuration,
       content: value,
@@ -49,10 +57,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       .then((data) => {
         const resultTest = (data as CsvMapperTestDialogQuery$data).csvMapperTest;
         setResult(JSON.stringify(resultTest, null, '  '));
+        setLoading(false);
       });
   };
 
   const handleClose = () => {
+    setValue('');
     setResult('');
     onClose();
   };
@@ -63,18 +73,20 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       <DialogContent>
         <CustomFileUploader
             setFieldValue={(field, v) => onChange(field, v)}
-            label={'Your testing file'}/>
-        <Button
-          variant="contained"
-          color="secondary"
-          disabled={!value}
-          onClick={onTest}
-          style={{ marginTop: 20 }}
-        >
-          {t('Test')}
-        </Button>
+            label={'Your testing file (csv only)'}/>
+        <div style={{ display: 'inline-flex', textAlign: 'center', marginTop: 20 }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            disabled={!value || loading}
+            onClick={onTest}
+          >
+            {t('Test')}
+          </Button>
+          {loading && <div style={{ marginLeft: 10 }}><Loader variant={LoaderVariant.inElement} /></div> }
+        </div>
         <div style={{ marginTop: 20 }}>
-          <CodeBlock code={result || 'You will find here your test json result'} language={'json'} />
+          <CodeBlock code={result || t('You will find here your test json result')} language={'json'} />
         </div>
       </DialogContent>
     </Dialog>

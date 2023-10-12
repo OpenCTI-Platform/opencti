@@ -48,7 +48,7 @@ const CsvMappers = () => {
     validity: {
       label: 'Validity',
       width: '20%',
-      isSortable: true,
+      isSortable: false,
       render: (data: CsvMapperLine_csvMapper$data) => {
         return data.errors === null ? (
             <CheckCircleOutlined fontSize="small" color="success" />

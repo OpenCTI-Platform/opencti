@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, useFormikContext } from 'formik';
+import { useFormikContext } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import MuiTextField from '@mui/material/TextField';
 import { useFormatter } from '../../../../../../components/i18n';
-import TextField from '../../../../../../components/TextField';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -31,8 +31,8 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
   const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
   const indexAttribute = selectedAttributes.findIndex((a) => a.key === attribute.key);
 
-  const onChange = (name: string, value: string) => {
-    formikContext.setFieldValue(
+  const onChange = async (name: string, value: string) => {
+    await formikContext.setFieldValue(
       `representations[${indexRepresentation}].attributes[${indexAttribute}].column.configuration`,
       { [name]: value },
     );
@@ -46,14 +46,13 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
     <div>
       {attribute.type === 'date'
         && <div className={classes.container}>
-          <Field style={{ margin: 0 }}
-             disabled={!enabled}
-             component={TextField}
-             type="standard"
-             name="pattern_date"
-             value={selectedAttributes[indexAttribute]?.column?.configuration?.pattern_date || ''}
-             onChange={onChange}
-             placeholder={t('Date pattern')}
+          <MuiTextField
+            style={{ margin: 0 }}
+            disabled={!enabled}
+            type="standard"
+            value={selectedAttributes[indexAttribute]?.column?.configuration?.pattern_date || ''}
+            onChange={(event) => onChange('pattern_date', event.target.value)}
+            placeholder={t('Date pattern')}
           />
           <Tooltip
             title={t(
@@ -70,19 +69,16 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
       }
       {attribute.multiple
         && <div className={classes.container}>
-          <Field style={{ margin: 0 }}
-             disabled={!enabled}
-             component={TextField}
-             type="standard"
-             name="separator"
-             value={selectedAttributes[indexAttribute]?.column?.configuration?.separator || ''}
-             onChange={onChange}
-             placeholder={t('List separator')}
+          <MuiTextField
+            style={{ margin: 0 }}
+            disabled={!enabled}
+            type="standard"
+            value={selectedAttributes[indexAttribute]?.column?.configuration?.separator || ''}
+            onChange={(event) => onChange('separator', event.target.value)}
+            placeholder={t('List separator')}
           />
           <Tooltip
-            title={t(
-              'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)',
-            )}
+            title={t('If this field contains multiple values, you can specify the separator used between each values (for instance | or +)')}
           >
             <InformationOutline
               fontSize="small"
