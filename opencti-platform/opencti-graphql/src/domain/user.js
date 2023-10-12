@@ -108,10 +108,9 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // TODO To check with Adrien
-    const myOrgasIds = (await findAdministratedOrganizationsByUser(context, user, user.id)).map((organization) => organization.id);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
+    const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
     if (!data.objectOrganization.find((orgaId) => myOrgasIds.includes(orgaId))) {
       throw ForbiddenAccess();
     }
@@ -120,17 +119,10 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAdministratedOrganizationsByUser = async (context, user, userId) => {
-  const batchOpts = { batched: false, paginate: false, withInferences: false };
-
-  const organizations = await batchOrganizations(context, SYSTEM_USER, userId, batchOpts);
-  return organizations.filter((o) => o.authorized_authorities?.includes(userId));
-};
-
 export const findAll = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const organisationIds = (user.administrated_organizations ?? []).map((orga) => orga.id);
+    const organisationIds = user.administrated_organizations.map((orga) => orga.id);
     const users = await listThroughGetFrom(context, user, organisationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { paginate: false, batched: false });
     return buildPagination(
       0,
@@ -435,7 +427,7 @@ export const addUser = async (context, user, newUser) => {
   }
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
-    const groupIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
+    const groupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
     if (!newUser.groups.every((group) => groupIds.includes(group))) {
       throw ForbiddenAccess();
     }
@@ -925,6 +917,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organizations: user.organizations ?? [],
     allowed_organizations: user.allowed_organizations,
+    administrated_organizations: user.administrated_organizations ?? [],
     inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,

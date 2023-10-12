@@ -28,10 +28,6 @@ export const findById = (context, user, groupId) => {
 };
 
 export const findAll = async (context, user, args) => {
-  // TODO Filter groups
-  // if user is orga_admin && pas set_access
-  // recupérer grantable_groups
-  // return ces groupes
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
     return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
