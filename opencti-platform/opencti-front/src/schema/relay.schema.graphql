@@ -7497,9 +7497,9 @@ type Query {
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   ingestionRss(id: String!): IngestionRss
-  ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
+  ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
-  ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
