@@ -5765,7 +5765,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"analytics@npm:^0.8.9":
+"analytics@npm:0.8.9":
   version: 0.8.9
   resolution: "analytics@npm:0.8.9"
   dependencies:
@@ -14839,7 +14839,7 @@ __metadata:
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.4
     "@vitejs/plugin-react": 4.0.4
-    analytics: ^0.8.9
+    analytics: 0.8.9
     apexcharts: 3.42.0
     axios: 1.5.1
     babel-plugin-relay: 15.0.0
