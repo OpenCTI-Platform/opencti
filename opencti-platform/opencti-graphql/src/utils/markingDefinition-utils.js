@@ -21,14 +21,13 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
     // Get all marking definitions
     const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
     // Get object entries from markings Map, convert into array without duplicate values
-    const markingsAdded = [...new Set(markingsMap.values())].filter((m) => refs.includes(m.id));
+    const markingsAdded = refs.filter((r) => markingsMap.get(r)).map((r) => markingsMap.get(r));
+    // const markingsAdded = markingsMap.values().filter((m) => refs.includes(m.id));
     // If multiple markings is added, filter and keep the highest rank
     const markingsAddedCleaned = await cleanMarkings(context, markingsAdded);
-
     const operationUpdated = { operation, refs };
 
     const markingsInCommon = markings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
-
     if (operation === UPDATE_OPERATION_ADD) {
       // If it is a new type, we add it
       if (markingsInCommon.length === 0) {
