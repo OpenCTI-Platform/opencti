@@ -110,8 +110,9 @@ export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
+    const memberOrgas = await listThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
-    if (!data.objectOrganization.find((orgaId) => myOrgasIds.includes(orgaId))) {
+    if (!memberOrgas.map((organization) => organization.id).find((orgaId) => myOrgasIds.includes(orgaId))) {
       throw ForbiddenAccess();
     }
   }

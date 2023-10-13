@@ -405,20 +405,20 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 {user.lastname || '-'}
               </Grid>
               <Grid item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Account Status')}
-                  </Typography>
-                  <ItemAccountStatus
-                    account_status={user.account_status}
-                    label={t(user.account_status || 'Unknown')}
-                    variant={'outlined'}
-                  />
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Account Status')}
+                </Typography>
+                <ItemAccountStatus
+                  account_status={user.account_status}
+                  label={t(user.account_status || 'Unknown')}
+                  variant={'outlined'}
+                />
               </Grid>
               <Grid item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Account Expire Date')}
-                  </Typography>
-                  {accountExpireDate || '-'}
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Account Expire Date')}
+                </Typography>
+                {accountExpireDate || '-'}
               </Grid>
             </Grid>
           </Paper>
@@ -440,9 +440,10 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         key={role?.id}
                         dense={true}
                         divider={true}
-                        button={true}
-                        component={userHasSettingsCapability ? Link : undefined}
-                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                        {...(!userHasSettingsCapability ? { button: false } : {
+                          component: Link,
+                          to: `/dashboard/settings/accesses/roles/${role?.id}`,
+                        })}
                       >
                         <ListItemIcon>
                           <ItemIcon type="Role" />
@@ -464,9 +465,10 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         key={groupEdge?.node.id}
                         dense={true}
                         divider={true}
-                        button={true}
-                        component={userHasSettingsCapability ? Link : undefined}
-                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                        {...(!userHasSettingsCapability ? { button: false } : {
+                          component: Link,
+                          to: `/dashboard/settings/accesses/groups/${groupEdge?.node.id}`,
+                        })}
                       >
                         <ListItemIcon>
                           <ItemIcon type="Group" />
@@ -564,7 +566,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []}/>
+                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []} />
               </Grid>
             </Grid>
           </Paper>
@@ -713,31 +715,31 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         </DialogActions>
       </Dialog>
 
-        <Dialog
-          open={displayKillSessions}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseKillSessions}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to kill all the sessions of this user?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseKillSessions} disabled={killing}>
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={submitKillSessions}
-              color="secondary"
-              disabled={killing}
-            >
-              {t('Kill all')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+      <Dialog
+        open={displayKillSessions}
+        PaperProps={{ elevation: 1 }}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseKillSessions}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to kill all the sessions of this user?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseKillSessions} disabled={killing}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            onClick={submitKillSessions}
+            color="secondary"
+            disabled={killing}
+          >
+            {t('Kill all')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
@@ -756,14 +758,14 @@ export const userQuery = graphql`
       id
       name
       ...User_user
-        @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;
