@@ -6407,17 +6407,6 @@ export type EntitySettingEdge = {
   node: EntitySetting;
 };
 
-export enum EntitySettingsFilter {
-  TargetType = 'target_type'
-}
-
-export type EntitySettingsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<EntitySettingsFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum EntitySettingsOrdering {
   TargetType = 'target_type'
 }
@@ -17856,7 +17845,7 @@ export type QueryEntitySettingByTypeArgs = {
 export type QueryEntitySettingsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<EntitySettingsFiltering>>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<EntitySettingsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27860,8 +27849,6 @@ export type ResolversTypes = ResolversObject<{
   EntitySetting: ResolverTypeWrapper<BasicStoreEntityEntitySetting>;
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
-  EntitySettingsFilter: EntitySettingsFilter;
-  EntitySettingsFiltering: EntitySettingsFiltering;
   EntitySettingsOrdering: EntitySettingsOrdering;
   Event: ResolverTypeWrapper<BasicStoreEntityEvent>;
   EventAddInput: EventAddInput;
@@ -28587,7 +28574,6 @@ export type ResolversParentTypes = ResolversObject<{
   EntitySetting: BasicStoreEntityEntitySetting;
   EntitySettingConnection: Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversParentTypes['EntitySettingEdge']> };
   EntitySettingEdge: Omit<EntitySettingEdge, 'node'> & { node: ResolversParentTypes['EntitySetting'] };
-  EntitySettingsFiltering: EntitySettingsFiltering;
   Event: BasicStoreEntityEvent;
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };

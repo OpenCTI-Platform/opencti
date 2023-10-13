@@ -13,12 +13,14 @@ import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation'
 
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
-import { TriggerFilter, TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../../components/list_lines';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -55,7 +57,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -70,7 +72,11 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     ...paginationOptionsFromStorage,
     count: 25,
     includeAuthorities: true,
-    filters: [{ key: [filter], values: [recipientId] }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: [filter], values: [recipientId] }],
+      filterGroups: [],
+    },
   };
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
     triggersLinesQuery,
