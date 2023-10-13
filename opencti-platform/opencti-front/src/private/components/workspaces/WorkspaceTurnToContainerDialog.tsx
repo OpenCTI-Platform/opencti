@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, {FocusEventHandler, FunctionComponent, useState} from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
@@ -133,10 +133,10 @@ WorkspaceTurnToContainerDialogProps
   );
   const searchContainers = (
     event: React.SyntheticEvent<Element, Event> | undefined,
-    incomingValue = '',
+    incomingValue?: string,
   ) => {
     if (!event) return;
-    setNewValue(incomingValue);
+    setNewValue(incomingValue || '');
     setActionsInputs({
       ...actionsInputs,
       inputValue: incomingValue ?? '',
@@ -221,7 +221,7 @@ WorkspaceTurnToContainerDialogProps
           selectOnFocus={true}
           autoHighlight={true}
           getOptionLabel={(option) => option.label ?? ''}
-          value={(actionsInputs?.values as Array<Container>) || []}
+          value={(actionsInputs?.values) || []}
           multiple={true}
           renderInput={(params) => (
             <MUITextField
@@ -229,13 +229,13 @@ WorkspaceTurnToContainerDialogProps
               variant="standard"
               label={t('Values')}
               fullWidth={true}
-              onFocus={(event) => searchContainers(event)}
+              onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
               style={{ marginTop: 3 }}
             />
           )}
           noOptionsText={t('No available options')}
           options={containers}
-          onInputChange={(event) => searchContainers(event)}
+          onInputChange={(event, userInput) => searchContainers(event, userInput)}
           inputValue={actionsInputs?.inputValue || ''}
           onChange={(event, value) => handleChangeActionInputValues(event, value)
           }
