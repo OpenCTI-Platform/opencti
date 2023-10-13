@@ -119,6 +119,18 @@ export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_rout
 
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
+export const existsConnectorQueues = async (id, cbError) => {
+  const { listen, push } = connectorConfig(id);
+  try {
+    await amqpExecute(async (channel) => {
+      // Check queue exists and call callback method if not
+      await channel.on('error', async (error) => await cbError(error));
+      await channel.checkQueue(listen);
+      await channel.checkQueue(push);
+    });
+  } catch (e) { /* nothing */ }
+};
+
 export const registerConnectorQueues = async (id, name, type, scope) => {
   const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;
   const pushQueue = `${RABBIT_QUEUE_PREFIX}push_${id}`;
@@ -185,4 +197,17 @@ export const getRabbitMQVersion = (context) => {
   return metrics(context, SYSTEM_USER)
     .then((data) => data.overview.rabbitmq_version)
     .catch(/* istanbul ignore next */ () => 'Disconnected');
+};
+
+export const consumeQueue = async (context, id, callback) => {
+  const cfg = connectorConfig(id);
+  const listenQueue = cfg.listen;
+  await amqpExecute(async (channel) => {
+    await channel.consume(listenQueue, async (msg) => {
+      if (msg !== null) {
+        channel.ack(msg); // TODO: Should be after the callback
+        await callback(context, msg.content.toString());
+      }
+    });
+  });
 };

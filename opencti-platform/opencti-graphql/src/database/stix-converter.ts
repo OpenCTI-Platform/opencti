@@ -51,12 +51,12 @@ import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
 import type {
+  StoreCommon,
   StoreCyberObservable,
   StoreEntity,
-  StoreObject,
-  StoreRelation,
   StoreEntityIdentity,
-  StoreCommon
+  StoreObject,
+  StoreRelation
 } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -70,13 +70,17 @@ import {
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
+  isStixDomainObjectLocation,
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -413,9 +417,9 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
     latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
     longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
     precision: instance.precision,
-    region: instance.region,
-    country: instance.country,
-    city: instance.city,
+    region: instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
+    country: instance.entity_type === ENTITY_TYPE_LOCATION_COUNTRY ? instance.name : undefined,
+    city: instance.entity_type === ENTITY_TYPE_LOCATION_CITY ? instance.name : undefined,
     street_address: instance.street_address,
     postal_code: instance.postal_code,
     extensions: {

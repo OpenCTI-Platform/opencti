@@ -78,6 +78,7 @@ export const operatingSystems: Omit<RelationRefDefinition, 'checker'> = {
   mandatoryType: 'no',
   multiple: true,
   datable: true,
+  label: 'Operating System'
 };
 
 export const samples: Omit<RelationRefDefinition, 'checker'> = {
@@ -360,7 +361,7 @@ export const createdBy: RelationRefDefinition = {
   stixName: 'created_by_ref',
   mandatoryType: 'customizable',
   multiple: false,
-  checker: (fromType, toType) => isStixDomainObjectIdentity(toType),
+  checker: (_, toType) => isStixDomainObjectIdentity(toType),
   label: 'Author',
   datable: false,
 };
@@ -371,7 +372,7 @@ export const objectMarking: RelationRefDefinition = {
   stixName: 'object_marking_refs',
   mandatoryType: 'customizable',
   multiple: true,
-  checker: (fromType, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
+  checker: (_, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
   label: 'Markings',
   datable: false,
 };
@@ -403,7 +404,7 @@ export const objectAssignee: RelationRefDefinition = {
   stixName: 'object_assignee_refs',
   mandatoryType: 'customizable',
   multiple: true,
-  checker: (fromType, toType) => ENTITY_TYPE_USER === toType,
+  checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Assignees',
   datable: false,
 };
@@ -414,7 +415,7 @@ export const objectParticipant: RelationRefDefinition = {
   stixName: 'object_participant_refs',
   mandatoryType: 'customizable',
   multiple: true,
-  checker: (fromType, toType) => ENTITY_TYPE_USER === toType,
+  checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Participants',
   datable: false,
 };
@@ -427,7 +428,7 @@ export const objectLabel: RelationRefDefinition = {
   stixName: 'labels',
   mandatoryType: 'no',
   multiple: true,
-  checker: (fromType, toType) => toType === ENTITY_TYPE_LABEL,
+  checker: (_, toType) => toType === ENTITY_TYPE_LABEL,
   label: 'Labels',
   datable: false,
 };
@@ -438,7 +439,7 @@ export const externalReferences: RelationRefDefinition = {
   stixName: 'external_references',
   mandatoryType: 'no',
   multiple: true,
-  checker: (fromType, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
+  checker: (_, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
   label: 'External references',
   datable: false,
 };
@@ -448,7 +449,7 @@ export const killChainPhases: RelationRefDefinition = {
   stixName: 'kill_chain_phases',
   mandatoryType: 'customizable',
   multiple: true,
-  checker: (fromType, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE,
+  checker: (_, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE,
   label: 'Kill chain phases',
   datable: false,
 };

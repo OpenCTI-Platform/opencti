@@ -7,7 +7,7 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  isStixDomainObject
+  isStixDomainObject, isStixDomainObjectLocation
 } from '../../../src/schema/stixDomainObject';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
@@ -106,6 +106,14 @@ describe('Stix opencti converter', () => {
       const def = R.head(Object.values(rawData.definition));
       expect(remainingData.name).toEqual(def);
       remainingData = R.dissoc('name', remainingData);
+    }
+    // Handle location properties
+    if (isStixDomainObjectLocation(opencti_type)) {
+      remainingData = R.pipe(
+        R.dissoc('region'),
+        R.dissoc('country'),
+        R.dissoc('city'),
+        )(remainingData);
     }
     // All remaining data must be extensions
     // const remain = R.mergeAll(

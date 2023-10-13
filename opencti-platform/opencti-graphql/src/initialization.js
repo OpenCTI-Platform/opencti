@@ -52,7 +52,10 @@ export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
   attribute_order: 2500,
   description: 'Access data sharing',
-  dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 }],
+  dependencies: [
+    { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
+    { name: 'SETCSVMAPPERS', description: 'Manage CSV mappers', attribute_order: 2520 }
+  ],
 };
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,

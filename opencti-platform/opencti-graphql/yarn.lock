@@ -6462,6 +6462,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csv-parse@npm:5.5.2":
+  version: 5.5.2
+  resolution: "csv-parse@npm:5.5.2"
+  checksum: de2eb0c29b049783ef101b7eb843456200dc9a4fc9f4b400473bb0521b41aadb77af560cf4edc49bac65cc457b32596519860120181b26ec3b372109ddf8e8ea
+  languageName: node
+  linkType: hard
+
 "d@npm:1, d@npm:^1.0.1":
   version: 1.0.1
   resolution: "d@npm:1.0.1"
@@ -10581,6 +10588,7 @@ __metadata:
     content-disposition: 0.5.4
     cors: 2.8.5
     cross-env: 7.0.3
+    csv-parse: 5.5.2
     dataloader: 2.2.2
     domino: 2.1.6
     dot-object: 2.1.4

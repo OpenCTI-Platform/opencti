@@ -7,7 +7,7 @@ import {
   updateAttribute
 } from '../database/middleware';
 import { getHttpClient } from '../utils/http-client';
-import { completeConnector, connectors, connectorsFor } from '../database/repository';
+import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -23,12 +23,9 @@ import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 
 // region connectors
-export const loadConnectorById = (context, user, id) => {
-  return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
-};
 export const connectorForWork = async (context, user, id) => {
   const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
-  if (work) return loadConnectorById(context, user, work.connector_id);
+  if (work) return connector(context, user, work.connector_id);
   return null;
 };
 
@@ -41,20 +38,20 @@ export const computeWorkStatus = async (work) => {
   // If data in redis not exist, just send default values
   return redisData ?? { import_processed_number: null, import_expected_number: null };
 };
-export const connectorsForExport = async (context, user, scope, onlyAlive = false) => {
+export const connectorsForExport = async (context, user, scope = null, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
 export const pingConnector = async (context, user, id, state) => {
   const creation = now();
-  const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
-  if (!connector) {
+  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  if (!conn) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
   // Ensure queue are correctly setup
-  const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];
-  await registerConnectorQueues(connector.id, connector.name, connector.connector_type, scopes);
+  const scopes = conn.connector_scope ? conn.connector_scope.split(',') : [];
+  await registerConnectorQueues(conn.id, conn.name, conn.connector_type, scopes);
   // Patch the updated_at and the state if needed
-  if (connector.connector_state_reset === true) {
+  if (conn.connector_state_reset === true) {
     const statePatch = { connector_state_reset: false };
     await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, statePatch);
   } else {
@@ -79,10 +76,10 @@ export const resetStateConnector = async (context, user, id) => {
 export const registerConnector = async (context, user, connectorData) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
-  const connector = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
-  if (connector) {
+  if (conn) {
     // Simple connector update
     const patch = {
       name,
@@ -279,8 +276,8 @@ export const deleteQueues = async (context, user) => {
   try { await unregisterConnector(INTERNAL_SYNC_QUEUE); } catch (e) { /* nothing */ }
   const platformConnectors = await connectors(context, user);
   for (let index = 0; index < platformConnectors.length; index += 1) {
-    const connector = platformConnectors[index];
-    await unregisterConnector(connector.id);
+    const conn = platformConnectors[index];
+    await unregisterConnector(conn.id);
   }
   try { await unregisterExchanges(); } catch (e) { /* nothing */ }
 };

@@ -17,6 +17,7 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
+import * as R from 'ramda';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
@@ -40,9 +41,32 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const importValidation = (t: (value: string) => string) => Yup.object().shape({
-  connector_id: Yup.string().required(t('This field is required')),
-});
+interface ConnectorConfiguration {
+  configuration: string;
+  id: string;
+  name: string;
+}
+interface Connector {
+  id: string;
+  name: string;
+  active: boolean;
+  connector_scope: string[];
+  updated_at: string;
+  configurations: ConnectorConfiguration[];
+}
+
+const importValidation = (t: (value: string) => string, configurations: boolean) => {
+  const shape = {
+    connector_id: Yup.string().required(t('This field is required')),
+  };
+  if (configurations) {
+    return Yup.object().shape({
+      ...shape,
+      configuration: Yup.string().required(t('This field is required')),
+    });
+  }
+  return Yup.object().shape(shape);
+};
 
 interface ExternalReferenceFileImportViewerBaseProps {
   externalReference: ExternalReferenceFileImportViewer_entity$data;
@@ -58,13 +82,7 @@ interface ExternalReferenceFileImportViewerBaseProps {
   }
   >;
   relay: RelayRefetchProp;
-  connectorsImport: {
-    id: string;
-    name: string;
-    active: boolean;
-    connector_scope: string[];
-    updated_at: string;
-  }[];
+  connectorsImport: Connector[];
 }
 const ExternalReferenceFileImportViewerBase: FunctionComponent<
 ExternalReferenceFileImportViewerBaseProps
@@ -74,11 +92,12 @@ ExternalReferenceFileImportViewerBaseProps
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
+  const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
   const importConnsPerFormat = scopesConn(connectorsImport);
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport: FormikConfig<{ connector_id: string }>['onSubmit'] = (
+  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
@@ -87,6 +106,7 @@ ExternalReferenceFileImportViewerBaseProps
       variables: {
         fileName: fileToImport?.id,
         connectorId: values.connector_id,
+        configuration: values.configuration,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -114,6 +134,11 @@ ExternalReferenceFileImportViewerBaseProps
   }, []);
   const fileToImportBoolean = () => {
     return !!fileToImport;
+  };
+  const connectors = connectorsImport.filter((n) => !R.isEmpty(n.configurations));
+
+  const handleSelectConnector = (_: string, value: string) => {
+    setSelectedConnector(connectors?.find((c) => c.id === value) ?? null);
   };
   return (
     <React.Fragment>
@@ -180,8 +205,8 @@ ExternalReferenceFileImportViewerBaseProps
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '' }}
-          validationSchema={importValidation(t)}
+          initialValues={{ connector_id: '', configuration: '' }}
+          validationSchema={importValidation(t, (selectedConnector?.configurations?.length ?? 0) > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
         >
@@ -202,6 +227,7 @@ ExternalReferenceFileImportViewerBaseProps
                     label={t('Connector')}
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
+                    onChange={handleSelectConnector}
                   >
                     {connectorsImport.map((connector, i: number) => {
                       const disabled = !fileToImport
@@ -221,6 +247,27 @@ ExternalReferenceFileImportViewerBaseProps
                       );
                     })}
                   </Field>
+                    {(selectedConnector?.configurations?.length ?? 0) > 0
+                        && <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="configuration"
+                            label={t('Configuration')}
+                            fullWidth={true}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                        >
+                            {selectedConnector?.configurations.map((config) => {
+                              return (
+                                    <MenuItem
+                                        key={config.id}
+                                        value={config.configuration}
+                                    >
+                                        {config.name}
+                                    </MenuItem>
+                              );
+                            })}
+                        </Field>
+                    }
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
@@ -283,6 +330,11 @@ const ExternalReferenceFileImportViewer = createRefetchContainer(
         active
         connector_scope
         updated_at
+        configurations {
+            id
+            name,
+            configuration
+        }
       }
     `,
   },
