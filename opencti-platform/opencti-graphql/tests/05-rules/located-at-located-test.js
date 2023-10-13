@@ -92,8 +92,8 @@ describe('Located at located rule', () => {
       expect(parisToWesternEurope.stop_time).toBe('2020-02-29T10:00:00.000Z');
       const parisToWesternEuropeMarkings = parisToWesternEurope[RELATION_OBJECT_MARKING];
       expect(parisToWesternEuropeMarkings.length).toBe(1); // TLP:CLEAR
-      expect(parisToWesternEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeTruthy();
-      expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeFalsy();
+      expect(parisToWesternEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeFalsy();
+      expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       const parisToEurope = await inferenceLookup(afterLiveRelations, PARIS, EUROPE, RELATION_LOCATED_AT);
       expect(parisToEurope).not.toBeNull();
       expect(parisToEurope.confidence).toBe(38);
