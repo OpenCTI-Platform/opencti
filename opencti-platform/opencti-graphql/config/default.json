@@ -108,7 +108,8 @@
   },
   "import_csv_built_in_connector": {
     "enabled": true,
-    "interval": 10000
+    "interval": 10000,
+    "validate_before_import": false
   },
   "task_scheduler": {
     "enabled": true,
