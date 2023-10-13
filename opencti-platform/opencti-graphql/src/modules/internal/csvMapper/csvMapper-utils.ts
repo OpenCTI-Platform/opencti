@@ -57,6 +57,20 @@ export const validate = async (context: AuthContext, mapper: BasicStoreEntityCsv
         if (!schemaAttribute?.multiple && (attribute.based_on?.representations?.length ?? 0) > 1) {
           throw Error(`Representation ${representationLabel(idx, representation)} - the following attribute can't be multiple : ${attribute.key}`);
         }
+        // Auto reference
+        if (attribute.based_on?.representations?.includes(representation.id)) {
+          throw Error(`Representation ${representationLabel(idx, representation)} - you can't reference the representation itself : ${attribute.key}`);
+        }
+        // Possible cycle
+        const representationRefs = mapper.representations.filter((r) => attribute.based_on?.representations?.includes(r.id));
+        const attributeRepresentationRefs = representationRefs.map((rr) => rr.attributes
+          .filter((rra) => isNotEmptyField(rra.based_on?.representations))
+          .map((rra) => rra.based_on?.representations ?? [])
+          .flat())
+          .flat();
+        if (attributeRepresentationRefs.includes(representation.id)) {
+          throw Error(`Representation ${representationLabel(idx, representation)} - reference cycle found`);
+        }
       }
     });
   }));
