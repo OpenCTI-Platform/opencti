@@ -84,7 +84,7 @@ interface BasicStoreIdentifier {
   x_opencti_stix_ids?: Array<StixId>;
 }
 
-export interface BasicStoreBase extends BasicStoreIdentifier {
+interface BasicStoreBase extends BasicStoreIdentifier {
   _index: string;
   standard_id: StixId;
   entity_type: string;
