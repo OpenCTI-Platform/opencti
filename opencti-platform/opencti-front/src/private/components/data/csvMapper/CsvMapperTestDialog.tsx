@@ -72,8 +72,10 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <CustomFileUploader
-            setFieldValue={(field, v) => onChange(field, v)}
-            label={'Your testing file (csv only)'}/>
+          setFieldValue={(field, v) => onChange(field, v)}
+          label={'Your testing file (csv only)'}
+          accept={'.csv'}
+        />
         <div style={{ display: 'inline-flex', textAlign: 'center', marginTop: 20 }}>
           <Button
             variant="contained"

@@ -28,6 +28,7 @@ interface CustomFileUploadProps {
   ) => void;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
+  accept?: string; // html input accept props (file ext filter)
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -64,6 +65,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   setFieldValue,
   isEmbeddedInExternalReferenceCreation,
   label,
+  accept,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -103,7 +105,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           className={classes.button}
         >
           {t('Select your file')}
-          <VisuallyHiddenInput type="file" />
+          <VisuallyHiddenInput type="file" accept={accept} />
         </Button>
         <span
           title={fileNameForDisplay || t('No file selected.')}
