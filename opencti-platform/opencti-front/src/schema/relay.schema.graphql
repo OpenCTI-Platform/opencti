@@ -7479,7 +7479,7 @@ type Query {
   feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   entitySetting(id: String!): EntitySetting
   entitySettingByType(targetType: String!): EntitySetting
-  entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
+  entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, search: String): EntitySettingConnection
   workspace(id: String!): Workspace
   workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, includeAuthorities: Boolean, search: String): WorkspaceConnection
   malwareAnalysis(id: String!): MalwareAnalysis
@@ -10071,17 +10071,6 @@ type EntitySetting implements InternalObject & BasicObject {
 
 enum EntitySettingsOrdering {
   target_type
-}
-
-enum EntitySettingsFilter {
-  target_type
-}
-
-input EntitySettingsFiltering {
-  key: [EntitySettingsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type EntitySettingConnection {
