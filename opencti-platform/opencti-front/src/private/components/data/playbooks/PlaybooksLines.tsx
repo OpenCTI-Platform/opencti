@@ -27,7 +27,7 @@ export const playbooksLinesQuery = graphql`
     $cursor: ID
     $orderBy: PlaybooksOrdering
     $orderMode: OrderingMode
-    $filters: [PlaybooksFiltering!]
+    $filters: FilterGroup
   ) {
     ...PlaybooksLines_data
       @arguments(
@@ -49,7 +49,7 @@ const playbooksLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "PlaybooksOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[PlaybooksFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PlaybooksLinesRefetchQuery") {
     playbooks(
