@@ -258,7 +258,7 @@ const SettingsOrganization = ({
                           dense={true}
                           divider={true}
                           button={true}
-                          component={isOrganizationAdmin ? undefined : Link}
+                          component={isOrganizationAdmin ? null : Link}
                           to={`/dashboard/settings/accesses/groups/${group.id}`}
                         >
                           <ListItemIcon>
@@ -280,7 +280,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <SettingsOrganizationUsers organization={organization} isOrganizationAdmin={isOrganizationAdmin}/>
+        <SettingsOrganizationUsers organization={organization}/>
       </Grid>
     </div>
   );
