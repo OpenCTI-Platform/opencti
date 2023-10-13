@@ -96,6 +96,7 @@ const isValidInput = (input: Record<string, InputType>) => {
   }
 
   // Verify mandatory attributes are filled
+  // TODO: Removed it when it will be handle in schema-validator
   const mandatoryAttributes = Array.from(schemaAttributesDefinition.getAttributes(input[entityType.name] as string).values())
     .filter((attr) => attr.mandatoryType === 'external')
     .map((attr) => attr.name);
