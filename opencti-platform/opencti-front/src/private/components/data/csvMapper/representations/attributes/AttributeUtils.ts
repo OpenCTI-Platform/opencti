@@ -71,14 +71,15 @@ export const getBasedOnRepresentations = (basedOn: AttributeWithMetadata, repres
 
 // get the entity type of a given ref "from" or "to"
 // (refs links to an existing representation)
-export const getEntityTypeForRef = (attributes: Attribute[], representations: Representation[], keyRef: 'from' | 'to') => {
+export const getInfoForRef = (attributes: Attribute[], representations: Representation[], keyRef: 'from' | 'to') => {
   const ref = attributes.find((attr) => attr.key === keyRef);
   let fromType: string | undefined;
   if (ref && isNotEmptyField(ref.based_on?.representations)) {
     const firstRepresentationId = ref.based_on?.representations[0];
     if (firstRepresentationId) {
       fromType = representations.find((r) => r.id === firstRepresentationId)?.target.entity_type;
+      return [fromType, firstRepresentationId];
     }
   }
-  return fromType;
+  return [];
 };

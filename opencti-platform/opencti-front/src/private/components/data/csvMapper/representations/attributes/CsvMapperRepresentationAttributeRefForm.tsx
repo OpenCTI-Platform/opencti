@@ -6,7 +6,7 @@ import { representationLabel } from '@components/data/csvMapper/representations/
 import * as R from 'ramda';
 import {
   getBasedOnRepresentations,
-  getEntityTypeForRef,
+  getInfoForRef,
 } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
 import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
@@ -60,8 +60,8 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
   const indexAttribute = representation.attributes.findIndex((a) => a.key === attribute.key);
   const selectedAttributes = representation.attributes;
 
-  const fromType = getEntityTypeForRef(representation.attributes, representations, 'from');
-  const toType = getEntityTypeForRef(representation.attributes, representations, 'to');
+  const [fromType, fromId] = getInfoForRef(representation.attributes, representations, 'from');
+  const [toType, toId] = getInfoForRef(representation.attributes, representations, 'to');
 
   const multiple = attribute.multiple ?? false;
 
@@ -71,7 +71,17 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
   const relationshipRefTypes = resolveTypesForRelationshipRef(schemaRelationsRefTypesMapping, entityType, attribute.key);
   const options = representations.filter((r) => {
     return [...relationshipTypes, ...relationshipRefTypes].includes(r.target.entity_type);
-  }).filter((r) => r.id !== representation.id);
+  })
+    .filter((r) => r.id !== representation.id)
+    .filter((r) => {
+      if (attribute.key === 'from' && toId) {
+        return r.id !== toId;
+      }
+      if (attribute.key === 'to' && fromId) {
+        return r.id !== fromId;
+      }
+      return true;
+    });
 
   // -- ERRORS --
 
