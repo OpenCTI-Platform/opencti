@@ -1,4 +1,4 @@
-import React, {FocusEventHandler, FunctionComponent, useState} from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
