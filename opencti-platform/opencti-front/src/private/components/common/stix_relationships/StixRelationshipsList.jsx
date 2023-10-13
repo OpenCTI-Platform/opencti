@@ -3523,6 +3523,10 @@ const stixRelationshipsListQuery = graphql`
             ... on Report {
               name
             }
+            ... on Note {
+              attribute_abstract
+              content
+            }
             ... on ExternalReference {
               source_name
               url
@@ -4067,6 +4071,10 @@ const stixRelationshipsListQuery = graphql`
             }
             ... on Report {
               name
+            }
+            ... on Note {
+              attribute_abstract
+              content
             }
             ... on ExternalReference {
               source_name
