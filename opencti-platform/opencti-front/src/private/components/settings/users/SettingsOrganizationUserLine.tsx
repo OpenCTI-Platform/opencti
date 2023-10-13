@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { ListItemSecondaryAction } from '@mui/material';
-import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
+import Tooltip from '@mui/material/Tooltip';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -161,7 +161,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {external && <AccountCircleOutlined />}
-        {!external && (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined color="success" /> : <PersonOutlined />)}
+        {!external && (memberIsOrganizationAdmin ? <Tooltip title={'Organization administrator'}><AdminPanelSettingsOutlined color="success" /></Tooltip> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
         primary={
