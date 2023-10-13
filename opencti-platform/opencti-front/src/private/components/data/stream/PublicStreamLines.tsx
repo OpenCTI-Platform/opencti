@@ -55,7 +55,7 @@ const publicStreamLinesFragment = graphql`
 
 const publicStreamLinesQuery = graphql`
   query PublicStreamLinesQuery {
-    streamCollections(filters: [{ key: stream_public, values: ["true"] }]) {
+    streamCollections(filters: { mode: and, filters: [{ key: "stream_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicStreamLines_node
