@@ -31,7 +31,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, ORGA_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
@@ -322,6 +322,9 @@ export const roleEditContext = async (context, user, roleId, input) => {
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+    throw ForbiddenAccess();
+  }
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -676,6 +679,13 @@ export const userAddRelation = async (context, user, userId, input) => {
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
+  // Check in case organization admins adds non-grantable goup a user
+  const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+      throw ForbiddenAccess();
+    }
+  }
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
@@ -722,6 +732,9 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 };
 
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+    throw ForbiddenAccess();
+  }
   const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
