@@ -19521,7 +19521,7 @@ export type QueryStreamCollectionArgs = {
 
 export type QueryStreamCollectionsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<Array<InputMaybe<StreamCollectionFiltering>>>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StreamCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23394,19 +23394,6 @@ export type StreamCollectionEditMutationsDeleteGroupArgs = {
 
 export type StreamCollectionEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
-};
-
-export enum StreamCollectionFilter {
-  Name = 'name',
-  StreamLive = 'stream_live',
-  StreamPublic = 'stream_public'
-}
-
-export type StreamCollectionFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<StreamCollectionFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export enum StreamCollectionOrdering {
@@ -28313,8 +28300,6 @@ export type ResolversTypes = ResolversObject<{
   StreamCollectionConnection: ResolverTypeWrapper<StreamCollectionConnection>;
   StreamCollectionEdge: ResolverTypeWrapper<StreamCollectionEdge>;
   StreamCollectionEditMutations: ResolverTypeWrapper<StreamCollectionEditMutations>;
-  StreamCollectionFilter: StreamCollectionFilter;
-  StreamCollectionFiltering: StreamCollectionFiltering;
   StreamCollectionOrdering: StreamCollectionOrdering;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   SubType: ResolverTypeWrapper<Omit<SubType, 'settings'> & { settings?: Maybe<ResolversTypes['EntitySetting']> }>;
@@ -28982,7 +28967,6 @@ export type ResolversParentTypes = ResolversObject<{
   StreamCollectionConnection: StreamCollectionConnection;
   StreamCollectionEdge: StreamCollectionEdge;
   StreamCollectionEditMutations: StreamCollectionEditMutations;
-  StreamCollectionFiltering: StreamCollectionFiltering;
   String: Scalars['String']['output'];
   SubType: Omit<SubType, 'settings'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']> };
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };

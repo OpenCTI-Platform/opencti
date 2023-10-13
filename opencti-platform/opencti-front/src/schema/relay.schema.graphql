@@ -612,19 +612,6 @@ enum StreamCollectionOrdering {
   stream_live
 }
 
-enum StreamCollectionFilter {
-  name
-  stream_public
-  stream_live
-}
-
-input StreamCollectionFiltering {
-  key: [StreamCollectionFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 enum SubTypesOrdering {
   label
 }
@@ -7287,7 +7274,7 @@ type Query {
   streamCollection(id: String!): StreamCollection
   feed(id: String!): Feed
   feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FeedConnection
-  streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: [StreamCollectionFiltering]): StreamCollectionConnection!
+  streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status

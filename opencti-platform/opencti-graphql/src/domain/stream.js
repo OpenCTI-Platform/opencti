@@ -11,6 +11,7 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
+import { addFilter } from '../utils/filtering';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -48,8 +49,8 @@ export const findAll = (context, user, args) => {
     return listEntities(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
   }
   // No user specify, listing only public streams
-  const publicFilter = { key: ['stream_public'], values: ['true'] };
-  const publicArgs = { ...(args ?? {}), filters: [...(args?.filters ?? []), publicFilter] };
+  const filters = addFilter(args?.filters, 'stream_public', 'true');
+  const publicArgs = { ...(args ?? {}), filters };
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
 };
 export const streamCollectionEditField = async (context, user, collectionId, input) => {
