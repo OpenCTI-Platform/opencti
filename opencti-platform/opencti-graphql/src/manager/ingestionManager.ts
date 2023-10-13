@@ -20,8 +20,10 @@ import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
-import type { Filter } from '../database/middleware-loader';
+import type {
+  BasicStoreEntityIngestionRss,
+  BasicStoreEntityIngestionTaxii
+} from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
 
@@ -173,7 +175,11 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
 
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
   const httpGet = rssHttpGetter();
-  const filters: Array<Filter> = [{ key: 'ingestion_running', values: [true] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
   const ingestions = await findAllRssIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -238,7 +244,11 @@ const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler
 };
 const taxiiExecutor = async (context: AuthContext) => {
-  const filters: Array<Filter> = [{ key: 'ingestion_running', values: [true] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
   const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {

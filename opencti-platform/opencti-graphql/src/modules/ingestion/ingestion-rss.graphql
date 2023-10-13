@@ -48,7 +48,7 @@ type Query {
         after: ID
         orderBy: IngestionRssOrdering
         orderMode: OrderingMode
-        filters: [IngestionRssFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String

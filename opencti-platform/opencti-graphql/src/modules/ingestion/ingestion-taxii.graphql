@@ -64,7 +64,7 @@ type Query {
         after: ID
         orderBy: IngestionTaxiiOrdering
         orderMode: OrderingMode
-        filters: [IngestionTaxiiFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
