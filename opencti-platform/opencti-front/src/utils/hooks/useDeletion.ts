@@ -8,12 +8,12 @@ export interface Deletion {
   setDeleting: (value: (((prevState: boolean) => boolean) | boolean)) => void
 }
 
-const useDeletion = ({ handleClose }: { handleClose: () => void }) => {
+const useDeletion = ({ handleClose }: { handleClose?: () => void }) => {
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const handleOpenDelete = () => {
     setDisplayDelete(true);
-    handleClose();
+    handleClose?.();
   };
   const handleCloseDelete = () => {
     setDisplayDelete(false);

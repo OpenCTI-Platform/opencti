@@ -726,6 +726,7 @@ const i18n = {
       'Testing csv mapper': 'Probando el mapeador de CSV',
       'Your testing file (csv only)': 'Su archivo de prueba (CSV)',
       'You will find here your test json result': 'Aquí encontrará el resultado de su prueba en formato JSON',
+      'Do you want to delete this representation?': '¿Desea eliminar esta representación?',
       // Settings Messages
       'Dashboard settings': 'Cuadro de mando de configuración',
       'Platform announcement': 'Anuncio de plataforma',
@@ -2874,6 +2875,7 @@ const i18n = {
       'Testing csv mapper': 'Test du mapping CSV',
       'Your testing file (csv only)': 'Votre fichier de test (format CSV)',
       'You will find here your test json result': 'Vous trouverez ici le résultat de votre test au format JSON',
+      'Do you want to delete this representation?': 'Voulez-vous supprimer cette représentation ?',
       // Settings Messages
       'Dashboard settings': 'Paramètres du tableau de bord',
       'Platform announcement': 'Annonce de la plateforme',
@@ -4972,6 +4974,7 @@ const i18n = {
       'Testing csv mapper': 'CSVマッパーのテスト',
       'Your testing file (csv only)': 'テスト用のファイル (CSV)',
       'You will find here your test json result': 'ここにテストのJSON結果が表示されます',
+      'Do you want to delete this representation?': 'この表現を削除しますか？',
       // Settings Messages
       'Dashboard settings': 'ダッシュボードの設定',
       'Platform announcement': 'プラットフォームの発表',
@@ -6968,6 +6971,7 @@ const i18n = {
       'Testing csv mapper': '测试CSV映射器',
       'Your testing file (csv only)': 'テスト用のファイル (CSV)',
       'You will find here your test json result': '您将在这里找到您的测试JSON结果',
+      'Do you want to delete this representation?': '您是否要删除这个表示？',
       // Settings Messages
       'Dashboard settings': '仪表盘设置',
       'Platform announcement': '平台公告',

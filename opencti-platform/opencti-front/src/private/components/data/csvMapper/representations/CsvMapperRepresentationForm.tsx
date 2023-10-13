@@ -26,6 +26,8 @@ import { useFormatter } from '../../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { Theme } from '../../../../../components/Theme';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
@@ -94,10 +96,14 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
     }
   };
 
+  const deletion = useDeletion({});
+  const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const onDelete = async () => {
     const newRepresentations = formikContext.values.representations;
     newRepresentations.splice(index, 1);
     await formikContext.setFieldValue('representations', newRepresentations);
+    setDeleting(false);
+    handleCloseDelete();
   };
 
   // -- ATTRIBUTES --
@@ -134,87 +140,94 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
   };
 
   return (
-    <Accordion
-      expanded={open}
-      variant="outlined"
-      style={{ width: '100%' }}
-      className={classNames({
-        [classes.red]: hasError,
-      })}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMoreOutlined />}
-        onClick={toggle}
+    <>
+      <Accordion
+        expanded={open}
+        variant="outlined"
+        style={{ width: '100%' }}
+        className={classNames({
+          [classes.red]: hasError,
+        })}
       >
-        <div className={classes.container}>
-          <Typography>
-            {representationLabel(index, representation, t)}
-          </Typography>
-          <Tooltip title={t('Delete')}>
-            <IconButton
-              color="error"
-              onClick={onDelete}
-            >
-              <DeleteOutlined fontSize="small"/>
-            </IconButton>
-          </Tooltip>
-        </div>
-      </AccordionSummary>
-      <AccordionDetails style={{ width: '100%' }}>
-        <>
-          <MUIAutocomplete<RepresentationFormEntityOption>
-            selectOnFocus
-            openOnFocus
-            autoHighlight
-            getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
-            noOptionsText={t('No available options')}
-            options={availableTypes}
-            groupBy={(option) => t(option.type) ?? t('Unknown')}
-            value={availableTypes.find((e) => e.id === representation.target.entity_type) || null}
-            onInputChange={(event) => searchType(event)}
-            onChange={(_, value) => handleChangeEntityType(value)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label={t('Entity type')}
-                variant="outlined"
-                size="small"
-              />
-            )}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
-                  <ItemIcon type={option.label} />
-                </div>
-                <div className={classes.text}>{t(`${prefixLabel}${option.label}`)}</div>
-              </li>
-            )}
-          />
+        <AccordionSummary
+          expandIcon={<ExpandMoreOutlined />}
+          onClick={toggle}
+        >
+          <div className={classes.container}>
+            <Typography>
+              {representationLabel(index, representation, t)}
+            </Typography>
+            <Tooltip title={t('Delete')}>
+              <IconButton
+                color="error"
+                onClick={handleOpenDelete}
+              >
+                <DeleteOutlined fontSize="small"/>
+              </IconButton>
+            </Tooltip>
+          </div>
+        </AccordionSummary>
+        <AccordionDetails style={{ width: '100%' }}>
+          <>
+            <MUIAutocomplete<RepresentationFormEntityOption>
+              selectOnFocus
+              openOnFocus
+              autoHighlight
+              getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
+              noOptionsText={t('No available options')}
+              options={availableTypes}
+              groupBy={(option) => t(option.type) ?? t('Unknown')}
+              value={availableTypes.find((e) => e.id === representation.target.entity_type) || null}
+              onInputChange={(event) => searchType(event)}
+              onChange={(_, value) => handleChangeEntityType(value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('Entity type')}
+                  variant="outlined"
+                  size="small"
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={option.label} />
+                  </div>
+                  <div className={classes.text}>{t(`${prefixLabel}${option.label}`)}</div>
+                </li>
+              )}
+            />
             {queryRef && (
               <React.Suspense
                 fallback={<Loader variant={LoaderVariant.inElement} />}
               >
                 <div style={{ marginTop: 20 }}>
-                   <CsvMapperRepresentationAttributesForm
-                     index={index}
-                     queryRef={queryRef}
-                     handleErrors={handleErrors}
-                   />
+                  <CsvMapperRepresentationAttributesForm
+                    index={index}
+                    queryRef={queryRef}
+                    handleErrors={handleErrors}
+                  />
                 </div>
               </React.Suspense>
             )}
-          <div style={{ textAlign: 'right', marginTop: '20px' }}>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={onDelete}
-            >
-              {t('Delete')}
-            </Button>
-          </div>
-        </>
-      </AccordionDetails>
-    </Accordion>
+            <div style={{ textAlign: 'right', marginTop: '20px' }}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleOpenDelete}
+              >
+                {t('Delete')}
+              </Button>
+            </div>
+          </>
+        </AccordionDetails>
+      </Accordion>
+      <DeleteDialog
+        title={t('Do you want to delete this representation?')}
+        deletion={deletion}
+        submitDelete={onDelete}
+      />
+    </>
   );
 };
 export default CsvMapperRepresentationForm;
