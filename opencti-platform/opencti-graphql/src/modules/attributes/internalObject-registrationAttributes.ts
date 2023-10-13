@@ -102,7 +102,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'default_time_field', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'account_status', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'account_lock_after_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'administrated_organizations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'administrated_organizations', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'unit_system', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_ROLE]: [
