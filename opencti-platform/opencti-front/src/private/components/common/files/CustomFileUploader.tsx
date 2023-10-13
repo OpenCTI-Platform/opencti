@@ -26,7 +26,7 @@ interface CustomFileUploadProps {
     field: string,
     value: File | string | undefined,
     shouldValidate?: boolean | undefined
-  ) => Promise<void>;
+  ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
   acceptMimeTypes?: string; // html input "accept" with MIME types only
