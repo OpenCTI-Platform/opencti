@@ -271,6 +271,7 @@ const GroupingEditionOverviewComponent = (props) => {
                   fieldname="objectMarking"
                 />
               }
+              setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
             {enableReferences && (

@@ -196,6 +196,7 @@ const OpinionEditionOverviewComponent = (props) => {
                   fieldname="objectMarking"
                 />
               }
+              setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
           </Form>

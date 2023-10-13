@@ -300,6 +300,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                   fieldname="objectMarking"
                 />
               }
+              setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
             {enableReferences && (

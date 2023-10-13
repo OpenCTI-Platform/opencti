@@ -557,6 +557,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                         fieldname="objectMarking"
                       />
                     }
+                    setFieldValue={setFieldValue}
                     onChange={handleChangeObjectMarking}
                   />
                 </Form>

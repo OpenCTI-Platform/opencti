@@ -446,6 +446,7 @@ const StixDomainObjectEditionContainer = (props) => {
                     fieldname="objectMarking"
                   />
                 }
+                setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />
               {enableReferences && (

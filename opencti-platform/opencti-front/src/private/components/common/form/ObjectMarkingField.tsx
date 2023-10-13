@@ -47,7 +47,7 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
 interface ObjectMarkingFieldProps {
   name: string;
   style?: React.CSSProperties;
-  onChange: (name: string, values: Option[], operation?: string | undefined) => void;
+  onChange?: (name: string, values: Option[], operation?: string | undefined) => void;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;
@@ -102,11 +102,11 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       const markingAdded = currentValues[currentValues.length - 1];
       const markingsReplace = currentValues.filter((marking) => marking.definition_type !== valueToReplace.definition_type).concat([markingAdded]);
 
-      onChange(name, markingsReplace as Option[], operation);
+      onChange?.(name, markingsReplace as Option[], operation);
       setOperation(undefined);
       handleClose();
     } else {
-      onChange(name, newMarking as Option[], operation);
+      onChange?.(name, newMarking as Option[], operation);
       handleClose();
     }
   };
@@ -122,7 +122,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         setNewMarking(values);
         setOperation(undefined);
       }
-    } else onChange(name, values);
+    } else onChange?.(name, values);
   };
 
   const renderOption: RenderOption = (props, option) => (

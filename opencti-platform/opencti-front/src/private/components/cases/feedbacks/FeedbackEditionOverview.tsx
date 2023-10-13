@@ -338,6 +338,7 @@ FeedbackEditionOverviewProps
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
+            setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (
