@@ -17,7 +17,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_LABEL]: [
     { name: 'value', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'color', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'color', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: [
     { name: 'source_name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false, label: 'Source name' },
