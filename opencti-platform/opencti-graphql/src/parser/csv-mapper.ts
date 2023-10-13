@@ -87,7 +87,7 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
   return true;
 };
 
-const isValidInput = (representation: CsvMapperRepresentation, input: Record<string, InputType>) => {
+const isValidInput = (input: Record<string, InputType>) => {
   // Verify from and to are filled for relationship
   if (isStixRelationshipExceptRef(input[entityType.name] as string)) {
     if (isEmptyField(input.from) || isEmptyField(input.to)) {
@@ -95,10 +95,15 @@ const isValidInput = (representation: CsvMapperRepresentation, input: Record<str
     }
   }
 
-  // Verify at least one attribute is filled
-  const { attributes } = representation;
-  const keys = attributes.map((attr) => attr.key);
-  return keys.some((key) => isNotEmptyField(input[key]));
+  // Verify mandatory attributes are filled
+  const mandatoryAttributes = Array.from(schemaAttributesDefinition.getAttributes(input[entityType.name] as string).values())
+    .filter((attr) => attr.mandatoryType === 'external')
+    .map((attr) => attr.name);
+  const mandatoryRefs = schemaRelationsRefDefinition.getRelationsRef(input[entityType.name] as string)
+    .filter((ref) => ref.mandatoryType === 'external')
+    .map((ref) => ref.inputName);
+
+  return [...mandatoryAttributes, ...mandatoryRefs].every((key) => isNotEmptyField(input[key]));
 };
 
 // -- COMPUTE --
@@ -186,7 +191,7 @@ const mapRecord = (record: string[], representation: CsvMapperRepresentation, ma
   input = handleInnerType(input, representation.target.entity_type);
   handleAttributes(record, representation, input, map);
 
-  if (!isValidInput(representation, input)) {
+  if (!isValidInput(input)) {
     return null;
   }
 
