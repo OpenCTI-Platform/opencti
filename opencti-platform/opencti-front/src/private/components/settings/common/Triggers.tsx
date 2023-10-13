@@ -109,52 +109,48 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openDigest, setOpenDigest] = useState(false);
   return (
     <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{ float: 'left', marginRight: 12 }}
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{ float: 'left', marginRight: 12 }}
+      >
+        {t('Triggers and Digests')}
+      </Typography>
+      <div style={{ float: 'right', marginTop: -12 }}>
+        <SearchInput
+          variant="thin"
+          onSubmit={helpers.handleSearch}
+          keyword={searchTerm}
+        />
+      </div>
+      <Tooltip title={t('Add a live trigger')}>
+        <IconButton
+          aria-label="Add"
+          className={classes.createButton}
+          onClick={() => setOpenLive(true)}
+          size="large"
+          color="secondary"
         >
-          {t('Triggers and Digests')}
-        </Typography>
-        <div style={{ float: 'right', marginTop: -12 }}>
-          <SearchInput
-            variant="thin"
-            onSubmit={helpers.handleSearch}
-            keyword={searchTerm}
-          />
-        </div>
-      <Security needs={[SETTINGS]}>
-        <>
-          <Tooltip title={t('Add a live trigger')}>
-            <IconButton
-              aria-label="Add"
-              className={classes.createButton}
-              onClick={() => setOpenLive(true)}
-              size="large"
-              color="secondary"
-            >
-              <CampaignOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <TriggerLiveCreation
-            paginationOptions={paginationOptions}
-            open={openLive}
-            handleClose={() => setOpenLive(false)}
-            recipientId={recipientId}
-          />
-          <Tooltip title={t('Add a regular digest')}>
-            <IconButton
-              aria-label="Add"
-              className={classes.createButton}
-              onClick={() => setOpenDigest(true)}
-              size="large"
-              color="secondary"
-            >
-              <BackupTableOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </>
-      </Security>
+          <CampaignOutlined fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <TriggerLiveCreation
+        paginationOptions={paginationOptions}
+        open={openLive}
+        handleClose={() => setOpenLive(false)}
+        recipientId={recipientId}
+      />
+      <Tooltip title={t('Add a regular digest')}>
+        <IconButton
+          aria-label="Add"
+          className={classes.createButton}
+          onClick={() => setOpenDigest(true)}
+          size="large"
+          color="secondary"
+        >
+          <BackupTableOutlined fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <div className="clearfix" />
       <Paper
         ref={ref}

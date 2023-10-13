@@ -49,7 +49,7 @@ import {
   isUserHasCapability,
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
-  MEMBER_ACCESS_RIGHT_VIEW,
+  MEMBER_ACCESS_RIGHT_VIEW, ORGA_ADMIN,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
 } from '../../utils/access';
@@ -86,7 +86,7 @@ const extractUniqRecipient = async (
   const { recipients } = triggerInput;
   let recipient = user.id;
   if (recipients?.length && recipients?.length === 1) {
-    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && !isUserHasCapability(user, ORGA_ADMIN)) {
       throw ForbiddenAccess();
     }
     if (recipients?.length && recipients?.length > 1) {
