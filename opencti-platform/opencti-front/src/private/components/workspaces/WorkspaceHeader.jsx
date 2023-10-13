@@ -163,6 +163,7 @@ const WorkspaceHeader = ({
   ] = useState(false);
 
   const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
+  const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
 
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -422,9 +423,7 @@ const WorkspaceHeader = ({
       <WorkspaceTurnToContainerDialog
         workspace={workspace}
         open={displayTurnToReportOrCaseContainer}
-       handleClose={handleCloseTurnToReportOrCaseContainer}
-          setDisplayTurnToReportOrCaseContainer
-        }
+        handleClose={handleCloseTurnToReportOrCaseContainer}
       />
       <div className="clearfix" />
     </div>

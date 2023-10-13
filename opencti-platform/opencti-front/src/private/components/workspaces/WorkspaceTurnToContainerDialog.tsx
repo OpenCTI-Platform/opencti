@@ -9,26 +9,34 @@ import { Add } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import { useHistory } from 'react-router-dom';
-import {
-  WorkspaceTurnToContainerDialogQuery,
-} from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogQuery.graphql';
-import {
-  WorkspaceTurnToContainerDialogMutation,
-} from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
+import { WorkspaceTurnToContainerDialogQuery } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogQuery.graphql';
+import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
+import { Theme } from '../../../components/Theme';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  icon: {
+    display: 'inline-block',
+    paddingTop: 4,
+    marginRight: theme.spacing(1),
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+  },
+}));
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
   open: boolean;
   handleClose: () => void;
-  React.SetStateAction<boolean>
-  >;
 }
 
 interface ActionInputs {
@@ -52,7 +60,10 @@ interface StixContainer {
 }
 
 const investigationToContainerMutation = graphql`
-  mutation WorkspaceTurnToContainerDialogMutation($containerId: ID!, $workspaceId: ID!) {
+  mutation WorkspaceTurnToContainerDialogMutation(
+    $containerId: ID!
+    $workspaceId: ID!
+  ) {
     containerEdit(id: $containerId) {
       knowledgeAddFromInvestigation(workspaceId: $workspaceId) {
         id
@@ -64,11 +75,8 @@ const investigationToContainerMutation = graphql`
 
 const WorkspaceTurnToContainerDialog: FunctionComponent<
 WorkspaceTurnToContainerDialogProps
-> = ({
-  workspace,
-  displayTurnToReportOrCaseContainer,
-  setDisplayTurnToReportOrCaseContainer,
-}) => {
+> = ({ workspace, open, handleClose }) => {
+  const classes = useStyles();
   const { t } = useFormatter();
   const [containerCreation, setContainerCreation] = useState(false);
   const [containers, setContainers] = useState<Array<Container>>([]);
@@ -85,11 +93,16 @@ WorkspaceTurnToContainerDialogProps
   const handleLaunchUpdate = () => {
     handleCloseUpdate();
     commitInvestigationToContainerAdd({
-      variables: { containerId: targetContainerId, workspaceId: workspace.id || '' },
+      variables: {
+        containerId: targetContainerId,
+        workspaceId: workspace.id || '',
+      },
       onCompleted: (data) => {
         const id = data.containerEdit?.knowledgeAddFromInvestigation?.id;
         const entityType = data.containerEdit?.knowledgeAddFromInvestigation?.entity_type || '';
-        history.push(`${resolveLink(entityType.toString())}/${id}/knowledge/graph`);
+        history.push(
+          `${resolveLink(entityType.toString())}/${id}/knowledge/graph`,
+        );
       },
       onError: (error) => {
         handleError(error);
@@ -99,23 +112,23 @@ WorkspaceTurnToContainerDialogProps
 
   const searchContainersData = useLazyLoadQuery<WorkspaceTurnToContainerDialogQuery>(
     graphql`
-      query WorkspaceTurnToContainerDialogQuery($search: String) {
-        containers(
-          search: $search
-          filters: [{ key: entity_type, values: ["Container"] }]
-        ) {
-          edges {
-            node {
-              id
-              entity_type
-              representative {
-                main
+        query WorkspaceTurnToContainerDialogQuery($search: String) {
+          containers(
+            search: $search
+            filters: [{ key: entity_type, values: ["Container"] }]
+          ) {
+            edges {
+              node {
+                id
+                entity_type
+                representative {
+                  main
+                }
               }
             }
           }
         }
-      }
-    `,
+      `,
     { search: newValue ?? '' },
   );
   const searchContainers = (
@@ -166,8 +179,8 @@ WorkspaceTurnToContainerDialogProps
       fullWidth={true}
       maxWidth="sm"
       TransitionComponent={Transition}
-      open={displayTurnToReportOrCaseContainer}
-      onClose={() => setDisplayTurnToReportOrCaseContainer(false)}
+      open={open}
+      onClose={() => handleClose()}
     >
       <DialogTitle>{t('Turn to Report or Case')}</DialogTitle>
       <DialogContent>
@@ -228,10 +241,10 @@ WorkspaceTurnToContainerDialogProps
           }
           renderOption={(props, option) => (
             <li {...props}>
-              <div>
+              <div className={classes.icon}>
                 <ItemIcon type={option.type} />
               </div>
-              <div>{option.label}</div>
+              <div className={classes.text}>{option.label}</div>
             </li>
           )}
           disableClearable
@@ -246,13 +259,13 @@ WorkspaceTurnToContainerDialogProps
         </IconButton>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setDisplayTurnToReportOrCaseContainer(false)}>
+        <Button onClick={() => handleClose()}>
           {t('Cancel')}
         </Button>
         <Button
           color="secondary"
           onClick={() => {
-            setDisplayTurnToReportOrCaseContainer(false);
+            handleClose();
             setActionsInputs({
               ...actionsInputs,
               type: 'ADD',
