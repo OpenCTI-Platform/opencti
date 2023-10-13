@@ -550,6 +550,13 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
+  // Check in an organization admin edits a user that's not in its administrated organizations
+  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+    if (!userToUpdate.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+      throw ForbiddenAccess();
+    }
+  }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
