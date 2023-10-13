@@ -19,8 +19,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { Filters } from '../../../../components/list_lines';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles(() => ({
   paper: {
