@@ -428,8 +428,13 @@ export const addUser = async (context, user, newUser) => {
   }
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
-    const groupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-    if (!newUser.groups.every((group) => groupIds.includes(group))) {
+    // Check organization
+    const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
+    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga) => myOrgasIds.includes(orga))) {
+      throw ForbiddenAccess();
+    }
+    const myGroupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+    if (newUser.groups.length === 0 || !newUser.groups.every((group) => myGroupIds.includes(group))) {
       throw ForbiddenAccess();
     }
   }
