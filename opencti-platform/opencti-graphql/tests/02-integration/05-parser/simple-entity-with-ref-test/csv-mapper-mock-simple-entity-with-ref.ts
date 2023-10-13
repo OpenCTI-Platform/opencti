@@ -67,6 +67,12 @@ export const csvMapperMockSimpleEntityWithRef: Partial<BasicStoreEntityCsvMapper
           column: {
             column_name: 'C',
           },
+        },
+        {
+          key: 'color',
+          column: {
+            column_name: 'D',
+          },
         }
       ]
     }
