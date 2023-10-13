@@ -11999,7 +11999,7 @@ type Query {
     filters: [LogsFiltering]
     filterMode: FilterMode
     search: String
-  ): [TimeSeries] @auth(for: [SETTINGS])
+  ): [TimeSeries] @auth(for: [SETTINGS, ORGA_ADMIN])
   auditsDistribution(
     field: String!
     startDate: DateTime
