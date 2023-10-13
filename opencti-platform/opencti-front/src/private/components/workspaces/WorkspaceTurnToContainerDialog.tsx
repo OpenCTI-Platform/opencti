@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
@@ -10,16 +10,17 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import { useHistory } from 'react-router-dom';
-import { WorkspaceTurnToContainerDialogQuery } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogQuery.graphql';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
+import { Option } from '@components/common/form/ReferenceField';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
 import { Theme } from '../../../components/Theme';
+import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
@@ -44,13 +45,7 @@ interface ActionInputs {
   fieldType?: string;
   field?: string;
   inputValue?: string;
-  values?: Array<Container>;
-}
-
-interface Container {
-  label?: string;
-  type?: string;
-  value?: string;
+  value?: Option;
 }
 
 interface StixContainer {
@@ -73,16 +68,43 @@ const investigationToContainerMutation = graphql`
   }
 `;
 
-const WorkspaceTurnToContainerDialog: FunctionComponent<
-WorkspaceTurnToContainerDialogProps
-> = ({ workspace, open, handleClose }) => {
+const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({ workspace, open, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [containerCreation, setContainerCreation] = useState(false);
-  const [containers, setContainers] = useState<Array<Container>>([]);
   const [actionsInputs, setActionsInputs] = useState<ActionInputs | null>(null);
   const [targetContainerId, setTargetContainerId] = useState('');
-  const [newValue, setNewValue] = useState('');
+  const [containers, setContainers] = useState<Record<string, EntityValue[]>>({});
+  const [entities, searchEntities] = useSearchEntities({
+    setInputValues: () => {},
+    availableEntityTypes: [
+      'Report',
+      'Grouping',
+      'Case-Incident',
+      'Case-Rfi',
+      'Case-Rft',
+    ],
+    allEntityTypes: false,
+    availableRelationshipTypes: [],
+    searchContext: { entityTypes: ['Container'] },
+    searchScope: {},
+  }) as [
+    Record<string, EntityValue[]>,
+    (
+      filterKey: string,
+      cacheEntities: Record<string, EntityValue[]>,
+      setCacheEntities: Dispatch<Record<string, EntityValue[]>>,
+      event: SyntheticEvent
+    ) => Record<string, EntityValue[]>,
+  ]; // change when useSearchEntities will be in TS;
+  const containersFromElements = entities.containers ?? [
+    {
+      label: '',
+      type: '',
+      value: '',
+    },
+  ];
+
   const [commitInvestigationToContainerAdd] = useMutation<WorkspaceTurnToContainerDialogMutation>(
     investigationToContainerMutation,
   );
@@ -110,57 +132,21 @@ WorkspaceTurnToContainerDialogProps
     });
   };
 
-  const searchContainersData = useLazyLoadQuery<WorkspaceTurnToContainerDialogQuery>(
-    graphql`
-        query WorkspaceTurnToContainerDialogQuery($search: String) {
-          containers(
-            search: $search
-            filters: [{ key: entity_type, values: ["Container"] }]
-          ) {
-            edges {
-              node {
-                id
-                entity_type
-                representative {
-                  main
-                }
-              }
-            }
-          }
-        }
-      `,
-    { search: newValue ?? '' },
-  );
   const searchContainers = (
     event: React.SyntheticEvent<Element, Event> | undefined,
     incomingValue?: string,
   ) => {
     if (!event) return;
-    setNewValue(incomingValue || '');
+    searchEntities('containers', containers, setContainers, event);
     setActionsInputs({
       ...actionsInputs,
       inputValue: incomingValue ?? '',
     });
-
-    const edges = searchContainersData?.containers?.edges;
-    const elements = edges?.map((edge) => edge?.node);
-    const containersFromElements = elements?.map((data) => ({
-      label: data?.representative.main,
-      type: data?.entity_type,
-      value: data?.id,
-    })) || [
-      {
-        label: '',
-        type: '',
-        value: '',
-      },
-    ];
-    setContainers([...containersFromElements]);
   };
 
   const handleChangeActionInputValues = (
     event: React.SyntheticEvent<Element, Event> | null,
-    value: Container[],
+    value: EntityValue[],
   ) => {
     if (event) {
       event.stopPropagation();
@@ -168,8 +154,8 @@ WorkspaceTurnToContainerDialogProps
     }
     setActionsInputs({
       ...(actionsInputs || {}),
-      values: Array.isArray(value) ? value : [value],
-    });
+      value: Array.isArray(value) ? value.at(-1) : value,
+    } as ActionInputs);
     setTargetContainerId(value[0]?.value ?? '');
   };
 
@@ -203,11 +189,8 @@ WorkspaceTurnToContainerDialogProps
               value: id,
               type: entity_type,
             };
-            setContainers([...(containers ?? []), element]);
-            handleChangeActionInputValues(null, [
-              ...(actionsInputs?.values ?? []),
-              element,
-            ]);
+            containersFromElements.push(element);
+            handleChangeActionInputValues(null, [element]);
           }}
           confidence={undefined}
           defaultCreatedBy={undefined}
@@ -220,8 +203,8 @@ WorkspaceTurnToContainerDialogProps
           fullWidth={true}
           selectOnFocus={true}
           autoHighlight={true}
-          getOptionLabel={(option) => option.label ?? ''}
-          value={(actionsInputs?.values) || []}
+          getOptionLabel={(option) => option?.label ?? ''}
+          value={actionsInputs?.value ? [actionsInputs.value] : []}
           multiple={true}
           renderInput={(params) => (
             <MUITextField
@@ -234,11 +217,10 @@ WorkspaceTurnToContainerDialogProps
             />
           )}
           noOptionsText={t('No available options')}
-          options={containers}
+          options={containersFromElements}
           onInputChange={(event, userInput) => searchContainers(event, userInput)}
           inputValue={actionsInputs?.inputValue || ''}
-          onChange={(event, value) => handleChangeActionInputValues(event, value)
-          }
+          onChange={(event, value) => handleChangeActionInputValues(event, value)}
           renderOption={(props, option) => (
             <li {...props}>
               <div className={classes.icon}>

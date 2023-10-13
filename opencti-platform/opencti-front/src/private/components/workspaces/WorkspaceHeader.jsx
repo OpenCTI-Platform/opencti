@@ -22,11 +22,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
@@ -359,12 +355,12 @@ const WorkspaceHeader = ({
       <div className={classes.tags}>
         {R.take(5, tags).map(
           (tag) => tag.length > 0 && (
-              <Chip
-                key={tag}
-                classes={{ root: classes.tag }}
-                label={tag}
-                onDelete={() => deleteTag(tag)}
-              />
+            <Chip
+              key={tag}
+              classes={{ root: classes.tag }}
+              label={tag}
+              onDelete={() => deleteTag(tag)}
+            />
           ),
         )}
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
