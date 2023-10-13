@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
+import classNames from 'classnames';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 
@@ -25,10 +26,11 @@ interface CustomFileUploadProps {
     field: string,
     value: File | string | undefined,
     shouldValidate?: boolean | undefined
-  ) => void;
+  ) => Promise<void>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
-  accept?: string; // html input accept props (file ext filter)
+  acceptMimeTypes?: string; // html input "accept" with MIME types only
+  sizeLimit?: number // in bytes
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -45,6 +47,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
       borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
     },
   },
+  boxError: {
+    borderBottom: `0.1rem solid ${theme.palette.error.main}`,
+  },
   button: {
     lineHeight: '0.65rem',
   },
@@ -54,6 +59,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   label: {
     color: theme.palette.grey['400'],
+  },
+  error: {
+    color: theme.palette.error.main,
   },
   span: {
     marginLeft: 5,
@@ -65,17 +73,39 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   setFieldValue,
   isEmbeddedInExternalReferenceCreation,
   label,
-  accept,
+  acceptMimeTypes,
+  sizeLimit = 0, // defaults to 0 = no limit
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [fileNameForDisplay, setFileNameForDisplay] = useState('');
+  const [errorText, setErrorText] = useState('');
 
   const onChange = async (event: FormEvent) => {
-    const eventTargetValue = (event.target as HTMLInputElement).value as string;
+    const inputElement = (event.target as HTMLInputElement);
+    const eventTargetValue = inputElement.value as string;
+    const file = inputElement.files?.[0];
+    const fileSize = file?.size || 0;
+
     const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
     setFileNameForDisplay(truncate(newFileName, 60));
-    await setFieldValue('file', (event.target as HTMLInputElement).files?.[0]);
+    setErrorText('');
+
+    // check the file type; user might still provide something bypassing 'accept'
+    // this will work only if accept is using MIME types only
+    const acceptedList = acceptMimeTypes?.split(',').map((a) => a.trim()) || [];
+    if (acceptedList.length > 0 && !!file?.type && !acceptedList.includes(file?.type)) {
+      setErrorText(t('This file is not in the specified format'));
+      return;
+    }
+
+    // check the size limit if any set; if file is too big it is not set as value
+    if (fileSize > 0 && sizeLimit > 0 && fileSize > sizeLimit) {
+      setErrorText(t('This file is too large'));
+      return;
+    }
+
+    await setFieldValue('file', inputElement.files?.[0]);
     if (isEmbeddedInExternalReferenceCreation) {
       const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
       if (!externalIdValue) {
@@ -96,8 +126,10 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
       </label>
       <br/>
       <Box
-        className={classes.box}
-      >
+        className={classNames({
+          [classes.box]: true,
+          [classes.boxError]: !!errorText,
+        })}>
         <Button
           component="label"
           variant="contained"
@@ -105,7 +137,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           className={classes.button}
         >
           {t('Select your file')}
-          <VisuallyHiddenInput type="file" accept={accept} />
+          <VisuallyHiddenInput type="file" accept={acceptMimeTypes} />
         </Button>
         <span
           title={fileNameForDisplay || t('No file selected.')}
@@ -114,6 +146,11 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           {fileNameForDisplay || t('No file selected.')}
         </span>
       </Box>
+      {!!errorText && (
+        <div>
+          <span className={classes.error}>{t(errorText)}</span>
+        </div>
+      )}
     </div>
   );
 };

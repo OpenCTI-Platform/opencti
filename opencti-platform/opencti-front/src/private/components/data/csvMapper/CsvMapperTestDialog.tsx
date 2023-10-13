@@ -3,12 +3,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import React, { FunctionComponent, useState } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import CodeBlock from '@components/common/CodeBlock';
 import {
   CsvMapperTestDialogQuery$data,
 } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
+import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -71,11 +73,22 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
-        <CustomFileUploader
-          setFieldValue={(field, v) => onChange(field, v)}
-          label={'Your testing file (csv only)'}
-          accept={'.csv'}
-        />
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
+          <CustomFileUploader
+            setFieldValue={(field, v) => onChange(field, v)}
+            label={'Your testing file (csv only, max 5MB)'}
+            acceptMimeTypes={'text/csv'}
+            // we limit the file size so the upload does not take too long for a simple test
+            sizeLimit={5000000}
+          />
+          <Tooltip title={t('Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.')}>
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+              style={{ cursor: 'default', marginTop: '30px' }}
+            />
+          </Tooltip>
+        </div>
         <div style={{ display: 'inline-flex', textAlign: 'center', marginTop: 20 }}>
           <Button
             variant="contained"
@@ -88,7 +101,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           {loading && <div style={{ marginLeft: 10 }}><Loader variant={LoaderVariant.inElement} /></div> }
         </div>
         <div style={{ marginTop: 20 }}>
-          <CodeBlock code={result || t('You will find here your test json result')} language={'json'} />
+          <CodeBlock code={result || t('You will find here the result in JSON format')} language={'json'} />
         </div>
       </DialogContent>
     </Dialog>
