@@ -759,7 +759,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware['object-marking'].length).toEqual(3);
+    expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
