@@ -91,7 +91,7 @@ describe('Located at located rule', () => {
       expect(parisToWesternEurope.start_time).toBe('2020-01-20T20:30:00.000Z');
       expect(parisToWesternEurope.stop_time).toBe('2020-02-29T10:00:00.000Z');
       const parisToWesternEuropeMarkings = parisToWesternEurope[RELATION_OBJECT_MARKING];
-      expect(parisToWesternEuropeMarkings.length).toBe(1); // TLP:CLEAR
+      expect(parisToWesternEuropeMarkings.length).toBe(1); // TLP:TEST
       expect(parisToWesternEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeFalsy();
       expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       const parisToEurope = await inferenceLookup(afterLiveRelations, PARIS, EUROPE, RELATION_LOCATED_AT);
@@ -99,7 +99,7 @@ describe('Located at located rule', () => {
       expect(parisToEurope.confidence).toBe(38);
       expect(parisToEurope[RULE].length).toBe(2);
       const parisToEuropeMarkings = parisToEurope[RELATION_OBJECT_MARKING];
-      expect(parisToEuropeMarkings.length).toBe(1); // TLP:CLEAR
+      expect(parisToEuropeMarkings.length).toBe(1); // TLP:TEST
       expect(parisToEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeFalsy();
       expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
