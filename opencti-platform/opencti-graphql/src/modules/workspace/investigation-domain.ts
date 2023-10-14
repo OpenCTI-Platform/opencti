@@ -11,7 +11,7 @@ import type { StixId, StixObject } from '../../types/stix-common';
 import { internalLoadById } from '../../database/middleware-loader';
 import { addWorkspace } from './workspace-domain';
 import type { BasicStoreEntity, StoreEntity, StoreEntityReport } from '../../types/store';
-import { now, nowTime } from '../../utils/format';
+import { nowTime } from '../../utils/format';
 import { READ_STIX_INDICES } from '../../database/utils';
 import { getParentTypes } from '../../schema/schemaUtils';
 
