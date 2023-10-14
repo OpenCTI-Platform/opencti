@@ -161,7 +161,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {external && <AccountCircleOutlined />}
-        {!external && (memberIsOrganizationAdmin ? <Tooltip title={'Organization administrator'}><AdminPanelSettingsOutlined color="success" /></Tooltip> : <PersonOutlined />)}
+        {!external && (memberIsOrganizationAdmin ? <Tooltip title={t('Organization administrator')}><AdminPanelSettingsOutlined color="success" /></Tooltip> : <Tooltip title={t('Member')}><PersonOutlined /></Tooltip>)}
       </ListItemIcon>
       <ListItemText
         primary={

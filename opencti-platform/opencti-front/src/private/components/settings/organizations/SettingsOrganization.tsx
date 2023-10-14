@@ -266,7 +266,7 @@ const SettingsOrganization = ({
                           </ListItemIcon>
                           <ListItemText primary={group.name} />
                           { (capabilitiesPerGroup.get(group.id)?.includes(SETTINGS_SETACCESSES) || capabilitiesPerGroup.get(group.id)?.includes(BYPASS))
-                            && <Tooltip title={'This Group allows user to bypass restriction. It should not be added here.'}>
+                            && <Tooltip title={t('This Group allows the user to bypass restriction. It should not be added here.')}>
                               <WarningOutlined color="warning" />
                             </Tooltip>
                           }
