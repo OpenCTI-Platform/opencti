@@ -26,21 +26,17 @@ const StixDomainObjectAttackPatterns = ({
   const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
 
-  const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      openExports: false,
-      filters: {},
-      view: 'matrix',
-    },
-  );
   const {
-    searchTerm,
-    filters,
-    view,
-    openExports,
-  } = viewStorage;
+    viewStorage,
+    helpers,
+    paginationOptions: rawPaginationOptions,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+    searchTerm: '',
+    openExports: false,
+    filters: {},
+    view: 'matrix',
+  });
+  const { searchTerm, filters, view, openExports } = viewStorage;
 
   const finalPaginationOptions = {
     elementId: stixDomainObjectId,
@@ -48,38 +44,40 @@ const StixDomainObjectAttackPatterns = ({
     ...rawPaginationOptions,
   };
   return (
-      <div className={classes.container}>
-        <QueryRenderer
-          query={
-            stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
+    <div className={classes.container}>
+      <QueryRenderer
+        query={
+          stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
+        }
+        variables={{ first: 500, ...finalPaginationOptions }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <StixDomainObjectAttackPatternsKillChain
+                data={props}
+                entityLink={entityLink}
+                paginationOptions={finalPaginationOptions}
+                stixDomainObjectId={stixDomainObjectId}
+                handleChangeView={helpers.handleChangeView}
+                handleSearch={helpers.handleSearch}
+                handleAddFilter={helpers.handleAddFilter}
+                handleRemoveFilter={helpers.handleRemoveFilter}
+                filters={filters}
+                searchTerm={searchTerm ?? ''}
+                currentView={view}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
+                handleToggleExports={
+                  disableExport ? null : helpers.handleToggleExports
+                }
+                openExports={openExports}
+              />
+            );
           }
-          variables={{ first: 500, ...finalPaginationOptions }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixDomainObjectAttackPatternsKillChain
-                  data={props}
-                  entityLink={entityLink}
-                  paginationOptions={finalPaginationOptions}
-                  stixDomainObjectId={stixDomainObjectId}
-                  handleChangeView={helpers.handleChangeView}
-                  handleSearch={helpers.handleSearch}
-                  handleAddFilter={helpers.handleAddFilter}
-                  handleRemoveFilter={helpers.handleRemoveFilter}
-                  filters={filters}
-                  searchTerm={searchTerm ?? ''}
-                  currentView={view}
-                  defaultStartTime={defaultStartTime}
-                  defaultStopTime={defaultStopTime}
-                  handleToggleExports={disableExport ? null : helpers.handleToggleExports}
-                  openExports={openExports}
-                />
-              );
-            }
-            return <Loader withRightPadding={true} />;
-          }}
-        />
-      </div>
+          return <Loader withRightPadding={true} />;
+        }}
+      />
+    </div>
   );
 };
 
