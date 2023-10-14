@@ -65,11 +65,6 @@ const Root = () => {
         path="/dashboard/data/ingestion/taxii"
         component={IngestionTaxiis}
       />
-    <BoundaryRoute
-      exact
-      path="/dashboard/data/ingestion/csv_mapper"
-      component={CsvMappers}
-    />
       <BoundaryRoute
         exact
         path="/dashboard/data/sharing"
@@ -111,6 +106,11 @@ const Root = () => {
         exact
         path="/dashboard/data/processing/automation/:playbookId"
         component={RootPlaybook}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/data/processing/csv_mapper"
+        component={CsvMappers}
       />
       <BoundaryRoute
         exact

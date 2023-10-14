@@ -8,9 +8,7 @@ import { graphql, useFragment } from 'react-relay';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { CsvMapperLine_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import CsvMapperPopover from '@components/data/csvMapper/CsvMapperPopover';
-import {
-  CsvMapperLinesPaginationQuery$variables,
-} from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -35,11 +33,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const csvMapperFragment = graphql`
-    fragment CsvMapperLine_csvMapper on CsvMapper {
-        id
-        name
-        errors
-    }
+  fragment CsvMapperLine_csvMapper on CsvMapper {
+    id
+    name
+    errors
+  }
 `;
 
 interface CsvMapperLineProps {
@@ -61,32 +59,36 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
   }
 
   return (
-        <ListItem key={csvMapper.id} classes={{ root: classes.item }} divider={true}>
-            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <TableViewIcon />
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
-                            >
-                                {value.render?.(csvMapper)}
-                            </div>
-                        ))}
-                    </div>
-                }
-            />
-            <ListItemSecondaryAction>
-                 <CsvMapperPopover
-                    csvMapperId={csvMapper.id}
-                    paginationOptions={paginationOptions}
-                 />
-            </ListItemSecondaryAction>
-        </ListItem>
+    <ListItem
+      key={csvMapper.id}
+      classes={{ root: classes.item }}
+      divider={true}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <TableViewIcon />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(csvMapper)}
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <ListItemSecondaryAction>
+        <CsvMapperPopover
+          csvMapperId={csvMapper.id}
+          paginationOptions={paginationOptions}
+        />
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 

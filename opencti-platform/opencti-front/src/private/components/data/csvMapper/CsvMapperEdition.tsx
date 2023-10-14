@@ -2,11 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as R from 'ramda';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  CsvMapperEditionContainerFragment_csvMapper$data,
-} from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
+import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
-import { useMapRepresentations, sanitized } from '@components/data/csvMapper/representations/RepresentationUtils';
+import {
+  useMapRepresentations,
+  sanitized,
+} from '@components/data/csvMapper/representations/RepresentationUtils';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 
@@ -69,9 +70,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     }
   };
 
-  return (
-    <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit}/>
-  );
+  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} />;
 };
 
 export default CsvMapperEdition;

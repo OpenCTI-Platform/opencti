@@ -1,7 +1,5 @@
 import { Attribute } from '@components/data/csvMapper/representations/attributes/Attribute';
-import {
-  CsvMapperRepresentationType,
-} from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
+import { CsvMapperRepresentationType } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
 
 export interface Representation {
   id: string;

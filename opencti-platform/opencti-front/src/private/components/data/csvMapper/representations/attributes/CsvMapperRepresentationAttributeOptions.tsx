@@ -17,19 +17,20 @@ const useStyles = makeStyles(() => ({
 
 interface CsvMapperRepresentationAttributeOptionsProps {
   attribute: AttributeWithMetadata;
-  indexRepresentation: number
+  indexRepresentation: number;
 }
 
-const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepresentationAttributeOptionsProps> = ({
-  attribute,
-  indexRepresentation,
-}) => {
+const CsvMapperRepresentationAttributeOptions: FunctionComponent<
+CsvMapperRepresentationAttributeOptionsProps
+> = ({ attribute, indexRepresentation }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
   const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
-  const indexAttribute = selectedAttributes.findIndex((a) => a.key === attribute.key);
+  const indexAttribute = selectedAttributes.findIndex(
+    (a) => a.key === attribute.key,
+  );
 
   const onChange = async (name: string, value: string) => {
     await formikContext.setFieldValue(
@@ -44,13 +45,16 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
 
   return (
     <div>
-      {attribute.type === 'date'
-        && <div className={classes.container}>
+      {attribute.type === 'date' && (
+        <div className={classes.container}>
           <MuiTextField
             style={{ margin: 0 }}
             disabled={!enabled}
             type="standard"
-            value={selectedAttributes[indexAttribute]?.column?.configuration?.pattern_date || ''}
+            value={
+              selectedAttributes[indexAttribute]?.column?.configuration
+                ?.pattern_date || ''
+            }
             onChange={(event) => onChange('pattern_date', event.target.value)}
             placeholder={t('Date pattern')}
           />
@@ -66,19 +70,24 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
             />
           </Tooltip>
         </div>
-      }
-      {attribute.multiple
-        && <div className={classes.container}>
+      )}
+      {attribute.multiple && (
+        <div className={classes.container}>
           <MuiTextField
             style={{ margin: 0 }}
             disabled={!enabled}
             type="standard"
-            value={selectedAttributes[indexAttribute]?.column?.configuration?.separator || ''}
+            value={
+              selectedAttributes[indexAttribute]?.column?.configuration
+                ?.separator || ''
+            }
             onChange={(event) => onChange('separator', event.target.value)}
             placeholder={t('List separator')}
           />
           <Tooltip
-            title={t('If this field contains multiple values, you can specify the separator used between each values (for instance | or +)')}
+            title={t(
+              'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)',
+            )}
           >
             <InformationOutline
               fontSize="small"
@@ -87,7 +96,7 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
             />
           </Tooltip>
         </div>
-      }
+      )}
     </div>
   );
 };

@@ -44,7 +44,10 @@ const csvMapperValidation = (t: (s: string) => string) => Yup.object().shape({
 
 interface CsvMapperFormProps {
   csvMapper: CsvMapper;
-  onSubmit: (values: CsvMapper, formikHelpers: FormikHelpers<CsvMapper>) => void;
+  onSubmit: (
+    values: CsvMapper,
+    formikHelpers: FormikHelpers<CsvMapper>,
+  ) => void;
 }
 
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
@@ -61,16 +64,41 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
 
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
-  const [availableEntityTypes, setAvailableEntityTypes] = useState<RepresentationFormEntityOption[]>([]);
-  const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<RepresentationFormEntityOption[]>([]);
+  const [availableEntityTypes, setAvailableEntityTypes] = useState<
+  RepresentationFormEntityOption[]
+  >([]);
+  const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<
+  RepresentationFormEntityOption[]
+  >([]);
 
   // load the available types once in state
   useEffect(() => {
     const { sdos, scos, smos, sros } = schema;
-    const entityTypes = sdos.map((sdo) => ({ ...sdo, value: sdo.id, type: 'entity_Stix-Domain-Objects' }))
-      .concat(scos.map((sco) => ({ ...sco, value: sco.id, type: 'entity_Stix-Cyber-Observables' })))
-      .concat(smos.map((smo) => ({ ...smo, value: smo.id, type: 'entity_Stix-Meta-Objects' })));
-    const relationshipTypes = sros.map((sro) => ({ ...sro, value: sro.id, type: 'entity_Stix-Core-Relationship' }));
+    const entityTypes = sdos
+      .map((sdo) => ({
+        ...sdo,
+        value: sdo.id,
+        type: 'entity_Stix-Domain-Objects',
+      }))
+      .concat(
+        scos.map((sco) => ({
+          ...sco,
+          value: sco.id,
+          type: 'entity_Stix-Cyber-Observables',
+        })),
+      )
+      .concat(
+        smos.map((smo) => ({
+          ...smo,
+          value: smo.id,
+          type: 'entity_Stix-Meta-Objects',
+        })),
+      );
+    const relationshipTypes = sros.map((sro) => ({
+      ...sro,
+      value: sro.id,
+      type: 'entity_Stix-Core-Relationship',
+    }));
 
     setAvailableEntityTypes(entityTypes);
     setAvailableRelationshipTypes(relationshipTypes);
@@ -78,15 +106,30 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
 
   // -- EVENTS --
 
-  const onAddEntityRepresentation = (setFieldValue: (field: string, value: Representation[]) => void, values: CsvMapper) => {
+  const onAddEntityRepresentation = (
+    setFieldValue: (field: string, value: Representation[]) => void,
+    values: CsvMapper,
+  ) => {
     // we must insert the entity before the relationships as the list is sorted
     const entities = values.representations.filter((r) => r.type === 'entity');
-    const relationships = values.representations.filter((r) => r.type === 'relationship');
-    setFieldValue('representations', [...entities, representationInitialization('entity'), ...relationships]);
+    const relationships = values.representations.filter(
+      (r) => r.type === 'relationship',
+    );
+    setFieldValue('representations', [
+      ...entities,
+      representationInitialization('entity'),
+      ...relationships,
+    ]);
   };
-  const onAddRelationshipRepresentation = (setFieldValue: (field: string, value: Representation[]) => void, values: CsvMapper) => {
+  const onAddRelationshipRepresentation = (
+    setFieldValue: (field: string, value: Representation[]) => void,
+    values: CsvMapper,
+  ) => {
     // always added at the end
-    setFieldValue('representations', [...values.representations, representationInitialization('relationship')]);
+    setFieldValue('representations', [
+      ...values.representations,
+      representationInitialization('relationship'),
+    ]);
   };
 
   // -- ERRORS --
@@ -106,8 +149,12 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
         onSubmit={onSubmit}
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
-          const entities = values.representations.filter((r) => r.type === 'entity');
-          const relationships = values.representations.filter((r) => r.type === 'relationship');
+          const entities = values.representations.filter(
+            (r) => r.type === 'entity',
+          );
+          const relationships = values.representations.filter(
+            (r) => r.type === 'relationship',
+          );
 
           return (
             <Form style={{ margin: '20px 0 20px 0' }}>
@@ -123,7 +170,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   component={SwitchField}
                   type="checkbox"
                   name="has_header"
-                  label={t('My csv file contains header')}
+                  label={t('My CSV file contains headers')}
                 />
                 <Tooltip
                   title={t(
@@ -138,9 +185,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                 </Tooltip>
               </div>
               <div style={{ marginTop: 20 }}>
-                <Typography>
-                  {t('Csv separator')}
-                </Typography>
+                <Typography>{t('CSV separator')}</Typography>
                 <div className={classes.center}>
                   <Field
                     checked={values.separator !== ';'} // if unset, this is the default option
@@ -149,11 +194,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                     name="separator"
                     label="Comma"
                     value=","
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
+                    }
                   />
-                  <Typography>
-                    {t('Comma')}
-                  </Typography>
+                  <Typography>{t('Comma')}</Typography>
                 </div>
                 <div className={classes.center}>
                   <Field
@@ -163,11 +207,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                     name="separator"
                     label="Semicolon"
                     value=";"
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
+                    }
                   />
-                  <Typography>
-                    {t('Semicolon')}
-                  </Typography>
+                  <Typography>{t('Semicolon')}</Typography>
                 </div>
               </div>
               <div className={classes.center} style={{ marginTop: 20 }}>
@@ -181,10 +224,11 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddEntityRepresentation(setFieldValue, values)}
+                  onClick={() => onAddEntityRepresentation(setFieldValue, values)
+                  }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               {entities.map((representation, idx) => (
@@ -197,7 +241,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                     index={idx}
                     availableTypes={availableEntityTypes}
                     handleRepresentationErrors={handleRepresentationErrors}
-                    prefixLabel='entity_'
+                    prefixLabel="entity_"
                   />
                 </div>
               ))}
@@ -212,10 +256,11 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
+                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
+                  }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               {relationships.map((representation, idx) => (
@@ -228,7 +273,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                     index={entities.length + idx}
                     availableTypes={availableRelationshipTypes}
                     handleRepresentationErrors={handleRepresentationErrors}
-                    prefixLabel='relationship_'
+                    prefixLabel="relationship_"
                   />
                 </div>
               ))}
@@ -246,7 +291,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                disabled={isSubmitting}
+                  disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {csvMapper.id ? t('Update') : t('Create')}
@@ -259,8 +304,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
               />
             </Form>
           );
-        }
-        }
+        }}
       </Formik>
     </>
   );

@@ -58,6 +58,16 @@ const ProcessingMenu = () => {
             <ListItemText primary={t('Automation')} />
           </MenuItem>
         )}
+        <MenuItem
+          component={Link}
+          to={'/dashboard/data/processing/csv_mapper'}
+          selected={location.pathname.includes(
+            '/dashboard/data/processing/csv_mapper',
+          )}
+          dense={false}
+        >
+          <ListItemText primary={t('CSV Mappers')} />
+        </MenuItem>
         {isKnowledgeUpdater && (
           <MenuItem
             component={Link}

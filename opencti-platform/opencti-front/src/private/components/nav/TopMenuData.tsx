@@ -78,18 +78,6 @@ const TopMenuData = () => {
           {t('Ingestion')}
         </Button>
       )}
-      {isSharingManager && (
-        <Button
-          component={Link}
-          size="small"
-          to="/dashboard/data/sharing"
-          variant={getVariant('/dashboard/data/sharing')}
-          color={getColor('/dashboard/data/sharing')}
-          classes={{ root: classes.button }}
-        >
-          {t('Data sharing')}
-        </Button>
-      )}
       {(isKnowledgeUpdater || isAdministrator) && (
         <Tooltip
           title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
@@ -111,6 +99,18 @@ const TopMenuData = () => {
             </Button>
           </span>
         </Tooltip>
+      )}
+      {isSharingManager && (
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/sharing"
+          variant={getVariant('/dashboard/data/sharing')}
+          color={getColor('/dashboard/data/sharing')}
+          classes={{ root: classes.button }}
+        >
+          {t('Data sharing')}
+        </Button>
       )}
       {isConnectorReader && (
         <Button

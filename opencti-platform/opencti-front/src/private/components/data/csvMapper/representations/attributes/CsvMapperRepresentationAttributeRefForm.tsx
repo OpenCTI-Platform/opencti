@@ -9,13 +9,19 @@ import {
   getInfoForRef,
 } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
+import {
+  Attribute,
+  AttributeWithMetadata,
+} from '@components/data/csvMapper/representations/attributes/Attribute';
 import { Representation } from '@components/data/csvMapper/representations/Representation';
 import { useFormikContext } from 'formik';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
+import {
+  resolveTypesForRelationship,
+  resolveTypesForRelationshipRef,
+} from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
@@ -44,12 +50,9 @@ interface CsvMapperRepresentationAttributeRefFormProps {
   handleErrors: (key: string, value: string | null) => void;
 }
 
-const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepresentationAttributeRefFormProps> = ({
-  indexRepresentation,
-  attribute,
-  label,
-  handleErrors,
-}) => {
+const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
+CsvMapperRepresentationAttributeRefFormProps
+> = ({ indexRepresentation, attribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -57,21 +60,44 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
   const { representations } = formikContext.values;
   const representation = representations[indexRepresentation];
   const entityType = representation.target.entity_type;
-  const indexAttribute = representation.attributes.findIndex((a) => a.key === attribute.key);
+  const indexAttribute = representation.attributes.findIndex(
+    (a) => a.key === attribute.key,
+  );
   const selectedAttributes = representation.attributes;
 
-  const [fromType, fromId] = getInfoForRef(representation.attributes, representations, 'from');
-  const [toType, toId] = getInfoForRef(representation.attributes, representations, 'to');
+  const [fromType, fromId] = getInfoForRef(
+    representation.attributes,
+    representations,
+    'from',
+  );
+  const [toType, toId] = getInfoForRef(
+    representation.attributes,
+    representations,
+    'to',
+  );
 
   const multiple = attribute.multiple ?? false;
 
   const { schema } = useAuth();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
-  const relationshipTypes = resolveTypesForRelationship(schemaRelationsTypesMapping, entityType, attribute.key, fromType, toType);
-  const relationshipRefTypes = resolveTypesForRelationshipRef(schemaRelationsRefTypesMapping, entityType, attribute.key);
-  const options = representations.filter((r) => {
-    return [...relationshipTypes, ...relationshipRefTypes].includes(r.target.entity_type);
-  })
+  const relationshipTypes = resolveTypesForRelationship(
+    schemaRelationsTypesMapping,
+    entityType,
+    attribute.key,
+    fromType,
+    toType,
+  );
+  const relationshipRefTypes = resolveTypesForRelationshipRef(
+    schemaRelationsRefTypesMapping,
+    entityType,
+    attribute.key,
+  );
+  const options = representations
+    .filter((r) => {
+      return [...relationshipTypes, ...relationshipRefTypes].includes(
+        r.target.entity_type,
+      );
+    })
     .filter((r) => r.id !== representation.id)
     .filter((r) => {
       if (attribute.key === 'from' && toId) {
@@ -105,7 +131,9 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
     }
   }, [errors]);
 
-  const onValueChange = async (value: Representation[] | Representation | null) => {
+  const onValueChange = async (
+    value: Representation[] | Representation | null,
+  ) => {
     let ids: string[];
     if (multiple) {
       ids = value ? (value as Representation[]).map((r) => r.id) : [];
@@ -116,14 +144,27 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
 
     if (indexAttribute === -1) {
       // this attribute was not set yet, initialize
-      const newSelectedAttribute: Attribute = { key: attribute.key, column: null, based_on: { representations: ids } };
-      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes`, [...selectedAttributes, newSelectedAttribute]);
+      const newSelectedAttribute: Attribute = {
+        key: attribute.key,
+        column: null,
+        based_on: { representations: ids },
+      };
+      await formikContext.setFieldValue(
+        `representations[${indexRepresentation}].attributes`,
+        [...selectedAttributes, newSelectedAttribute],
+      );
     } else if (value === null) {
       // if the input value becomes unset, remove the attributes from selection in formik
       selectedAttributes.splice(indexAttribute, 1);
-      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes`, selectedAttributes);
+      await formikContext.setFieldValue(
+        `representations[${indexRepresentation}].attributes`,
+        selectedAttributes,
+      );
     } else {
-      await formikContext.setFieldValue(`representations[${indexRepresentation}].attributes[${indexAttribute}].based_on.representations`, ids);
+      await formikContext.setFieldValue(
+        `representations[${indexRepresentation}].attributes[${indexAttribute}].based_on.representations`,
+        ids,
+      );
     }
 
     manageErrors(value);
@@ -136,14 +177,15 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
         {attribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
       <div>
-        {multiple
-        && <MUIAutocomplete
+        {multiple && (
+          <MUIAutocomplete
             selectOnFocus
             openOnFocus
             autoSelect={false}
             autoHighlight
             multiple
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)}
+            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)
+            }
             options={options}
             value={getBasedOnRepresentations(attribute, options) || null}
             onChange={(_, value) => onValueChange(value)}
@@ -159,16 +201,19 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
               [classes.inputError]: errors,
             })}
           />
-        }
-        {!multiple
-        && <MUIAutocomplete
+        )}
+        {!multiple && (
+          <MUIAutocomplete
             selectOnFocus
             openOnFocus
             autoSelect={false}
             autoHighlight
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)}
+            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)
+            }
             options={options}
-            value={R.head(getBasedOnRepresentations(attribute, options)) || null}
+            value={
+              R.head(getBasedOnRepresentations(attribute, options)) || null
+            }
             onChange={(_, value) => onValueChange(value)}
             renderInput={(params) => (
               <MuiTextField
@@ -182,7 +227,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<CsvMapperRepres
               [classes.inputError]: errors,
             })}
           />
-        }
+        )}
       </div>
     </div>
   );

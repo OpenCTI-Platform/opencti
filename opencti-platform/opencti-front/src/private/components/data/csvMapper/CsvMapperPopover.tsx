@@ -5,15 +5,11 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import {
-  CsvMapperLinesPaginationQuery$variables,
-} from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import CsvMapperEditionContainer, {
   csvMapperEditionContainerQuery,
 } from '@components/data/csvMapper/CsvMapperEditionContainer';
-import {
-  CsvMapperEditionContainerQuery,
-} from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
+import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -91,14 +87,18 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <CsvMapperEditionContainer queryRef={queryRef}
-                                     onClose={() => setDisplayUpdate(false)}
-                                     open={displayUpdate} />
+          <CsvMapperEditionContainer
+            queryRef={queryRef}
+            onClose={() => setDisplayUpdate(false)}
+            open={displayUpdate}
+          />
         </React.Suspense>
       )}
-      <DeleteDialog title={t('Do you want to delete this csv mapper ?')}
-                    deletion={deletion}
-                    submitDelete={submitDelete} />
+      <DeleteDialog
+        title={t('Do you want to delete this CSV mapper ?')}
+        deletion={deletion}
+        submitDelete={submitDelete}
+      />
     </>
   );
 };

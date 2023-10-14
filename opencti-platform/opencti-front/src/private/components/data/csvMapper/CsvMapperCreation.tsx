@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  CsvMapperLinesPaginationQuery$variables,
-} from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik';
 import { graphql, useMutation } from 'react-relay';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
@@ -69,9 +67,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     errors: null,
   };
 
-  return (
-    <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit}/>
-  );
+  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} />;
 };
 
 export default CsvMapperCreation;

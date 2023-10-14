@@ -8,9 +8,9 @@ export interface Attribute {
   column: {
     column_name: string | null;
     configuration?: {
-      separator?: string
-      pattern_date?: string
-    }
+      separator?: string;
+      pattern_date?: string;
+    };
   } | null;
 }
 

@@ -18,9 +18,7 @@ import classNames from 'classnames';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import {
-  CsvMapperRepresentationAttributesFormQuery,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
+import { CsvMapperRepresentationAttributesFormQuery } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useFormatter } from '../../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -58,12 +56,14 @@ export interface RepresentationFormEntityOption extends Option {
 
 interface CsvMapperRepresentationFormProps {
   index: number;
-  availableTypes: { value: string, type: string, id: string, label: string }[];
+  availableTypes: { value: string; type: string; id: string; label: string }[];
   handleRepresentationErrors: (key: string, value: boolean) => void;
   prefixLabel: string;
 }
 
-const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationFormProps> = ({
+const CsvMapperRepresentationForm: FunctionComponent<
+CsvMapperRepresentationFormProps
+> = ({
   index,
   availableTypes = [],
   handleRepresentationErrors,
@@ -90,9 +90,17 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
   const handleChangeEntityType = async (option: Option | null) => {
     if (option === null) {
       // reset this representation
-      await formikContext.setFieldValue(`representations[${index}]`, { ...representation, attributes: [], target: { entity_type: null } });
+      await formikContext.setFieldValue(`representations[${index}]`, {
+        ...representation,
+        attributes: [],
+        target: { entity_type: null },
+      });
     } else {
-      await formikContext.setFieldValue(`representations[${index}]`, { ...representation, attributes: [], target: { entity_type: option.value } });
+      await formikContext.setFieldValue(`representations[${index}]`, {
+        ...representation,
+        attributes: [],
+        target: { entity_type: option.value },
+      });
     }
   };
 
@@ -113,14 +121,14 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
   );
 
   // reload the attributes when the entity type changes
-  useEffect(
-    () => {
-      if (representation.target.entity_type) {
-        fetchLoadQuery({ entityType: representation.target.entity_type }, { fetchPolicy: 'store-and-network' });
-      }
-    },
-    [representation.target.entity_type],
-  );
+  useEffect(() => {
+    if (representation.target.entity_type) {
+      fetchLoadQuery(
+        { entityType: representation.target.entity_type },
+        { fetchPolicy: 'store-and-network' },
+      );
+    }
+  }, [representation.target.entity_type]);
 
   // -- ACCORDION --
 
@@ -136,7 +144,10 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
   const searchType = (event: React.SyntheticEvent) => {
     const selectChangeEvent = event as SelectChangeEvent;
     const value = selectChangeEvent?.target.value ?? '';
-    return availableTypes.filter((type) => type.value.includes(value) || t(`${prefixLabel}${type.label}`).includes(value));
+    return availableTypes.filter(
+      (type) => type.value.includes(value)
+        || t(`${prefixLabel}${type.label}`).includes(value),
+    );
   };
 
   return (
@@ -149,20 +160,14 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
           [classes.red]: hasError,
         })}
       >
-        <AccordionSummary
-          expandIcon={<ExpandMoreOutlined />}
-          onClick={toggle}
-        >
+        <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div className={classes.container}>
             <Typography>
               {representationLabel(index, representation, t)}
             </Typography>
             <Tooltip title={t('Delete')}>
-              <IconButton
-                color="error"
-                onClick={handleOpenDelete}
-              >
-                <DeleteOutlined fontSize="small"/>
+              <IconButton color="error" onClick={handleOpenDelete}>
+                <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
           </div>
@@ -177,7 +182,11 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
               noOptionsText={t('No available options')}
               options={availableTypes}
               groupBy={(option) => t(option.type) ?? t('Unknown')}
-              value={availableTypes.find((e) => e.id === representation.target.entity_type) || null}
+              value={
+                availableTypes.find(
+                  (e) => e.id === representation.target.entity_type,
+                ) || null
+              }
               onInputChange={(event) => searchType(event)}
               onChange={(_, value) => handleChangeEntityType(value)}
               renderInput={(params) => (
@@ -193,7 +202,9 @@ const CsvMapperRepresentationForm: FunctionComponent<CsvMapperRepresentationForm
                   <div className={classes.icon}>
                     <ItemIcon type={option.label} />
                   </div>
-                  <div className={classes.text}>{t(`${prefixLabel}${option.label}`)}</div>
+                  <div className={classes.text}>
+                    {t(`${prefixLabel}${option.label}`)}
+                  </div>
                 </li>
               )}
             />

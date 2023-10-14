@@ -1,5 +1,7 @@
 import React from 'react';
-import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
+import NavToolbarMenu, {
+  MenuEntry,
+} from '@components/common/menus/NavToolbarMenu';
 
 const IngestionMenu = () => {
   const entries: MenuEntry[] = [
@@ -15,12 +17,7 @@ const IngestionMenu = () => {
       path: '/dashboard/data/ingestion/rss',
       label: 'RSS Feeds',
     },
-    {
-      path: '/dashboard/data/ingestion/csv_mapper',
-      label: 'CSV Mappers',
-    },
   ];
-
   return <NavToolbarMenu entries={entries} />;
 };
 

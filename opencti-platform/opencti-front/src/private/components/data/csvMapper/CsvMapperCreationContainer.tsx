@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  CsvMapperLinesPaginationQuery$variables,
-} from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import CsvMapperCreation from '@components/data/csvMapper/CsvMapperCreation';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,7 +18,7 @@ const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
       title={t('Create a csv mapper')}
       variant={DrawerVariant.createWithPanel}
     >
-      <CsvMapperCreation paginationOptions={paginationOptions}/>
+      <CsvMapperCreation paginationOptions={paginationOptions} />
     </Drawer>
   );
 };
