@@ -88,7 +88,7 @@
     "yup": "1.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-graphql": "2.0.3",
+    "@rollup/plugin-graphql": "2.0.4",
     "@testing-library/react": "14.0.0",
     "@types/node": "20.8.6",
     "@types/qrcode": "1.5.2",

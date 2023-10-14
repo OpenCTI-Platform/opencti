@@ -4065,19 +4065,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-graphql@npm:2.0.3":
-  version: 2.0.3
-  resolution: "@rollup/plugin-graphql@npm:2.0.3"
+"@rollup/plugin-graphql@npm:2.0.4":
+  version: 2.0.4
+  resolution: "@rollup/plugin-graphql@npm:2.0.4"
   dependencies:
     "@rollup/pluginutils": ^5.0.1
     graphql-tag: ^2.12.6
   peerDependencies:
     graphql: ">=0.9.0"
-    rollup: ^1.20.0||^2.0.0||^3.0.0
+    rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
   peerDependenciesMeta:
     rollup:
       optional: true
-  checksum: 08d55cbe42df26a8bc4223316156b4bac4731905f6da9340e16607e7c1bfd6f6bbc5d4b8ee04489fc893817ce0f384ad725b48c3efc7a763fa6d64ac2e7fb980
+  checksum: 78e560587a2a774b0aa942250e339d925df91a6b0828cc69e6c72a3d77b2012a7ea450262c63d1cc44c1f5de7325bd4e2dccc103e34fefd16068cbd3e7bffa5e
   languageName: node
   linkType: hard
 
@@ -15024,7 +15024,7 @@ __metadata:
     "@rjsf/core": 5.13.0
     "@rjsf/mui": 5.13.0
     "@rjsf/utils": 5.13.0
-    "@rollup/plugin-graphql": 2.0.3
+    "@rollup/plugin-graphql": 2.0.4
     "@testing-library/react": 14.0.0
     "@types/node": 20.8.6
     "@types/qrcode": 1.5.2
