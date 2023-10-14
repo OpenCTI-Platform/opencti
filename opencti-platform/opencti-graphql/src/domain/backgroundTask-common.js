@@ -5,7 +5,7 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { BYPASS, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
-import { ABSTRACT_STIX_OBJECT, isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
+import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -13,10 +13,11 @@ import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-t
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { publishUserAction } from '../listener/UserActionListener';
-import { storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -59,7 +60,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
-      const objects = await Promise.all(ids.map((id) => storeLoadById(context, user, id, ABSTRACT_STIX_OBJECT)));
+      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
       const isNotKnowledges = objects.includes(undefined)
         || !areParentTypesKnowledge(objects.map((o) => o.parent_types))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
@@ -181,6 +182,7 @@ export const createListTask = async (context, user, input) => {
 export const isTaskEnabledEntity = (entityType) => {
   return isStixCoreObject(entityType)
     || isStixCoreRelationship(entityType)
+    || isStixSightingRelationship(entityType)
     || [
       ENTITY_TYPE_VOCABULARY,
       ENTITY_TYPE_NOTIFICATION,
