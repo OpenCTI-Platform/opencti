@@ -1,4 +1,3 @@
-import axios from 'axios';
 import ejs from 'ejs';
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
@@ -35,6 +34,7 @@ import {
   type KnowledgeNotificationEvent,
   type NotificationUser,
 } from './notificationManager';
+import { getHttpClient } from '../utils/http-client';
 
 const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -127,7 +127,8 @@ export const internalProcessNotification = async (
       const dataJson = JSON.parse(generatedWebhook);
       const dataHeaders = R.fromPairs((headers ?? []).map((h) => [h.attribute, h.value]));
       const dataParameters = R.fromPairs((params ?? []).map((h) => [h.attribute, h.value]));
-      await axios({ url, method: verb, params: dataParameters, headers: dataHeaders, data: dataJson }).catch((err) => {
+      const httpClient = getHttpClient({ responseType: 'json', headers: dataHeaders });
+      await httpClient({ url, method: verb, params: dataParameters, data: dataJson }).catch((err) => {
         logApp.error('[OPENCTI-PUBLISHER] Error webhook publication', { error: err });
         return { error: err };
       });

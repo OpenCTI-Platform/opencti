@@ -1,12 +1,11 @@
-import { Agent } from 'node:https';
 import amqp from 'amqplib';
-import axios from 'axios';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX } from './utils';
+import { getHttpClient } from '../utils/http-client';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -81,18 +80,17 @@ export const metrics = async (context, user) => {
   const metricApi = async () => {
     const ssl = USE_SSL_MGMT ? 's' : '';
     const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
-    const httpsAgent = ssl ? new Agent({ rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED }) : undefined;
-    const axiosConfig = {
+    const httpClient = getHttpClient({
       baseURL,
-      httpsAgent,
-      withCredentials: true,
+      responseType: 'json',
+      rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
       auth: {
         username: USERNAME,
         password: PASSWORD,
       },
-    };
-    const overview = await axios.get('/api/overview', axiosConfig).then((response) => response.data);
-    const queues = await axios.get(`/api/queues${VHOST_PATH}`, axiosConfig).then((response) => response.data);
+    });
+    const overview = await httpClient.get('/api/overview').then((response) => response.data);
+    const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
     const pushQueues = platformQueues.filter((q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0);
