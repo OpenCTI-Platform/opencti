@@ -134,7 +134,7 @@
     "uuid": "9.0.1",
     "uuid-time": "1.0.0",
     "validator": "13.11.0",
-    "winston": "3.10.0",
+    "winston": "3.11.0",
     "winston-daily-rotate-file": "4.7.1",
     "xml2js": "0.6.2"
   },
