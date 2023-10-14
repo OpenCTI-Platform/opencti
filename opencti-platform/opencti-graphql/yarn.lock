@@ -4487,10 +4487,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ejs@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@types/ejs@npm:3.1.2"
-  checksum: e4f0745b6ed53a63c08bdfdeb019a7d0e0c400896722b44d6732b4ee6bf6061d2dc965206186b8b0ae2ecd71303c29f1af1feddbca2df0acbd7bd234a74ca518
+"@types/ejs@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@types/ejs@npm:3.1.3"
+  checksum: b1b1c6c9d331d237523ebc410789f42edcdbb1d4cdd4a7a37ac61d2ce9c3fbcfbfe7d7f1a7f61c9334812347a0036afd52258ad2198f85545ebfb26d63475a75
   languageName: node
   linkType: hard
 
@@ -10692,7 +10692,7 @@ __metadata:
     "@types/bcryptjs": 2.4.4
     "@types/bluebird": 3.5.40
     "@types/dot-object": 2.1.3
-    "@types/ejs": 3.1.2
+    "@types/ejs": 3.1.3
     "@types/express": 4.17.17
     "@types/nconf": 0.10.3
     "@types/ramda": 0.29.6
