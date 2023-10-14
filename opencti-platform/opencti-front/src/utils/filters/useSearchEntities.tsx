@@ -1010,8 +1010,7 @@ const useSearchEntities = ({
         break;
       case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 50,
+          first: 500,
           filters: [
             {
               key: 'type',
