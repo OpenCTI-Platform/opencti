@@ -303,6 +303,7 @@ class Identity:
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         if type is not None and name is not None:
@@ -324,6 +325,7 @@ class Identity:
                 "roles": roles,
                 "x_opencti_aliases": x_opencti_aliases,
                 "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
                 "update": update,
             }
             if type == IdentityTypes.ORGANIZATION.value:
@@ -451,6 +453,12 @@ class Identity:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension(
+                    "x_opencti_workflow_id", stix_object
+                )
 
             return self.create(
                 type=type,
@@ -501,6 +509,9 @@ class Identity:
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                x_opencti_workflow_id=stix_object["x_opencti_workflow_id"]
+                if "x_opencti_workflow_id" in stix_object
                 else None,
                 update=update,
             )
