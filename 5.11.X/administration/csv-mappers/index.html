@@ -12,13 +12,13 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/latest/usage/deduplication/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/administration/csv-mappers/">
       
       
-        <link rel="prev" href="../containers/">
+        <link rel="prev" href="../merging/">
       
       
-        <link rel="next" href="../reliability-confidence/">
+        <link rel="next" href="../parameters/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Deduplication - OpenCTI Documentation</title>
+        <title>CSV Mappers - OpenCTI Documentation</title>
       
     
     
@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deduplication" class="md-skip">
+        <a href="#csv-mappers" class="md-skip">
           Skip to content
         </a>
       
@@ -295,13 +295,11 @@
         
   
   
-    
-  
   
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link md-tabs__link--active">
+        <a href="../../usage/getting-started/" class="md-tabs__link">
           
   
   User Guide
@@ -315,11 +313,13 @@
         
   
   
+    
+  
   
     
     
       <li class="md-tabs__item">
-        <a href="../../administration/introduction/" class="md-tabs__link">
+        <a href="../introduction/" class="md-tabs__link md-tabs__link--active">
           
   
   Administration
@@ -958,19 +958,19 @@
       
   
   
-    
-  
   
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
@@ -989,7 +989,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1006,7 +1006,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../usage/getting-started/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1030,19 +1030,19 @@
                 
   
   
-    
-  
   
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
             
@@ -1061,7 +1061,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1078,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-model/" class="md-nav__link">
+      <a href="../../usage/data-model/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1104,7 +1104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../nested/" class="md-nav__link">
+      <a href="../../usage/nested/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1130,7 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../containers/" class="md-nav__link">
+      <a href="../../usage/containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1154,35 +1154,9 @@
                 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    
-  
-    Deduplication
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../usage/deduplication/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1197,87 +1171,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#creation-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creation behavior
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Creation behavior">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#entities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entities
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#relationships" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Relationships
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#observables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Observables
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#update-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Update behavior
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1289,7 +1182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reliability-confidence/" class="md-nav__link">
+      <a href="../../usage/reliability-confidence/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1369,7 +1262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../usage/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1395,7 +1288,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../search/" class="md-nav__link">
+      <a href="../../usage/search/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1467,7 +1360,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-analysis/" class="md-nav__link">
+      <a href="../../usage/exploring-analysis/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1493,7 +1386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-cases/" class="md-nav__link">
+      <a href="../../usage/exploring-cases/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1519,7 +1412,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-events/" class="md-nav__link">
+      <a href="../../usage/exploring-events/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1545,7 +1438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-observations/" class="md-nav__link">
+      <a href="../../usage/exploring-observations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1571,7 +1464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-threats/" class="md-nav__link">
+      <a href="../../usage/exploring-threats/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1597,7 +1490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-arsenal/" class="md-nav__link">
+      <a href="../../usage/exploring-arsenal/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1623,7 +1516,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-techniques/" class="md-nav__link">
+      <a href="../../usage/exploring-techniques/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1649,7 +1542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-entities/" class="md-nav__link">
+      <a href="../../usage/exploring-entities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1675,7 +1568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exploring-locations/" class="md-nav__link">
+      <a href="../../usage/exploring-locations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1709,7 +1602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pivoting/" class="md-nav__link">
+      <a href="../../usage/pivoting/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1789,7 +1682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-automated/" class="md-nav__link">
+      <a href="../../usage/import-automated/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1815,7 +1708,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-files/" class="md-nav__link">
+      <a href="../../usage/import-files/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1841,7 +1734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../manual-creation/" class="md-nav__link">
+      <a href="../../usage/manual-creation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1867,7 +1760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workbench/" class="md-nav__link">
+      <a href="../../usage/workbench/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1947,7 +1840,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../inferences/" class="md-nav__link">
+      <a href="../../usage/inferences/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1973,7 +1866,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../enrichment/" class="md-nav__link">
+      <a href="../../usage/enrichment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1999,7 +1892,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../merging/" class="md-nav__link">
+      <a href="../../usage/merging/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2079,7 +1972,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../case-management/" class="md-nav__link">
+      <a href="../../usage/case-management/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2151,7 +2044,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../notifications/" class="md-nav__link">
+      <a href="../../usage/notifications/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2177,7 +2070,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../notifiers/" class="md-nav__link">
+      <a href="../../usage/notifiers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2211,7 +2104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../background-tasks/" class="md-nav__link">
+      <a href="../../usage/background-tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2237,7 +2130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dashboards/" class="md-nav__link">
+      <a href="../../usage/dashboards/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2263,7 +2156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflows/" class="md-nav__link">
+      <a href="../../usage/workflows/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2289,7 +2182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../automation/" class="md-nav__link">
+      <a href="../../usage/automation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2369,7 +2262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../feeds/" class="md-nav__link">
+      <a href="../../usage/feeds/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2395,7 +2288,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../export-structured/" class="md-nav__link">
+      <a href="../../usage/export-structured/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2421,7 +2314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../export-documents/" class="md-nav__link">
+      <a href="../../usage/export-documents/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2460,19 +2353,19 @@
       
   
   
+    
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
@@ -2491,7 +2384,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2508,7 +2401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/introduction/" class="md-nav__link">
+      <a href="../introduction/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2534,7 +2427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/enterprise/" class="md-nav__link">
+      <a href="../enterprise/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2558,19 +2451,19 @@
                 
   
   
+    
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
         
           <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
@@ -2589,7 +2482,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2606,7 +2499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/merging/" class="md-nav__link">
+      <a href="../merging/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2630,9 +2523,35 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../administration/csv-mappers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    CSV Mappers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -2647,6 +2566,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-new-csv-mapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a new CSV Mapper
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csv-mapper-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV Mapper validity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-your-csv-mapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test your CSV mapper
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-a-mapper-for-importing-a-csv-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use a mapper for importing a CSV file
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2712,7 +2706,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/parameters/" class="md-nav__link">
+      <a href="../parameters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2784,7 +2778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/policies/" class="md-nav__link">
+      <a href="../policies/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2810,7 +2804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/users/" class="md-nav__link">
+      <a href="../users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2836,7 +2830,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/segregation/" class="md-nav__link">
+      <a href="../segregation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2916,7 +2910,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/entities/" class="md-nav__link">
+      <a href="../entities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2942,7 +2936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/reasoning/" class="md-nav__link">
+      <a href="../reasoning/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2968,7 +2962,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/retentions/" class="md-nav__link">
+      <a href="../retentions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2994,7 +2988,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/sourcing/" class="md-nav__link">
+      <a href="../sourcing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3028,7 +3022,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/ontologies/" class="md-nav__link">
+      <a href="../ontologies/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3100,7 +3094,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/audit/overview/" class="md-nav__link">
+      <a href="../audit/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3126,7 +3120,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/audit/events/" class="md-nav__link">
+      <a href="../audit/events/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3152,7 +3146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/audit/configuration/" class="md-nav__link">
+      <a href="../audit/configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3178,7 +3172,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/audit/triggers/" class="md-nav__link">
+      <a href="../audit/triggers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3906,60 +3900,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#creation-behavior" class="md-nav__link">
+  <a href="#principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Creation behavior
+        Principles
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Creation behavior">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#entities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entities
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#relationships" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Relationships
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#observables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Observables
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#update-behavior" class="md-nav__link">
+  <a href="#create-a-new-csv-mapper" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Update behavior
+        Create a new CSV Mapper
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csv-mapper-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV Mapper validity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-your-csv-mapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test your CSV mapper
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-a-mapper-for-importing-a-csv-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use a mapper for importing a CSV file
       
     </span>
   </a>
@@ -4007,10 +3995,10 @@
     
     
       <li class="md-path__item">
-        <a href="../getting-started/" class="md-path__link">
+        <a href="../introduction/" class="md-path__link">
           
   <span class="md-ellipsis">
-    User Guide
+    Administration
   </span>
 
         </a>
@@ -4024,10 +4012,10 @@
     
     
       <li class="md-path__item">
-        <a href="../data-model/" class="md-path__link">
+        <a href="../merging/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Foundations
+    Data management
   </span>
 
         </a>
@@ -4045,7 +4033,7 @@
                   
 
   
-    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/usage/deduplication.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/administration/csv-mappers.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -4054,190 +4042,70 @@
     
       
     
-    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/usage/deduplication.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/administration/csv-mappers.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.15 8.15 0 0 1-1.23-2Z"/></svg>
     </a>
   
 
 
-<h1 id="deduplication">Deduplication</h1>
-<p>One of the core concept of the OpenCTI knowledge graph is all underlying mechanisms implemented to accurately de-duplicate and consolidate (aka. <code>upserting</code>) information about entities and relationships.</p>
-<h2 id="creation-behavior">Creation behavior</h2>
-<p>When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, <a href="">in some cases</a>, update it as well.</p>
-<p>Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between <code>name</code> and <code>aliases</code> leading to not have entities with overlaping aliases or an alias already used in the name of another entity.</p>
-<h3 id="entities">Entities</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Attributes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Area</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Attack Pattern</td>
-<td style="text-align: left;">(<code>name</code> OR <code>alias</code>) AND optional <code>x_mitre_id</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Campaign</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Channel</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">City</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Country</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Course Of Action</td>
-<td style="text-align: left;">(<code>name</code> OR <code>alias</code>) AND optional <code>x_mitre_id</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Data Component</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Data Source</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Event</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Feedback Case</td>
-<td style="text-align: left;"><code>name</code> AND <code>created</code> (date)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Grouping</td>
-<td style="text-align: left;"><code>name</code> AND <code>context</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Incident</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Incident Response Case</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Indicator</td>
-<td style="text-align: left;"><code>pattern</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Individual</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) and <code>identity_class</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Infrastructure</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Intrusion Set</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Language</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Malware</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Malware Analysis</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Narrative</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Note</td>
-<td style="text-align: left;"><em>None</em></td>
-</tr>
-<tr>
-<td style="text-align: left;">Observed Data</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Opinion</td>
-<td style="text-align: left;"><em>None</em></td>
-</tr>
-<tr>
-<td style="text-align: left;">Organization</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) and <code>identity_class</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Position</td>
-<td style="text-align: left;">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Region</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Report</td>
-<td style="text-align: left;"><code>name</code> AND <code>publised</code> (date)</td>
-</tr>
-<tr>
-<td style="text-align: left;">RFI Case</td>
-<td style="text-align: left;"><code>name</code> AND <code>created</code> (date)</td>
-</tr>
-<tr>
-<td style="text-align: left;">RFT Case</td>
-<td style="text-align: left;"><code>name</code> AND <code>created</code> (date)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Sector</td>
-<td style="text-align: left;">(<code>name</code> OR <code>alias</code>) and <code>identity_class</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Task</td>
-<td style="text-align: left;"><em>None</em></td>
-</tr>
-<tr>
-<td style="text-align: left;">Threat Actor</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Tool</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Vulnerability</td>
-<td style="text-align: left;"><code>name</code> OR <code>alias</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="relationships">Relationships</h3>
-<p>The deduplication process of relationships is based on the following criterias:</p>
+<h1 id="csv-mappers">CSV Mappers</h1>
+<p>In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Objects. The mappers are created and configured by users with the Manage CSV mappers capability and
+then made available to users who import CSV files, for instance inside a report or in the global import view, and want to extract information inside these files.</p>
+<h2 id="principles">Principles</h2>
+<p>The mapper contains <strong>representations</strong> of STIX 2.1 entities and relationships, in order for the parser to properly extract them. <br />
+One mapper is dedicated to parsing a specific CSV file structure, and thus dedicated mappers should be created for each 
+and every specific CSV structure you might need to ingest in the platform.</p>
+<h2 id="create-a-new-csv-mapper">Create a new CSV Mapper</h2>
+<p>In menu <em>Data</em>, select the submenu <em>Ingestion</em>, and on the right menu select <em>CSV Mappers</em>. You are presented with a list of all the mappers set in the platform.
+Note that you can delete or update any mapper from the context menu via the burger button beside each mapper.</p>
+<p>Click on the button <strong>+</strong> in the bottom-right corner to add a new Mapper.</p>
+<p>Enter a name for your mapper and some basic information about your CSV files: </p>
 <ul>
-<li>Type</li>
-<li>Source</li>
-<li>Target</li>
-<li>Start time between -30 days / + 30 days</li>
-<li>Stop time between -30 days / + 30 days</li>
+<li>The line separator used (defaults to the standard comma character)</li>
+<li>The presence of a header on the first line</li>
 </ul>
-<h3 id="observables">Observables</h3>
-<p>For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the <a href="https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607">STIX specification</a> using the "ID Contributing Properties" defined for each type of observable.</p>
-<h2 id="update-behavior">Update behavior</h2>
-<p>If an entity already exists in the platform, the <code>attributes</code> may be updated by the incoming creation with the following rule:</p>
-<div class="admonition note">
-<p>If <code>confidence_level</code> of the created entity is &gt;= (greater or equal) then the <code>confidence_level</code> of the existing entity, attributes will be updated. Obviously, the <code>confidence_level</code> will also be increased with the new one.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Note that the parser will not extract any information from the CSV header if any ; it will just skip
+the first line during parsing.</p>
 </div>
-<p>This logic has been implemented so the platform can converge to the highest confidence and quality levels for the entities and the relationships.</p>
+<p><a class="glightbox" href="../assets/csv-mappers-create.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Creating a new CSV Mapper" src="../assets/csv-mappers-create.png" /></a></p>
+<p>Then, you need to create every representation, one per entity and relationship type represented in the CSV file.
+Click on the <strong>+</strong> button to add an empty representation in the list, and click on the chevron to expand the section and configure the representation.</p>
+<p>Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
+For each field, set the corresponding columns mapping (the letter-based index of the column in the CSV table, as presented in common spreadsheet tools). </p>
+<p>References to other entities should be picked from the list of all the other representations already defined earlier in the mapper.</p>
+<p>You can do the same for all the relationships between entities that might be defined in this particular CSV file structure.</p>
+<p><a class="glightbox" href="../assets/csv-mappers-rep-1.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="New representation" src="../assets/csv-mappers-rep-1.png" /></a></p>
+<p>Fields might have options besides the mandatory column index, to help extract relevant data.</p>
+<ul>
+<li><strong>Date</strong> values are expected in <a href="https://en.wikipedia.org/wiki/ISO_8601?oldformat=true">ISO 8601</a> format, but you can set your own format to the time parser</li>
+<li><strong>Multiple values</strong> can be extracted by specifying the separator used inside the cell (e.g. <code>+</code> or <code>|</code>)</li>
+</ul>
+<p><a class="glightbox" href="../assets/csv-mappers-field-options.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Field options" src="../assets/csv-mappers-field-options.png" /></a></p>
+<h2 id="csv-mapper-validity">CSV Mapper validity</h2>
+<p>The only parameter required to save a CSV Mapper is a name ; creating and refining its representations can be done iteratively.</p>
+<p>All CSV Mappers go through a quick validation that checks if all the representations have all their mandatory fields set. 
+Only valid mappers can be run by the users on their CSV files.</p>
+<p>Mapper validity is visible in the list of CSV Mappers as shown below.</p>
+<p><a class="glightbox" href="../assets/csv-mappers-invalid.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="An invalid CSV Mapper" src="../assets/csv-mappers-invalid.png" /></a></p>
+<h2 id="test-your-csv-mapper">Test your CSV mapper</h2>
+<p>In the creation or edition form, hit the button <strong>Test</strong> to open a dialog. Select a sample CSV file and hit the <strong>Test</strong> button.</p>
+<p>The code block contains the raw result of the parsing attempt, in form of a STIX 2.1 bundle in JSON format.</p>
+<p>You can then check if the extracted values match the expected entities and relationships.</p>
+<p><a class="glightbox" href="../assets/csv-mappers-test.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Test a CSV Mapper" src="../assets/csv-mappers-test.png" /></a></p>
+<h2 id="use-a-mapper-for-importing-a-csv-file">Use a mapper for importing a CSV file</h2>
+<p>You can change the default configuration of the import csv connector in your configuration file.
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">  </span><span class="nt">&quot;import_csv_built_in_connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"> </span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">&quot;validate_before_import&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">},</span>
+</span></code></pre></div></p>
+<p>In Data import section, or Data tab of an entity, when you upload a CSV, you can select a mapper to apply to the file. 
+The file will then be parsed following the representation rules set in the mapper.</p>
+<p>By default, the imported elements will be added in a new Analyst Workbench where you will be able to check the result of the import.</p>
 
   
     
@@ -4253,7 +4121,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-30T09:54:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-14T12:55:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-14</span>
       </span>
     
     
@@ -4261,7 +4129,7 @@
         <span class="md-icon" title="Created">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-31T19:31:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-31</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-14T12:55:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-14</span>
       </span>
     
     
@@ -4273,14 +4141,9 @@
         <span>GitHub</span>
         <nav>
           
-            <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+            <a href="https://github.com/labo-flg" class="md-author" title="@labo-flg">
               
-              <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
-            </a>
-          
-            <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
-              
-              <img src="https://avatars.githubusercontent.com/u/73853856?size=72" alt="marieflorescontact">
+              <img src="https://avatars.githubusercontent.com/u/146674147?size=72" alt="labo-flg">
             </a>
           
           
@@ -4313,7 +4176,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../containers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Containers" rel="prev">
+          <a href="../merging/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Merging and de-duplication" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -4322,20 +4185,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Containers
+                Merging and de-duplication
               </div>
             </div>
           </a>
         
         
           
-          <a href="../reliability-confidence/" class="md-footer__link md-footer__link--next" aria-label="Next: Reliability and confidence" rel="next">
+          <a href="../parameters/" class="md-footer__link md-footer__link--next" aria-label="Next: Parameters" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Reliability and confidence
+                Parameters
               </div>
             </div>
             <div class="md-footer__button md-icon">

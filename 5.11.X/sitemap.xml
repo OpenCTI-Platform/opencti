@@ -6,6 +6,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/latest/administration/csv-mappers/</loc>
+         <lastmod>2023-10-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/latest/administration/enterprise/</loc>
          <lastmod>2023-10-14</lastmod>
          <changefreq>daily</changefreq>
