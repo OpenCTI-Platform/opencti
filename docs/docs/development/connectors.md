@@ -463,6 +463,9 @@ $ flake8 --ignore=E,W
 $ black .
 All done! ✨ 🍰 ✨
 1 file left unchanged.
+# Verify import sorting
+$ isort --profile black .
+Fixing /path/to/connector/file.py
 # Push you feature/fix on Github
 $ git add [file(s)]
 $ git commit -m "[connector_name] descriptive message"
