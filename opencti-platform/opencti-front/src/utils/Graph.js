@@ -1183,26 +1183,30 @@ export const nodePaint = (
 
   const size = 8;
   ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-  ctx.font = '4px Roboto';
+  ctx.font = '4px IBM Plex Sans';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, x, y + 10);
+  ctx.fillText(label, x, y + 9);
 
   const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
   if (showNbConnectedElements && validConnectedElements) {
     ctx.beginPath();
-    ctx.fillStyle = itemColor('numberOfConnectedElement');
-    ctx.arc(x + 4, y - 5, 4, 0, 2 * Math.PI, false);
+    ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
+    ctx.lineWidth = 0.4;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.fillStyle = colors.numbersBackground;
     ctx.fill();
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = colors.numberText;
     let numberLabel = '?';
     if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
     if (numberLabel !== '?') {
       numberLabel = numberOfConnectedElement > 99
         ? '99+'
-        : `~${numberLabel}`;
+        : `${numberLabel}+`;
     }
-    ctx.fillText(numberLabel, x + 4, y - 4.5);
+    ctx.font = '1.5px IBM Plex Sans';
+    ctx.fillText(numberLabel, x + 4, y - 2.9);
   }
 };
 
@@ -1211,7 +1215,7 @@ export const nodeAreaPaint = ({ name, x, y }, color, ctx) => {
   ctx.fillStyle = color;
   ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
   ctx.fill();
-  ctx.font = '4px Roboto';
+  ctx.font = '4px IBM Plex Sans';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(name, x, y + 10);
@@ -1231,7 +1235,7 @@ export const linkPaint = (link, ctx, color) => {
   if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
   if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
   const fontSize = 3;
-  ctx.font = `${fontSize}px Roboto`;
+  ctx.font = `${fontSize}px IBM Plex Sans`;
   ctx.save();
   ctx.translate(textPos.x, textPos.y);
   ctx.rotate(textAngle);

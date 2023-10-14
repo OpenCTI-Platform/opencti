@@ -1407,6 +1407,9 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
+              ... on Case {
+                name
+              }
               ... on Incident {
                 name
                 first_seen

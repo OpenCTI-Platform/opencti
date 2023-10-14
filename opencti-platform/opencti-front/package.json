@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/index.tsx",
   "dependencies": {
-    "@analytics/google-analytics": "^1.0.7",
+    "@analytics/google-analytics": "1.0.7",
     "@ckeditor/ckeditor5-react": "6.1.0",
     "@date-io/date-fns": "2.17.0",
     "@emotion/react": "11.11.1",
@@ -83,7 +83,7 @@
     "typeface-ibm-plex-sans": "1.1.13",
     "typeface-roboto": "1.1.13",
     "unified": "11.0.3",
-    "use-analytics": "^1.1.0",
+    "use-analytics": "1.1.0",
     "uuid": "9.0.1",
     "yup": "1.2.0"
   },

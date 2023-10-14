@@ -2027,7 +2027,7 @@ class InvestigationGraphComponent extends Component {
                 PaperProps={{ elevation: 1 }}
                 open={openExpandElements}
                 onClose={this.handleCloseExpandElements.bind(this)}
-                fullWidth={false}
+                fullWidth={true}
                 maxWidth="sm"
               >
                 <InvestigationExpandForm
@@ -2242,6 +2242,8 @@ class InvestigationGraphComponent extends Component {
                           {
                             selected: theme.palette.secondary.main,
                             inferred: theme.palette.warning.main,
+                            numbersBackground: theme.palette.background.default,
+                            numberText: theme.palette.text.secondary,
                           },
                           node,
                           node.color,

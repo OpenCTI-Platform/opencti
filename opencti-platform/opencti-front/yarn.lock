@@ -74,7 +74,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/google-analytics@npm:^1.0.7":
+"@analytics/google-analytics@npm:1.0.7":
   version: 1.0.7
   resolution: "@analytics/google-analytics@npm:1.0.7"
   checksum: f6adacaad48d938ebbe0178641791e2aaa68c9f9ab98f6efc290ea5a64419717587c4e38ff7cd7977f6fbd80a9b081e24ab0e8f016ac0069df2c77b5c1d60146
@@ -14811,7 +14811,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-front@workspace:."
   dependencies:
-    "@analytics/google-analytics": ^1.0.7
+    "@analytics/google-analytics": 1.0.7
     "@ckeditor/ckeditor5-react": 6.1.0
     "@date-io/date-fns": 2.17.0
     "@emotion/react": 11.11.1
@@ -14929,7 +14929,7 @@ __metadata:
     typeface-roboto: 1.1.13
     typescript: 5.2.2
     unified: 11.0.3
-    use-analytics: ^1.1.0
+    use-analytics: 1.1.0
     uuid: 9.0.1
     vite-plugin-relay: 2.0.0
     vitest: 0.34.5
@@ -19746,7 +19746,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-analytics@npm:^1.1.0":
+"use-analytics@npm:1.1.0":
   version: 1.1.0
   resolution: "use-analytics@npm:1.1.0"
   dependencies:

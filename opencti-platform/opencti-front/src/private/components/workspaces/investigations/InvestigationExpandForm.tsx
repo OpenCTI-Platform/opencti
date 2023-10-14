@@ -5,20 +5,19 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Option } from '@components/common/form/ReferenceField';
 import SwitchField from '../../../../components/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  InvestigationExpandFormTargetsDistributionFromQuery,
-} from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
-import {
-  InvestigationExpandFormTargetsDistributionToQuery,
-} from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
-import {
-  InvestigationExpandFormRelDistributionQuery,
-} from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
+import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
+import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
+import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -77,7 +76,7 @@ const investigationExpandFormRelDistributionQuery = graphql`
 const useStyles = makeStyles(() => ({
   checkboxesContainer: {
     display: 'flex',
-    gap: 24,
+    justifyContent: 'space-between',
   },
   fallback: {
     minHeight: 200,
@@ -88,40 +87,40 @@ const useStyles = makeStyles(() => ({
 }));
 
 type FormData = {
-  entity_types: Option[],
-  relationship_types: Option[],
-  reset_filters: boolean,
+  entity_types: Option[];
+  relationship_types: Option[];
+  reset_filters: boolean;
 };
 
 type InvestigationExpandFormProps = {
   links: {
     source: {
-      id: string
-      entity_type: string
-      [key:string]: unknown
-    }
+      id: string;
+      entity_type: string;
+      [key: string]: unknown;
+    };
     target: {
-      id: string
-      entity_type: string
-      [key:string]: unknown
-    }
+      id: string;
+      entity_type: string;
+      [key: string]: unknown;
+    };
     id: string;
     entity_type: string;
-    [key:string]: unknown
-  }[]
+    [key: string]: unknown;
+  }[];
   selectedNodes: {
-    id: string
-    [key:string]: unknown
-  }[]
-  onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void
-  onReset: () => void
+    id: string;
+    [key: string]: unknown;
+  }[];
+  onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void;
+  onReset: () => void;
 };
 
 // Refs of queries instantiated by the wrapper (bottom of the file).
 type InvestigationExpandFormContentProps = InvestigationExpandFormProps & {
-  distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>
-  distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>
-  distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>
+  distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>;
+  distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>;
+  distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>;
 };
 
 const InvestigationExpandFormContent = ({
@@ -156,8 +155,12 @@ const InvestigationExpandFormContent = ({
   // Nodes and edges we have in our graph.
   // // Used to compute the difference between total count returned by
   // the query and what is already displayed.
-  const [existingTargets, setExistingTargets] = useState<Map<string, Map<string, number>>>(new Map());
-  const [existingRels, setExistingRels] = useState<Map<string, Map<string, string[]>>>(new Map());
+  const [existingTargets, setExistingTargets] = useState<
+  Map<string, Map<string, number>>
+  >(new Map());
+  const [existingRels, setExistingRels] = useState<
+  Map<string, Map<string, string[]>>
+  >(new Map());
 
   // How many entity types and rel types we already have in the graph.
   useEffect(() => {
@@ -255,25 +258,35 @@ const InvestigationExpandFormContent = ({
       }
     });
 
-    const nonNullDistribution = (distributionRel.stixRelationshipsDistribution ?? [])
+    const nonNullDistribution = (
+      distributionRel.stixRelationshipsDistribution ?? []
+    )
       // Use of flatMap() to do both filter() and map() in one step.
-      .flatMap((rel) => (rel ? [{
-        label: rel.label,
-        // Decrease from the count of already displayed elements.
-        // toLowerCase() because relationship names are pascalized
-        // in elAggregationRelationsCount().
-        value: (rel.value ?? 0) - (existingRelsSelected.get(rel.label.toLowerCase()) ?? new Set()).size,
-      }] : []))
+      .flatMap((rel) => (rel
+        ? [
+          {
+            label: rel.label,
+            // Decrease from the count of already displayed elements.
+            // toLowerCase() because relationship names are pascalized
+            // in elAggregationRelationsCount().
+            value:
+                  (rel.value ?? 0)
+                  - (
+                    existingRelsSelected.get(rel.label.toLowerCase())
+                    ?? new Set()
+                  ).size,
+          },
+        ]
+        : []))
       // Remove from the list entities with nothing to add.
       .filter(({ value }) => value > 0)
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
     setRelationships(
-      nonNullDistribution
-        .map(({ label, value }) => ({
-          label: `${label} (${value})`,
-          value: label,
-        })),
+      nonNullDistribution.map(({ label, value }) => ({
+        label: `${t(`relationship_${label.toLowerCase()}`)} (${value})`,
+        value: label,
+      })),
     );
   }, [distributionRel, selectedNodes, existingRels, setRelationships]);
 
@@ -300,22 +313,26 @@ const InvestigationExpandFormContent = ({
     });
 
     // Merge both 'from' relationships and 'to' relationships.
-    const distribution: { label: string, value: number }[] = [];
-    [distributionFrom, distributionTo].forEach(({ stixRelationshipsDistribution }) => {
-      stixRelationshipsDistribution?.forEach((newTarget) => {
-        if (newTarget) {
-          const target = distribution.find((item) => item.label === newTarget.label);
-          if (target) {
-            target.value += (newTarget.value ?? 0);
-          } else {
-            distribution.push({
-              label: newTarget.label,
-              value: newTarget.value ?? 0,
-            });
+    const distribution: { label: string; value: number }[] = [];
+    [distributionFrom, distributionTo].forEach(
+      ({ stixRelationshipsDistribution }) => {
+        stixRelationshipsDistribution?.forEach((newTarget) => {
+          if (newTarget) {
+            const target = distribution.find(
+              (item) => item.label === newTarget.label,
+            );
+            if (target) {
+              target.value += newTarget.value ?? 0;
+            } else {
+              distribution.push({
+                label: newTarget.label,
+                value: newTarget.value ?? 0,
+              });
+            }
           }
-        }
-      });
-    });
+        });
+      },
+    );
 
     const graphDistribution = distribution
       .map((target) => ({
@@ -323,20 +340,27 @@ const InvestigationExpandFormContent = ({
         // Decrease from the count of already displayed elements.
         // toLowerCase() because relationship names are pascalized
         // in elAggregationRelationsCount().
-        value: target.value - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
+        value:
+          target.value
+          - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
       }))
       // Remove from the list entities with nothing to add.
       .filter(({ value }) => value > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
 
     setTargets(
-      graphDistribution
-        .map(({ label, value }) => ({
-          label: `${label} (${value})`,
-          value: label,
-        })),
+      graphDistribution.map(({ label, value }) => ({
+        label: `${t(`entity_${label}`)} (${value})`,
+        value: label,
+      })),
     );
-  }, [distributionFrom, distributionTo, selectedNodes, existingTargets, setTargets]);
+  }, [
+    distributionFrom,
+    distributionTo,
+    selectedNodes,
+    existingTargets,
+    setTargets,
+  ]);
 
   return (
     <Formik<FormData>
@@ -377,10 +401,7 @@ const InvestigationExpandFormContent = ({
           </DialogContent>
 
           <DialogActions>
-            <Button
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button onClick={handleReset} disabled={isSubmitting}>
               {t('Cancel')}
             </Button>
             <Button
@@ -402,26 +423,17 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
   const classes = useStyles();
 
   // Number of relations grouped by type of relation.
-  const [
-    distributionRelQueryRef,
-    loadDistributionRelQuery,
-  ] = useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
+  const [distributionRelQueryRef, loadDistributionRelQuery] = useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
     investigationExpandFormRelDistributionQuery,
   );
 
   // Number of targets source of a relation grouped by entity type.
-  const [
-    distributionFromQueryRef,
-    loadDistributionFromQuery,
-  ] = useQueryLoader<InvestigationExpandFormTargetsDistributionFromQuery>(
+  const [distributionFromQueryRef, loadDistributionFromQuery] = useQueryLoader<InvestigationExpandFormTargetsDistributionFromQuery>(
     investigationExpandFormTargetsDistributionFromQuery,
   );
 
   // Number of targets destination of a relation grouped by entity type.
-  const [
-    distributionToQueryRef,
-    loadDistributionToQuery,
-  ] = useQueryLoader<InvestigationExpandFormTargetsDistributionToQuery>(
+  const [distributionToQueryRef, loadDistributionToQuery] = useQueryLoader<InvestigationExpandFormTargetsDistributionToQuery>(
     investigationExpandFormTargetsDistributionToQuery,
   );
 
@@ -434,11 +446,13 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
 
   const Fallback = (
     <div className={classes.fallback}>
-      <Loader variant={LoaderVariant.inElement}/>
+      <Loader variant={LoaderVariant.inElement} />
     </div>
   );
 
-  return (distributionRelQueryRef && distributionFromQueryRef && distributionToQueryRef) ? (
+  return distributionRelQueryRef
+    && distributionFromQueryRef
+    && distributionToQueryRef ? (
     <Suspense fallback={Fallback}>
       <InvestigationExpandFormContent
         {...props}
@@ -447,9 +461,9 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
         distributionToQueryRef={distributionToQueryRef}
       />
     </Suspense>
-  ) : (
-    Fallback
-  );
+    ) : (
+      Fallback
+    );
 };
 
 export default InvestigationExpandForm;
