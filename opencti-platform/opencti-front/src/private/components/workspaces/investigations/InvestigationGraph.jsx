@@ -270,67 +270,67 @@ const investigationGraphStixCoreRelationshipQuery = graphql`
 `;
 
 const investigationGraphStixSightingRelationshipQuery = graphql`
-    query InvestigationGraphStixSightingRelationshipQuery($id: String!) {
-        stixSightingRelationship(id: $id) {
-            id
-            entity_type
-            parent_types
-            first_seen
-            last_seen
-            confidence
-            relationship_type
-            from {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            to {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            created_at
-            updated_at
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                edges {
-                    node {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
-            }
+  query InvestigationGraphStixSightingRelationshipQuery($id: String!) {
+    stixSightingRelationship(id: $id) {
+      id
+      entity_type
+      parent_types
+      first_seen
+      last_seen
+      confidence
+      relationship_type
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
         }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
     }
+  }
 `;
 
 // To count the number of relationships for MetaObjects and Identities.
@@ -935,7 +935,9 @@ class InvestigationGraphComponent extends Component {
       R.map((n) => ({
         label: n,
         tlabel: props.t(
-          `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type}`,
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${
+            n.entity_type
+          }`,
         ),
       })),
       sortByLabel,
@@ -1094,7 +1096,10 @@ class InvestigationGraphComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -1124,10 +1129,10 @@ class InvestigationGraphComponent extends Component {
   async fetchObjectRelCounts(objects) {
     // Keep only meta-objects and identities.
     const objectIds = (objects ?? [])
-      .filter((object) => (
-        object.parent_types.includes('Stix-Meta-Object')
-        || object.parent_types.includes('Identity')
-      ))
+      .filter(
+        (object) => object.parent_types.includes('Stix-Meta-Object')
+          || object.parent_types.includes('Identity'),
+      )
       .map((object) => object.id);
 
     if (objectIds.length === 0) return;
@@ -1719,7 +1724,9 @@ class InvestigationGraphComponent extends Component {
         .then((data) => {
           const { stixSightingRelationship } = data;
           this.graphObjects = R.map(
-            (n) => (n.id === stixSightingRelationship.id ? stixSightingRelationship : n),
+            (n) => (n.id === stixSightingRelationship.id
+              ? stixSightingRelationship
+              : n),
             this.graphObjects,
           );
           this.graphData = buildGraphData(
@@ -1826,7 +1833,8 @@ class InvestigationGraphComponent extends Component {
   async handleExpandElements(filters) {
     // Do not expand if nothing has been checked.
     if (
-      (!filters.relationship_types || filters.relationship_types.length === 0)
+      (!filters.relationship_types
+        || filters.relationship_types.length === 0)
       && (!filters.entity_types || filters.entity_types.length === 0)
     ) {
       return;
@@ -2022,6 +2030,7 @@ class InvestigationGraphComponent extends Component {
               <WorkspaceHeader
                 workspace={workspace}
                 adjust={this.handleZoomToFit.bind(this)}
+                variant="investigation"
               />
               <Dialog
                 PaperProps={{ elevation: 1 }}
@@ -2083,12 +2092,20 @@ class InvestigationGraphComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
-                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
-                handleCloseRelationEdition={this.handleCloseRelationEdition.bind(this)}
-                handleCloseSightingEdition={this.handleCloseSightingEdition.bind(this)}
+                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
+                  this,
+                )}
+                handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
+                  this,
+                )}
+                handleCloseSightingEdition={this.handleCloseSightingEdition.bind(
+                  this,
+                )}
                 handleResetLayout={this.handleResetLayout.bind(this)}
                 displayTimeRange={displayTimeRange}
-                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(this)}
+                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
+                  this,
+                )}
                 timeRangeInterval={timeRangeInterval}
                 selectedTimeRangeInterval={selectedTimeRangeInterval}
                 handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}

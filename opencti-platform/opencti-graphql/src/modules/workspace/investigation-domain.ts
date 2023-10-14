@@ -11,7 +11,7 @@ import type { StixId, StixObject } from '../../types/stix-common';
 import { internalLoadById } from '../../database/middleware-loader';
 import { addWorkspace } from './workspace-domain';
 import type { BasicStoreEntity, StoreEntity, StoreEntityReport } from '../../types/store';
-import { now } from '../../utils/format';
+import { now, nowTime } from '../../utils/format';
 import { READ_STIX_INDICES } from '../../database/utils';
 import { getParentTypes } from '../../schema/schemaUtils';
 
@@ -43,7 +43,7 @@ export const toStixReportBundle = async (context: AuthContext, user: AuthUser, w
 
 export const investigationAddFromContainer = async (context: AuthContext, user: AuthUser, containerId: string) => {
   const container = await internalLoadById<BasicStoreEntity>(context, user, containerId);
-  const investigationToStartCanonicalName = `investigation from ${container.entity_type.toLowerCase()} "${container.name}" (${now()})`;
+  const investigationToStartCanonicalName = `[${container.entity_type}] "${container.name}" (${nowTime()})`;
   const investigationInput = { type: 'investigation', name: investigationToStartCanonicalName, investigated_entities_ids: container.object };
   return addWorkspace(context, user, investigationInput);
 };

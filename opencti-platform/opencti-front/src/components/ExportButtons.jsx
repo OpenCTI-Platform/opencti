@@ -183,7 +183,7 @@ class ExportButtons extends Component {
             </ToggleButton>
           </Tooltip>
           {investigationAddFromContainer && (
-            <Tooltip title={t('start investigation')}>
+            <Tooltip title={t('Start an investigation')}>
               <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId, history)}>
                 <ExploreOutlined fontSize="small" color="primary" />
               </ToggleButton>

@@ -10,23 +10,28 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import MUITextField from '@mui/material/TextField';
+import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { Add, Close, LockPersonOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  CloseOutlined,
+  MoveToInboxOutlined,
+  LockPersonOutlined,
+} from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
+import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import {
   commitMutation,
   fetchQuery,
   MESSAGING$,
 } from '../../../relay/environment';
-import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
@@ -35,21 +40,19 @@ import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
-
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
     marginTop: '-13px',
   },
   manageAccess: {
+    margin: '-8px 4px 0 0',
+    float: 'right',
+  },
+  turnToReportOrCase: {
     margin: '-8px 4px 0 0',
     float: 'right',
   },
@@ -158,6 +161,14 @@ const WorkspaceHeader = ({
       });
   };
 
+  const [
+    displayTurnToReportOrCaseContainer,
+    setDisplayTurnToReportOrCaseContainer,
+  ] = useState(false);
+
+  const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
+  const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
+
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
       <Typography
@@ -185,7 +196,9 @@ const WorkspaceHeader = ({
                 size="small"
                 style={{ width: 194, marginRight: 20 }}
               >
-                <InputLabel id="relative" variant="outlined">{t('Relative time')}</InputLabel>
+                <InputLabel id="relative" variant="outlined">
+                  {t('Relative time')}
+                </InputLabel>
                 <Select
                   labelId="relative"
                   value={relativeDate ?? ''}
@@ -212,7 +225,7 @@ const WorkspaceHeader = ({
                 disabled={true}
                 onChange={(value) => handleDateChange('startDate', value)}
                 renderInput={(params) => (
-                  <MUITextField
+                  <TextField
                     style={{ marginRight: 20 }}
                     variant="outlined"
                     size="small"
@@ -230,7 +243,7 @@ const WorkspaceHeader = ({
                 disableFuture={true}
                 onChange={(value) => handleDateChange('endDate', value)}
                 renderInput={(params) => (
-                  <MUITextField
+                  <TextField
                     style={{ marginRight: 20 }}
                     variant="outlined"
                     size="small"
@@ -278,7 +291,7 @@ const WorkspaceHeader = ({
               disabled={!!relativeDate}
               onChange={(value) => handleDateChange('startDate', value)}
               renderInput={(params) => (
-                <MUITextField
+                <TextField
                   style={{ marginRight: 20 }}
                   variant="outlined"
                   size="small"
@@ -295,7 +308,7 @@ const WorkspaceHeader = ({
               disableFuture={true}
               onChange={(value) => handleDateChange('endDate', value)}
               renderInput={(params) => (
-                <MUITextField variant="outlined" size="small" {...params} />
+                <TextField variant="outlined" size="small" {...params} />
               )}
             />
           </div>
@@ -310,6 +323,22 @@ const WorkspaceHeader = ({
           handleDownloadAsStixReport={handleDownloadAsStixReport}
         />
       </div>
+      {variant === 'investigation' && (
+        <div className={classes.turnToReportOrCase}>
+          <Tooltip title={t('Add to a container')}>
+            <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+              <ToggleButton
+                aria-label="Label"
+                onClick={handleOpenTurnToReportOrCaseContainer}
+                size="small"
+                value="add-to-a-container"
+              >
+                <MoveToInboxOutlined color="primary" fontSize="small" />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Tooltip>
+        </div>
+      )}
       <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
         <div className={classes.manageAccess}>
           <Tooltip title={t('Manage access')}>
@@ -365,9 +394,9 @@ const WorkspaceHeader = ({
                 size="large"
               >
                 {openTag ? (
-                  <Close fontSize="small" />
+                  <CloseOutlined fontSize="small" />
                 ) : (
-                  <Add fontSize="small" />
+                  <AddOutlined fontSize="small" />
                 )}
               </IconButton>
             </Tooltip>
@@ -397,6 +426,13 @@ const WorkspaceHeader = ({
           </Slide>
         </Security>
       </div>
+      {variant === 'investigation' && (
+        <WorkspaceTurnToContainerDialog
+          workspace={workspace}
+          open={displayTurnToReportOrCaseContainer}
+          handleClose={handleCloseTurnToReportOrCaseContainer}
+        />
+      )}
       <div className="clearfix" />
     </div>
   );

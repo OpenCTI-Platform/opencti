@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://opencti.io"><img src="https://filigran.io/wp-content/uploads/2023/08/opencti_github.png" alt="OpenCTI"></a>
+  <a href="https://opencti.io"><img src="https://filigran.io/wp-content/uploads/2023/10/opencti_github.png" alt="OpenCTI"></a>
 </h1>
 <p align="center">
   <a href="https://opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
@@ -30,12 +30,12 @@ OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-ex
 
 ## Editions of the platform
 
-OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://filigran.io/offering/opencti-enterprise-edition) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
+OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://filigran.io/offering/subscribe) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
 
 * OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
 * OpenCTI Enterprise Edition, licensed under the [Non-Commercial license](LICENSE).
 
-To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://filigran.io/offering/opencti-enterprise-edition) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
+To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://filigran.io/offering/subscribe) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
 
 ## Documentation and demonstration
 

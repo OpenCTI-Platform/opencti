@@ -28,6 +28,7 @@ export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
+export const nowTime = () => timeFormat(now());
 export const sinceNowInMinutes = (lastModified) => {
   const diff = utcDate().diff(utcDate(lastModified));
   const duration = moment.duration(diff);
@@ -40,6 +41,8 @@ export const prepareDate = (date) => utcDate(date).format(dateFormat);
 export const yearFormat = (date) => utcDate(date).format('YYYY');
 export const monthFormat = (date) => utcDate(date).format('YYYY-MM');
 export const dayFormat = (date) => utcDate(date).format('YYYY-MM-DD');
+export const timeFormat = (date) => utcDate(date).format('YYYY-MM-DD HH:mm');
+
 export const escape = (chars) => {
   const toEscape = chars && typeof chars === 'string';
   if (toEscape) {

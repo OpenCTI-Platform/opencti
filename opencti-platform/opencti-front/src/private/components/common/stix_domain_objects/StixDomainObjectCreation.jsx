@@ -121,11 +121,12 @@ const sharedUpdater = (
 };
 
 const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
-  const choices = (queryData.sdoTypes?.edges ?? []).map((edge) => ({
-    label: t(`entity_${edge.node.label}`),
-    value: edge.node.label,
-    type: edge.node.label,
-  }));
+  const choices = (queryData.sdoTypes?.edges ?? [])
+    .map((edge) => ({
+      label: t(`entity_${edge.node.label}`),
+      value: edge.node.label,
+      type: edge.node.label,
+    }));
   const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
   return entitiesTypes.filter((n) => {
     if (

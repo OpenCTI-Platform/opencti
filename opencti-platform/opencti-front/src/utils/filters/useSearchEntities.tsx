@@ -3,11 +3,14 @@ import { useTheme } from '@mui/styles';
 import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
+import { markingDefinitionsLinesSearchQuery } from '@components/settings/marking_definitions/MarkingDefinitionsLines';
 import { fetchQuery } from '../../relay/environment';
-import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '../../private/components/common/identities/IdentitySearch';
+import {
+  identitySearchCreatorsSearchQuery,
+  identitySearchIdentitiesSearchQuery,
+} from '../../private/components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
-import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
 import { killChainPhasesLinesSearchQuery } from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
@@ -15,7 +18,10 @@ import { statusFieldStatusesSearchQuery } from '../../private/components/common/
 import { useFormatter } from '../../components/i18n';
 import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
 import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
-import { objectAssigneeFieldAssigneesSearchQuery, objectAssigneeFieldMembersSearchQuery } from '../../private/components/common/form/ObjectAssigneeField';
+import {
+  objectAssigneeFieldAssigneesSearchQuery,
+  objectAssigneeFieldMembersSearchQuery,
+} from '../../private/components/common/form/ObjectAssigneeField';
 import { IdentitySearchIdentitiesSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import { IdentitySearchCreatorsSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
@@ -38,8 +44,11 @@ import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__
 import { isNotEmptyField } from '../utils';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
-  query useSearchEntitiesStixCoreObjectsContainersSearchQuery($filters: [ContainersFiltering]) {
-    containers(filters: $filters) {
+  query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
+    $search: String
+    $filters: [ContainersFiltering]
+  ) {
+    containers(search: $search, filters: $filters) {
       edges {
         node {
           id
@@ -254,7 +263,7 @@ const useSearchEntities = ({
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  searchContext: { entityTypes: string[], elementId?: string[] };
+  searchContext: { entityTypes: string[]; elementId?: string[] };
   searchScope: Record<string, string[]>;
   setInputValues: Dispatch<Record<string, string | Date>>;
   allEntityTypes?: boolean;
@@ -266,15 +275,23 @@ const useSearchEntities = ({
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
-      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
+      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
+          === index,
     ),
   }));
-  const entityType = searchContext?.entityTypes?.length > 0 ? searchContext.entityTypes[0] : null;
+  const entityType = searchContext?.entityTypes?.length > 0
+    ? searchContext.entityTypes[0]
+    : null;
   const confidences = buildScaleFilters(entityType, 'confidence');
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
-    setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
+    cacheEntities: Record<
+    string,
+    { label: string; value: string; type: string }[]
+    >,
+    setCacheEntities: Dispatch<
+    Record<string, { label: string; value: string; type: string }[]>
+    >,
     event: SelectChangeEvent<string | number>,
   ) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -617,13 +634,17 @@ const useSearchEntities = ({
         fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
-          filters: [{ key: 'objectContains', values: searchContext?.elementId ?? [] }],
+          filters: [
+            { key: 'objectContains', values: searchContext?.elementId ?? [] },
+            { key: 'entity_type', values: availableEntityTypes ?? [] },
+          ],
         })
           .toPromise()
           .then((data) => {
             const containerEntities = (
-              (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)
-                ?.containers?.edges ?? []
+              (
+                data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data
+              )?.containers?.edges ?? []
             ).map((n) => ({
               label: n?.node.representative.main,
               value: n?.node.id,
@@ -919,15 +940,14 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'pattern_type',
-              ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-              ).map(
-                (n) => ({
-                  label: n?.node.value,
-                  value: n?.node.value,
-                  type: 'Vocabulary',
-                }),
-              ),
+              (
+                (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                  ?.edges ?? []
+              ).map((n) => ({
+                label: n?.node.value,
+                value: n?.node.value,
+                type: 'Vocabulary',
+              })),
             );
           });
         break;
@@ -992,7 +1012,12 @@ const useSearchEntities = ({
         fetchQuery(statusFieldStatusesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 50,
-          filters: [{ key: 'type', values: isNotEmptyField(entityType) ? [entityType] : [] }],
+          filters: [
+            {
+              key: 'type',
+              values: isNotEmptyField(entityType) ? [entityType] : [],
+            },
+          ],
         })
           .toPromise()
           .then((data) => {

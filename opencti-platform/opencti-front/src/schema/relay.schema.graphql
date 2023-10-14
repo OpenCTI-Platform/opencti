@@ -8595,6 +8595,7 @@ type ContainerEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Container
   investigationAdd: Workspace
+  knowledgeAddFromInvestigation(workspaceId: ID!): Container
 }
 
 type NoteEditMutations {
