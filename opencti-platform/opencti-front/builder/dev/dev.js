@@ -99,6 +99,7 @@ esbuild.context({
   });
   app.set("trust proxy", 1);
   app.use(compression({}));
+  app.use(middleware("/logout"));
   app.use(middleware("/stream"));
   app.use(middleware("/storage"));
   app.use(middleware("/taxii2"));

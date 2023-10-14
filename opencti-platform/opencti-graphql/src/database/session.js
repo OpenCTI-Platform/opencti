@@ -31,13 +31,12 @@ const createSessionMiddleware = () => {
       store,
       secret: sessionSecret,
       proxy: true,
-      rolling: true,
       saveUninitialized: false,
       resave: false,
       cookie: {
         _expires: sessionTimeout,
         secure: booleanConf('app:https_cert:cookie_secure', false),
-        sameSite: 'lax',
+        sameSite: conf.get('app:https_cert:cookie_samesite') ?? 'lax',
       },
     }),
   };

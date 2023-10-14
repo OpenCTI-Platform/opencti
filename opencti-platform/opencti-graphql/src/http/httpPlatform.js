@@ -11,9 +11,9 @@ import nconf from 'nconf';
 import showdown from 'showdown';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, logApp } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { authenticateUser, authenticateUserFromRequest, loginFromProvider } from '../domain/user';
+import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
@@ -24,6 +24,7 @@ import { getEntityFromCache } from '../database/cache';
 import { isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
+import { delUserContext } from '../database/redis';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -253,11 +254,56 @@ const createApp = async (app) => {
     }
   });
 
+  // Logout
+  app.get(`${basePath}/logout`, async (req, res, next) => {
+    try {
+      const referer = extractRefererPathFromReq(req);
+      const strategy = passport._strategy(req.session.session_provider?.provider);
+      const { user } = req.session;
+      const withOrigin = userWithOrigin(req, user);
+      await publishUserAction({
+        user: withOrigin,
+        event_type: 'authentication',
+        event_access: 'administration',
+        event_scope: 'logout',
+        context_data: undefined
+      });
+      await delUserContext(user);
+      res.clearCookie(OPENCTI_SESSION);
+      req.session.destroy(() => {
+        if (strategy.logout_remote === true && strategy?.logout) {
+          req.user = user; // Needed for passport
+          strategy.logout(req, (error, request) => {
+            if (error) {
+              setCookieError(res, 'Error generating logout uri');
+              next(error);
+            } else {
+              res.redirect(request);
+            }
+          });
+        } else {
+          res.redirect(referer);
+        }
+      });
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
+  });
+
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      req.session.referer = extractRefererPathFromReq(req);
+      const strategy = passport._strategy(provider);
+      const referer = extractRefererPathFromReq(req);
+      if (strategy._saml) {
+        // For SAML, no session is required, referer will be send back through RelayState
+        req.query.RelayState = referer;
+      } else {
+        // For openid / oauth, session is required so we can use it
+        req.session.referer = referer;
+      }
       passport.authenticate(provider, {}, (err) => {
         setCookieError(res, err?.message);
         next(err);
@@ -270,8 +316,8 @@ const createApp = async (app) => {
 
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
-  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), async (req, res, next) => {
-    const { referer } = req.session;
+  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
+    const referer = req.body.RelayState ?? req.session.referer;
     const { provider } = req.params;
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {

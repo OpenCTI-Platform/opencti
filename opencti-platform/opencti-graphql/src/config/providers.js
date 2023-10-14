@@ -239,6 +239,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const userName = profile[mappedConfig.account_attribute] || '';
         const firstname = profile[mappedConfig.firstname_attribute] || '';
         const lastname = profile[mappedConfig.lastname_attribute] || '';
+        const { nameID, nameIDFormat } = profile;
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
         logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
@@ -289,11 +290,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             providerOrganizations: organizationsToAssociate,
             autoCreateGroup: mappedConfig.auto_create_group ?? false,
           };
-          providerLoginHandler({ email, name: userName, firstname, lastname }, done, opts);
+          providerLoginHandler({ email, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
+      samlStrategy.logout_remote = samlOptions.logout_remote;
       passport.use(providerRef, samlStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
@@ -395,6 +397,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
+        openIDStrategy.logout_remote = options.logout_remote;
+        openIDStrategy.logout = (_, callback) => {
+          const isSpecificUri = isNotEmptyField(config.logout_callback_url);
+          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
+          if (isSpecificUri) {
+            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
+            callback(null, logoutUri);
+          } else {
+            callback(null, endpointUri);
+          }
+        };
         passport.use(providerRef, openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
       }).catch((err) => {

@@ -8,11 +8,11 @@ import {
   ENABLED_DEMO_MODE,
   DEFAULT_ACCOUNT_STATUS,
   logApp,
-  OPENCTI_SESSION,
   PLATFORM_VERSION,
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
-  ACCOUNT_STATUSES
+  ACCOUNT_STATUSES,
+  OPENCTI_SESSION
 } from '../config/conf';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -808,7 +808,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     }
   }
   // endregion
-  return user;
+  return { ...user, provider_metadata: userInfo.provider_metadata };
 };
 
 export const login = async (email, password) => {
@@ -870,17 +870,7 @@ export const otpUserLogin = async (req, user, { code }) => {
   return isValidated;
 };
 
-export const logout = async (context, user, req, res, regeneration = false) => {
-  const withOrigin = userWithOrigin(req, user);
-  if (regeneration === false) {
-    await publishUserAction({
-      user: withOrigin,
-      event_type: 'authentication',
-      event_access: 'administration',
-      event_scope: 'logout',
-      context_data: undefined
-    });
-  }
+const regenerateUserSession = async (user, req, res) => {
   await delUserContext(user);
   return new Promise((resolve) => {
     res.clearCookie(OPENCTI_SESSION);
@@ -940,7 +930,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
-    session_version: PLATFORM_VERSION
+    session_version: PLATFORM_VERSION,
+    ...user.provider_metadata
   };
 };
 export const buildCompleteUser = async (context, client) => {
@@ -1079,7 +1070,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(context, auth, req, res, true);
+        await regenerateUserSession(auth, req, res);
         return await authenticateUserFromRequest(context, req, res);
       }
     }
@@ -1092,7 +1083,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(context, auth, req, res, true);
+        await regenerateUserSession(auth, req, res);
         return await authenticateUserFromRequest(context, req, res);
       }
     }

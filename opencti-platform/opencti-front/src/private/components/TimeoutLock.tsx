@@ -65,14 +65,6 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
   return state;
 };
 
-/**
- * Redirects to the Dashboard Homepage, flagging the user as being expired.
- */
-const redirectToDashboard = () => {
-  const getUrl = window.location;
-  handleLogout(`${getUrl.protocol}//${getUrl.host}/dashboard?ExpiredSession=1`);
-};
-
 interface TimeoutLockProps {
   handleLogout: (url?: string) => void;
 }
@@ -211,7 +203,7 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
       secondsBetween >= state.sessionLimit
       || (state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)
     ) {
-      redirectToDashboard();
+      handleLogout();
     }
     // Lock the screen for the remaining session time
     if (secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {

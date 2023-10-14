@@ -6,6 +6,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql/index.js';
 import nconf from 'nconf';
 import express from 'express';
+import passport from 'passport/lib';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
@@ -26,6 +27,7 @@ const onHealthCheck = () => checkSystemDependencies();
 const createHttpServer = async () => {
   const app = express();
   app.use(applicationSession.session);
+  app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {

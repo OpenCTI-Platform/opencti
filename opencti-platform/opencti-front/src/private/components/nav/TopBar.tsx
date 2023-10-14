@@ -56,7 +56,7 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import { MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
@@ -132,28 +132,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const logoutMutation = graphql`
-  mutation TopBarLogoutMutation {
-    logout
-  }
-`;
-
-export const handleLogout = (redirect = '') => {
-  function redirectWindow() {
-    if (redirect === '' || redirect.length === undefined) window.location.reload();
-    else window.location.replace(redirect);
-  }
-
-  commitMutation({
-    mutation: logoutMutation,
-    variables: {},
-    onCompleted: redirectWindow,
-    updater: undefined,
-    optimisticUpdater: undefined,
-    optimisticResponse: undefined,
-    onError: redirectWindow,
-    setSubmitting: undefined,
-  });
+export const handleLogout = () => {
+  window.location.pathname = '/logout';
 };
 
 const topBarNotificationNumberSubscription = graphql`

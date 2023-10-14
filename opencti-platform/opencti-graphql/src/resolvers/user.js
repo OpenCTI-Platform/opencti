@@ -8,7 +8,16 @@ import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
-import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findDefaultDashboards, findParticipants, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
+import { addBookmark,
+  addUser, assignOrganizationToUser,
+  authenticateUser, batchCreator, batchGroups, batchOrganizations,
+  batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks,
+  deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities,
+  findCreators, findDefaultDashboards, findParticipants, findRoleById, findRoles, meEditField,
+  otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation,
+  roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation,
+  userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField,
+  userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import withCancel from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
@@ -143,7 +152,6 @@ const userResolvers = {
       });
       return sessionIds;
     },
-    logout: (_, args, context) => logout(context, context.user, context.req, context.res),
     roleEdit: (_, { id }, context) => ({
       delete: () => roleDelete(context, context.user, id),
       fieldPatch: ({ input }) => roleEditField(context, context.user, id, input),
