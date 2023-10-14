@@ -15057,7 +15057,7 @@ __metadata:
     react-material-ui-carousel: 3.4.2
     react-mde: 11.5.0
     react-otp-input: 3.1.0
-    react-pdf: 7.3.3
+    react-pdf: 7.5.0
     react-rectangle-selection: 1.0.4
     react-relay: 15.0.0
     react-relay-network-modern: 6.2.2
@@ -15411,17 +15411,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfjs-dist@npm:3.6.172":
-  version: 3.6.172
-  resolution: "pdfjs-dist@npm:3.6.172"
+"pdfjs-dist@npm:3.11.174":
+  version: 3.11.174
+  resolution: "pdfjs-dist@npm:3.11.174"
   dependencies:
     canvas: ^2.11.2
     path2d-polyfill: ^2.0.1
-    web-streams-polyfill: ^3.2.1
   dependenciesMeta:
     canvas:
       optional: true
-  checksum: 496a98e3a65ddc92ad6a0913e2afd7d9894fa4246c40589ea98c5846ea3ee24e3f292ea58f80340990765ebeadc5951d046279b18f57ec58d1791e67fe6cf52d
+    path2d-polyfill:
+      optional: true
+  checksum: 62f5a64ca0b2dbc855701ebf9a65c3e48c3c9aa5d64c50eb42bb9ff50a326f3eddab7f2a134ef0398398b1ccff9d842935b9f31358c9103bdc71406632d1a7fa
   languageName: node
   linkType: hard
 
@@ -16613,15 +16614,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-pdf@npm:7.3.3":
-  version: 7.3.3
-  resolution: "react-pdf@npm:7.3.3"
+"react-pdf@npm:7.5.0":
+  version: 7.5.0
+  resolution: "react-pdf@npm:7.5.0"
   dependencies:
     clsx: ^2.0.0
     make-cancellable-promise: ^1.3.1
     make-event-props: ^1.6.0
     merge-refs: ^1.2.1
-    pdfjs-dist: 3.6.172
+    pdfjs-dist: 3.11.174
     prop-types: ^15.6.2
     tiny-invariant: ^1.0.0
     tiny-warning: ^1.0.0
@@ -16632,7 +16633,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 472712275ba76bccc4e17fd217a31835780a43a900572ae4b7ebd064926fd19a0d86da2e0691d8f4f452fd1475e14569da6ddfd687bbae366ccb18a7a069129b
+  checksum: 53d6ebe47f4562409c47ff99bc133b83abe6d12d0c63266e4f1b9e7bf630cdca7da5b0a7545f40ec0dd207d0d3944b94ef5d7863bffd9cb8a4162e734367ff42
   languageName: node
   linkType: hard
 
@@ -20284,13 +20285,6 @@ __metadata:
     glob-to-regexp: ^0.4.1
     graceful-fs: ^4.1.2
   checksum: 23d4bc58634dbe13b86093e01c6a68d8096028b664ab7139d58f0c37d962d549a940e98f2f201cecdabd6f9c340338dc73ef8bf094a2249ef582f35183d1a131
-  languageName: node
-  linkType: hard
-
-"web-streams-polyfill@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "web-streams-polyfill@npm:3.2.1"
-  checksum: b119c78574b6d65935e35098c2afdcd752b84268e18746606af149e3c424e15621b6f1ff0b42b2676dc012fc4f0d313f964b41a4b5031e525faa03997457da02
   languageName: node
   linkType: hard
 
