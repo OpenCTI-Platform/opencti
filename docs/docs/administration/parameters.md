@@ -40,6 +40,6 @@ This option can be deactivated to have a permanent Announcement.
 
     Analytics is available under the "Filigran entreprise edition" license.
 
-    [Please read the dedicated page to have all information](../enterprise.md)
+    [Please read the dedicated page to have all information](enterprise.md)
 
 Configure analytics providers (at the moment only Google analytics v4).

@@ -4,7 +4,7 @@
 
     Playbooks automation is available under the "Filigran Entreprise Edition" license.
 
-    [Please read the dedicated page to have all information](../enterprise.md)
+    [Please read the dedicated page to have all information](../administration/enterprise.md)
 
 
 OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. 
