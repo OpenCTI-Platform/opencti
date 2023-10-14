@@ -470,9 +470,9 @@ class CaseIncident:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         object_assignee = kwargs.get("objectAssignee", None)
         granted_refs = kwargs.get("objectOrganization", None)
-        update = kwargs.get("update", False)
         response_types = kwargs.get("response_types", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
+        update = kwargs.get("update", False)
 
         if name is not None:
             self.opencti.log("info", "Creating Case Incident {" + name + "}.")
@@ -508,9 +508,9 @@ class CaseIncident:
                         "severity": severity,
                         "priority": priority,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "update": update,
                         "response_types": response_types,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
+                        "update": update,
                     }
                 },
             )
