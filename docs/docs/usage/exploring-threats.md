@@ -23,6 +23,18 @@ When clicking on the Threat actor (Group or Individual) tabs at the top left, yo
 
 At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your [Custom Dashboards](dashboards.md).
 
+### Demographic and Biographic Information
+
+Individual Threat actors have unique properties to represent demographic and biographic information. Currently tracked demographics include their countries of residence, citizenships, date of birth, gender, and more.
+
+![Threat Actor (Individual) Demographics](assets/threat-actor-individual-demographics.png)
+
+Biographic information includes their eye and hair color, as well as known heights and weights.
+
+![Threat Actor (Individual) Biographics](assets/threat-actor-individual-biographics.png)
+
+An Individual Threat actor can also be tracked as employed by an Organization or a Threat Actor group. This relationship can be set under the knowledge tab.
+
 ### Visualizing Knowledge associated with a Threat actor
 
 When clicking on a Threat actor Card, you land on its Overview tab. For a Threat actor, the following tabs are accessible:
