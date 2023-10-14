@@ -311,8 +311,7 @@ const Settings = () => {
                       style={{ marginTop: 15 }}
                     >
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -455,8 +454,7 @@ const Settings = () => {
                     <div className="clearfix" />
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -569,7 +567,10 @@ const Settings = () => {
                               {t(
                                 'For all other usages, you (and your organization) should have entered in a',
                               )}{' '}
-                              <a href="https://filigran.io/offering/subscribe" target="_blank">
+                              <a
+                                href="https://filigran.io/offering/subscribe"
+                                target="_blank"
+                              >
                                 {t('Filigran Enterprise agreement')}
                               </a>
                               .
@@ -621,14 +622,24 @@ const Settings = () => {
                       </Dialog>
                     </Paper>
                   </Grid>
+                  <Grid item={true} xs={8} style={{ marginTop: 30 }}>
+                    <SettingsMessages settings={settings} />
+                  </Grid>
+                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
+                    <SettingsAnalytics
+                      settings={settings}
+                      handleChangeFocus={handleChangeFocus}
+                      handleSubmitField={handleSubmitField}
+                      isEnterpriseEdition={isEnterpriseEdition}
+                    />
+                  </Grid>
                   <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Dark theme')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -834,8 +845,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -1066,14 +1076,6 @@ const Settings = () => {
                       </List>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-                    <SettingsMessages settings={settings} />
-                  </Grid>
-                  {isEnterpriseEdition
-                    && <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-                      <SettingsAnalytics settings={settings} handleChangeFocus={handleChangeFocus} handleSubmitField={handleSubmitField} />
-                    </Grid>
-                  }
                 </Grid>
               </>
             );

@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: '100%',
     minHeight: '100%',
     marginTop: theme.spacing(1.5),
-    padding: theme.spacing(2),
+    padding: '10px 20px 10px 20px',
     borderRadius: 6,
   },
   drawerPaper: {
