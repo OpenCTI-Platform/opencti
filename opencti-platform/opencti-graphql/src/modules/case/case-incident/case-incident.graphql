@@ -240,12 +240,12 @@ input CaseIncidentAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
-  file: Upload
-  clientMutationId: String
-  update: Boolean
   response_types: [String!]
   caseTemplates: [String!]
   x_opencti_workflow_id: String
+  file: Upload
+  clientMutationId: String
+  update: Boolean
 }
 
 type Mutation {
