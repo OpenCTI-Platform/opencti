@@ -22,6 +22,8 @@ const createRedisSessionStore = () => {
 const createSessionMiddleware = () => {
   const isRedisSession = sessionManager === 'shared';
   const store = isRedisSession ? createRedisSessionStore() : createMemorySessionStore();
+  const isSessionCookie = conf.get('app:session_cookie') ?? false;
+  const sessionTimeout = isSessionCookie ? undefined : conf.get('app:session_timeout');
   return {
     store,
     session: session({
@@ -33,7 +35,7 @@ const createSessionMiddleware = () => {
       saveUninitialized: false,
       resave: false,
       cookie: {
-        _expires: conf.get('app:session_timeout'),
+        _expires: sessionTimeout,
         secure: booleanConf('app:https_cert:cookie_secure', false),
         sameSite: 'lax',
       },

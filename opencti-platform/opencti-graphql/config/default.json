@@ -46,6 +46,7 @@
     },
     "request_timeout": 1200000,
     "session_timeout": 1200000,
+    "session_cookie": false,
     "locked_account_statuses": {
       "Inactive": "Your account has been marked inactive. If you would like to reactivate your account, please contact your administrator.",
       "Locked": "Your account has been locked for security reasons. Please contact your administrator."
