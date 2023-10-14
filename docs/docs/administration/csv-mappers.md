@@ -11,7 +11,7 @@ and every specific CSV structure you might need to ingest in the platform.
 
 ## Create a new CSV Mapper
 
-In menu _Data_, select the submenu _Ingestion_, and on the right menu select _CSV Mappers_. You are presented with a list of all the mappers set in the platform.
+In menu _Data_, select the submenu _Processing_, and on the right menu select _CSV Mappers_. You are presented with a list of all the mappers set in the platform.
 Note that you can delete or update any mapper from the context menu via the burger button beside each mapper.
 
 Click on the button __+__ in the bottom-right corner to add a new Mapper.
