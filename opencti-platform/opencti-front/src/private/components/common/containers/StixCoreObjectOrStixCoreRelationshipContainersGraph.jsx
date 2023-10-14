@@ -78,7 +78,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       R.map((n) => ({
         label: n,
         tlabel: props.t(
-          `${n.relationship_type ? 'relationship_' : 'entity_'}${n.entity_type}`,
+          `${n.relationship_type ? 'relationship_' : 'entity_'}${
+            n.entity_type
+          }`,
         ),
       })),
       sortByLabel,
@@ -95,21 +97,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       R.uniqBy(R.prop('id')),
       sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
-    const stixCoreObjectsTypes = R.propOr(
-      allStixCoreObjectsTypes,
-      'stixCoreObjectsTypes',
-      params,
-    );
-    const markedBy = R.propOr(
-      allMarkedBy.map((n) => n.id),
-      'markedBy',
-      params,
-    );
-    const createdBy = R.propOr(
-      allCreatedBy.map((n) => n.id),
-      'createdBy',
-      params,
-    );
+    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
+    const markedBy = R.propOr([], 'markedBy', params);
+    const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
@@ -207,7 +197,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -325,8 +318,24 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     }
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
+    if (adjust) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, px);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, px);
+    }
   }
 
   onZoom() {

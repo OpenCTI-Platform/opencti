@@ -954,21 +954,9 @@ class InvestigationGraphComponent extends Component {
       R.uniqBy(R.prop('id')),
       sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
-    const stixCoreObjectsTypes = R.propOr(
-      allStixCoreObjectsTypes,
-      'stixCoreObjectsTypes',
-      params,
-    );
-    const markedBy = R.propOr(
-      allMarkedBy.map((n) => n.id),
-      'markedBy',
-      params,
-    );
-    const createdBy = R.propOr(
-      allCreatedBy.map((n) => n.id),
-      'createdBy',
-      params,
-    );
+    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
+    const markedBy = R.propOr([], 'markedBy', params);
+    const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
 
     this.fetchObjectRelCounts(this.graphObjects);
@@ -1350,9 +1338,9 @@ class InvestigationGraphComponent extends Component {
             allStixCoreObjectsTypes,
             allMarkedBy,
             allCreatedBy,
-            stixCoreObjectsTypes: allStixCoreObjectsTypes,
-            markedBy: allMarkedBy.map((n) => n.id),
-            createdBy: allCreatedBy.map((n) => n.id),
+            stixCoreObjectsTypes: [],
+            markedBy: [],
+            createdBy: [],
             keyword: '',
           },
           () => {
@@ -1365,14 +1353,22 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleZoomToFit(adjust = false) {
-    if (adjust === true) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
+    if (adjust) {
       const container = document.getElementById('container');
       const { offsetWidth, offsetHeight } = container;
       this.setState({ width: offsetWidth, height: offsetHeight }, () => {
-        this.graph.current.zoomToFit(400, 150);
+        this.graph.current.zoomToFit(400, px);
       });
     } else {
-      this.graph.current.zoomToFit(400, 150);
+      this.graph.current.zoomToFit(400, px);
     }
   }
 

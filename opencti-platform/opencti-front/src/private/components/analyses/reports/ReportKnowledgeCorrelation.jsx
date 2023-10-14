@@ -565,8 +565,24 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
+    if (adjust) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, px);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, px);
+    }
   }
 
   onZoom() {

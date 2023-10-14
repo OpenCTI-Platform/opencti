@@ -11,7 +11,11 @@ import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import {
   applyFilters,
   buildGraphData,
@@ -24,7 +28,10 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
 import {
@@ -468,21 +475,9 @@ class GroupingKnowledgeGraphComponent extends Component {
       R.uniqBy(R.prop('id')),
       sortByName,
     )(nodesAndLinks);
-    const stixCoreObjectsTypes = R.propOr(
-      allStixCoreObjectsTypes,
-      'stixCoreObjectsTypes',
-      params,
-    );
-    const markedBy = R.propOr(
-      allMarkedBy.map((n) => n.id),
-      'markedBy',
-      params,
-    );
-    const createdBy = R.propOr(
-      allCreatedBy.map((n) => n.id),
-      'createdBy',
-      params,
-    );
+    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
+    const markedBy = R.propOr([], 'markedBy', params);
+    const createdBy = R.propOr([], 'createdBy', params);
     const graphWithFilters = applyFilters(
       this.graphData,
       stixCoreObjectsTypes,
@@ -603,7 +598,10 @@ class GroupingKnowledgeGraphComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -778,9 +776,9 @@ class GroupingKnowledgeGraphComponent extends Component {
           allStixCoreObjectsTypes,
           allMarkedBy,
           allCreatedBy,
-          stixCoreObjectsTypes: allStixCoreObjectsTypes,
-          markedBy: allMarkedBy.map((n) => n.id),
-          createdBy: allCreatedBy.map((n) => n.id),
+          stixCoreObjectsTypes: [],
+          markedBy: [],
+          createdBy: [],
           keyword: '',
         },
         () => {
@@ -1367,7 +1365,9 @@ class GroupingKnowledgeGraphComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter((a) => !ignoredStixCoreObjectsTypes.includes(a))}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter(
+                  (a) => !ignoredStixCoreObjectsTypes.includes(a),
+                )}
                 currentStixCoreObjectsTypes={stixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}

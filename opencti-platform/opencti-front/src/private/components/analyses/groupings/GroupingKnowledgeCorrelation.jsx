@@ -11,7 +11,11 @@ import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import {
   buildCorrelationData,
   computeTimeRangeInterval,
@@ -416,7 +420,10 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -579,8 +586,24 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     );
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
+    if (adjust) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, px);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, px);
+    }
   }
 
   onZoom() {
@@ -945,283 +968,290 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
-            <GroupingKnowledgeGraphBar
-          handleToggle3DMode={this.handleToggle3DMode.bind(this)}
-          currentMode3D={mode3D}
-          handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
-          currentModeTree={modeTree}
-          handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
-          currentModeFixed={modeFixed}
-          handleZoomToFit={this.handleZoomToFit.bind(this)}
-          handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
-            this,
-          )}
-          handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(
-            this,
-          )}
-          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
-            this,
-          )}
-          stixCoreObjectsTypes={stixCoreObjectsTypes}
-          currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
-          currentSelectRectangleModeFree={selectRectangleModeFree}
-          currentSelectModeFree={selectModeFree}
-          selectModeFreeReady={selectModeFreeReady}
-          markedBy={markedBy}
-          currentMarkedBy={currentMarkedBy}
-          createdBy={createdBy}
-          currentCreatedBy={currentCreatedBy}
-          handleSelectAll={this.handleSelectAll.bind(this)}
-          handleSelectByType={this.handleSelectByType.bind(this)}
-          grouping={grouping}
-          onAdd={false}
-          onDelete={false}
-          onAddRelation={false}
-          handleDeleteSelected={false}
-          selectedNodes={Array.from(this.selectedNodes)}
-          selectedLinks={Array.from(this.selectedLinks)}
-          numberOfSelectedNodes={numberOfSelectedNodes}
-          numberOfSelectedLinks={numberOfSelectedLinks}
-          handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
-          handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
-            this,
-          )}
-          handleResetLayout={this.handleResetLayout.bind(this)}
-          displayTimeRange={displayTimeRange}
-          handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
-            this,
-          )}
-          timeRangeInterval={timeRangeInterval}
-          selectedTimeRangeInterval={selectedTimeRangeInterval}
-          handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
-          timeRangeValues={timeRangeValues}
-          handleSearch={this.handleSearch.bind(this)}
-          navOpen={navOpen}
-        />
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-            navOpen={navOpen}
-          />
-        )}
-        {mode3D ? (
-          <ForceGraph3D
-            ref={this.graph}
-            width={width}
-            height={height}
-            backgroundColor={theme.palette.background.default}
-            graphData={graphData}
-            nodeThreeObjectExtend={true}
-            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkWidth={0.2}
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            linkThreeObjectExtend={true}
-            linkThreeObject={(link) => {
-              const sprite = new SpriteText(link.label);
-              sprite.color = 'lightgrey';
-              sprite.textHeight = 1.5;
-              return sprite;
-            }}
-            linkPositionUpdate={(sprite, { start, end }) => {
-              const middlePos = Object.assign(
-                ...['x', 'y', 'z'].map((c) => ({
-                  [c]: start[c] + (end[c] - start[c]) / 2,
-                })),
-              );
-              Object.assign(sprite.position, middlePos);
-            }}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
-              }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
-                      // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
+              <GroupingKnowledgeGraphBar
+                handleToggle3DMode={this.handleToggle3DMode.bind(this)}
+                currentMode3D={mode3D}
+                handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
+                currentModeTree={modeTree}
+                handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
+                currentModeFixed={modeFixed}
+                handleZoomToFit={this.handleZoomToFit.bind(this)}
+                handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
+                handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+                  this,
+                )}
+                handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
+                handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(
+                  this,
+                )}
+                handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+                  this,
+                )}
+                stixCoreObjectsTypes={stixCoreObjectsTypes}
+                currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
+                currentSelectRectangleModeFree={selectRectangleModeFree}
+                currentSelectModeFree={selectModeFree}
+                selectModeFreeReady={selectModeFreeReady}
+                markedBy={markedBy}
+                currentMarkedBy={currentMarkedBy}
+                createdBy={createdBy}
+                currentCreatedBy={currentCreatedBy}
+                handleSelectAll={this.handleSelectAll.bind(this)}
+                handleSelectByType={this.handleSelectByType.bind(this)}
+                grouping={grouping}
+                onAdd={false}
+                onDelete={false}
+                onAddRelation={false}
+                handleDeleteSelected={false}
+                selectedNodes={Array.from(this.selectedNodes)}
+                selectedLinks={Array.from(this.selectedLinks)}
+                numberOfSelectedNodes={numberOfSelectedNodes}
+                numberOfSelectedLinks={numberOfSelectedLinks}
+                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
+                  this,
+                )}
+                handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
+                  this,
+                )}
+                handleResetLayout={this.handleResetLayout.bind(this)}
+                displayTimeRange={displayTimeRange}
+                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
+                  this,
+                )}
+                timeRangeInterval={timeRangeInterval}
+                selectedTimeRangeInterval={selectedTimeRangeInterval}
+                handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
+                timeRangeValues={timeRangeValues}
+                handleSearch={this.handleSearch.bind(this)}
+                navOpen={navOpen}
+              />
+              {selectedEntities.length > 0 && (
+                <EntitiesDetailsRightsBar
+                  selectedEntities={selectedEntities}
+                  navOpen={navOpen}
+                />
+              )}
+              {mode3D ? (
+                <ForceGraph3D
+                  ref={this.graph}
+                  width={width}
+                  height={height}
+                  backgroundColor={theme.palette.background.default}
+                  graphData={graphData}
+                  nodeThreeObjectExtend={true}
+                  nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
+                  }
+                  linkColor={(link) => (this.selectedLinks.has(link)
+                    ? theme.palette.secondary.main
+                    : theme.palette.primary.main)
+                  }
+                  linkWidth={0.2}
+                  linkDirectionalArrowLength={3}
+                  linkDirectionalArrowRelPos={0.99}
+                  linkThreeObjectExtend={true}
+                  linkThreeObject={(link) => {
+                    const sprite = new SpriteText(link.label);
+                    sprite.color = 'lightgrey';
+                    sprite.textHeight = 1.5;
+                    return sprite;
+                  }}
+                  linkPositionUpdate={(sprite, { start, end }) => {
+                    const middlePos = Object.assign(
+                      ...['x', 'y', 'z'].map((c) => ({
+                        [c]: start[c] + (end[c] - start[c]) / 2,
+                      })),
                     );
+                    Object.assign(sprite.position, middlePos);
+                  }}
+                  onNodeClick={this.handleNodeClick.bind(this)}
+                  onNodeRightClick={(node) => {
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
+                    node.fx = undefined;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
+                    node.fy = undefined;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fz = selNode.z;
-                  });
-              }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = node.z;
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
-        ) : (
-          <>
-            <LassoSelection
-              width={graphWidth}
-              height={graphHeight}
-              activated={selectModeFree && selectModeFreeReady}
-              graphDataNodes={graphData.nodes}
-              graph={this.graph}
-              setSelectedNodes={(nodes) => {
-                this.selectedNodes.clear();
-                Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
-                this.setState({ numberOfSelectedNodes: nodes.size });
-              }}
-            />
-            <RectangleSelection
-              onSelect={(e, coords) => {
-                this.handleRectSelectMove(e, coords);
-              }}
-              onMouseUp={(e) => {
-                this.handleRectSelectUp(e);
-              }}
-              style={{
-                backgroundColor: hexToRGB(
-                  theme.palette.background.accent,
-                  0.3,
-                ),
-                borderColor: theme.palette.warning.main,
-              }}
-              disabled={!selectRectangleModeFree}
-            >
-          <ForceGraph2D
-            ref={this.graph}
-            width={width}
-            height={height}
-            graphData={graphData}
-            onZoom={this.onZoom.bind(this)}
-            onZoomEnd={this.handleZoomEnd.bind(this)}
-            nodeRelSize={4}
-            enablePanInteraction={
-              !selectRectangleModeFree && !selectModeFree
-            }
-            nodeCanvasObject={(
-              node,
-              ctx, //
-            ) =>
-              // eslint-disable-next-line implicit-arrow-linebreak
-              nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
-            }
-            nodePointerAreaPaint={nodeAreaPaint}
-            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-            // linkDirectionalParticleWidth={1}
-            // linkDirectionalParticleSpeed={() => 0.004}
-            linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(
-              link,
-              ctx, //
-            ) =>
-              // eslint-disable-next-line implicit-arrow-linebreak
-              linkPaint(link, ctx, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
-              }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
-                      // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
+                    node.fz = undefined;
+                    this.handleDragEnd();
+                    this.forceUpdate();
+                  }}
+                  onNodeDrag={(node, translate) => {
+                    if (this.selectedNodes.has(node)) {
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node)
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => ['x', 'y', 'z'].forEach(
+                          // eslint-disable-next-line no-param-reassign,no-return-assign
+                          (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                        ));
+                    }
+                  }}
+                  onNodeDragEnd={(node) => {
+                    if (this.selectedNodes.has(node)) {
+                      // finished moving a selected node
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node) // don't touch node being dragged
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => {
+                          ['x', 'y'].forEach(
+                            // eslint-disable-next-line no-param-reassign,no-return-assign
+                            (coord) => (selNode[`f${coord}`] = undefined),
+                          );
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fx = selNode.x;
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fy = selNode.y;
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fz = selNode.z;
+                        });
+                    }
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
+                    node.fx = node.x;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                  });
-              }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              this.handleDragEnd();
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
-          </RectangleSelection>
-          </>
-        )}
+                    node.fy = node.y;
+                    // eslint-disable-next-line no-param-reassign
+                    node.fz = node.z;
+                  }}
+                  onLinkClick={this.handleLinkClick.bind(this)}
+                  onBackgroundClick={this.handleBackgroundClick.bind(this)}
+                  cooldownTicks={modeFixed ? 0 : undefined}
+                  dagMode={
+                    // eslint-disable-next-line no-nested-ternary
+                    modeTree === 'horizontal'
+                      ? 'lr'
+                      : modeTree === 'vertical'
+                        ? 'td'
+                        : undefined
+                  }
+                />
+              ) : (
+                <>
+                  <LassoSelection
+                    width={graphWidth}
+                    height={graphHeight}
+                    activated={selectModeFree && selectModeFreeReady}
+                    graphDataNodes={graphData.nodes}
+                    graph={this.graph}
+                    setSelectedNodes={(nodes) => {
+                      this.selectedNodes.clear();
+                      Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
+                      this.setState({ numberOfSelectedNodes: nodes.size });
+                    }}
+                  />
+                  <RectangleSelection
+                    onSelect={(e, coords) => {
+                      this.handleRectSelectMove(e, coords);
+                    }}
+                    onMouseUp={(e) => {
+                      this.handleRectSelectUp(e);
+                    }}
+                    style={{
+                      backgroundColor: hexToRGB(
+                        theme.palette.background.accent,
+                        0.3,
+                      ),
+                      borderColor: theme.palette.warning.main,
+                    }}
+                    disabled={!selectRectangleModeFree}
+                  >
+                    <ForceGraph2D
+                      ref={this.graph}
+                      width={width}
+                      height={height}
+                      graphData={graphData}
+                      onZoom={this.onZoom.bind(this)}
+                      onZoomEnd={this.handleZoomEnd.bind(this)}
+                      nodeRelSize={4}
+                      enablePanInteraction={
+                        !selectRectangleModeFree && !selectModeFree
+                      }
+                      nodeCanvasObject={(
+                        node,
+                        ctx, //
+                      ) =>
+                        // eslint-disable-next-line implicit-arrow-linebreak
+                        nodePaint(
+                          node,
+                          node.color,
+                          ctx,
+                          this.selectedNodes.has(node),
+                        )
+                      }
+                      nodePointerAreaPaint={nodeAreaPaint}
+                      // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+                      // linkDirectionalParticleWidth={1}
+                      // linkDirectionalParticleSpeed={() => 0.004}
+                      linkCanvasObjectMode={() => 'after'}
+                      linkCanvasObject={(
+                        link,
+                        ctx, //
+                      ) =>
+                        // eslint-disable-next-line implicit-arrow-linebreak
+                        linkPaint(link, ctx, theme.palette.text.primary)
+                      }
+                      linkColor={(link) => (this.selectedLinks.has(link)
+                        ? theme.palette.secondary.main
+                        : theme.palette.primary.main)
+                      }
+                      linkDirectionalArrowLength={3}
+                      linkDirectionalArrowRelPos={0.99}
+                      onNodeClick={this.handleNodeClick.bind(this)}
+                      onNodeRightClick={(node) => {
+                        // eslint-disable-next-line no-param-reassign
+                        node.fx = undefined;
+                        // eslint-disable-next-line no-param-reassign
+                        node.fy = undefined;
+                        this.handleDragEnd();
+                        this.forceUpdate();
+                      }}
+                      onNodeDrag={(node, translate) => {
+                        if (this.selectedNodes.has(node)) {
+                          [...this.selectedNodes]
+                            .filter((selNode) => selNode !== node)
+                            // eslint-disable-next-line no-shadow
+                            .forEach((selNode) => ['x', 'y'].forEach(
+                              // eslint-disable-next-line no-param-reassign,no-return-assign
+                              (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                            ));
+                        }
+                      }}
+                      onNodeDragEnd={(node) => {
+                        if (this.selectedNodes.has(node)) {
+                          // finished moving a selected node
+                          [...this.selectedNodes]
+                            .filter((selNode) => selNode !== node) // don't touch node being dragged
+                            // eslint-disable-next-line no-shadow
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach(
+                                // eslint-disable-next-line no-param-reassign,no-return-assign
+                                (coord) => (selNode[`f${coord}`] = undefined),
+                              );
+                              // eslint-disable-next-line no-param-reassign
+                              selNode.fx = selNode.x;
+                              // eslint-disable-next-line no-param-reassign
+                              selNode.fy = selNode.y;
+                            });
+                        }
+                        // eslint-disable-next-line no-param-reassign
+                        node.fx = node.x;
+                        // eslint-disable-next-line no-param-reassign
+                        node.fy = node.y;
+                        this.handleDragEnd();
+                      }}
+                      onLinkClick={this.handleLinkClick.bind(this)}
+                      onBackgroundClick={this.handleBackgroundClick.bind(this)}
+                      cooldownTicks={modeFixed ? 0 : undefined}
+                      dagMode={
+                        // eslint-disable-next-line no-nested-ternary
+                        modeTree === 'horizontal'
+                          ? 'lr'
+                          : modeTree === 'vertical'
+                            ? 'td'
+                            : undefined
+                      }
+                    />
+                  </RectangleSelection>
+                </>
+              )}
             </>
           );
         }}

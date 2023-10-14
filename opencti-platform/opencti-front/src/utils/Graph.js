@@ -532,9 +532,9 @@ export const applyNodeFilters = (
     || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
   return R.pipe(
     R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
-    R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
-    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
-    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
+    R.filter((n) => !R.includes(n.entity_type, stixCoreObjectsTypes)),
+    R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
+    R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
     R.filter(
       (n) => interval.length === 0
         || isNone(n.defaultDate)
@@ -550,8 +550,8 @@ export const applyLinkFilters = (
   createdBy = [],
   interval = [],
 ) => R.pipe(
-  R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
-  R.filter((n) => R.includes(n.createdBy.id, createdBy)),
+  R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
+  R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
   R.filter(
     (n) => interval.length === 0
         || isNone(n.defaultDate)

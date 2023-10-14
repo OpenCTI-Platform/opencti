@@ -1,5 +1,15 @@
 import * as R from 'ramda';
-import { assoc, dissoc, head, last, map, mergeLeft, pipe, split, toPairs } from 'ramda';
+import {
+  assoc,
+  dissoc,
+  head,
+  last,
+  map,
+  mergeLeft,
+  pipe,
+  split,
+  toPairs,
+} from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {
@@ -26,6 +36,11 @@ const buildParamsFromHistory = (params) => {
     dissoc('currentPdfPageNumber'),
     dissoc('mentions'),
     dissoc('mentionKeyword'),
+    dissoc('allCreatedBy'),
+    dissoc('allMarkedBy'),
+    dissoc('allStixCoreObjectsTypes'),
+    dissoc('rectSelected'),
+    dissoc('navOpen'),
   )(params);
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
@@ -60,6 +75,8 @@ const saveParamsToLocalStorage = (localStorageKey, params) => {
     dissoc('allCreatedBy'),
     dissoc('allMarkedBy'),
     dissoc('allStixCoreObjectsTypes'),
+    dissoc('rectSelected'),
+    dissoc('navOpen'),
   )(params);
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
 };
@@ -220,6 +237,8 @@ export const cleanFilters = (filters, availableFilterKeys) => {
   }
 
   const filterKeys = Object.keys(filters);
-  const omitKeys = filterKeys.filter((k) => !availableFilterKeys.some((a) => k.startsWith(a)));
+  const omitKeys = filterKeys.filter(
+    (k) => !availableFilterKeys.some((a) => k.startsWith(a)),
+  );
   return R.omit(omitKeys, filters);
 };

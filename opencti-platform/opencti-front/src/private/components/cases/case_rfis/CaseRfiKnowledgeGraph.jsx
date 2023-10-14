@@ -11,7 +11,11 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   applyFilters,
@@ -27,7 +31,10 @@ import {
 } from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { caseRfiMutationFieldPatch } from './CaseRfiEditionOverview';
 import CaseRfiKnowledgeGraphBar from './CaseRfiKnowledgeGraphBar';
@@ -507,21 +514,9 @@ class CaseRfiKnowledgeGraphComponent extends Component {
       R.uniqBy(R.prop('id')),
       sortByName,
     )(nodesAndLinks);
-    const stixCoreObjectsTypes = R.propOr(
-      allStixCoreObjectsTypes,
-      'stixCoreObjectsTypes',
-      params,
-    );
-    const markedBy = R.propOr(
-      allMarkedBy.map((n) => n.id),
-      'markedBy',
-      params,
-    );
-    const createdBy = R.propOr(
-      allCreatedBy.map((n) => n.id),
-      'createdBy',
-      params,
-    );
+    const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
+    const markedBy = R.propOr([], 'markedBy', params);
+    const createdBy = R.propOr([], 'createdBy', params);
     const graphWithFilters = applyFilters(
       this.graphData,
       stixCoreObjectsTypes,
@@ -643,7 +638,10 @@ class CaseRfiKnowledgeGraphComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -818,9 +816,9 @@ class CaseRfiKnowledgeGraphComponent extends Component {
           allStixCoreObjectsTypes,
           allMarkedBy,
           allCreatedBy,
-          stixCoreObjectsTypes: allStixCoreObjectsTypes,
-          markedBy: allMarkedBy.map((n) => n.id),
-          createdBy: allCreatedBy.map((n) => n.id),
+          stixCoreObjectsTypes: [],
+          markedBy: [],
+          createdBy: [],
           keyword: '',
         },
         () => {
@@ -832,14 +830,22 @@ class CaseRfiKnowledgeGraphComponent extends Component {
   }
 
   handleZoomToFit(adjust = false) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
     if (adjust) {
       const container = document.getElementById('container');
       const { offsetWidth, offsetHeight } = container;
       this.setState({ width: offsetWidth, height: offsetHeight }, () => {
-        this.graph.current.zoomToFit(400, 150);
+        this.graph.current.zoomToFit(400, px);
       });
     } else {
-      this.graph.current.zoomToFit(400, 150);
+      this.graph.current.zoomToFit(400, px);
     }
   }
 
@@ -1433,7 +1439,9 @@ class CaseRfiKnowledgeGraphComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter((a) => !ignoredStixCoreObjectsTypes.includes(a))}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter(
+                  (a) => !ignoredStixCoreObjectsTypes.includes(a),
+                )}
                 currentStixCoreObjectsTypes={stixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}

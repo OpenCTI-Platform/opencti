@@ -11,7 +11,11 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   buildCaseCorrelationData,
@@ -396,7 +400,10 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -559,8 +566,24 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     );
   }
 
-  handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+  handleZoomToFit(adjust = false) {
+    let px = 150;
+    if (this.graphData.nodes.length === 1) {
+      px = 500;
+    } else if (this.graphData.nodes.length < 4) {
+      px = 300;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 200;
+    }
+    if (adjust) {
+      const container = document.getElementById('container');
+      const { offsetWidth, offsetHeight } = container;
+      this.setState({ width: offsetWidth, height: offsetHeight }, () => {
+        this.graph.current.zoomToFit(400, px);
+      });
+    } else {
+      this.graph.current.zoomToFit(400, px);
+    }
   }
 
   onZoom() {
@@ -922,7 +945,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
           const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
           const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
           return (
-              <>
+            <>
               <CaseRftKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
                 currentMode3D={mode3D}
@@ -962,7 +985,9 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
-                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
+                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
+                  this,
+                )}
                 handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
                   this,
                 )}
@@ -1098,7 +1123,10 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                       this.handleRectSelectUp(e);
                     }}
                     style={{
-                      backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+                      backgroundColor: hexToRGB(
+                        theme.palette.background.accent,
+                        0.3,
+                      ),
                       borderColor: theme.palette.warning.main,
                     }}
                     disabled={!selectRectangleModeFree}
@@ -1208,7 +1236,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                   </RectangleSelection>
                 </>
               )}
-              </>
+            </>
           );
         }}
       </UserContext.Consumer>

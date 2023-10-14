@@ -604,10 +604,7 @@ class InvestigationGraphBar extends Component {
                         size="large"
                       >
                         <Badge
-                          badgeContent={Math.abs(
-                            currentStixCoreObjectsTypes.length
-                              - stixCoreObjectsTypes.length,
-                          )}
+                          badgeContent={currentStixCoreObjectsTypes.length}
                           color="secondary"
                         >
                           <FilterListOutlined />
@@ -644,9 +641,11 @@ class InvestigationGraphBar extends Component {
                           <ListItemIcon style={{ minWidth: 40 }}>
                             <Checkbox
                               edge="start"
-                              checked={currentStixCoreObjectsTypes.includes(
-                                stixCoreObjectType,
-                              )}
+                              checked={
+                                !currentStixCoreObjectsTypes.includes(
+                                  stixCoreObjectType,
+                                )
+                              }
                               disableRipple={true}
                             />
                           </ListItemIcon>
@@ -665,9 +664,7 @@ class InvestigationGraphBar extends Component {
                         size="large"
                       >
                         <Badge
-                          badgeContent={Math.abs(
-                            currentMarkedBy.length - markedBy.length,
-                          )}
+                          badgeContent={currentMarkedBy.length}
                           color="secondary"
                         >
                           <CenterFocusStrongOutlined />
@@ -704,9 +701,9 @@ class InvestigationGraphBar extends Component {
                           <ListItemIcon style={{ minWidth: 40 }}>
                             <Checkbox
                               edge="start"
-                              checked={currentMarkedBy.includes(
-                                markingDefinition.id,
-                              )}
+                              checked={
+                                !currentMarkedBy.includes(markingDefinition.id)
+                              }
                               disableRipple={true}
                             />
                           </ListItemIcon>
@@ -725,9 +722,7 @@ class InvestigationGraphBar extends Component {
                         size="large"
                       >
                         <Badge
-                          badgeContent={Math.abs(
-                            currentCreatedBy.length - createdBy.length,
-                          )}
+                          badgeContent={currentCreatedBy.length}
                           color="secondary"
                         >
                           <AccountBalanceOutlined />
@@ -764,9 +759,9 @@ class InvestigationGraphBar extends Component {
                           <ListItemIcon style={{ minWidth: 40 }}>
                             <Checkbox
                               edge="start"
-                              checked={currentCreatedBy.includes(
-                                createdByRef.id,
-                              )}
+                              checked={
+                                !currentCreatedBy.includes(createdByRef.id)
+                              }
                               disableRipple={true}
                             />
                           </ListItemIcon>
