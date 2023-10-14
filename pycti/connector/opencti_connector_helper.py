@@ -1069,7 +1069,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     delivery_mode=2, content_encoding="utf-8"  # make message persistent
                 ),
             )
-            logging.info("Bundle has been sent")
+            LOGGER.debug("Bundle has been sent")
             self.metric.inc("bundle_send")
         except (UnroutableError, NackError) as e:
             LOGGER.error("Unable to send bundle, retry...%s", e)
