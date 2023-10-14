@@ -41,6 +41,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:request_timeout         | APP__REQUEST_TIMEOUT       | 1200000               | Request timeout, in ms (default 20 minutes)                      |
 | app:session_timeout         | APP__SESSION_TIMEOUT       | 0                     | Session timeout, in ms (default 0 minute - disabled)             |
 | app:session_idle_timeout    | APP__SESSION_IDLE_TIMEOUT  | 1200000               | Idle timeout, in ms (default 20 minutes)                         |
+| app:session_cookie          | APP__SESSION_COOKIE        | false                 | Use memory/session cookie instead of persistent one              |
 | app:admin:email             | APP__ADMIN__EMAIL          | admin@opencti.io      | Default login email of the admin user                            |
 | app:admin:password          | APP__ADMIN__PASSWORD       | ChangeMe              | Default password of the admin user                               |
 | app:admin:token             | APP__ADMIN__TOKEN          | ChangeMe              | Default token (must be a valid UUIDv4)                           |
