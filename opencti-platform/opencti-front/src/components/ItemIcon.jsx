@@ -369,6 +369,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'media-content':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
+    case 'sighting':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
     case 'reduce':
       return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;

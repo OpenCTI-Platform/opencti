@@ -321,6 +321,7 @@ const WorkbenchFileContentComponent = ({
   const [stixDomainObjects, setStixDomainObjects] = useState([]);
   const [stixCyberObservables, setStixCyberObservables] = useState([]);
   const [stixCoreRelationships, setStixCoreRelationships] = useState([]);
+  const [stixSightings, setStixSightings] = useState([]);
   const [containers, setContainers] = useState([]);
 
   const [selectedElements, setSelectedElements] = useState({});
@@ -372,9 +373,13 @@ const WorkbenchFileContentComponent = ({
     const newContainers = objects.filter(
       (n) => typesContainers.includes(n.type) && n.id,
     );
+    const newStixSightings = objects.filter(
+      (n) => n.type === 'sighting' && n.id,
+    );
     setStixDomainObjects(newStixDomainObjects);
     setStixCyberObservables(newStixCyberObservables);
     setStixCoreRelationships(newStixCoreRelationships);
+    setStixSightings(newStixSightings);
     setContainers(newContainers);
   };
   // endregion
@@ -392,6 +397,7 @@ const WorkbenchFileContentComponent = ({
     const numberOfObjects = stixDomainObjects.length
       + stixCyberObservables.length
       + stixCoreRelationships.length
+      + stixSightings.length
       + containers.length;
     if (numberOfObjects > 0) {
       let currentEntityId = null;
@@ -425,6 +431,7 @@ const WorkbenchFileContentComponent = ({
           ...stixDomainObjects,
           ...stixCyberObservables,
           ...stixCoreRelationships,
+          ...stixSightings,
           ...containers,
         ],
       };
@@ -447,6 +454,7 @@ const WorkbenchFileContentComponent = ({
       JSON.stringify(stixDomainObjects),
       JSON.stringify(stixCyberObservables),
       JSON.stringify(stixCoreRelationships),
+      JSON.stringify(stixSightings),
       JSON.stringify(containers),
     ],
   );
@@ -465,6 +473,8 @@ const WorkbenchFileContentComponent = ({
   } else if (currentTab === 2) {
     elements = stixCoreRelationships;
   } else if (currentTab === 3) {
+    elements = stixSightings;
+  } else if (currentTab === 4) {
     elements = containers;
   }
   if (selectAll) {
@@ -611,6 +621,8 @@ const WorkbenchFileContentComponent = ({
     } else if (currentTab === 2) {
       objects = stixCoreRelationships;
     } else if (currentTab === 3) {
+      objects = stixSightings;
+    } else if (currentTab === 4) {
       objects = containers;
     }
     let objectsToBeDeletedIds;
@@ -633,6 +645,9 @@ const WorkbenchFileContentComponent = ({
     let finalStixCoreRelationships = stixCoreRelationships.filter(
       (n) => !objectsToBeDeletedIds.includes(n.id),
     );
+    let finalStixSightings = stixSightings.filter(
+      (n) => !objectsToBeDeletedIds.includes(n.id),
+    );
     let finalContainers = containers.filter(
       (n) => !objectsToBeDeletedIds.includes(n.id),
     );
@@ -645,6 +660,9 @@ const WorkbenchFileContentComponent = ({
       ? R.dissoc('created_by_ref', n)
       : n));
     finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
+      ? R.dissoc('created_by_ref', n)
+      : n));
+    finalStixSightings = finalStixSightings.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
       ? R.dissoc('created_by_ref', n)
       : n));
     finalContainers = finalContainers.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
@@ -673,6 +691,13 @@ const WorkbenchFileContentComponent = ({
       ),
       n,
     ));
+    finalStixSightings = finalStixSightings.map((n) => R.assoc(
+      'object_marking_refs',
+      n.object_marking_refs?.filter(
+        (o) => !objectsToBeDeletedIds.includes(o),
+      ),
+      n,
+    ));
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_marking_refs',
       n.object_marking_refs?.filter(
@@ -687,6 +712,12 @@ const WorkbenchFileContentComponent = ({
           || objectsToBeDeletedIds.includes(n.target_ref),
       )
       .map((n) => n.id);
+    const stixSightingsToRemove = finalStixSightings
+      .filter(
+        (n) => objectsToBeDeletedIds.includes(n.sighting_of_ref)
+          || objectsToBeDeletedIds.includes(n.where_sighted_refs?.at(0)),
+      )
+      .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
       (n.object_refs || []).filter(
@@ -698,9 +729,13 @@ const WorkbenchFileContentComponent = ({
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
+    finalStixSightings = finalStixSightings.filter(
+      (n) => !stixSightingsToRemove.includes(n.id),
+    );
     setStixDomainObjects(finalStixDomainObjects);
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
+    setStixSightings(finalStixSightings);
     setContainers(finalContainers);
     setSelectedElements(null);
     setDeselectedElements(null);
@@ -788,6 +823,7 @@ const WorkbenchFileContentComponent = ({
         ...stixDomainObjects,
         ...stixCyberObservables,
         ...stixCoreRelationships,
+        ...stixSightings,
         ...containers,
       ],
     };
@@ -845,6 +881,8 @@ const WorkbenchFileContentComponent = ({
     } else if (currentTab === 2) {
       objects = stixCoreRelationships;
     } else if (currentTab === 3) {
+      objects = stixSightings;
+    } else if (currentTab === 4) {
       objects = containers;
     }
     let objectsToBeProcessed;
@@ -858,6 +896,7 @@ const WorkbenchFileContentComponent = ({
     let finalStixDomainObjects = stixDomainObjects;
     let finalStixCyberObservables = stixCyberObservables;
     let finalStixCoreRelationships = stixCoreRelationships;
+    let finalStixSightings = stixSightings;
     let finalContainers = containers;
     if (currentTab === 0) {
       finalStixDomainObjects = objectsToBeProcessed.map((n) => R.assoc(
@@ -887,6 +926,15 @@ const WorkbenchFileContentComponent = ({
         n,
       ));
     } else if (currentTab === 3) {
+      finalStixSightings = objectsToBeProcessed.map((n) => R.assoc(
+        'object_marking_refs',
+        R.uniq([
+          ...(n.object_marking_refs || []),
+          ...markingDefinitions.map((o) => o.id),
+        ]),
+        n,
+      ));
+    } else if (currentTab === 4) {
       finalContainers = objectsToBeProcessed.map((n) => R.assoc(
         'object_marking_refs',
         R.uniq([
@@ -904,6 +952,7 @@ const WorkbenchFileContentComponent = ({
     );
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
+    setStixSightings(finalStixSightings);
     setContainers(finalContainers);
   };
 
@@ -918,6 +967,9 @@ const WorkbenchFileContentComponent = ({
     let finalStixCoreRelationships = stixCoreRelationships.filter(
       (n) => n.id !== toDeleteObject.id,
     );
+    let finalStixSightings = stixSightings.filter(
+      (n) => n.id !== toDeleteObject.id,
+    );
     let finalContainers = containers.filter((n) => n.id !== toDeleteObject.id);
     if (toDeleteObject.type === 'identity') {
       finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === toDeleteObject.id
@@ -927,6 +979,9 @@ const WorkbenchFileContentComponent = ({
         ? R.dissoc('created_by_ref', n)
         : n));
       finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === toDeleteObject.id
+        ? R.dissoc('created_by_ref', n)
+        : n));
+      finalStixSightings = finalStixSightings.map((n) => (n.created_by_ref === toDeleteObject.id
         ? R.dissoc('created_by_ref', n)
         : n));
       finalContainers = finalContainers.map((n) => (n.created_by_ref === toDeleteObject.id
@@ -948,6 +1003,11 @@ const WorkbenchFileContentComponent = ({
         n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
         n,
       ));
+      finalStixSightings = finalStixSightings.map((n) => R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+        n,
+      ));
       finalContainers = finalContainers.map((n) => R.assoc(
         'object_marking_refs',
         n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
@@ -961,6 +1021,12 @@ const WorkbenchFileContentComponent = ({
           || n.target_ref === toDeleteObject.id,
       )
       .map((n) => n.id);
+    const stixSightingsToRemove = finalStixSightings
+      .filter(
+        (n) => n.sighting_of_ref === toDeleteObject.id
+          || n.where_sighted_refs?.at(0) === toDeleteObject.id,
+      )
+      .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
       (n.object_refs || []).filter(
@@ -972,9 +1038,13 @@ const WorkbenchFileContentComponent = ({
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
+    finalStixSightings = finalStixSightings.filter(
+      (n) => !stixSightingsToRemove.includes(n.id),
+    );
     setStixDomainObjects(finalStixDomainObjects);
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
+    setStixSightings(finalStixSightings);
     setContainers(finalContainers);
     setDeleteObject(null);
   };
@@ -1352,6 +1422,7 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixDomainObjects),
       ...R.indexBy(R.prop('id'), stixCyberObservables),
       ...R.indexBy(R.prop('id'), stixCoreRelationships),
+      ...R.indexBy(R.prop('id'), stixSightings),
     };
     const markingDefinitions = R.pluck('entity', values.objectMarking).map(
       (n) => ({
@@ -1431,6 +1502,7 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixDomainObjects),
       ...R.indexBy(R.prop('id'), stixCyberObservables),
       ...R.indexBy(R.prop('id'), stixCoreRelationships),
+      ...R.indexBy(R.prop('id'), stixSightings),
     };
     let containerElementsIds = [];
     if (containerSelectAll) {
@@ -2775,6 +2847,7 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixDomainObjects),
       ...R.indexBy(R.prop('id'), stixCyberObservables),
       ...R.indexBy(R.prop('id'), stixCoreRelationships),
+      ...R.indexBy(R.prop('id'), stixSightings),
     };
     const resolvedObjects = R.values(indexedStixObjects).map((n) => ({
       ...n,
@@ -2784,8 +2857,16 @@ const WorkbenchFileContentComponent = ({
           : t(`entity_${convertFromStixType(n.type)}`),
       default_value: defaultValue({
         ...n,
-        source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
-        target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
+        source_ref_name: defaultValue(
+          indexedStixObjects[n.source_ref]
+            || indexedStixObjects[n.sighting_of_ref]
+            || {},
+        ),
+        target_ref_name: defaultValue(
+          indexedStixObjects[n.target_ref]
+            || indexedStixObjects[n.where_sighted_refs?.at(0)]
+            || {},
+        ),
       }),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
@@ -3477,7 +3558,7 @@ const WorkbenchFileContentComponent = ({
     );
     const sortedStixCoreRelationships = sort(resolvedStixCoreRelationships);
     return (
-      <div>
+      <>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem
             classes={{ root: classes.itemHead }}
@@ -3612,7 +3693,151 @@ const WorkbenchFileContentComponent = ({
             {relationshipId && renderRelationshipForm()}
           </div>
         </Drawer>
-      </div>
+      </>
+    );
+  };
+
+  const renderSightings = () => {
+    const indexedStixObjects = {
+      ...R.indexBy(R.prop('id'), stixDomainObjects),
+      ...R.indexBy(R.prop('id'), stixCyberObservables),
+    };
+    const resolvedStixSightings = stixSightings.map((n) => ({
+      ...n,
+      ttype: t('Sighting'),
+      default_value: defaultValue({
+        ...n,
+        source_ref_name: defaultValue(
+          indexedStixObjects[n.sighting_of_ref] || {},
+        ),
+        target_ref_name: defaultValue(
+          indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
+        ),
+      }),
+      source_ref_name: defaultValue(
+        indexedStixObjects[n.sighting_of_ref] || {},
+      ),
+      target_ref_name: defaultValue(
+        indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
+      ),
+      markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
+    }));
+    const sort = R.sortWith(
+      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
+    );
+    const sortedStixSightings = sort(resolvedStixSightings);
+    return (
+      <>
+        <List classes={{ root: classes.linesContainer }}>
+          <ListItem
+            classes={{ root: classes.itemHead }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
+            <ListItemIcon
+              style={{
+                minWidth: 38,
+              }}
+              onClick={handleToggleSelectAll}
+            >
+              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+            </ListItemIcon>
+            <ListItemIcon>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                &nbsp;
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <div>
+                  {sortHeader('ttype', 'Type', true)}
+                  {sortHeader('default_value', 'Default value', true)}
+                  {sortHeader('labels', 'Labels', true)}
+                  {sortHeader('markings', 'Marking definitions', true)}
+                </div>
+              }
+            />
+            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
+          </ListItem>
+          {sortedStixSightings.map((object) => (
+            <ListItem
+              key={object.id}
+              classes={{ root: classes.item }}
+              divider
+              button={false}
+            >
+              <ListItemIcon
+                classes={{ root: classes.itemIcon }}
+                style={{ minWidth: 40 }}
+                onClick={(event) => handleToggleSelectObject(object, event)}
+              >
+                <Checkbox
+                  edge="start"
+                  checked={
+                    (selectAll && !(object.id in (deSelectedElements || {})))
+                    || object.id in (selectedElements || {})
+                  }
+                  disableRipple
+                />
+              </ListItemIcon>
+              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ItemIcon type="sighting" />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.ttype}
+                    >
+                      {object.ttype}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.default_value}
+                    >
+                      {object.default_value || t('Unknown')}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.labels}
+                    >
+                      <StixItemLabels
+                        variant="inList"
+                        labels={object.labels || []}
+                      />
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.markings}
+                    >
+                      <StixItemMarkings
+                        variant="inList"
+                        markingDefinitions={object.markings || []}
+                        limit={2}
+                      />
+                    </div>
+                  </div>
+                }
+              />
+              <ListItemSecondaryAction>
+                <IconButton
+                  onClick={() => handleDeleteObject(object)}
+                  aria-haspopup="true"
+                >
+                  <DeleteOutlined />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
+        </List>
+      </>
     );
   };
 
@@ -3793,6 +4018,10 @@ const WorkbenchFileContentComponent = ({
                                     || object.definition
                                     || 'Unknown',
                                 },
+                                {
+                                  key: 'created',
+                                  values: object.created ?? now(),
+                                },
                               ],
                               count: 1,
                             }}
@@ -3914,13 +4143,15 @@ const WorkbenchFileContentComponent = ({
           <Tab
             label={`${t('Relationships')} (${stixCoreRelationships.length})`}
           />
+          <Tab label={`${t('Sightings')} (${stixSightings.length})`} />
           <Tab label={`${t('Containers')} (${containers.length})`} />
         </Tabs>
       </Box>
       {currentTab === 0 && renderEntities()}
       {currentTab === 1 && renderObservables()}
       {currentTab === 2 && renderRelationships()}
-      {currentTab === 3 && renderContainers()}
+      {currentTab === 3 && renderSightings()}
+      {currentTab === 4 && renderContainers()}
       <Dialog
         open={!!deleteObject}
         PaperProps={{ elevation: 1 }}
