@@ -23,7 +23,7 @@ const dashboardQuery = graphql`
     settings {
       platform_banner_text
       platform_banner_level
-    }  
+    }
     workspace(id: $id) {
       id
       name
@@ -58,35 +58,31 @@ class RootDashboard extends Component {
       },
     } = this.props;
     return (
-      <div>
-        <QueryRenderer
-          query={dashboardQuery}
-          variables={{ id: workspaceId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.workspace) {
-                return (
-                  <div>
-                    <Route
-                      exact
-                      path="/dashboard/workspaces/dashboards/:workspaceId"
-                      render={(routeProps) => (
-                        <Dashboard
-                          {...routeProps}
-                          workspace={props.workspace}
-                          settings={props.settings}
-                        />
-                      )}
+      <QueryRenderer
+        query={dashboardQuery}
+        variables={{ id: workspaceId }}
+        render={({ props }) => {
+          if (props) {
+            if (props.workspace) {
+              return (
+                <Route
+                  exact
+                  path="/dashboard/workspaces/dashboards/:workspaceId"
+                  render={(routeProps) => (
+                    <Dashboard
+                      {...routeProps}
+                      workspace={props.workspace}
+                      settings={props.settings}
                     />
-                  </div>
-                );
-              }
-              return <ErrorNotFound />;
+                  )}
+                />
+              );
             }
-            return <Loader />;
-          }}
-        />
-      </div>
+            return <ErrorNotFound />;
+          }
+          return <Loader />;
+        }}
+      />
     );
   }
 }

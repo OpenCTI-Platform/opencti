@@ -710,9 +710,8 @@ const ContainerHeader = (props) => {
       }
     }
   };
-
   return (
-    <div>
+    <>
       <Tooltip
         title={
           container.name
@@ -1007,7 +1006,7 @@ const ContainerHeader = (props) => {
         />
       </div>
       <div className="clearfix" />
-    </div>
+    </>
   );
 };
 

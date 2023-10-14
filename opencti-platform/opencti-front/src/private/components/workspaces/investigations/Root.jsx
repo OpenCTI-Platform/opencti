@@ -53,6 +53,7 @@ class RootInvestigation extends Component {
         params: { workspaceId },
       },
     } = this.props;
+    // Div is required below, if not set, graph is showing a scrollbar
     return (
       <div>
         <QueryRenderer

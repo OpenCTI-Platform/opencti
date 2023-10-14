@@ -3,9 +3,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import Autocomplete from '@mui/material/Autocomplete';
-import MUITextField from '@mui/material/TextField';
+import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import { Add } from '@mui/icons-material';
+import { AddOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -168,7 +168,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       open={open}
       onClose={() => handleClose()}
     >
-      <DialogTitle>{t('Turn to Report or Case')}</DialogTitle>
+      <DialogTitle>{t('Add to container')}</DialogTitle>
       <DialogContent>
         <StixDomainObjectCreation
           inputValue={actionsInputs?.inputValue || ''}
@@ -207,10 +207,10 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           value={actionsInputs?.value ? [actionsInputs.value] : []}
           multiple={true}
           renderInput={(params) => (
-            <MUITextField
+            <TextField
               {...params}
               variant="standard"
-              label={t('Values')}
+              label={t('Container')}
               fullWidth={true}
               onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
               style={{ marginTop: 3 }}
@@ -237,7 +237,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           style={{ position: 'absolute', top: 68, right: 48 }}
           size="large"
         >
-          <Add />
+          <AddOutlined />
         </IconButton>
       </DialogContent>
       <DialogActions>

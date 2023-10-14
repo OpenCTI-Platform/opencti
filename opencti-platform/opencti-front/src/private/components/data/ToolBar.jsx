@@ -27,7 +27,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
-  Add,
   AddOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -41,9 +40,9 @@ import {
   ContentCopyOutlined,
   AutoFixHighOutlined,
   MergeOutlined,
-  Input,
+  MoveToInboxOutlined,
 } from '@mui/icons-material';
-import { CloudRefresh, CloudRefreshOutline, Label } from 'mdi-material-ui';
+import { CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -539,7 +538,11 @@ class ToolBar extends Component {
       ? R.filter((n) => n.id !== keptEntityId, selectedElementsList)
       : R.tail(selectedElementsList);
     let scope = 'KNOWLEDGE';
-    if (selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
+    if (
+      selectedElementsList.some(
+        ({ entity_type }) => entity_type === 'Vocabulary',
+      )
+    ) {
       scope = 'SETTINGS';
     }
     const actions = [
@@ -612,7 +615,10 @@ class ToolBar extends Component {
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
+              <Link to="/dashboard/data/processing/tasks">
+                {t('the dedicated page')}
+              </Link>
+              .
             </span>,
           );
           this.setState({ processing: false });
@@ -638,7 +644,10 @@ class ToolBar extends Component {
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
+              <Link to="/dashboard/data/processing/tasks">
+                {t('the dedicated page')}
+              </Link>
+              .
             </span>,
           );
           this.setState({ processing: false });
@@ -942,7 +951,7 @@ class ToolBar extends Component {
               style={{ position: 'absolute', top: 22, right: 48 }}
               size="large"
             >
-              <Add />
+              <AddOutlined />
             </IconButton>
           </>
         );
@@ -1011,7 +1020,7 @@ class ToolBar extends Component {
             renderOption={(props, option) => (
               <li {...props}>
                 <div className={classes.icon} style={{ color: option.color }}>
-                  <Label />
+                  <LabelOutline />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
@@ -1228,12 +1237,16 @@ class ToolBar extends Component {
     // region promote filters
     const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
     const observablesFiltered = (filters?.entity_type ?? []).length > 0
-      && (filters.entity_type.map((f) => f.id)).every((id) => stixCyberObservableTypes.includes(id));
+      && filters.entity_type
+        .map((f) => f.id)
+        .every((id) => stixCyberObservableTypes.includes(id));
     const promotionTypesFiltered = (filters?.entity_type ?? []).length > 0
-      && (filters.entity_type.map((f) => f.id)).every((id) => promotionTypes.includes(id));
+      && filters.entity_type
+        .map((f) => f.id)
+        .every((id) => promotionTypes.includes(id));
     const isManualPromoteSelect = !selectAll
-        && selectedTypes.length > 0
-        && selectedTypes.every((type) => promotionTypes.includes(type));
+      && selectedTypes.length > 0
+      && selectedTypes.every((type) => promotionTypes.includes(type));
     const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
     // endregion
     // region enrich
@@ -1251,10 +1264,13 @@ class ToolBar extends Component {
     );
     const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template'];
     const typesAreNotAddableInContainer = R.includes(
-      R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
+      R.uniq(
+        R.map((o) => o.entity_type, R.values(selectedElements || {})),
+      )[0],
       notAddableTypes,
-    ) || ((filters?.entity_type ?? []).length === 1
-      && notScannableTypes.includes(R.head(filters.entity_type).id));
+    )
+      || ((filters?.entity_type ?? []).length === 1
+        && notScannableTypes.includes(R.head(filters.entity_type).id));
     const selectedElementsList = R.values(selectedElements || {});
     const titleCopy = this.titleCopy();
     let keptElement = null;
@@ -1469,7 +1485,7 @@ class ToolBar extends Component {
                         color="primary"
                         size="small"
                       >
-                        <Input fontSize="small" />
+                        <MoveToInboxOutlined fontSize="small" />
                       </IconButton>
                     </span>
                   </Tooltip>
@@ -1787,9 +1803,7 @@ class ToolBar extends Component {
                       <Grid container={true} spacing={3}>
                         <Grid item={true} xs={3}>
                           <FormControl className={classes.formControl}>
-                            <InputLabel>
-                              {t('Action type')}
-                            </InputLabel>
+                            <InputLabel>{t('Action type')}</InputLabel>
                             <Select
                               variant="standard"
                               value={actionsInputs[i]?.type}
@@ -1809,9 +1823,7 @@ class ToolBar extends Component {
                         </Grid>
                         <Grid item={true} xs={3}>
                           <FormControl className={classes.formControl}>
-                            <InputLabel>
-                              {t('Field')}
-                            </InputLabel>
+                            <InputLabel>{t('Field')}</InputLabel>
                             {this.renderFieldOptions(i)}
                           </FormControl>
                         </Grid>
@@ -2036,7 +2048,7 @@ class ToolBar extends Component {
                   {this.state.enrichConnectors.map((connector) => (
                     <ListItem key={connector.id} dense={true} divider={true}>
                       <ListItemIcon>
-                        <CloudRefresh />
+                        <CloudRefreshOutline />
                       </ListItemIcon>
                       <ListItemText primary={connector.name} />
                       <ListItemSecondaryAction>
@@ -2255,7 +2267,7 @@ class ToolBar extends Component {
                   style={{ position: 'absolute', top: 68, right: 48 }}
                   size="large"
                 >
-                  <Add />
+                  <AddOutlined />
                 </IconButton>
               </DialogContent>
               <DialogActions>
