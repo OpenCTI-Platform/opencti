@@ -638,6 +638,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_validate_before_import = get_config_variable(
             "CONNECTOR_VALIDATE_BEFORE_IMPORT",
             ["connector", "validate_before_import"],
+            config,
         )
         # Start up the server to expose the metrics.
         expose_metrics = get_config_variable(
