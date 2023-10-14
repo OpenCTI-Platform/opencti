@@ -134,11 +134,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     saveManifest(newManifest);
   };
   const getMaxY = () => {
-    const maxY = Object.values(manifest.widgets).reduce(
+    return Object.values(manifest.widgets).reduce(
       (max, n) => (n.layout.y > max ? n.layout.y : max),
       0,
     );
-    return maxY;
   };
   const getMaxX = () => {
     const y = getMaxY();
