@@ -18,7 +18,7 @@
     "@rjsf/core": "5.13.0",
     "@rjsf/mui": "5.13.0",
     "@rjsf/utils": "5.13.0",
-    "@types/react-syntax-highlighter": "15.5.7",
+    "@types/react-syntax-highlighter": "15.5.8",
     "analytics": "0.8.9",
     "apexcharts": "3.42.0",
     "axios": "1.5.1",
