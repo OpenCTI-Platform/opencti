@@ -192,7 +192,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'token', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'stream_id', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'running', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'running', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'current_state_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'listen_deletion', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'no_dependencies', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
