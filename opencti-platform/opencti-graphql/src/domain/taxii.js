@@ -18,6 +18,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
+const MAX_PAGINATION_ELEMENTS = 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
@@ -121,10 +122,10 @@ const collectionQuery = async (context, user, collection, args) => {
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const options = await convertFiltersToQueryOptions(context, user, filters, { after: added_after });
   options.after = next;
-  let maxSize = 100;
+  let maxSize = MAX_PAGINATION_ELEMENTS;
   if (limit) {
     const paramLimit = parseInt(limit, 10);
-    maxSize = paramLimit > 100 ? 100 : paramLimit;
+    maxSize = paramLimit > MAX_PAGINATION_ELEMENTS ? MAX_PAGINATION_ELEMENTS : paramLimit;
   }
   options.first = maxSize;
   if (type) options.types = type.split(',');

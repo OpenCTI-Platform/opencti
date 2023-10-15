@@ -212,13 +212,15 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
-  const { data, headers: resultHeaders } = await httpClient.get(url, { params: { added_after: ingestion.added_after_start } });
+  const next = ingestion.added_after_start ? ingestion.current_state_cursor : null;
+  const params = { next, added_after: ingestion.added_after_start };
+  const { data, headers: resultHeaders } = await httpClient.get(url, { params });
   return { data, addedLast: resultHeaders['x-taxii-date-added-last'] };
 };
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
   const { data, addedLast } = await taxiiHttpGet(ingestion);
-  if (data.objects.length > 0 && (isEmptyField(ingestion.added_after_start) || utcDate(addedLast).isAfter(utcDate(ingestion.added_after_start)))) {
+  if (data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items`);
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
     // Push the bundle to absorption queue
@@ -226,7 +228,10 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { added_after_start: utcDate(addedLast) });
+    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+      current_state_cursor: data.next,
+      added_after_start: utcDate(addedLast)
+    });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
