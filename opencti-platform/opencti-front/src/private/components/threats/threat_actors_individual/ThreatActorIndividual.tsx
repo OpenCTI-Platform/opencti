@@ -16,7 +16,10 @@ import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographi
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
-import { ThreatActorIndividual_ThreatActorIndividual$data, ThreatActorIndividual_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividual_ThreatActorIndividual$data,
+  ThreatActorIndividual_ThreatActorIndividual$key,
+} from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -121,8 +124,11 @@ export const threatActorIndividualFragment = graphql`
   }
 `;
 
-const hasDemographicsOrBiographics = (threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data) => {
-  if (threatActorIndividual?.eye_color
+const hasDemographicsOrBiographics = (
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
+) => {
+  if (
+    threatActorIndividual?.eye_color
     || threatActorIndividual?.hair_color
     || threatActorIndividual?.date_of_birth
     || threatActorIndividual?.gender
@@ -130,10 +136,14 @@ const hasDemographicsOrBiographics = (threatActorIndividual: ThreatActorIndividu
     || threatActorIndividual?.job_title
     || threatActorIndividual?.bornIn
     || threatActorIndividual?.ethnicity
-    || (threatActorIndividual?.height && threatActorIndividual.height?.length > 0)
+    || (threatActorIndividual?.height
+      && threatActorIndividual.height?.length > 0)
     || (threatActorIndividual?.weight && threatActorIndividual.weight?.length > 0)
-  ) { return true; }
-  for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges ?? []) {
+  ) {
+    return true;
+  }
+  for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges
+    ?? []) {
     const { relationship_type } = node ?? {};
     switch (relationship_type) {
       case 'resides-in':
@@ -177,14 +187,20 @@ const ThreatActorIndividualComponent = ({
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
         </Grid>
-        {hasDemographicsOrBiographics(threatActorIndividual) && (<>
-          <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
-            <ThreatActorIndividualDemographics threatActorIndividual={threatActorIndividual} />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
-            <ThreatActorIndividualBiographics threatActorIndividual={threatActorIndividual} />
-          </Grid>
-        </>)}
+        {hasDemographicsOrBiographics(threatActorIndividual) && (
+          <>
+            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+              <ThreatActorIndividualDemographics
+                threatActorIndividual={threatActorIndividual}
+              />
+            </Grid>
+            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+              <ThreatActorIndividualBiographics
+                threatActorIndividual={threatActorIndividual}
+              />
+            </Grid>
+          </>
+        )}
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={threatActorIndividual.id}

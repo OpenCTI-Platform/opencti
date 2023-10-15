@@ -31,9 +31,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import {
-  ThreatActorsIndividualCardsPaginationQuery$variables,
-} from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import { ThreatActorsIndividualCardsPaginationQuery$variables } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import {
   MeasureInput,
   ThreatActorIndividualCreationMutation,
@@ -44,6 +42,7 @@ import { HeightFieldAdd } from '../../common/form/HeightField';
 import { WeightFieldAdd } from '../../common/form/WeightField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -85,20 +84,24 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
-  width?: number,
+  width?: number;
 }
 
-const ErrorBadge = styled(Badge)<ErrorBadgeProps>(({ errors = {}, width = 80 }) => ({
-  color: Object.keys(errors).length > 0 ? 'red' : 'inherit',
-  width: Object.keys(errors).length > 0 ? width : 'auto',
-  '& .MuiBadge-badge': {
-    color: 'white',
-    backgroundColor: 'red',
-  },
-}));
+const ErrorBadge = styled(Badge)<ErrorBadgeProps>(
+  ({ errors = {}, width = 80 }) => ({
+    color: Object.keys(errors).length > 0 ? 'red' : 'inherit',
+    width: Object.keys(errors).length > 0 ? width : 'auto',
+    '& .MuiBadge-badge': {
+      color: 'white',
+      backgroundColor: 'red',
+    },
+  }),
+);
 
 const ThreatActorIndividualMutation = graphql`
-  mutation ThreatActorIndividualCreationMutation($input: ThreatActorIndividualAddInput!) {
+  mutation ThreatActorIndividualCreationMutation(
+    $input: ThreatActorIndividualAddInput!
+  ) {
     threatActorIndividualAdd(input: $input) {
       id
       name
@@ -121,17 +124,26 @@ interface ThreatActorIndividualAddInput {
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
+  first_seen: Date | null;
+  last_seen: Date | null;
+  goals: string | null;
+  sophistication: Option | null;
+  resource_level: Option | null;
+  roles: string[] | null;
+  primary_motivation: Option | null;
+  secondary_motivations: Option[] | null;
+  personal_motivations: Option[] | null;
   file: File | undefined;
-  bornIn: Option | undefined
-  ethnicity: Option | undefined
-  date_of_birth: Date | null
-  gender: string | null
-  marital_status: string | null
-  job_title: string | undefined
-  eye_color: string | null
-  hair_color: string | null
-  height: MeasureInput[]
-  weight: MeasureInput[]
+  bornIn: Option | undefined;
+  ethnicity: Option | undefined;
+  date_of_birth: Date | null;
+  gender: string | null;
+  marital_status: string | null;
+  job_title: string | undefined;
+  eye_color: string | null;
+  hair_color: string | null;
+  height: MeasureInput[];
+  weight: MeasureInput[];
 }
 
 interface ThreatActorIndividualFormProps {
@@ -165,40 +177,61 @@ ThreatActorIndividualFormProps
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    sophistication: Yup.object().nullable(),
+    resource_level: Yup.object().nullable(),
+    roles: Yup.array().nullable(),
+    primary_motivation: Yup.object().nullable(),
+    secondary_motivations: Yup.array().nullable(),
+    personal_motivations: Yup.array().nullable(),
+    goals: Yup.string().nullable(),
     date_of_birth: Yup.date()
       .nullable()
       .typeError(t('The value must be a date (yyyy-MM-dd)')),
     bornIn: Yup.object().nullable(),
     ethnicity: Yup.object().nullable(),
-    gender: Yup.string()
-      .nullable()
-      .typeError(t('The value must be a string')),
+    gender: Yup.string().nullable().typeError(t('The value must be a string')),
     marital_status: Yup.string()
       .nullable()
       .typeError(t('The value must be a string')),
-    job_title: Yup.string()
-      .max(250, t('The value is too long')),
+    job_title: Yup.string().max(250, t('The value is too long')),
     eye_color: Yup.string().nullable(),
     hair_color: Yup.string().nullable(),
     height: Yup.array().of(
       Yup.object().shape({
-        measure: Yup.number().min(0).nullable()
+        measure: Yup.number()
+          .min(0)
+          .nullable()
           .typeError(t('The value must be a number')),
-        date_seen: Yup.date().nullable()
+        date_seen: Yup.date()
+          .nullable()
           .typeError(t('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
     weight: Yup.array().of(
       Yup.object().shape({
-        measure: Yup.number().min(0).nullable()
+        measure: Yup.number()
+          .min(0)
+          .nullable()
           .typeError(t('The value must be a number')),
-        date_seen: Yup.date().nullable()
+        date_seen: Yup.date()
+          .nullable()
           .typeError(t('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
   };
-  const threatActorIndividualValidator = useSchemaCreationValidation(THREAT_ACTOR_INDIVIDUAL_TYPE, basicShape);
-  const [commit] = useMutation<ThreatActorIndividualCreationMutation>(ThreatActorIndividualMutation);
+  const threatActorIndividualValidator = useSchemaCreationValidation(
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
+    basicShape,
+  );
+  const [commit] = useMutation<ThreatActorIndividualCreationMutation>(
+    ThreatActorIndividualMutation,
+  );
 
   const onSubmit: FormikConfig<ThreatActorIndividualAddInput>['onSubmit'] = (
     values,
@@ -214,6 +247,15 @@ ThreatActorIndividualFormProps
       objectLabel: values?.objectLabel.map((v) => v.value),
       externalReferences: values?.externalReferences.map(({ value }) => value),
       file: values?.file,
+      first_seen: values?.first_seen,
+      last_seen: values?.last_seen,
+      secondary_motivations: (values?.secondary_motivations ?? []).map((v) => v.value),
+      personal_motivations: (values?.personal_motivations ?? []).map((v) => v.value),
+      primary_motivation: values?.primary_motivation?.value,
+      roles: values?.roles,
+      sophistication: values?.sophistication?.value,
+      resource_level: values?.resource_level?.value,
+      goals: values?.goals?.split('\n') ?? null,
       bornIn: values?.bornIn?.value,
       ethnicity: values?.ethnicity?.value,
       date_of_birth: values?.date_of_birth,
@@ -255,6 +297,15 @@ ThreatActorIndividualFormProps
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
+    first_seen: null,
+    last_seen: null,
+    secondary_motivations: [],
+    personal_motivations: [],
+    primary_motivation: null,
+    roles: [],
+    sophistication: null,
+    resource_level: null,
+    goals: '',
     file: undefined,
     bornIn: undefined,
     ethnicity: undefined,
@@ -275,23 +326,35 @@ ThreatActorIndividualFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+        errors,
+      }) => (
         <Form>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              <Tab id='create-overview' label={
-                <ErrorBadge badgeContent={Object.keys(errors).length}
-                  errors={errors}
-                >
-                  {t('Overview')}
-                </ErrorBadge>}
+              <Tab
+                id="create-overview"
+                label={
+                  <ErrorBadge
+                    badgeContent={Object.keys(errors).length}
+                    errors={errors}
+                  >
+                    {t('Overview')}
+                  </ErrorBadge>
+                }
               />
-              <Tab id='threat-demographics' label={t('Demographics')} />
-              <Tab id='threat-bio' label={t('Biographics')} />
+              <Tab id="threat-details" label={t('Details')} />
+              <Tab id="threat-demographics" label={t('Demographics')} />
+              <Tab id="threat-bio" label={t('Biographics')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
-            <div>
+            <>
               <Field
                 component={TextField}
                 style={{ marginTop: 20 }}
@@ -347,12 +410,92 @@ ThreatActorIndividualFormProps
                 setFieldValue={setFieldValue}
                 values={values?.externalReferences}
               />
-              <CustomFileUploader setFieldValue={setFieldValue}
-              />
-            </div>
+              <CustomFileUploader setFieldValue={setFieldValue} />
+            </>
           )}
           {currentTab === 1 && (
-            <div>
+            <>
+              <Field
+                component={DateTimePickerField}
+                name="first_seen"
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <Field
+                component={DateTimePickerField}
+                name="last_seen"
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <OpenVocabField
+                label={t('Sophistication')}
+                type="threat_actor_individual_sophistication_ov"
+                name="sophistication"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+              />
+              <OpenVocabField
+                label={t('Resource level')}
+                type="attack-resource-level-ov"
+                name="resource_level"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+              />
+              <OpenVocabField
+                label={t('Roles')}
+                type="threat-actor-individual-role-ov"
+                name="roles"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+              />
+              <OpenVocabField
+                label={t('Primary motivation')}
+                type="attack-motivation-ov"
+                name="primary_motivation"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+              />
+              <OpenVocabField
+                label={t('Secondary motivations')}
+                type="attack-motivation-ov"
+                name="secondary_motivations"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+              />
+              <OpenVocabField
+                label={t('Personal motivations')}
+                type="attack-motivation-ov"
+                name="personal_motivations"
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+              />
+              <Field
+                component={TextField}
+                name="goals"
+                label={t('Goals (1 / line)')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+            </>
+          )}
+          {currentTab === 2 && (
+            <>
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
@@ -410,10 +553,10 @@ ThreatActorIndividualFormProps
                 style={{ marginTop: 20 }}
                 onSubmit={setFieldValue}
               />
-            </div>
+            </>
           )}
-          {currentTab === 2 && (
-            <div>
+          {currentTab === 3 && (
+            <>
               <OpenVocabField
                 name="eye_color"
                 label={t('Eye Color')}
@@ -435,7 +578,7 @@ ThreatActorIndividualFormProps
                 editContext={[]}
               />
               <HeightFieldAdd
-                id='new_height'
+                id="new_height"
                 name="height"
                 values={values?.height}
                 containerStyle={fieldSpacingContainerStyle}
@@ -447,7 +590,7 @@ ThreatActorIndividualFormProps
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
-            </div>
+            </>
           )}
           <div className={classes.buttons}>
             <Button
@@ -518,7 +661,9 @@ const ThreatActorIndividualCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a threat actor individual')}</Typography>
+          <Typography variant="h6">
+            {t('Create a threat actor individual')}
+          </Typography>
         </div>
         <div className={classes.container}>
           <ThreatActorIndividualCreationForm

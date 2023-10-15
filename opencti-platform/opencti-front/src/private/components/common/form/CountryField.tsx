@@ -78,7 +78,9 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         const templateValues = [...countries, ...NewCountries];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
-          return (templateValues.findIndex((e) => e.value === item.value) === index);
+          return (
+            templateValues.findIndex((e) => e.value === item.value) === index
+          );
         });
         setCountries(uniqTemplates);
       });
@@ -107,7 +109,7 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <ItemIcon type="User" />
+              <ItemIcon type="Country" />
             </div>
             <div className={classes.text}>{option.label ?? ''}</div>
           </li>
