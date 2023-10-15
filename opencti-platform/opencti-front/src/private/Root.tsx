@@ -1,8 +1,7 @@
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
-import googleAnalytics from '@analytics/google-analytics';
 import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
@@ -11,13 +10,11 @@ import { UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
-import {
-  RootPrivateQuery,
-  RootPrivateQuery$data,
-} from './__generated__/RootPrivateQuery.graphql';
+import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
+import generateAnalyticsConfig from './Analytics';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -155,7 +152,6 @@ interface RootComponentProps {
 }
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
-  const [analyticsInstance, setAnalyticsInstance] = useState(Analytics({ app: 'opencti' }));
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
   const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSROs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
   const schema = {
@@ -169,19 +165,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
-
-  useEffect(() => {
-    setAnalyticsInstance(Analytics({
-      app: 'opencti',
-      plugins: [
-        googleAnalytics({
-          measurementIds: [queryData.settings.analytics_google_analytics_v4],
-          enabled: !!queryData.settings.analytics_google_analytics_v4,
-        }),
-      ],
-    }));
-  }, [queryData.settings]);
-
+  const platformAnalyticsConfiguration = generateAnalyticsConfig(queryData.settings);
   return (
     <UserContext.Provider
       value={{
@@ -196,7 +180,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <AnalyticsProvider instance={analyticsInstance}>
+            <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
               <Index settings={settings} />
             </AnalyticsProvider>
           </ConnectedIntlProvider>
