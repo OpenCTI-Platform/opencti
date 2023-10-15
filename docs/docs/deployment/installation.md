@@ -96,7 +96,7 @@ If your `docker-compose` deployment does not support `.env` files, just export a
 $ export $(cat .env | grep -v "#" | xargs)
 ```
 
-### Memory management settings
+²
 
 As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 

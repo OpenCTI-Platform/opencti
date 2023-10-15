@@ -95,7 +95,8 @@ This strategy can be used to authenticate your user with your company SAML and i
         "entry_point": "https://auth.mydomain.com/auth/realms/mydomain/protocol/saml",
         "saml_callback_url": "http://localhost:4000/auth/saml/callback",
         // "private_key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwg...",
-        "cert": "MIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w..."
+        "cert": "MIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w...",
+        "logout_remote": false
     }
 }
 ```
@@ -122,6 +123,7 @@ Here is an example of SAML configuration using environment variables:
 - PROVIDERS__SAML__CONFIG__ENTRY_POINT=https://auth.mydomain.com/auth/realms/mydomain/protocol/saml
 - PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback
 - PROVIDERS__SAML__CONFIG__CERT=MIICmzCCAYMCBgF3Rt3X1zANBgkqhkiG9w0BAQsFADARMQ8w
+- PROVIDERS__SAML__CONFIG__LOGOUT_REMOTE=false
 ```
 
 OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
@@ -174,7 +176,8 @@ This strategy allows to use [Auth0 Service](https://auth0.com) to handle the aut
         "callback_url": "https://opencti.mydomain.com/auth/auth0/callback",
         "domain": "mycompany.eu.auth0.com",
         "audience": "XXXXXXXXXXXXXXX",
-        "scope": "openid email profile XXXXXXXXXXXXXXX"
+        "scope": "openid email profile XXXXXXXXXXXXXXX",
+        "logout_remote": false
     }
 }
 ```
@@ -189,6 +192,7 @@ Here is an example of Auth0 configuration using environment variables:
 - PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}
 - PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}
 - PROVIDERS__AUTHZERO__CONFIG__SCOPE="openid email profile"
+- PROVIDERS__AUTHZERO__CONFIG__LOGOUT_REMOTE=false
 ```
 
 ### OpenID Connect (button)
@@ -204,7 +208,8 @@ This strategy allows to use the [OpenID Connect Protocol](https://openid.net/con
         "issuer": "https://auth.mydomain.com/auth/realms/mydomain",
         "client_id": "XXXXXXXXXXXXXXXXXX",
         "client_secret": "XXXXXXXXXXXXXXXXXX",
-        "redirect_uris": ["https://opencti.mydomain.com/auth/oic/callback"]
+        "redirect_uris": ["https://opencti.mydomain.com/auth/oic/callback"],
+        "logout_remote": false
     }
 }
 ```
@@ -218,6 +223,7 @@ Here is an example of OpenID configuration using environment variables:
 - PROVIDERS__OPENID__CONFIG__CLIENT_ID=XXXXXXXXXXXXXXXXXX
 - PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=XXXXXXXXXXXXXXXXXX
 - "PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://opencti.mydomain.com/auth/oic/callback\"]"
+- PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false
 ```
 
 OpenCTI support mapping OpenID Roles/Groups on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
@@ -271,7 +277,8 @@ This strategy can authenticate your users with Facebook and is based on [Passpor
     "config": {
         "client_id": "XXXXXXXXXXXXXXXXXX",
         "client_secret": "XXXXXXXXXXXXXXXXXX",
-        "callback_url": "https://opencti.mydomain.com/auth/facebook/callback"
+        "callback_url": "https://opencti.mydomain.com/auth/facebook/callback",
+        "logout_remote": false
     }
 }
 ```
@@ -287,7 +294,8 @@ This strategy can authenticate your users with Google and is based on [Passport 
     "config": {
         "client_id": "XXXXXXXXXXXXXXXXXX",
         "client_secret": "XXXXXXXXXXXXXXXXXX",
-        "callback_url": "https://opencti.mydomain.com/auth/google/callback"
+        "callback_url": "https://opencti.mydomain.com/auth/google/callback",
+        "logout_remote": false
     }
 }
 ```
@@ -303,7 +311,8 @@ This strategy can authenticate your users with GitHub and is based on [Passport 
     "config": {
         "client_id": "XXXXXXXXXXXXXXXXXX",
         "client_secret": "XXXXXXXXXXXXXXXXXX",
-        "callback_url": "https://opencti.mydomain.com/auth/github/callback"
+        "callback_url": "https://opencti.mydomain.com/auth/github/callback",
+        "logout_remote": false
   }
 }
 ```
@@ -317,7 +326,7 @@ This strategy can authenticate a user based on SSL client certificates. For this
 "https_cert": {
     "key": "/cert/server_key.pem",
     "crt": "/cert/server_cert.pem",
-    "reject_unauthorized":true
+    "reject_unauthorized": true
 }
 ```
 
