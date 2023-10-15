@@ -87,11 +87,6 @@ enum EditOperation {
   remove
 }
 
-enum SimpleEditOperation {
-  replace
-  remove
-}
-
 input EditInput {
   key: String!
   object_path: String

@@ -1803,7 +1803,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
+  await validateInputUpdate(context, user, initial.entity_type, initial, updates, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;
