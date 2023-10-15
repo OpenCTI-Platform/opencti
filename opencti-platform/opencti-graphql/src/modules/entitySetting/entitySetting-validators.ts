@@ -5,7 +5,7 @@ import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types
 import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { validateFormatSchemaAttribute } from '../../schema/schema-validator';
+import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
 import { internalFindByIds } from '../../database/middleware-loader';
 import {
   availableSettings,
@@ -114,7 +114,7 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
           if (defaultValues) {
             const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
             const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
-            validateFormatSchemaAttribute(targetType, attr.name, attributeDefinition, input, checkInput);
+            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, input, checkInput);
           }
         } else if (relationRefDefinition) {
           if (relationRefDefinition.inputName === INPUT_MARKINGS) {

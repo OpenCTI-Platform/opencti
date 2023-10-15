@@ -37,7 +37,7 @@ export const extractSchemaDefFromPath = (attributeDefinition: AttributeDefinitio
   return configSchema?.type === undefined || configSchema?.type === 'array' ? editInput.value : R.head(editInput.value);
 };
 
-export const validateFormatSchemaAttribute = (
+export const validateAndFormatSchemaAttribute = (
   instanceType: string,
   attributeName: string,
   attributeDefinition: AttributeDefinition | undefined,
@@ -86,11 +86,19 @@ export const validateFormatSchemaAttribute = (
     }
     // Test string value
     if (isStringAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
+      const values = [];
+      for (let index = 0; index < editInput.value.length; index += 1) {
+        const value = editInput.value[index];
         if (value && !R.is(String, value)) {
           throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+        } else {
+          values.push(value ? value.trim() : value);
         }
-      });
+      }
+      // This is reference change to trim the input and prevent unuseful stream events
+      // TODO Find a better way to rework the data
+      // eslint-disable-next-line no-param-reassign
+      editInput.value = values;
     }
     // Test boolean value (Accept string)
     if (isBooleanAttribute(attributeName)) {
@@ -119,8 +127,12 @@ export const validateFormatSchemaAttribute = (
     // Test dictionary (partial patch only with string)
     if (isDictionaryAttribute(attributeName)) {
       editInput.value.forEach((value) => {
-        if (value && !R.is(String, value)) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+        if (editInput.key.includes('.')) { // Partial patch, must be a string for now
+          if (value && !R.is(String, value)) {
+            throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+          }
+        } else if (value && !R.is(Object, value) && Object.keys(value).length === 0) { // Complete patch, must be an object
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be an object`, data: editInput });
         }
       });
     }
@@ -132,7 +144,7 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
-      validateFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, initial, editInput);
+      validateAndFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, initial, editInput);
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
