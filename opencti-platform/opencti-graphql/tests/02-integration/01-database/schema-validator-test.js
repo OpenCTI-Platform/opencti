@@ -107,9 +107,9 @@ describe('Create and Update Validation', () => {
   });
 
   it('should validate schema at update', async () => {
-    const dataComponent = { description: 'description' };
+    const dataComponent = [{ key: 'description', value: ['description'], operation: 'replace' }];
     const dataComponentInitial = { name: 'initial name', confidence: 50 };
-    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, null, dataComponentInitial);
+    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponentInitial, dataComponent, null);
   });
 
   it('should validate mandatory attributes at update', async () => {

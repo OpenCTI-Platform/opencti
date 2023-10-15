@@ -94,6 +94,7 @@ const RootThreatActorIndividualComponent = ({
             'intrusion_sets',
             'campaigns',
             'incidents',
+            'organizations',
             'malwares',
             'attack_patterns',
             'channels',
@@ -104,6 +105,7 @@ const RootThreatActorIndividualComponent = ({
             'observables',
             'infrastructures',
             'sightings',
+            'countries',
           ]}
         />
       </Route>

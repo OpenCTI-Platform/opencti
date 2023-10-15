@@ -3,7 +3,7 @@ import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 // eslint-disable-next-line import/extensions
-import { GraphQLScalarType, Kind } from 'graphql/index.js';
+import { GraphQLScalarType, GraphQLError, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';
 import { UserInputError } from 'apollo-server-express';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
@@ -100,6 +100,32 @@ const validateStixRef = (stixRef) => {
   throw new UserInputError('Provided value is not a valid STIX Reference');
 };
 
+const parseObject = (ast) => {
+  const value = Object.create(null);
+  ast.fields.forEach((field) => {
+    value[field.name.value] = parseAst(field.value);
+  });
+  return value;
+};
+
+const parseAst = (ast) => {
+  switch (ast.kind) {
+    case Kind.STRING:
+    case Kind.BOOLEAN:
+      return ast.value;
+    case Kind.INT:
+      return parseInt(ast.value, 10);
+    case Kind.FLOAT:
+      return parseFloat(ast.value);
+    case Kind.OBJECT:
+      return parseObject(ast);
+    case Kind.LIST:
+      return ast.values.map(parseAst);
+    default:
+      return null;
+  }
+};
+
 const globalResolvers = {
   DateTime: GraphQLDateTime,
   Upload: GraphQLUpload,
@@ -134,6 +160,13 @@ const globalResolvers = {
       }
       throw new UserInputError('Provided value is not a valid STIX ID');
     },
+  }),
+  Any: new GraphQLScalarType({
+    name: 'Any',
+    description: 'Arbitrary object',
+    serialize: () => { throw new GraphQLError('Any serialization unsupported.'); },
+    parseValue: (value) => value,
+    parseLiteral: (ast) => parseAst(ast)
   }),
 };
 const schemaResolvers = [

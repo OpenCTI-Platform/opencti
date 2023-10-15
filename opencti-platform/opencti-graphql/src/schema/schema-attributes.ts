@@ -120,7 +120,9 @@ export const schemaAttributesDefinition = {
 };
 
 // -- TYPE --
-
+export const isStringAttribute = (k: string): boolean => (
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'string')
+);
 export const isBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
 );

@@ -12,7 +12,7 @@ export const numberFormat = (number, digits = 2) => {
     { value: 1e15, symbol: 'P' },
     { value: 1e18, symbol: 'E' },
   ];
-  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  const rx = /\.0+$|(\.\d*[1-9])0+$/;
   let i;
   for (i = si.length - 1; i > 0; i -= 1) {
     if (number >= si[i].value) {
@@ -32,7 +32,7 @@ export const simpleNumberFormat = (number, digits = 2) => {
 };
 
 export const bytesFormat = (number, digits = 2) => {
-  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  const rx = /\.0+$|(\.\d*[1-9])0+$/;
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];
   if (number === 0) {
     return {

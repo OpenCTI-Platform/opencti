@@ -30,6 +30,8 @@ export const INPUT_PARTICIPANT = 'objectParticipant';
 export const INPUT_OBJECTS = 'objects'; // object_refs
 export const INPUT_DOMAIN_FROM = 'from'; // source_ref
 export const INPUT_DOMAIN_TO = 'to'; // target_ref
+export const INPUT_BORN_IN = 'bornIn'; // Extension (TIM)
+export const INPUT_ETHNICITY = 'ethnicity'; // Extension (TIM)
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';

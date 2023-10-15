@@ -1,6 +1,15 @@
 import * as R from 'ramda';
 
-export const DEFAULT_LANG = 'en-us';
+export const LANGUAGES = {
+  AUTO: 'auto',
+  ENGLISH: 'en-us',
+  FRENCH: 'fr-fr',
+  SPANISH: 'es-es',
+  JAPANESE: 'ja-jp',
+  CHINESE: 'zh-cn',
+};
+
+export const DEFAULT_LANG = LANGUAGES.ENGLISH;
 // These window.navigator contain language information
 // 1. languages -> [] of preferred languages (eg ["en-US", "zh-CN", "ja-JP"]) Firefox^32, Chrome^32
 // 2. language  -> Preferred language as String (eg "en-US") Firefox^5, IE^11, Safari,
@@ -16,7 +25,13 @@ const browserLanguagePropertyKeys = [
   'systemLanguage',
 ];
 
-const availableLanguages = ['en-us', 'fr-fr', 'es-es', 'ja-jp', 'zh-cn'];
+const availableLanguages = [
+  LANGUAGES.ENGLISH,
+  LANGUAGES.FRENCH,
+  LANGUAGES.SPANISH,
+  LANGUAGES.JAPANESE,
+  LANGUAGES.CHINESE,
+];
 
 const detectedLocale = R.pipe(
   R.pick(browserLanguagePropertyKeys), // Get only language properties

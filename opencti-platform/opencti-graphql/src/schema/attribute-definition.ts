@@ -12,6 +12,7 @@ export interface AttributeDefinition {
   description?: string
   scalable?: boolean
   schemaDef?: Record<string, any>
+  attributes?: Array<AttributeDefinition>
 }
 
 // -- GLOBAL --

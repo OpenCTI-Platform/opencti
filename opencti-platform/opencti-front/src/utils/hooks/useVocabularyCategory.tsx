@@ -65,7 +65,7 @@ const useVocabularyCategory = () => {
     vocabCategoriesQuery,
     queryRef,
   );
-  const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key) as VocabularyCategory[];
+  const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key);
   const categories = vocabularyCategories();
   const typeToCategory = (type: string): VocabularyCategory => {
     const formattedType = type.toLowerCase().replaceAll('-', '_');

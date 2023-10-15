@@ -11,10 +11,12 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import ThreatActorIndividualBiographics from './ThreatActorIndividualBiographics';
+import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographics';
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
-import { ThreatActorIndividual_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import { ThreatActorIndividual_ThreatActorIndividual$data, ThreatActorIndividual_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -82,9 +84,67 @@ export const threatActorIndividualFragment = graphql`
       }
     }
     workflowEnabled
+    eye_color
+    hair_color
+    height {
+      date_seen
+      measure
+    }
+    weight {
+      date_seen
+      measure
+    }
+    date_of_birth
+    gender
+    marital_status
+    job_title
+    bornIn {
+      name
+    }
+    ethnicity {
+      name
+    }
+    stixCoreRelationships {
+      edges {
+        node {
+          relationship_type
+          to {
+            ... on Country {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
     ...ThreatActorIndividualDetails_ThreatActorIndividual
   }
 `;
+
+const hasDemographicsOrBiographics = (threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data) => {
+  if (threatActorIndividual?.eye_color
+    || threatActorIndividual?.hair_color
+    || threatActorIndividual?.date_of_birth
+    || threatActorIndividual?.gender
+    || threatActorIndividual?.marital_status
+    || threatActorIndividual?.job_title
+    || threatActorIndividual?.bornIn
+    || threatActorIndividual?.ethnicity
+    || (threatActorIndividual?.height && threatActorIndividual.height?.length > 0)
+    || (threatActorIndividual?.weight && threatActorIndividual.weight?.length > 0)
+  ) { return true; }
+  for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges ?? []) {
+    const { relationship_type } = node ?? {};
+    switch (relationship_type) {
+      case 'resides-in':
+      case 'citizen-of':
+      case 'national-of':
+        return true;
+      default:
+    }
+  }
+  return false;
+};
 
 const ThreatActorIndividualComponent = ({
   data,
@@ -117,6 +177,14 @@ const ThreatActorIndividualComponent = ({
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
         </Grid>
+        {hasDemographicsOrBiographics(threatActorIndividual) && (<>
+          <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
+            <ThreatActorIndividualDemographics threatActorIndividual={threatActorIndividual} />
+          </Grid>
+          <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
+            <ThreatActorIndividualBiographics threatActorIndividual={threatActorIndividual} />
+          </Grid>
+        </>)}
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={threatActorIndividual.id}

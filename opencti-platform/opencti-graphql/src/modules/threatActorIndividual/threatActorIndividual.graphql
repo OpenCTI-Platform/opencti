@@ -1,3 +1,13 @@
+type Measure {
+  index: Int
+  measure: Float
+  date_seen: DateTime
+}
+input MeasureInput {
+  measure: Float
+  date_seen: DateTime
+}
+
 type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID! # internal_id
   standard_id: String!
@@ -112,6 +122,16 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
+  date_of_birth: DateTime
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
+  height: [Measure!]
+  weight: [Measure!]
+  bornIn: Country
+  ethnicity: Country
   # Technical
   creators: [Creator!]
   toStix: String
@@ -142,6 +162,8 @@ enum ThreatActorsIndividualFilter {
   created_at
   updated_at
   createdBy
+  bornIn
+  ethnicity
   markedBy
   assigneeTo
   labelledBy
@@ -182,6 +204,14 @@ input ThreatActorIndividualAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
+  date_of_birth: DateTime
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
+  height: [MeasureInput!]
+  weight: [MeasureInput!]
   confidence: Int
   revoked: Boolean
   lang: String
@@ -190,6 +220,8 @@ input ThreatActorIndividualAddInput {
   objectOrganization: [String]
   objectAssignee: [String]
   objectLabel: [String]
+  bornIn: String
+  ethnicity: String
   externalReferences: [String]
   created: DateTime
   modified: DateTime

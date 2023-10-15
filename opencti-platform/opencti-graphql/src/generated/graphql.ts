@@ -42,6 +42,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Any: { input: any; output: any; }
   ConstraintNumber: { input: any; output: any; }
   ConstraintString: { input: any; output: any; }
   DateTime: { input: any; output: any; }
@@ -6057,8 +6058,9 @@ export type EditContext = {
 
 export type EditInput = {
   key: Scalars['String']['input'];
+  object_path?: InputMaybe<Scalars['String']['input']>;
   operation?: InputMaybe<EditOperation>;
-  value: Array<InputMaybe<Scalars['String']['input']>>;
+  value: Array<InputMaybe<Scalars['Any']['input']>>;
 };
 
 export enum EditOperation {
@@ -12510,6 +12512,7 @@ export type MeUser = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<UnitSystem>;
   user_email: Scalars['String']['output'];
 };
 
@@ -12517,6 +12520,18 @@ export type MeUser = BasicObject & InternalObject & {
 export type MeUserGroupsArgs = {
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+};
+
+export type Measure = {
+  __typename?: 'Measure';
+  date_seen?: Maybe<Scalars['DateTime']['output']>;
+  index?: Maybe<Scalars['Int']['output']>;
+  measure?: Maybe<Scalars['Float']['output']>;
+};
+
+export type MeasureInput = {
+  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  measure?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -26088,6 +26103,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   __typename?: 'ThreatActorIndividual';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   avatar?: Maybe<OpenCtiFile>;
+  bornIn?: Maybe<Country>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -26098,21 +26114,29 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  date_of_birth?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  ethnicity?: Maybe<Country>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  eye_color?: Maybe<Scalars['String']['output']>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  gender?: Maybe<Scalars['String']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
+  hair_color?: Maybe<Scalars['String']['output']>;
+  height?: Maybe<Array<Measure>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
+  job_title?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
+  marital_status?: Maybe<Scalars['String']['output']>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -26143,6 +26167,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  weight?: Maybe<Array<Measure>>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -26285,17 +26310,26 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
 
 export type ThreatActorIndividualAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  bornIn?: InputMaybe<Scalars['String']['input']>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  ethnicity?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  eye_color?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  hair_color?: InputMaybe<Scalars['String']['input']>;
+  height?: InputMaybe<Array<MeasureInput>>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  marital_status?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -26312,6 +26346,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  weight?: InputMaybe<Array<MeasureInput>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 
@@ -26356,11 +26391,13 @@ export type ThreatActorsFiltering = {
 export enum ThreatActorsIndividualFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  BornIn = 'bornIn',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  Ethnicity = 'ethnicity',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
@@ -26840,6 +26877,12 @@ export type TypeAttribute = {
   type: Scalars['String']['output'];
 };
 
+export enum UnitSystem {
+  Imperial = 'Imperial',
+  Metric = 'Metric',
+  Auto = 'auto'
+}
+
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Url';
   cases?: Maybe<CaseConnection>;
@@ -27058,6 +27101,7 @@ export type User = BasicObject & InternalObject & {
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<UnitSystem>;
   updated_at: Scalars['DateTime']['output'];
   user_email: Scalars['String']['output'];
 };
@@ -27307,6 +27351,7 @@ export type UserAddInput = {
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password: Scalars['String']['input'];
   theme?: InputMaybe<Scalars['String']['input']>;
+  unit_system?: InputMaybe<Scalars['String']['input']>;
   user_email: Scalars['String']['input'];
 };
 
@@ -27654,7 +27699,10 @@ export enum VocabularyCategory {
   ChannelTypesOv = 'channel_types_ov',
   CollectionLayersOv = 'collection_layers_ov',
   EventTypeOv = 'event_type_ov',
+  EyeColorOv = 'eye_color_ov',
+  GenderOv = 'gender_ov',
   GroupingContextOv = 'grouping_context_ov',
+  HairColorOv = 'hair_color_ov',
   ImplementationLanguageOv = 'implementation_language_ov',
   IncidentResponseTypesOv = 'incident_response_types_ov',
   IncidentSeverityOv = 'incident_severity_ov',
@@ -27665,6 +27713,7 @@ export enum VocabularyCategory {
   MalwareCapabilitiesOv = 'malware_capabilities_ov',
   MalwareResultOv = 'malware_result_ov',
   MalwareTypeOv = 'malware_type_ov',
+  MaritalStatusOv = 'marital_status_ov',
   NoteTypesOv = 'note_types_ov',
   OpinionOv = 'opinion_ov',
   PatternTypeOv = 'pattern_type_ov',
@@ -28957,6 +29006,7 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreasFilter: AdministrativeAreasFilter;
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
+  Any: ResolverTypeWrapper<Scalars['Any']['output']>;
   AppDebugDistribution: ResolverTypeWrapper<AppDebugDistribution>;
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
   AppInfo: ResolverTypeWrapper<AppInfo>;
@@ -29376,6 +29426,8 @@ export type ResolversTypes = ResolversObject<{
   MeOrganizationConnection: ResolverTypeWrapper<MeOrganizationConnection>;
   MeOrganizationEdge: ResolverTypeWrapper<MeOrganizationEdge>;
   MeUser: ResolverTypeWrapper<Omit<MeUser, 'default_dashboard' | 'default_dashboards' | 'groups'> & { default_dashboard?: Maybe<ResolversTypes['Workspace']>, default_dashboards: Array<ResolversTypes['Workspace']>, groups?: Maybe<ResolversTypes['GroupConnection']> }>;
+  Measure: ResolverTypeWrapper<Measure>;
+  MeasureInput: MeasureInput;
   MediaContent: ResolverTypeWrapper<Omit<MediaContent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MediaContentAddInput: MediaContentAddInput;
   Member: ResolverTypeWrapper<Member>;
@@ -29755,6 +29807,7 @@ export type ResolversTypes = ResolversObject<{
   TriggersFiltering: TriggersFiltering;
   TriggersOrdering: TriggersOrdering;
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
+  UnitSystem: UnitSystem;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UrlAddInput: UrlAddInput;
@@ -29826,6 +29879,7 @@ export type ResolversParentTypes = ResolversObject<{
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
+  Any: Scalars['Any']['output'];
   AppDebugDistribution: AppDebugDistribution;
   AppDebugStatistics: AppDebugStatistics;
   AppInfo: AppInfo;
@@ -30157,6 +30211,8 @@ export type ResolversParentTypes = ResolversObject<{
   MeOrganizationConnection: MeOrganizationConnection;
   MeOrganizationEdge: MeOrganizationEdge;
   MeUser: Omit<MeUser, 'default_dashboard' | 'default_dashboards' | 'groups'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, default_dashboards: Array<ResolversParentTypes['Workspace']>, groups?: Maybe<ResolversParentTypes['GroupConnection']> };
+  Measure: Measure;
+  MeasureInput: MeasureInput;
   MediaContent: Omit<MediaContent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MediaContentAddInput: MediaContentAddInput;
   Member: Member;
@@ -30608,6 +30664,10 @@ export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extend
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
+
+export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
+  name: 'Any';
+}
 
 export type AppDebugDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppDebugDistribution'] = ResolversParentTypes['AppDebugDistribution']> = ResolversObject<{
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34296,7 +34356,15 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MeasureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Measure'] = ResolversParentTypes['Measure']> = ResolversObject<{
+  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  index?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  measure?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37733,6 +37801,7 @@ export type ThreatActorGroupEditMutationsResolvers<ContextType = any, ParentType
 export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividual'] = ResolversParentTypes['ThreatActorIndividual']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
+  bornIn?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorIndividualConnectorsArgs>>;
@@ -37743,21 +37812,29 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ethnicity?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualExternalReferencesArgs>>;
+  eye_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
+  hair_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  height?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorIndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  marital_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualNotesArgs>>;
@@ -37788,6 +37865,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -38017,6 +38095,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -38558,6 +38637,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;
+  Any?: GraphQLScalarType;
   AppDebugDistribution?: AppDebugDistributionResolvers<ContextType>;
   AppDebugStatistics?: AppDebugStatisticsResolvers<ContextType>;
   AppInfo?: AppInfoResolvers<ContextType>;
@@ -38780,6 +38860,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MeOrganizationConnection?: MeOrganizationConnectionResolvers<ContextType>;
   MeOrganizationEdge?: MeOrganizationEdgeResolvers<ContextType>;
   MeUser?: MeUserResolvers<ContextType>;
+  Measure?: MeasureResolvers<ContextType>;
   MediaContent?: MediaContentResolvers<ContextType>;
   Member?: MemberResolvers<ContextType>;
   MemberAccess?: MemberAccessResolvers<ContextType>;

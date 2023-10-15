@@ -51,6 +51,7 @@ interface ItemOpenVocabProps {
   type: string;
   value?: string | null;
   small?: boolean;
+  hideEmpty?: boolean;
   displayMode?: 'chip' | 'span';
   queryRef: PreloadedQuery<ItemOpenVocabQuery>;
 }
@@ -98,41 +99,45 @@ const ItemOpenVocabDummy = ({ small = true, displayMode = 'span' }: { small?: bo
 };
 const ItemOpenVocabComponent: FunctionComponent<
 Omit<ItemOpenVocabProps, 'type'>
-> = ({ value, small = true, displayMode = 'span', queryRef }) => {
+> = ({ value, small = true, hideEmpty = true, displayMode = 'span', queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
     itemOpenVocabQuery,
     queryRef,
   );
-  let description = t('No description');
+  let description = null;
   if (value) {
     const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
     const openVocab = openVocabList.find((n) => n.name === value);
-    description = openVocab?.description ? openVocab.description : t('No description');
+    description = openVocab?.description ? openVocab.description : null;
   }
   if (displayMode === 'chip') {
-    return (
-      <Tooltip title={t(description)}>
-        <Chip
-          classes={{ root: classes.chip }}
-          label={value || t('Unknown')}
-        />
+    const chip = (<Chip
+      classes={{ root: classes.chip }}
+      label={value || t('Unknown')}
+    />);
+    return (!description && hideEmpty)
+      ? chip
+      : (
+      <Tooltip title={t(description ?? t('No description'))}>
+        {chip}
       </Tooltip>
-    );
+      );
   }
   const preClass = small ? classes.smallPre : classes.pre;
   const iconClass = small ? classes.smallIcon : classes.icon;
+  const tooltip = (<Tooltip title={t(description ?? t('No description'))}>
+    <InformationOutline
+      className={iconClass}
+      fontSize="small"
+      color="secondary"
+    />
+  </Tooltip>);
   return (
     <span className={classes.container}>
       <pre className={preClass}>{value || t('Unknown')}</pre>
-      <Tooltip title={t(description)}>
-        <InformationOutline
-          className={iconClass}
-          fontSize="small"
-          color="secondary"
-        />
-      </Tooltip>
+      {(!description && hideEmpty) ? '' : tooltip}
     </span>
   );
 };

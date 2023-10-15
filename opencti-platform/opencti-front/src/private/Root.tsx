@@ -29,6 +29,7 @@ const rootPrivateQuery = graphql`
       capabilities {
         name
       }
+      unit_system
       default_dashboards {
         id
         name

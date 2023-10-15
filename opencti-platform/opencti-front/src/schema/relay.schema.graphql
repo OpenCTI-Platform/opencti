@@ -20,6 +20,9 @@ scalar StixId
 """STIX Reference Scalar Type"""
 scalar StixRef
 
+"""Arbitrary object"""
+scalar Any
+
 scalar JSON
 
 enum State {
@@ -86,7 +89,8 @@ enum EditOperation {
 
 input EditInput {
   key: String!
-  value: [String]!
+  object_path: String
+  value: [Any]!
   operation: EditOperation
 }
 
@@ -1260,6 +1264,12 @@ input GroupAddInput {
   clientMutationId: String
 }
 
+enum UnitSystem {
+  auto
+  Metric
+  Imperial
+}
+
 enum UsersOrdering {
   name
   user_email
@@ -1407,6 +1417,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  unit_system: UnitSystem
   editContext: [EditUserContext!]
 }
 
@@ -1439,6 +1450,7 @@ type MeUser implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  unit_system: UnitSystem
 }
 
 type SessionDetail {
@@ -1465,6 +1477,7 @@ input UserAddInput {
   objectOrganization: [ID!]
   account_status: String
   account_lock_after_date: DateTime
+  unit_system: String
 }
 
 scalar user_email_String_NotNull_minLength_5_format_email
@@ -10237,6 +10250,10 @@ enum VocabularyCategory {
   threat_actor_individual_sophistication_ov
   tool_types_ov
   note_types_ov
+  gender_ov
+  marital_status_ov
+  hair_color_ov
+  eye_color_ov
 }
 
 type VocabularyFieldDefinition {
@@ -11676,6 +11693,17 @@ input NotifierAddInput {
   authorized_members: [MemberAccessInput!]
 }
 
+type Measure {
+  index: Int
+  measure: Float
+  date_seen: DateTime
+}
+
+input MeasureInput {
+  measure: Float
+  date_seen: DateTime
+}
+
 type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID!
   standard_id: String!
@@ -11728,6 +11756,16 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
+  date_of_birth: DateTime
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
+  height: [Measure!]
+  weight: [Measure!]
+  bornIn: Country
+  ethnicity: Country
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -11758,6 +11796,8 @@ enum ThreatActorsIndividualFilter {
   created_at
   updated_at
   createdBy
+  bornIn
+  ethnicity
   markedBy
   assigneeTo
   labelledBy
@@ -11801,6 +11841,14 @@ input ThreatActorIndividualAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
+  date_of_birth: DateTime
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
+  height: [MeasureInput!]
+  weight: [MeasureInput!]
   confidence: Int
   revoked: Boolean
   lang: String
@@ -11809,6 +11857,8 @@ input ThreatActorIndividualAddInput {
   objectOrganization: [String]
   objectAssignee: [String]
   objectLabel: [String]
+  bornIn: String
+  ethnicity: String
   externalReferences: [String]
   created: DateTime
   modified: DateTime

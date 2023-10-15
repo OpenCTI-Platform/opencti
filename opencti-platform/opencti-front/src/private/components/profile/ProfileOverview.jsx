@@ -107,6 +107,7 @@ const userValidation = (t) => Yup.object().shape({
   language: Yup.string().nullable(),
   description: Yup.string().nullable(),
   otp_activated: Yup.boolean(),
+  unit_system: Yup.string().nullable(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -220,6 +221,7 @@ const ProfileOverviewComponent = (props) => {
     'theme',
     'language',
     'otp_activated',
+    'unit_system',
   ];
   const initialValues = { ...pick(fieldNames, me), objectOrganization };
 
@@ -363,14 +365,26 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto">
-                  <em>{t('Automatic')}</em>
-                </MenuItem>
+                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
                 <MenuItem value="en-us">English</MenuItem>
                 <MenuItem value="fr-fr">Français</MenuItem>
                 <MenuItem value="es-es">Español</MenuItem>
                 <MenuItem value="ja-jp">日本語</MenuItem>
                 <MenuItem value="zh-cn">简化字</MenuItem>
+              </Field>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="unit_system"
+                label={t('Unit System')}
+                fullWidth={true}
+                inputProps={{ name: 'unit_system', id: 'unit_system' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                <MenuItem value={'auto'}><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value={'Imperial'}>{t('Imperial')}</MenuItem>
+                <MenuItem value={'Metric'}>{t('Metric')}</MenuItem>
               </Field>
               <Field
                 component={TextField}
@@ -548,6 +562,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       otp_qr
       description
+      unit_system
       objectOrganization {
         edges {
           node {

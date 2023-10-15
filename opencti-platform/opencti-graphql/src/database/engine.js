@@ -64,6 +64,7 @@ import {
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_LOCATION_COUNTRY,
   isStixObjectAliased,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
@@ -583,6 +584,20 @@ const elCreateIndexTemplate = async (index) => {
                 },
               },
             },
+            height: {
+              type: 'nested',
+              properties: {
+                measure: { type: 'float' },
+                date_seen: { type: 'date' },
+              },
+            },
+            weight: {
+              type: 'nested',
+              properties: {
+                measure: { type: 'float' },
+                date_seen: { type: 'date' },
+              },
+            },
             timestamp: {
               type: 'date',
             },
@@ -698,6 +713,17 @@ const elCreateIndexTemplate = async (index) => {
     throw DatabaseError('[SEARCH] Error creating index template', { error: e });
   });
 };
+export const elUpdateMapping = async (properties) => {
+  const indices = await elPlatformIndices();
+  await engine.indices.putMapping({
+    index: indices.map((i) => i.index),
+    body: {
+      properties
+    }
+  }).catch((e) => {
+    throw DatabaseError('[SEARCH] Error updating index mapping', { error: e });
+  });
+};
 export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
   await elCreateCoreSettings();
   await elCreateLifecyclePolicy();
@@ -761,6 +787,56 @@ export const RUNTIME_ATTRIBUTES = {
         connectionFormat: false,
       });
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
+    },
+  },
+  bornIn: {
+    field: 'bornIn.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_born-in.internal_id)) {
+        def countryId = doc['rel_born-in.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context, user) => {
+      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_LOCATION_COUNTRY],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
+    },
+  },
+  ethnicity: {
+    field: 'ethnicity.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_of-ethnicity.internal_id)) {
+        def countryId = doc['rel_of-ethnicity.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context, user) => {
+      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_LOCATION_COUNTRY],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
     },
   },
   creator: {
@@ -1007,7 +1083,6 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
   }
   return hits;
 };
-
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
@@ -1092,7 +1167,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   }
   return toMap ? hits : Object.values(hits);
 };
-
 export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);
   /* istanbul ignore if */

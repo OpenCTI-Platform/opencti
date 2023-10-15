@@ -409,6 +409,42 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  gender_ov: {
+    description: 'Gender describes the characteristics of men and women that are socially constructed. The definition of gender varies from society to society and can change over time.',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'gender',
+      required: false,
+      multiple: false,
+    }],
+  },
+  marital_status_ov: {
+    description: 'Marital status describes the state of an intimate relationship a person has with one or more people, or none at all.',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'marital_status',
+      required: false,
+      multiple: false,
+    }],
+  },
+  hair_color_ov: {
+    description: 'The color of a person\'s hair.',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'hair_color',
+      required: false,
+      multiple: false,
+    }],
+  },
+  eye_color_ov: {
+    description: 'The color of a person\'s eyes.',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'eye_color',
+      required: false,
+      multiple: false,
+    }],
+  },
 };
 
 // region Database types

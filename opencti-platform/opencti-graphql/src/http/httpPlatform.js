@@ -271,7 +271,7 @@ const createApp = async (app) => {
       await delUserContext(user);
       res.clearCookie(OPENCTI_SESSION);
       req.session.destroy(() => {
-        if (strategy.logout_remote === true && strategy?.logout) {
+        if (strategy?.logout_remote === true && strategy?.logout) {
           req.user = user; // Needed for passport
           strategy.logout(req, (error, request) => {
             if (error) {

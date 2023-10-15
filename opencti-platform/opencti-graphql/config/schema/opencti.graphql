@@ -27,6 +27,7 @@ scalar ConstraintNumber
 scalar Upload
 scalar StixId
 scalar StixRef
+scalar Any
 scalar JSON
 enum State {
   wait
@@ -91,7 +92,8 @@ enum EditOperation {
 }
 input EditInput {
   key: String! # Field name to change
-  value: [String]! # Values to apply
+  object_path: String # Path to apply change (for complex object)
+  value: [Any]! # Values to apply
   operation: EditOperation # Undefined = REPLACE
 }
 input EditContext {
@@ -1205,6 +1207,11 @@ input GroupAddInput {
 }
 
 ############## Users
+enum UnitSystem {
+  auto
+  Metric
+  Imperial
+}
 enum UsersOrdering {
   name
   user_email
@@ -1342,6 +1349,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
+  unit_system: UnitSystem
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1378,6 +1386,7 @@ type MeUser implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  unit_system: UnitSystem
 }
 type SessionDetail {
   id: ID!
@@ -1401,6 +1410,7 @@ input UserAddInput {
   objectOrganization: [ID!]
   account_status: String
   account_lock_after_date: DateTime
+  unit_system: String
 }
 input UserLoginInput {
   email: String!
@@ -5889,7 +5899,6 @@ input CityAddInput {
   file: Upload
 }
 
-################ Countries
 enum CountriesOrdering {
   name
   description

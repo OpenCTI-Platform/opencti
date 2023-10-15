@@ -5,7 +5,7 @@ import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types
 import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { validateFormatSchemaAttribute } from '../../schema/schema-validator';
+import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
 import { internalFindByIds } from '../../database/middleware-loader';
 import {
   availableSettings,
@@ -16,6 +16,8 @@ import {
 import { telemetry } from '../../config/tracing';
 import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';
+import type { EditInput } from '../../generated/graphql';
+import { EditOperation } from '../../generated/graphql';
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 
@@ -79,13 +81,11 @@ const scaleValidation = (scale: Scale) => {
 
 const attributesConfigurationValidation = async (context: AuthContext, user: AuthUser, targetType: string, input: BasicStoreEntityEntitySetting) => {
   const attributesConfiguration = getAttributesConfiguration(input);
-
   if (attributesConfiguration) {
     for (let index = 0; index < attributesConfiguration.length; index += 1) {
       const attr = attributesConfiguration[index];
       const attributeDefinition = schemaAttributesDefinition.getAttribute(targetType, attr.name);
       const relationRefDefinition = schemaRelationsRefDefinition.getRelationRef(targetType, attr.name);
-
       // Mandatory
       if (attr.mandatory) {
         const mandatoryType = attributeDefinition?.mandatoryType || relationRefDefinition?.mandatoryType;
@@ -111,7 +111,11 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
       if (attr.default_values) {
         if (attributeDefinition) {
           const defaultValues = getDefaultValues(attr, attributeDefinition.multiple);
-          validateFormatSchemaAttribute(targetType, attr.name, attributeDefinition, defaultValues);
+          if (defaultValues) {
+            const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
+            const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
+            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, input, checkInput);
+          }
         } else if (relationRefDefinition) {
           if (relationRefDefinition.inputName === INPUT_MARKINGS) {
             if (getDefaultValues(attr, false) !== 'false' && getDefaultValues(attr, false) !== 'true') {

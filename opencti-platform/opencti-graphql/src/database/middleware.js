@@ -2,7 +2,10 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
+import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { JSONPath } from 'jsonpath-plus';
+import * as jsonpatch from 'fast-json-patch';
 import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
@@ -220,7 +223,7 @@ import {
   isDateAttribute,
   isDictionaryAttribute,
   isMultipleAttribute,
-  isNumericAttribute,
+  isNumericAttribute, isObjectAttribute,
   schemaAttributesDefinition
 } from '../schema/schema-attributes';
 import {
@@ -229,7 +232,7 @@ import {
   getEntitySettingFromCache
 } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
@@ -891,12 +894,17 @@ const partialInstanceWithInputs = (instance, inputs) => {
   };
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
-  const { key, value, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
+  const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
   let finalKey = key;
+  // TODO Add support for these restrictions
+  // TODO Change R.head(value) limitation
   if (isDictionaryAttribute(key)) {
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
+  }
+  if (!isMultiple && isObjectAttribute(key)) {
+    throw UnsupportedError('Object update only available for array attributes', { rawInput });
   }
   // region rebuild input values consistency
   if (key.includes('.')) {
@@ -925,13 +933,33 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   } else if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
+      if (isObjectAttribute(key) && object_path) {
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` });
+        const patch = pointers.map((p) => ({ op: operation, path: p, value }));
+        const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+        finalVal = patchedInstance[key];
+      } else {
+        finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
+      }
     } else if (operation === UPDATE_OPERATION_REMOVE) {
-      finalVal = R.filter((n) => !R.includes(n, value), currentValues);
-    } else {
+      if (isObjectAttribute(key)) {
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` }).reverse();
+        const patch = pointers.map((p) => ({ op: operation, path: p }));
+        const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+        finalVal = patchedInstance[key];
+      } else {
+        finalVal = R.filter((n) => !R.includes(n, value), currentValues);
+      }
+    } else if (isObjectAttribute(key)) {
+      const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
+      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
+      const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
+      const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+      finalVal = patchedInstance[key];
+    } else { // Replace general
       finalVal = value;
     }
-    if (R.equals((finalVal ?? []).sort(), currentValues.sort())) {
+    if (compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
   } else {
@@ -1701,22 +1729,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
           // TODO JRI Rework that part
           const previous = getPreviousInstanceValue(filteredInput.key, instance);
-          if (filteredInput.operation === UPDATE_OPERATION_ADD) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: filteredInput.value.filter((n) => !(previous || []).includes(n)),
-              previous,
-            };
-          }
-          if (filteredInput.operation === UPDATE_OPERATION_REMOVE) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: (previous || []).filter((n) => !filteredInput.value.includes(n)),
-              previous,
-            };
-          }
           // Specific input resolution for workflow
           if (filteredInput.key === X_WORKFLOW_ID) {
             // workflow_id is not a relation but message must contain the name and not the internal id
@@ -1728,6 +1740,25 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
               previous,
             };
           }
+          // Check symmetric difference for add and remove
+          if (filteredInput.operation === UPDATE_OPERATION_ADD || filteredInput.operation === UPDATE_OPERATION_REMOVE) {
+            return {
+              operation: filteredInput.operation,
+              key: filteredInput.key,
+              value: R.symmetricDifference(previous ?? [], filteredInput.value ?? []),
+              previous,
+            };
+          }
+          // For replace, if its a complex object, do a simple diff
+          if (filteredInput.operation === UPDATE_OPERATION_REPLACE && isObjectAttribute(filteredInput.key)) {
+            return {
+              operation: filteredInput.operation,
+              key: filteredInput.key,
+              value: R.difference(filteredInput.value ?? [], previous ?? []),
+              previous,
+            };
+          }
+          // For simple values, just keep everything in the replace
           return { ...filteredInput, previous };
         });
         updatedInputs.push(...updatedInputsFiltered);
@@ -1772,7 +1803,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, inputs, entitySetting, initial);
+  await validateInputUpdate(context, user, initial.entity_type, initial, updates, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;

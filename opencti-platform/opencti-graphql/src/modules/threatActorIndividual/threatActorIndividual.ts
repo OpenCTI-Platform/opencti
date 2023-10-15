@@ -1,8 +1,9 @@
+import type { JSONSchemaType } from 'ajv';
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { objectOrganization } from '../../schema/stixRefRelationship';
+import { bornIn, ethnicity, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 import threatActorIndividualResolvers from './threatActorIndividual-resolvers';
@@ -11,6 +12,10 @@ import {
   RELATION_ATTRIBUTED_TO,
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
+  RELATION_EMPLOYED_BY,
+  RELATION_RESIDES_IN,
+  RELATION_CITIZEN_OF,
+  RELATION_NATIONAL_OF,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
   RELATION_LOCATED_AT,
@@ -43,6 +48,24 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+
+interface Measures {
+  measure: number | null
+  date_seen: object | string | null
+}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export const schemaMeasure: JSONSchemaType<Measures[]> = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      measure: { type: ['null', 'number'] },
+      date_seen: { type: ['null', 'string', 'object'] },
+    },
+    required: ['measure', 'date_seen']
+  }
+};
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
@@ -85,6 +108,14 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Primary motivation' },
     { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true, label: 'Secondary motivations' },
     { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false, label: 'Personal motivations' },
+    { name: 'date_of_birth', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'gender', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'job_title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'marital_status', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'eye_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'hair_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'height', type: 'object', mandatoryType: 'no', multiple: true, upsert: true, schemaDef: schemaMeasure },
+    { name: 'weight', type: 'object', mandatoryType: 'no', multiple: true, upsert: true, schemaDef: schemaMeasure },
   ],
   relations: [
     {
@@ -177,9 +208,32 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
+    { name: RELATION_EMPLOYED_BY,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_RESIDES_IN,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_CITIZEN_OF,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_NATIONAL_OF,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
   ],
   relationsRefs: [
     objectOrganization,
+    bornIn,
+    ethnicity,
   ],
   representative: (stix: StixThreatActorIndividual) => {
     return stix.name;

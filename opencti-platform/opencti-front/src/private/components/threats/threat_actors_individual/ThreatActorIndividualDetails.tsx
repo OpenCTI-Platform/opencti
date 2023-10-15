@@ -112,14 +112,13 @@ ThreatActorIndividualDetailsProps
                   {t('Threat actor types')}
                 </Typography>
                 <FieldOrEmpty source={data.threat_actor_types}>
-                  {data.threat_actor_types
-                    && data.threat_actor_types.map((threatActorIndividualType) => (
+                  {data.threat_actor_types?.map((threatActorIndividualType) => (
                       <Chip
                         key={threatActorIndividualType}
                         classes={{ root: classes.chip }}
                         label={threatActorIndividualType}
                       />
-                    ))}
+                  ))}
                 </FieldOrEmpty>
                 <Typography
                   variant="h3"

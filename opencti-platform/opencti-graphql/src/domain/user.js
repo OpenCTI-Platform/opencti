@@ -442,6 +442,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('external', newUser.external ? newUser.external : false),
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
+    R.assoc('unit_system', newUser.unit_system),
     R.dissoc('roles')
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
@@ -899,6 +900,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     login_provider: provider,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
+    unit_system: user.unit_system,
     groups: user.groups,
     roles: user.roles,
     impersonate: impersonate !== undefined,

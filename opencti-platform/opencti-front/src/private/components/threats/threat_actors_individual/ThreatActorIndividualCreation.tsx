@@ -10,7 +10,11 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig } from 'formik/dist/types';
+import { FormikConfig, FormikErrors } from 'formik/dist/types';
+import { Box, Tab, Tabs } from '@mui/material';
+import Badge, { BadgeProps } from '@mui/material/Badge';
+import { styled } from '@mui/material/styles';
+import CountryField from '@components/common/form/CountryField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -28,13 +32,18 @@ import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import {
+  ThreatActorsIndividualCardsPaginationQuery$variables,
+} from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import {
+  MeasureInput,
   ThreatActorIndividualCreationMutation,
   ThreatActorIndividualCreationMutation$variables,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
-import {
-  ThreatActorsIndividualCardsPaginationQuery$variables,
-} from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import DatePickerField from '../../../../components/DatePickerField';
+import { HeightFieldAdd } from '../../common/form/HeightField';
+import { WeightFieldAdd } from '../../common/form/WeightField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -74,6 +83,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+interface ErrorBadgeProps extends BadgeProps {
+  errors?: FormikErrors<ThreatActorIndividualAddInput>;
+  width?: number,
+}
+
+const ErrorBadge = styled(Badge)<ErrorBadgeProps>(({ errors = {}, width = 80 }) => ({
+  color: Object.keys(errors).length > 0 ? 'red' : 'inherit',
+  width: Object.keys(errors).length > 0 ? width : 'auto',
+  '& .MuiBadge-badge': {
+    color: 'white',
+    backgroundColor: 'red',
+  },
+}));
+
 const ThreatActorIndividualMutation = graphql`
   mutation ThreatActorIndividualCreationMutation($input: ThreatActorIndividualAddInput!) {
     threatActorIndividualAdd(input: $input) {
@@ -99,6 +122,16 @@ interface ThreatActorIndividualAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  bornIn: Option | undefined
+  ethnicity: Option | undefined
+  date_of_birth: Date | null
+  gender: string | null
+  marital_status: string | null
+  job_title: string | undefined
+  eye_color: string | null
+  hair_color: string | null
+  height: MeasureInput[]
+  weight: MeasureInput[]
 }
 
 interface ThreatActorIndividualFormProps {
@@ -124,17 +157,47 @@ ThreatActorIndividualFormProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { heightsConverterSave, weightsConverterSave } = useUserMetric();
+  const [currentTab, setCurrentTab] = useState(0);
+  const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
+    date_of_birth: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a date (yyyy-MM-dd)')),
+    bornIn: Yup.object().nullable(),
+    ethnicity: Yup.object().nullable(),
+    gender: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    marital_status: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    job_title: Yup.string()
+      .max(250, t('The value is too long')),
+    eye_color: Yup.string().nullable(),
+    hair_color: Yup.string().nullable(),
+    height: Yup.array().of(
+      Yup.object().shape({
+        measure: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        date_seen: Yup.date().nullable()
+          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+      }),
+    ),
+    weight: Yup.array().of(
+      Yup.object().shape({
+        measure: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        date_seen: Yup.date().nullable()
+          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+      }),
+    ),
   };
-  const threatActorIndividualValidator = useSchemaCreationValidation(
-    THREAT_ACTOR_INDIVIDUAL_TYPE,
-    basicShape,
-  );
-
+  const threatActorIndividualValidator = useSchemaCreationValidation(THREAT_ACTOR_INDIVIDUAL_TYPE, basicShape);
   const [commit] = useMutation<ThreatActorIndividualCreationMutation>(ThreatActorIndividualMutation);
 
   const onSubmit: FormikConfig<ThreatActorIndividualAddInput>['onSubmit'] = (
@@ -142,20 +205,28 @@ ThreatActorIndividualFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: ThreatActorIndividualCreationMutation$variables['input'] = {
-      name: values.name,
-      description: values.description,
-      threat_actor_types: values.threat_actor_types,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+      name: values?.name,
+      description: values?.description,
+      threat_actor_types: values?.threat_actor_types,
+      confidence: parseInt(String(values?.confidence), 10),
+      createdBy: values?.createdBy?.value,
+      objectMarking: values?.objectMarking.map((v) => v.value),
+      objectLabel: values?.objectLabel.map((v) => v.value),
+      externalReferences: values?.externalReferences.map(({ value }) => value),
+      file: values?.file,
+      bornIn: values?.bornIn?.value,
+      ethnicity: values?.ethnicity?.value,
+      date_of_birth: values?.date_of_birth,
+      gender: values?.gender,
+      marital_status: values?.marital_status,
+      job_title: values?.job_title,
+      eye_color: values?.eye_color,
+      hair_color: values?.hair_color,
+      height: heightsConverterSave(values?.height ?? []),
+      weight: weightsConverterSave(values?.weight ?? []),
     };
     commit({
-      variables: {
-        input,
-      },
+      variables: { input },
       updater: (store) => {
         if (updater) {
           updater(store, 'threatActorIndividualAdd');
@@ -185,6 +256,16 @@ ThreatActorIndividualFormProps
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    bornIn: undefined,
+    ethnicity: undefined,
+    date_of_birth: null,
+    gender: null,
+    marital_status: null,
+    job_title: undefined,
+    eye_color: null,
+    hair_color: null,
+    height: [],
+    weight: [],
   });
 
   return (
@@ -194,63 +275,180 @@ ThreatActorIndividualFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-            ]}
-          />
-          <OpenVocabField
-            type="threat-actor-individual-type-ov"
-            name="threat_actor_types"
-            label={t('Threat actor types')}
-            multiple={true}
-            containerStyle={{ width: '100%', marginTop: 20 }}
-            onChange={setFieldValue}
-          />
-          <ConfidenceField
-            entityType="Threat-Actor-Individual"
-            containerStyle={{ width: '100%', marginTop: 20 }}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <CustomFileUploader setFieldValue={setFieldValue} />
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
+        <Form>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={currentTab} onChange={handleChangeTab}>
+              <Tab id='create-overview' label={
+                <ErrorBadge badgeContent={Object.keys(errors).length}
+                  errors={errors}
+                >
+                  {t('Overview')}
+                </ErrorBadge>}
+              />
+              <Tab id='threat-demographics' label={t('Demographics')} />
+              <Tab id='threat-bio' label={t('Biographics')} />
+            </Tabs>
+          </Box>
+          {currentTab === 0 && (
+            <div>
+              <Field
+                component={TextField}
+                style={{ marginTop: 20 }}
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+                detectDuplicate={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Malware',
+                ]}
+              />
+              <OpenVocabField
+                type="threat-actor-individual-type-ov"
+                name="threat_actor_types"
+                label={t('Threat actor types')}
+                multiple={true}
+                containerStyle={{ width: '100%', marginTop: 20 }}
+                onChange={setFieldValue}
+              />
+              <ConfidenceField
+                entityType="Threat-Actor-Individual"
+                containerStyle={{ width: '100%', marginTop: 20 }}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+              <CreatedByField
+                name="createdBy"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <ObjectLabelField
+                name="objectLabel"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                values={values?.objectLabel}
+              />
+              <ObjectMarkingField
+                name="objectMarking"
+                style={fieldSpacingContainerStyle}
+              />
+              <ExternalReferencesField
+                name="externalReferences"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                values={values?.externalReferences}
+              />
+              <CustomFileUploader setFieldValue={setFieldValue}
+              />
+            </div>
+          )}
+          {currentTab === 1 && (
+            <div>
+              <CountryField
+                id="PlaceOfBirth"
+                name="bornIn"
+                label={t('Place of Birth')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
+              />
+              <CountryField
+                id="Ethnicity"
+                name="ethnicity"
+                label={t('Ethnicity')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
+              />
+              <Field
+                id="DateOfBirth"
+                component={DatePickerField}
+                name="date_of_birth"
+                onSubmit={setFieldValue}
+                TextFieldProps={{
+                  label: t('Date of Birth'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <OpenVocabField
+                name="marital_status"
+                label={t('Marital Status')}
+                type="marital_status_ov"
+                variant="edit"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
+              />
+              <OpenVocabField
+                name="gender"
+                label={t('Gender')}
+                type="gender_ov"
+                variant="edit"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
+              />
+              <Field
+                component={MarkdownField}
+                name="job_title"
+                id="job_title"
+                label={t('Job Title')}
+                fullWidth={true}
+                multiline={false}
+                rows="1"
+                style={{ marginTop: 20 }}
+                onSubmit={setFieldValue}
+              />
+            </div>
+          )}
+          {currentTab === 2 && (
+            <div>
+              <OpenVocabField
+                name="eye_color"
+                label={t('Eye Color')}
+                type="eye_color_ov"
+                variant="edit"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
+              />
+              <OpenVocabField
+                name="hair_color"
+                label={t('Hair Color')}
+                type="hair_color_ov"
+                variant="edit"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
+              />
+              <HeightFieldAdd
+                id='new_height'
+                name="height"
+                values={values?.height}
+                containerStyle={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <WeightFieldAdd
+                name="weight"
+                values={values?.weight}
+                containerStyle={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+            </div>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"
