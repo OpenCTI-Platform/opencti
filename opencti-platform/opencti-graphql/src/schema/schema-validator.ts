@@ -79,7 +79,7 @@ export const validateAndFormatSchemaAttribute = (
     }
   }
   // Simple object must be eventually tested as the model is not complete yet
-  if (attributeDefinition) {
+  if (attributeDefinition && editInput.value) {
     // Test multiple for all types
     if (!attributeDefinition.multiple && editInput.value.length > 1) {
       throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
