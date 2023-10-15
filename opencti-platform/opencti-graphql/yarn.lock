@@ -3210,7 +3210,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:1.6.0, @opentelemetry/api@npm:^1.0.0":
+"@opentelemetry/api@npm:1.6.0, @opentelemetry/api@npm:^1.0.0, @opentelemetry/api@npm:^1.4.0":
   version: 1.6.0
   resolution: "@opentelemetry/api@npm:1.6.0"
   checksum: 3283b78b62a39f6568eaa050ac7045fcca747679e255874f6d2107cb8e1a3b2e10bfbf553c3e82a72500fb5fdca49dc07a5fe27fd6980debac24506cca638859
@@ -10787,7 +10787,7 @@ __metadata:
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
     passport-saml: 3.2.4
-    prom-client: 14.2.0
+    prom-client: 15.0.0
     python-shell: 5.0.0
     ramda: 0.29.1
     redlock: 5.0.0-beta.2
@@ -11316,12 +11316,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prom-client@npm:14.2.0":
-  version: 14.2.0
-  resolution: "prom-client@npm:14.2.0"
+"prom-client@npm:15.0.0":
+  version: 15.0.0
+  resolution: "prom-client@npm:15.0.0"
   dependencies:
+    "@opentelemetry/api": ^1.4.0
     tdigest: ^0.1.1
-  checksum: d4c04e57616c72643dd02862d0d4bde09cf8869a19d0aef5e7b785e6e27d02439b66cdc165e3492f62d579fa91579183820870cc757a09b99399d2d02f46b9f1
+  checksum: a447cc4c7d87e610f9ed9c018dcbe759f06d32b6c3d401d90cafa6b15feee54e0ec5d0ee1d4925db905ea35c6e894be842de25e6bc0b5d415147a0b714c248f8
   languageName: node
   linkType: hard
 
