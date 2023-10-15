@@ -26,6 +26,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../form/ConfidenceField';
+import { convertMarkings } from '../../../../utils/edition';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -236,18 +237,12 @@ const StixDomainObjectEditionContainer = (props) => {
     }
   };
 
-  const handleChangeObjectMarking = (name, values) => {
+  const handleChangeObjectMarking = (name, values, operation) => {
     if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(stixDomainObject);
+      const currentMarkingDefinitions = convertMarkings(stixDomainObject);
       const added = R.difference(values, currentMarkingDefinitions);
       const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
+      if (added.length > 0 && operation !== 'replace') {
         commitMutation({
           mutation: stixDomainObjectMutationRelationAdd,
           variables: {
@@ -259,7 +254,15 @@ const StixDomainObjectEditionContainer = (props) => {
           },
         });
       }
-      if (removed.length > 0) {
+      if (operation === 'replace') {
+        commitMutation({
+          mutation: stixDomainObjectMutationFieldPatch,
+          variables: {
+            id: stixDomainObject.id,
+            input: [{ key: name, value: values.map((m) => m.value), operation }],
+          },
+        });
+      } else if (removed.length > 0) {
         commitMutation({
           mutation: stixDomainObjectMutationRelationDelete,
           variables: {
@@ -279,13 +282,7 @@ const StixDomainObjectEditionContainer = (props) => {
       label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
       value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
     };
-  const objectMarking = R.pipe(
-    R.pathOr([], ['objectMarking', 'edges']),
-    R.map((n) => ({
-      label: n.node.definition,
-      value: n.node.id,
-    })),
-  )(stixDomainObject);
+  const objectMarking = convertMarkings(stixDomainObject);
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
@@ -449,6 +446,7 @@ const StixDomainObjectEditionContainer = (props) => {
                     fieldname="objectMarking"
                   />
                 }
+                setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />
               {enableReferences && (

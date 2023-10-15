@@ -253,6 +253,7 @@ const ChannelEditionOverviewComponent = (props) => {
                 fieldname="objectMarking"
               />
             }
+            setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (

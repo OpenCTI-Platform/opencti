@@ -322,6 +322,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
+            setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (

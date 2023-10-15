@@ -235,6 +235,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
+import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 
@@ -1044,11 +1045,17 @@ export const hashMergeValidation = (instances) => {
 // region mutation update
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = (targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
-  const filtered = [];
+const filterTargetByExisting = async (context, targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
   const cache = [];
+  const filtered = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
+  const markingSources = sources.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
+  const markingTargets = targets.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
+  const markings = [...markingSources, ...markingTargets];
+  const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
+  const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
+  const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
@@ -1067,13 +1074,15 @@ const filterTargetByExisting = (targetEntity, redirectSide, sourcesDependencies,
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
     const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
     const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
+    // Markings duplication definition group
+    const isMarkingToKeep = source.i_relation.entity_type === RELATION_OBJECT_MARKING ? filteredMarkingIds.includes(source.internal_id) : true;
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !isSelfMeta && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
   }
-  return filtered;
+  return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
 const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
@@ -1122,9 +1131,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const relationsToRedirectFrom = filterTargetByExisting(targetEntity, 'from', sourcesDependencies, targetDependencies);
+  const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
-  const relationsFromRedirectTo = filterTargetByExisting(targetEntity, 'to', sourcesDependencies, targetDependencies);
+  const { deletions: toDeletions, redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
@@ -1222,18 +1231,13 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  const updatedRelations = updateConnections
-    .filter((u) => isStixRelationshipExceptRef(u.entity_type))
-    .map((c) => c.standard_id);
+  const updatedRelations = updateConnections.filter((u) => isStixRelationshipExceptRef(u.entity_type)).map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
-  const updateBulkEntities = entries
-    .filter(([, values]) => values.length === 1)
-    .map(([, values]) => values)
-    .flat();
+  const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
@@ -1268,8 +1272,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     },
     { concurrency: ES_MAX_CONCURRENCY }
   );
+  // Take care of relations deletions to prevent duplicate marking definitions.
+  const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, sourceEntities, storeLoadByIdWithRefs);
+  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdWithRefs);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1979,7 +1985,14 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         if (relType === RELATION_GRANTED_TO && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
         }
-        const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
+
+        let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
+
+        if (relType === RELATION_OBJECT_MARKING) {
+          const markingsCleaned = await handleMarkingOperations(context, initial.objectMarking, refs, operation);
+          ({ operation, refs } = { operation: markingsCleaned.operation, refs: markingsCleaned.refs });
+        }
+
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
           const currentRels = await listAllRelations(context, user, relType, { fromId: id });
@@ -2299,6 +2312,7 @@ const buildRelationInput = (input) => {
 };
 const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
+
   if (!to || R.isEmpty(targets)) return [];
   const relations = [];
   for (let i = 0; i < targets.length; i += 1) {
@@ -2564,7 +2578,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   return { element, event: null, isCreation: false };
 };
 
-const buildRelationData = async (context, user, input, opts = {}) => {
+export const buildRelationData = async (context, user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -2680,16 +2694,16 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       // If user is not part of the platform organization, put its own organizations
       relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
+    const markingsFiltered = await cleanMarkings(context, input.objectMarking);
+    relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
     relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
     relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
   if (isStixSightingRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
   }
   // 05. Prepare the final data
   const created = R.pipe(
@@ -3001,7 +3015,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
   const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o));
-  const appendMetaRelationships = (inputField, relType) => {
+  const appendMetaRelationships = async (inputField, relType) => {
     if (input[inputField] || relType === RELATION_GRANTED_TO) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
@@ -3011,6 +3025,9 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
           // If user is not part of the platform organization, put its own organizations
           relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
+      } else if (relType === RELATION_OBJECT_MARKING) {
+        const markingsFiltered = await cleanMarkings(context, input[inputField]);
+        relToCreate.push(...buildInnerRelation(data, markingsFiltered, relType));
       } else if (input[inputField]) {
         const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
         relToCreate.push(...buildInnerRelation(data, instancesToCreate, relType));
@@ -3036,7 +3053,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
   for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
     const inputField = inputFields[fieldIndex];
-    appendMetaRelationships(inputField.inputName, inputField.databaseName);
+    await appendMetaRelationships(inputField.inputName, inputField.databaseName);
   }
 
   // Transaction succeed, complete the result to send it back

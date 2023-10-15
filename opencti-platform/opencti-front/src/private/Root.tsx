@@ -46,6 +46,15 @@ const rootPrivateQuery = graphql`
           definition
         }
       }
+      allowed_marking {
+        id
+        entity_type
+        standard_id
+        definition_type
+        definition
+        x_opencti_color
+        x_opencti_order
+      }
     }
     settings {
       id

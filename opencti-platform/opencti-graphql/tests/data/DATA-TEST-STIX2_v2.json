@@ -18,6 +18,7 @@
       "type": "marking-definition",
       "spec_version": "2.1",
       "definition_type": "TLP",
+      "x_opencti_order": 3,
       "definition": {
         "TLP": "TLP:TEST"
       },

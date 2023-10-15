@@ -6,8 +6,8 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
-import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import { groupAddRelation } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);

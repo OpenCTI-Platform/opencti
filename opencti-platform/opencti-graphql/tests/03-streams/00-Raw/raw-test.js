@@ -17,7 +17,7 @@ describe('Raw streams tests', () => {
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
-      expect(createEventsByTypes['marking-definition'].length).toBe(8);
+      expect(createEventsByTypes['marking-definition'].length).toBe(12);
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(28);
@@ -28,7 +28,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(330); // 328 created at init + 2 created in tests
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(688);
+      expect(createEvents.length).toBe(692);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -36,7 +36,7 @@ describe('Raw streams tests', () => {
       }
       // 02 - CHECK UPDATE EVENTS
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(131);
+      expect(updateEvents.length).toBe(130);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
       expect(updateEventsByTypes.report.length).toBe(4);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
@@ -51,7 +51,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(71);
+      expect(deleteEvents.length).toBe(75);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];

@@ -116,8 +116,10 @@ const useFormEditor = (
       });
     }
   };
-  const changeMarking = (name: string, values: Option[]) => {
-    changeMultiple(name, values, 'object-marking', convertMarkings);
+  const changeMarking = (name: string, values: Option[], operation: string | undefined) => {
+    if (operation === 'replace') {
+      commitFieldPatch({ variables: { id: data.id, input: [{ key: name, value: values.map((m) => m.value), operation }] } });
+    } else changeMultiple(name, values, 'object-marking', convertMarkings);
   };
   const changeAssignee = (name: string, values: Option[]) => {
     changeMultiple(name, values, 'object-assignee', convertAssignees);

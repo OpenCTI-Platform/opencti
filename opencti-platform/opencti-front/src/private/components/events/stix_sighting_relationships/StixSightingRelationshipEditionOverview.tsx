@@ -411,6 +411,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   <SubscriptionFocus context={editContext} fieldname="objectMarking" />
                 }
                 disabled={inferred}
+                setFieldValue={setFieldValue}
                 onChange={editor.changeMarking}
               />
               <Field

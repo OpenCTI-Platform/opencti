@@ -198,6 +198,9 @@ const i18n = {
       'Do you want to disable this rule?': '¿Quieres desactivar esta regla?',
       'Do you want to delete this workbench?':
         '¿Quieres eliminar este espacio de trabajo?',
+      'You are about to change the marking with another rank.':
+          'Está a punto de cambiar la marca con otro rango.',
+      'Are you sure you want to make the change?': 'Estás seguro de que quieres hacer el cambio?',
       'Applying this rule on the existing data':
         'Aplicando esta regla a los datos existentes',
       'This rule has been applied on the existing data':
@@ -2395,6 +2398,9 @@ const i18n = {
         'Souhaitez-vous désactiver cette règle ?',
       'Do you want to delete this workbench?':
         'Souhaitez-vous supprimer cet espace de travail ?',
+      'You are about to change the marking with another rank.':
+        'Vous êtes sur le point de changer le rang d\'un marking de même type.',
+      'Are you sure you want to make the change?': 'Êtes-vous sûr de vouloir effectuer le changement ?',
       'Applying this rule on the existing data':
         "En cours d'application de cette règle sur les données de la plateforme",
       'This rule has been applied on the existing data':
@@ -4529,6 +4535,9 @@ const i18n = {
       'Do you want to disable this rule?': 'このルールを無効にしますか？',
       'Do you want to delete this workbench?':
         'このワークスペースを削除しますか?',
+      'You are about to change the marking with another rank.':
+          '別のランクにマークを変更しようとしています。',
+      'Are you sure you want to make the change?': '本当に変更しますか？',
       'Applying this rule on the existing data':
         '既存のデータにルールを適用しています',
       'This rule has been applied on the existing data':
@@ -6601,6 +6610,9 @@ const i18n = {
       'Do you want to enable this rule?': '是否要启用该规则？',
       'Do you want to disable this rule?': '是否要禁用该规则？',
       'Do you want to delete this workbench?': '是否要丢弃此捆绑包?',
+      'You are about to change the marking with another rank.':
+          '您即将用另一个级别更改标记。',
+      'Are you sure you want to make the change?': '您确定要更改吗？',
       'Applying this rule on the existing data': '对现有数据应用此规则',
       'This rule has been applied on the existing data':
         '该规则已应用于现有数据',

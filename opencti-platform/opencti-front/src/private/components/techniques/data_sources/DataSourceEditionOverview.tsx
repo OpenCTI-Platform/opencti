@@ -327,6 +327,7 @@ DataSourceEditionOverviewProps
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
+            setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           <OpenVocabField

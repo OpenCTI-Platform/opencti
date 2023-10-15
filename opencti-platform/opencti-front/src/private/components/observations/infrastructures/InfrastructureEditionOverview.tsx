@@ -403,6 +403,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
+            setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (
