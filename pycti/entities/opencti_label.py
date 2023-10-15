@@ -52,7 +52,7 @@ class Label:
         LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
         query = (
             """
-            query Labels($filters: [LabelsFiltering], search: $search, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
+            query Labels($filters: [LabelsFiltering], $search: String, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
                 labels(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
