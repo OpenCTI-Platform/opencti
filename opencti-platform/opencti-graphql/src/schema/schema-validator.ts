@@ -3,7 +3,16 @@ import Ajv from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { JSONPath } from 'jsonpath-plus';
-import { isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from './schema-attributes';
+import {
+  isBooleanAttribute,
+  isDateAttribute,
+  isDictionaryAttribute,
+  isJsonAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  isStringAttribute,
+  schemaAttributesDefinition
+} from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isNotEmptyField } from '../database/utils';
@@ -15,6 +24,7 @@ import { telemetry } from '../config/tracing';
 import type { AttributeDefinition } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
+import { utcDate } from '../utils/format';
 
 const ajv = new Ajv();
 
@@ -34,6 +44,7 @@ export const validateFormatSchemaAttribute = (
   initial: object,
   editInput: EditInput
 ) => {
+  // Complex object must be completely enforced
   if (isJsonAttribute(attributeName) || isObjectAttribute(attributeName)) {
     if (!attributeDefinition) {
       throw ValidationError(attributeName, {
@@ -65,6 +76,53 @@ export const validateFormatSchemaAttribute = (
           throw ValidationError(attributeName, { message: 'The Object schema is not valid', data: validate.errors });
         }
       }
+    }
+  }
+  // Simple object must be eventually tested as the model is not complete yet
+  if (attributeDefinition) {
+    // Test multiple for all types
+    if (!attributeDefinition.multiple && editInput.value.length > 1) {
+      throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
+    }
+    // Test string value
+    if (isStringAttribute(attributeName)) {
+      editInput.value.forEach((value) => {
+        if (value && !R.is(String, value)) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+        }
+      });
+    }
+    // Test boolean value (Accept string)
+    if (isBooleanAttribute(attributeName)) {
+      editInput.value.forEach((value) => {
+        if (value && !R.is(Boolean, value) && !R.is(String, value)) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
+        }
+      });
+    }
+    // Test date value (Accept only ISO date string)
+    if (isDateAttribute(attributeName)) {
+      editInput.value.forEach((value) => {
+        if (value && !R.is(String, value) && !utcDate(value).isValid()) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
+        }
+      });
+    }
+    // Test numeric value (Accept string)
+    if (isNumericAttribute(attributeName)) {
+      editInput.value.forEach((value) => {
+        if (value && Number.isNaN(Number(value))) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a numeric/string`, data: editInput });
+        }
+      });
+    }
+    // Test dictionary (partial patch only with string)
+    if (isDictionaryAttribute(attributeName)) {
+      editInput.value.forEach((value) => {
+        if (value && !R.is(String, value)) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+        }
+      });
     }
   }
 };
