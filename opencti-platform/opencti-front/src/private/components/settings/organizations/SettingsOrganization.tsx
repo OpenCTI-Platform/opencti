@@ -12,6 +12,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import EnterpriseEdition from '@components/common/EnterpriseEdition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -25,8 +26,13 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  BYPASS,
+  SETTINGS,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles({
   container: {
@@ -113,6 +119,8 @@ const SettingsOrganization = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const { me } = useAuth();
+  const setAccess = useGranted([SETTINGS_SETACCESSES]);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const organization = useFragment<SettingsOrganization_organization$key>(
     settingsOrganizationFragment,
     organizationData,
@@ -279,8 +287,12 @@ const SettingsOrganization = ({
             </Paper>
           </div>
         </Grid>
-        <Triggers recipientId={organization.id} filter="organization_ids" />
-        <SettingsOrganizationUsers organization={organization}/>
+        { setAccess || isEnterpriseEdition ? <>
+          <Triggers recipientId={organization.id} filter="organization_ids" />
+          <SettingsOrganizationUsers organization={organization}/>
+        </> : <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <EnterpriseEdition message={'You need to activate OpenCTI enterprise edition to access organization administration.'}/>
+        </Grid> }
       </Grid>
     </div>
   );

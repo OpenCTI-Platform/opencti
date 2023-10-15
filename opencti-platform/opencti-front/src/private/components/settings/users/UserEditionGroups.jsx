@@ -132,10 +132,7 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
     @argumentDefinitions(
       groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
       groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-      organizationsOrderBy: {
-        type: "OrganizationsOrdering"
-        defaultValue: name
-      }
+      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
       organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id

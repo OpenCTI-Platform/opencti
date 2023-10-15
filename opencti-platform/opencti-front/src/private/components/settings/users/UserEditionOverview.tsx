@@ -64,7 +64,7 @@ const userMutationGroupDelete = graphql`
   }
 `;
 
-const userValidation = (t: (value: string) => string) => Yup.object().shape({
+const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmin: boolean) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
     .required(t('This field is required'))
@@ -75,6 +75,7 @@ const userValidation = (t: (value: string) => string) => Yup.object().shape({
   description: Yup.string().nullable(),
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
+  objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -91,7 +92,7 @@ const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t } = useFormatter();
-  const { settings } = useAuth();
+  const { me, settings } = useAuth();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
@@ -132,7 +133,7 @@ UserEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string | Date) => {
-    userValidation(t)
+    userValidation(t, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -177,7 +178,7 @@ UserEditionOverviewComponentProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={userValidation(t)}
+      validationSchema={userValidation(t, userIsOnlyOrganizationAdmin)}
       onSubmit={() => {}}
     >
       {() => (
@@ -271,7 +272,7 @@ UserEditionOverviewComponentProps
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
-            disabled={userIsOnlyOrganizationAdmin}
+            filters={userIsOnlyOrganizationAdmin ? [{ key: 'authorized_authorities', values: [me.id] }] : null}
             onChange={handleChangeObjectOrganization}
             style={fieldSpacingContainerStyle}
             outlined={false}
@@ -333,10 +334,7 @@ const UserEditionOverview = createFragmentContainer(
       @argumentDefinitions(
         rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
         rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-        organizationsOrderBy: {
-          type: "OrganizationsOrdering"
-          defaultValue: name
-        }
+        organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         id

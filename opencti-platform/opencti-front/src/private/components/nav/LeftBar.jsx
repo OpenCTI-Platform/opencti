@@ -30,7 +30,7 @@ import {
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
-  ORGA_ADMIN,
+  VIRTUAL_ORGANIZATION_ADMIN,
   KNOWLEDGE,
   MODULES,
   SETTINGS,
@@ -107,7 +107,7 @@ const LeftBar = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToModules = useGranted([MODULES]);
   const isGrantedToSettings = useGranted([SETTINGS]);
-  const isOrganizationAdmin = useGranted([ORGA_ADMIN]);
+  const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -446,7 +446,7 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           </Security>
-          <Security needs={[SETTINGS, ORGA_ADMIN]}>
+          <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
               {
                 (isOrganizationAdmin && !isGrantedToSettings) ? (
                   <StyledTooltip title={!navOpen && t('Settings')} placement="right">

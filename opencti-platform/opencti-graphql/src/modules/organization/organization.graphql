@@ -114,8 +114,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderMode: OrderingMode
     search: String
     filters: [UsersFiltering]
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
-  authorized_authorities: [String] @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  authorized_authorities: [String] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   grantable_groups: [Group!]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection

@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import UserEditionOrganizationsAdmin from '@components/settings/users/UserEditionOrganizationsAdmin';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
@@ -14,6 +15,7 @@ import UserEditionGroups from './UserEditionGroups';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEdition_user$data } from './__generated__/UserEdition_user.graphql';
 import { Theme } from '../../../../components/Theme';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -42,6 +44,7 @@ interface UserEditionProps {
 const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const { editContext } = user;
   const external = user.external === true;
   const [currentTab, setCurrentTab] = useState(0);
@@ -76,6 +79,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user })
             <Tab label={t('Overview')} />
             <Tab disabled={external} label={t('Password')} />
             <Tab label={t('Groups')} />
+            { hasSetAccess && <Tab label={t('Organizations admin')} /> }
           </Tabs>
         </Box>
         {currentTab === 0 && (
@@ -86,6 +90,9 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user })
         )}
         {currentTab === 2 && (
           <UserEditionGroups user={user} />
+        )}
+        {hasSetAccess && currentTab === 3 && (
+          <UserEditionOrganizationsAdmin user={user} />
         )}
       </div>
     </>
@@ -117,6 +124,11 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
       @arguments(
         groupsOrderBy: $groupsOrderBy
         groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
+      ...UserEditionOrganizationsAdmin_user
+      @arguments(
         organizationsOrderBy: $organizationsOrderBy
         organizationsOrderMode: $organizationsOrderMode
       )

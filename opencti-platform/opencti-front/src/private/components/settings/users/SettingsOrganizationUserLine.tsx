@@ -1,23 +1,25 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { AccountCircleOutlined, AdminPanelSettingsOutlined, KeyboardArrowRightOutlined, MoreVertOutlined, PersonOutlined } from '@mui/icons-material';
+import {
+  AccountCircleOutlined,
+  AdminPanelSettingsOutlined,
+  KeyboardArrowRightOutlined,
+  PersonOutlined,
+} from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import {
+  SettingsOrganizationUserLine_node$key,
+} from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
 import { ListItemSecondaryAction } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -62,44 +64,6 @@ const UserLineFragment = graphql`
     }
   }
 `;
-export const organizationMutationAdminAdd = graphql`
-  mutation SettingsOrganizationUserLineAdminAddMutation(
-    $id: ID!
-    $memberId: String!
-    $userEmail: String!
-  ) {
-    organizationAdminAdd(id: $id, memberId: $memberId) {
-      id
-      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
-        edges {
-          node {
-            id
-            ...SettingsOrganizationUserLine_node
-          }
-        }
-      }
-    }
-  }
-`;
-export const organizationMutationAdminRemove = graphql`
-  mutation SettingsOrganizationUserLineAdminRemoveMutation(
-    $id: ID!
-    $memberId: String!
-    $userEmail: String!
-  ) {
-    organizationAdminRemove(id: $id, memberId: $memberId) {
-      id
-      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
-        edges {
-          node {
-            id
-            ...SettingsOrganizationUserLine_node
-          }
-        }
-      }
-    }
-  }
-`;
 
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns
@@ -110,46 +74,10 @@ interface SettingsOrganizationUserLineComponentProps {
 export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, entityId: organizationId }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const user = useFragment(UserLineFragment, node);
-  const { me } = useAuth();
   const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).map(({ id }) => id).includes(organizationId);
-  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  const userHasSettingsAcesses = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const external = user.external === true;
-
-  const [promoteMemberMutation] = useMutation(organizationMutationAdminAdd);
-  const [demoteMemberMutation] = useMutation(organizationMutationAdminRemove);
-
-  const handleOpen = (event: React.SyntheticEvent) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const promoteMember = () => {
-    promoteMemberMutation({
-      variables: {
-        id: organizationId,
-        memberId: user.id,
-        userEmail: user.user_email,
-      },
-      onCompleted: handleClose,
-    });
-  };
-
-  const demoteMember = () => {
-    demoteMemberMutation({
-      variables: {
-        id: organizationId,
-        memberId: user.id,
-        userEmail: user.user_email,
-      },
-      onCompleted: handleClose,
-    });
-  };
 
   return (
     <ListItem
@@ -179,26 +107,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         }
       />
       <ListItemSecondaryAction>
-        {userHasSettingsAcesses
-          ? (
-            <>
-              <IconButton
-                onClick={handleOpen}
-                aria-haspopup="true"
-                style={{ marginTop: 3 }}
-                size="large"
-              >
-                <MoreVertOutlined />
-              </IconButton>
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                {memberIsOrganizationAdmin
-                  ? <MenuItem onClick={demoteMember}>{t('Demote as simple member')}</MenuItem>
-                  : <MenuItem onClick={promoteMember}>{t('Promote as Organization Admin')}</MenuItem>
-                }
-              </Menu>
-            </>
-          ) : <KeyboardArrowRightOutlined />
-        }
+        <KeyboardArrowRightOutlined />
       </ListItemSecondaryAction>
     </ListItem>
   );

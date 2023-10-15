@@ -1,19 +1,22 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@mui/material/IconButton';
-import { AddOutlined, HorizontalRule, Security } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
+import { HorizontalRule, Security } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
-import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
+import {
+  SettingsOrganization_organization$data,
+} from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuery$variables } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
+import {
+  SettingsOrganizationUsersLinesQuery,
+  SettingsOrganizationUsersLinesQuery$variables,
+} from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
 import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -27,10 +30,6 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '15px',
     borderRadius: 6,
   },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
 }));
 
 interface MembersListContainerProps {
@@ -40,7 +39,6 @@ interface MembersListContainerProps {
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [openAddUser, setOpenAddUser] = useState(false);
   const {
     viewStorage,
     helpers,
@@ -122,24 +120,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           keyword={searchTerm}
         />
       </div>
-      <Tooltip title={t('Add a new member')}>
-        <IconButton
-          aria-label="Add"
-          className={classes.createButton}
-          onClick={() => setOpenAddUser(true)}
-          size="large"
-          color="secondary"
-        >
-          <AddOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <SettingsOrganizationUserCreation
-        paginationOptions={paginationOptions}
-        open={openAddUser}
-        handleClose={() => setOpenAddUser(false)}
-        organization={organization}
-      />
-
+      <SettingsOrganizationUserCreation paginationOptions={paginationOptions} organization={organization}/>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ListLines
           sortBy={sortBy}

@@ -5,7 +5,7 @@ import { filter, includes, map } from 'ramda';
 import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import { BYPASS, ORGA_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
+import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 
 // eslint-disable-next-line
 export const authDirectiveBuilder = (directiveName) => {
@@ -58,7 +58,7 @@ export const authDirectiveBuilder = (directiveName) => {
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
-              if (typeName === 'Organization' && requiredCapabilities.includes(ORGA_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
+              if (typeName === 'Organization' && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
                 if (user.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);
                 }

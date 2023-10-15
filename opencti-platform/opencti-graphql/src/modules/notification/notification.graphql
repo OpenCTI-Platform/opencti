@@ -244,10 +244,10 @@ type Mutation {
     triggerKnowledgeLiveAdd(input: TriggerLiveAddInput!): Trigger @auth
     triggerKnowledgeDigestAdd(input: TriggerDigestAddInput!): Trigger @auth
     # Alerts
-    triggerActivityDelete(id: ID!): ID @auth(for: [SETTINGS, ORGA_ADMIN])
-    triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth(for: [SETTINGS, ORGA_ADMIN])
-    triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger @auth(for: [SETTINGS, ORGA_ADMIN])
-    triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger @auth(for: [SETTINGS, ORGA_ADMIN])
+    triggerActivityDelete(id: ID!): ID @auth(for: [SETTINGS])
+    triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth(for: [SETTINGS])
+    triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger @auth(for: [SETTINGS])
+    triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger @auth(for: [SETTINGS])
     # Notifications
     notificationDelete(id: ID!): ID @auth
     notificationMarkRead(id: ID!, read: Boolean!): Notification @auth

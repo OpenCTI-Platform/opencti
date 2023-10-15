@@ -26,8 +26,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const searchObjectOrganizationFieldQuery = graphql`
-  query ObjectOrganizationFieldQuery($search: String) {
-    organizations(orderBy: name, search: $search) {
+  query ObjectOrganizationFieldQuery($search: String, $filters: [OrganizationsFiltering!]) {
+    organizations(orderBy: name, search: $search, filters: $filters) {
       edges {
         node {
           id
@@ -50,6 +50,7 @@ const ObjectOrganizationField = (props) => {
     outlined = true,
     multiple = true,
     alert = true,
+    filters = null,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -63,6 +64,7 @@ const ObjectOrganizationField = (props) => {
   const searchOrganizations = (event) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
       search: (event && event.target && event.target.value) ?? '',
+      filters,
     })
       .toPromise()
       .then((data) => {

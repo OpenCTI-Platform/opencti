@@ -58,7 +58,7 @@ enum Capabilities {
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
   TAXIIAPI_SETCSVMAPPERS
-  ORGA_ADMIN
+  VIRTUAL_ORGANIZATION_ADMIN
 }
 enum MemberType {
   User
@@ -1329,7 +1329,7 @@ type User implements BasicObject & InternalObject {
   parent_types: [String]!
   # User
   user_email: String!
-  api_token: String! @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  api_token: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   individual_id: String
   name: String!
   description: String
@@ -1350,17 +1350,17 @@ type User implements BasicObject & InternalObject {
   groups(
     orderBy: GroupsOrdering
     orderMode: OrderingMode
-  ): GroupConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  ): GroupConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   objectOrganization(
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   created_at: DateTime!
   updated_at: DateTime!
-  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   default_time_field: String
-  account_status: String! @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
-  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  account_status: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
   # Technical
@@ -11999,7 +11999,7 @@ type Query {
     filters: [LogsFiltering]
     filterMode: FilterMode
     search: String
-  ): [TimeSeries] @auth(for: [SETTINGS, ORGA_ADMIN])
+  ): [TimeSeries] @auth(for: [SETTINGS, VIRTUAL_ORGANIZATION_ADMIN])
   auditsDistribution(
     field: String!
     startDate: DateTime
@@ -12040,14 +12040,14 @@ type Query {
   ######## INTERNAL OBJECT ENTITIES
 
   settings: Settings!
-  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
-  @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
-  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
   participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
@@ -12061,7 +12061,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
@@ -13710,8 +13710,8 @@ type Mutation {
   statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, ORGA_ADMIN])
+  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])

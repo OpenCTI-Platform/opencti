@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as R from 'ramda';
@@ -7,6 +7,8 @@ import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
 import GroupField from '../../common/form/GroupField';
 import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';
@@ -29,6 +31,11 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 230,
   },
 }));
 
@@ -59,20 +66,22 @@ const userValidation = (t) => Yup.object().shape({
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
-  groups: Yup.array().required(t('This field is required')),
+  objectOrganization: Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')),
+  groups: Yup.array().nullable(),
 });
 
-const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose, organization }) => {
-  const { settings } = useAuth();
+const SettingsOrganizationUserCreation = ({ paginationOptions, organization }) => {
+  const { me, settings } = useAuth();
   const { t } = useFormatter();
   const classes = useStyles();
-  const onReset = () => handleClose();
+  const [openAddUser, setOpenAddUser] = useState(false);
+  const onReset = () => setOpenAddUser(false);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       omit(['confirmation']),
-      R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
-      R.assoc('groups', R.pluck('value', values.groups)),
+      R.assoc('objectOrganization', (values.objectOrganization ?? []).map((o) => o.value)),
+      R.assoc('groups', (values.groups ?? []).map((g) => g.value)),
     )(values);
     commitMutation({
       mutation: userMutation,
@@ -80,163 +89,167 @@ const SettingsOrganizationUserCreation = ({ paginationOptions, open, handleClose
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_organization_members', paginationOptions, 'userAdd', organization.id);
+        const key = organization ? 'Pagination_organization_members' : 'Pagination_users';
+        insertNode(store, key, paginationOptions, 'userAdd', organization ? organization.id : null);
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        onReset();
       },
     });
   };
 
   return (
-    <Drawer
-      open={open}
-      title={t('Create a user')}
-      onClose={handleClose}
-    >
-      <Formik
-        initialValues={{
-          name: '',
-          user_email: '',
-          firstname: '',
-          lastname: '',
-          description: '',
-          password: '',
-          confirmation: '',
-          objectOrganization: [{
-            label: organization.name,
-            value: organization.id,
-          }],
-          account_status: 'Active',
-          account_lock_after_date: null,
-        }}
-        validationSchema={userValidation(t)}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      >
-        {({ submitForm, handleReset, isSubmitting }) => (
-          <Form>
-            <Field
-              component={TextField}
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="user_email"
-              label={t('Email address')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="firstname"
-              label={t('Firstname')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="lastname"
-              label={t('Lastname')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-            />
-            <PasswordPolicies />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="password"
-              label={t('Password')}
-              type="password"
-              style={{ marginTop: 20 }}
-              fullWidth={true}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="confirmation"
-              label={t('Confirmation')}
-              type="password"
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-            />
-            <ObjectOrganizationField
-              disabled
-              outlined={false}
-              name="objectOrganization"
-              label="Organizations"
-              style={fieldSpacingContainerStyle}
-            />
-            <GroupField
-              name="groups"
-              label={t('Add a group')}
-              multiple={true}
-              containerStyle={{ width: '100%' }}
-              predefinedGroups={convertGrantableGroups(organization)}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="account_status"
-              label={t('Account Status')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
-            >
-              {settings.platform_user_statuses.map((s) => {
-                return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
-              })}
-            </Field>
-            <Field
-              component={DateTimePickerField}
-              name="account_lock_after_date"
-              TextFieldProps={{
-                label: t('Account Expire Date'),
-                style: fieldSpacingContainerStyle,
-                variant: 'standard',
-                fullWidth: true,
+      <>
+        <Fab onClick={() => setOpenAddUser(true)}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButton}>
+          <Add />
+        </Fab>
+        <Drawer open={openAddUser} title={t('Create a user')} onClose={() => setOpenAddUser(false)}>
+          <Formik
+              initialValues={{
+                name: '',
+                user_email: '',
+                firstname: '',
+                lastname: '',
+                description: '',
+                password: '',
+                confirmation: '',
+                objectOrganization: organization ? [{
+                  label: organization.name,
+                  value: organization.id,
+                }] : [],
+                account_status: 'Active',
+                account_lock_after_date: null,
               }}
-            />
-            <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t('Create')}
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    </Drawer>
+              validationSchema={userValidation(t)}
+              onSubmit={onSubmit}
+              onReset={onReset}>
+            {({ submitForm, handleReset, isSubmitting }) => (
+                <Form>
+                  <Field
+                      component={TextField}
+                      name="name"
+                      label={t('Name')}
+                      fullWidth={true}
+                  />
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="user_email"
+                      label={t('Email address')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                  />
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="firstname"
+                      label={t('Firstname')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                  />
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="lastname"
+                      label={t('Lastname')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                  />
+                  <Field
+                      component={MarkdownField}
+                      name="description"
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows={4}
+                      style={{ marginTop: 20 }}
+                  />
+                  <PasswordPolicies />
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="password"
+                      label={t('Password')}
+                      type="password"
+                      style={{ marginTop: 20 }}
+                      fullWidth={true}
+                  />
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="confirmation"
+                      label={t('Confirmation')}
+                      type="password"
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                  />
+                  <ObjectOrganizationField
+                      outlined={false}
+                      filters={[{ key: 'authorized_authorities', values: [me.id] }]}
+                      name="objectOrganization"
+                      label="Organizations"
+                      style={fieldSpacingContainerStyle}
+                  />
+                  <GroupField
+                      name="groups"
+                      label={t('Add a group')}
+                      multiple={true}
+                      containerStyle={{ width: '100%' }}
+                      predefinedGroups={convertGrantableGroups(organization)}
+                      style={fieldSpacingContainerStyle}
+                  />
+                  <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="account_status"
+                      label={t('Account Status')}
+                      fullWidth={true}
+                      containerstyle={fieldSpacingContainerStyle}
+                  >
+                    {settings.platform_user_statuses.map((s) => {
+                      return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
+                    })}
+                  </Field>
+                  <Field
+                      component={DateTimePickerField}
+                      name="account_lock_after_date"
+                      TextFieldProps={{
+                        label: t('Account Expire Date'),
+                        style: fieldSpacingContainerStyle,
+                        variant: 'standard',
+                        fullWidth: true,
+                      }}
+                  />
+                  <div className={classes.buttons}>
+                    <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                    >
+                      {t('Create')}
+                    </Button>
+                  </div>
+                </Form>
+            )}
+          </Formik>
+        </Drawer>
+      </>
   );
 };
 

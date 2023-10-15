@@ -2,7 +2,7 @@ import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
 import {
   isOnlyOrganizationAdmin,
-  ORGA_ADMIN,
+  VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
@@ -40,14 +40,14 @@ const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
   return (
     <Switch>
-      <Security needs={[SETTINGS, ORGA_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
+      <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
         <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
+              needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
               placeholder={
                 <BoundaryRoute
                   exact
@@ -72,7 +72,7 @@ const Root = () => {
           path="/dashboard/settings/accesses/users"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
+              needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
               placeholder={<Redirect to={'/dashboard/settings'} />}
             >
               <Users />
@@ -83,7 +83,7 @@ const Root = () => {
           path="/dashboard/settings/accesses/users/:userId"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
+              needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
               placeholder={<Redirect to={'/dashboard/settings'} />}
             >
               <RootUser />
@@ -95,7 +95,7 @@ const Root = () => {
           path="/dashboard/settings/accesses/organizations"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
+              needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
               placeholder={<Redirect to={'/dashboard/settings'} />}
             >
               <SettingsOrganizations />
@@ -111,7 +111,7 @@ const Root = () => {
           path="/dashboard/settings/accesses/roles"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
+              needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
               placeholder={<Redirect to={'/dashboard/settings'} />}
             >
               <Roles />

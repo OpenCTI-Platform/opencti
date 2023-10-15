@@ -496,6 +496,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                       >
                         <ListItemIcon>
                           <ItemIcon type="Organization" />
+                          <ItemIcon type="Organization" />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
                       </ListItem>

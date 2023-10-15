@@ -22,6 +22,7 @@ import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectS
 import useGranted, {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -115,9 +116,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = useGranted([
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
+  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const isEnterpriseEdition = useEnterpriseEdition();
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return variant === 'header' ? (
@@ -179,16 +179,15 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          <Tooltip title={t('Share with an organization')}>
-            <ToggleButton
-              onClick={handleOpenSharing}
-              value="shared"
-              size="small"
-              style={{ marginRight: 3 }}
-            >
+          { isEnterpriseEdition ? <Tooltip title={t('Share with an organization')}>
+            <ToggleButton onClick={handleOpenSharing} value="shared" size="small" style={{ marginRight: 3 }}>
               <ShareOutlined fontSize="small" color="warning" />
             </ToggleButton>
-          </Tooltip>
+          </Tooltip> : <Tooltip title={t('You need to activate OpenCTI enterprise edition to use organization sharing.')}>
+            <ToggleButton value="shared" size="small" style={{ marginRight: 3 }}>
+              <ShareOutlined fontSize="small" color="warning" />
+            </ToggleButton>
+          </Tooltip>}
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}

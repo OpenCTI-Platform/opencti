@@ -22,6 +22,7 @@ import { truncate } from '../../../../utils/String';
 import useGranted, {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -115,9 +116,8 @@ ContainerHeaderSharedProps
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = useGranted([
-    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  ]);
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor && variant === 'header') {
     return <div style={{ display: 'inline-block' }} />;
@@ -180,15 +180,15 @@ ContainerHeaderSharedProps
               />
             </Tooltip>
           ))}
-          <Tooltip title={t('Share with an organization')}>
-            <ToggleButton
-              onClick={handleOpenSharing}
-              value="shared"
-              size="small"
-            >
+          { isEnterpriseEdition ? <Tooltip title={t('Share with an organization')}>
+            <ToggleButton onClick={handleOpenSharing} value="shared" size="small">
               <ShareOutlined fontSize="small" color="warning" />
             </ToggleButton>
-          </Tooltip>
+          </Tooltip> : <Tooltip title={t('You need to activate OpenCTI enterprise edition to use organization sharing.')}>
+            <ToggleButton value="shared" size="small">
+              <ShareOutlined fontSize="small" color="warning" />
+            </ToggleButton>
+          </Tooltip>}
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}

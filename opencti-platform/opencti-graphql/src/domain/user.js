@@ -31,7 +31,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, ORGA_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, VIRTUAL_ORGANIZATION_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
@@ -323,7 +323,7 @@ export const roleEditContext = async (context, user, roleId, input) => {
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     throw ForbiddenAccess();
   }
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
@@ -420,25 +420,21 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const isPasswordPoliciesInvalid = async (context, password) => {
-  return checkPasswordFromPolicy(context, password).then(() => false).catch(() => true);
-};
-
 export const addUser = async (context, user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (existingUser) {
     throw FunctionalError('User already exists', { email: userEmail });
   }
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+  if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
     // Check organization
-    const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
-    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga) => myOrgasIds.includes(orga))) {
+    const myOrganizationIds = user.administrated_organizations.map((organization) => organization.id);
+    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga) => myOrganizationIds.includes(orga))) {
       throw ForbiddenAccess();
     }
     const myGroupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-    if (newUser.groups.length === 0 || !newUser.groups.every((group) => myGroupIds.includes(group))) {
+    if (!newUser.groups.every((group) => myGroupIds.includes(group))) {
       throw ForbiddenAccess();
     }
   }
@@ -465,7 +461,12 @@ export const addUser = async (context, user, newUser) => {
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, element.id, organization), userOrganizations));
+  const relationOrganizations = userOrganizations.map((organizationId) => ({
+    fromId: element.id,
+    toId: organizationId,
+    relationship_type: RELATION_PARTICIPATE_TO,
+  }));
+  await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
   // Assign default groups to user
   const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   const relationGroups = defaultGroups.edges.map((e) => ({
@@ -553,7 +554,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const userToUpdate = await internalLoadById(context, user, userId);
   // Check in an organization admin edits a user that's not in its administrated organizations
   const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     if (!userToUpdate.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
       throw ForbiddenAccess();
     }
@@ -689,7 +690,7 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   // Check in case organization admins adds non-grantable goup a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
       throw ForbiddenAccess();
     }
@@ -740,7 +741,7 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 };
 
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, ORGA_ADMIN)) {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     throw ForbiddenAccess();
   }
   const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
@@ -975,7 +976,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
 const virtualOrganizationAdminCapability = {
   id: uuid(),
   standard_id: `capability--${uuid()}`,
-  name: 'ORGA_ADMIN',
+  name: VIRTUAL_ORGANIZATION_ADMIN,
   entity_type: 'Capability',
   parent_types: ['Basic-Object', 'Internal-Object'],
   created_at: Date.now(),

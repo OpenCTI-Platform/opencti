@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import {
-  ORGA_ADMIN, SETTINGS,
+  VIRTUAL_ORGANIZATION_ADMIN, SETTINGS,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
@@ -50,7 +50,7 @@ const TopMenuSettings = () => {
           {t('Parameters')}
         </Button>
       </Security>
-      <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, ORGA_ADMIN]}>
+      <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
         <Button
           component={Link}
           size="small"
