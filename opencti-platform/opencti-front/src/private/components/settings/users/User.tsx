@@ -5,7 +5,11 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import { DeleteForeverOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
+import {
+  DeleteForeverOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -197,6 +201,7 @@ const userFragment = graphql`
         node {
           id
           name
+          authorized_authorities
         }
       }
     }
@@ -223,7 +228,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const classes = useStyles();
   const { t, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
@@ -324,7 +329,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     );
 
   const accountExpireDate = fldt(user.account_lock_after_date);
-
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -435,22 +439,28 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </Typography>
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
-                    {(user.roles ?? []).map((role) => (
-                      <ListItem
-                        key={role?.id}
-                        dense={true}
-                        divider={true}
-                        {...(!userHasSettingsCapability ? { button: false } : {
-                          component: Link,
-                          to: `/dashboard/settings/accesses/roles/${role?.id}`,
-                        })}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItem>
-                    ))}
+                    {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
+                        <ListItem
+                          key={role?.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          button={true}
+                          to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                    ) : (
+                        <ListItem key={role?.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                    )))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
@@ -460,22 +470,32 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </Typography>
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
-                    {(user.groups?.edges ?? []).map((groupEdge) => (
-                      <ListItem
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                        {...(!userHasSettingsCapability ? { button: false } : {
-                          component: Link,
-                          to: `/dashboard/settings/accesses/groups/${groupEdge?.node.id}`,
-                        })}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
-                    ))}
+                    {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
+                        <ListItem
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                    ) : (
+                        <ListItem
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                    )))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
@@ -495,8 +515,17 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                       >
                         <ListItemIcon>
-                          <ItemIcon type="Organization" />
-                          <ItemIcon type="Organization" />
+                          <ItemIcon
+                            type="Organization"
+                            color={
+                              (
+                                organizationEdge.node.authorized_authorities
+                                ?? []
+                              ).includes(user.id)
+                                ? theme.palette.warning.main
+                                : theme.palette.primary.main
+                            }
+                          />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
                       </ListItem>
@@ -567,7 +596,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []} />
+                <HiddenTypesChipList
+                  hiddenTypes={user.default_hidden_types ?? []}
+                />
               </Grid>
             </Grid>
           </Paper>
@@ -759,14 +790,14 @@ export const userQuery = graphql`
       id
       name
       ...User_user
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
     }
   }
 `;

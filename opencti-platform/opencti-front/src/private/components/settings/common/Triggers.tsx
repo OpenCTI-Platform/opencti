@@ -110,7 +110,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <Typography
         variant="h4"
         gutterBottom={true}
-        style={{ float: 'left', marginRight: 12 }}
+        style={{ float: 'left' }}
       >
         {t('Triggers and Digests')}
       </Typography>

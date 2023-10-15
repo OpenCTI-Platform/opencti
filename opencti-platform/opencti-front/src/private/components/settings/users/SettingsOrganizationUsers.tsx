@@ -5,9 +5,7 @@ import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
-import {
-  SettingsOrganization_organization$data,
-} from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
+import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -17,7 +15,9 @@ import {
   SettingsOrganizationUsersLinesQuery,
   SettingsOrganizationUsersLinesQuery$variables,
 } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
-import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
+import SettingsOrganizationUsersLines, {
+  settingsOrganizationUsersLinesQuery,
+} from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { DataColumns } from '../../../../components/list_lines';
@@ -33,17 +33,15 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface MembersListContainerProps {
-  organization: SettingsOrganization_organization$data
+  organization: SettingsOrganization_organization$data;
 }
 
-const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
+const SettingsOrganizationUsers: FunctionComponent<
+MembersListContainerProps
+> = ({ organization }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
     `view-organization-${organization.id}-users`,
     {
       sortBy: 'name',
@@ -106,13 +104,14 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   return (
     <Grid item={true} xs={12} style={{ marginTop: 40 }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left', marginRight: 12 }}
-      >
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t('Users')}
       </Typography>
+      <SettingsOrganizationUserCreation
+        paginationOptions={paginationOptions}
+        organization={organization}
+        variant="standard"
+      />
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput
           variant="thin"
@@ -120,7 +119,6 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           keyword={searchTerm}
         />
       </div>
-      <SettingsOrganizationUserCreation paginationOptions={paginationOptions} organization={organization}/>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ListLines
           sortBy={sortBy}

@@ -37,9 +37,7 @@ import useGranted, {
   TAXIIAPI_SETCOLLECTIONS,
 } from '../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../relay/environment';
-import {
-  useIsHiddenEntities,
-} from '../../../utils/hooks/useEntitySettings';
+import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
@@ -181,7 +179,9 @@ const LeftBar = () => {
     'City',
     'Position',
   );
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
     <Drawer
@@ -198,7 +198,10 @@ const LeftBar = () => {
       }}
     >
       <Toolbar />
-      <MenuList component="nav" style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }} >
+      <MenuList
+        component="nav"
+        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+      >
         <StyledTooltip title={!navOpen && t('Dashboard')} placement="right">
           <MenuItem
             component={Link}
@@ -223,25 +226,25 @@ const LeftBar = () => {
       <Security needs={[KNOWLEDGE]}>
         <MenuList component="nav">
           {!hideAnalyses && (
-          <StyledTooltip title={!navOpen && t('Analyses')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard/analyses"
-              selected={location.pathname.includes('/dashboard/analyses')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 20 }}>
-                <AssignmentOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t('Analyses')}
-                />
-              )}
-            </MenuItem>
-          </StyledTooltip>
+            <StyledTooltip title={!navOpen && t('Analyses')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard/analyses"
+                selected={location.pathname.includes('/dashboard/analyses')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon style={{ minWidth: 20 }}>
+                  <AssignmentOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Analyses')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
           )}
           {!hideCases && (
             <StyledTooltip title={!navOpen && t('Cases')} placement="right">
@@ -265,49 +268,49 @@ const LeftBar = () => {
             </StyledTooltip>
           )}
           {!hideEvents && (
-          <StyledTooltip title={!navOpen && t('Events')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard/events"
-              selected={location.pathname.includes('/dashboard/events')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon style={{ minWidth: 20 }}>
-                <Timetable />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t('Events')}
-                />
-              )}
-            </MenuItem>
-          </StyledTooltip>
+            <StyledTooltip title={!navOpen && t('Events')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard/events"
+                selected={location.pathname.includes('/dashboard/events')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon style={{ minWidth: 20 }}>
+                  <Timetable />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Events')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
           )}
           {!hideObservations && (
-          <StyledTooltip
-            title={!navOpen && t('Observations')}
-            placement="right"
-          >
-            <MenuItem
-              component={Link}
-              to="/dashboard/observations"
-              selected={location.pathname.includes('/dashboard/observations')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
+            <StyledTooltip
+              title={!navOpen && t('Observations')}
+              placement="right"
             >
-              <ListItemIcon style={{ minWidth: 20 }}>
-                <Binoculars />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t('Observations')}
-                />
-              )}
-            </MenuItem>
-          </StyledTooltip>
+              <MenuItem
+                component={Link}
+                to="/dashboard/observations"
+                selected={location.pathname.includes('/dashboard/observations')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon style={{ minWidth: 20 }}>
+                  <Binoculars />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Observations')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
           )}
         </MenuList>
         <Divider />
@@ -447,51 +450,55 @@ const LeftBar = () => {
             </StyledTooltip>
           </Security>
           <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
-              {
-                (isOrganizationAdmin && !isGrantedToSettings) ? (
-                  <StyledTooltip title={!navOpen && t('Settings')} placement="right">
-                    <MenuItem
-                      component={Link}
-                      to="/dashboard/settings/accesses/organizations"
-                      dense={true}
-                      classes={{ root: classes.menuItem }}
-                      style={{ marginBottom: 50 }}
-                    >
-                      <ListItemIcon style={{ minWidth: 20 }}>
-                        <CogOutline />
-                      </ListItemIcon>
-                      {navOpen && (
-                        <ListItemText
-                          classes={{ primary: classes.menuItemText }}
-                          primary={t('Settings')}
-                        />
-                      )}
-                    </MenuItem>
-                  </StyledTooltip>
-                )
-                  : (
-                    <StyledTooltip title={!navOpen && t('Settings')} placement="right">
-                      <MenuItem
-                        component={Link}
-                        to="/dashboard/settings"
-                        selected={location.pathname.includes('/dashboard/settings')}
-                        dense={true}
-                        classes={{ root: classes.menuItem }}
-                        style={{ marginBottom: 50 }}
-                      >
-                        <ListItemIcon style={{ minWidth: 20 }}>
-                          <CogOutline />
-                        </ListItemIcon>
-                        {navOpen && (
-                          <ListItemText
-                            classes={{ primary: classes.menuItemText }}
-                            primary={t('Settings')}
-                          />
-                        )}
-                      </MenuItem>
-                </StyledTooltip>
-                  )
-              }
+            {isOrganizationAdmin && !isGrantedToSettings ? (
+              <StyledTooltip
+                title={!navOpen && t('Settings')}
+                placement="right"
+              >
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/settings/accesses/organizations"
+                  selected={location.pathname.includes('/dashboard/settings')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                  style={{ marginBottom: 50 }}
+                >
+                  <ListItemIcon style={{ minWidth: 20 }}>
+                    <CogOutline />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t('Settings')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            ) : (
+              <StyledTooltip
+                title={!navOpen && t('Settings')}
+                placement="right"
+              >
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/settings"
+                  selected={location.pathname.includes('/dashboard/settings')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                  style={{ marginBottom: 50 }}
+                >
+                  <ListItemIcon style={{ minWidth: 20 }}>
+                    <CogOutline />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t('Settings')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            )}
           </Security>
         </MenuList>
       </Security>

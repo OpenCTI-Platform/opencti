@@ -9,7 +9,10 @@ import UsersLines, { usersLinesQuery } from './users/UsersLines';
 import UserCreation from './users/UserCreation';
 import AccessesMenu from './AccessesMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles(() => ({
@@ -21,11 +24,14 @@ const useStyles = makeStyles(() => ({
 
 const Users = () => {
   const classes = useStyles();
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage('view-users', {
-    sortBy: 'name',
-    orderAsc: true,
-    searchTerm: '',
-  });
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
+    'view-users',
+    {
+      sortBy: 'name',
+      orderAsc: true,
+      searchTerm: '',
+    },
+  );
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -90,16 +96,27 @@ const Users = () => {
   };
 
   return (
-      <div className={classes.container}>
-        <AccessesMenu />
-        { isSetAccess || isEnterpriseEdition
-          ? renderLines(paginationOptions)
-          : <Grid item={true} xs={12}>
-          <EnterpriseEdition message={'You need to activate OpenCTI enterprise edition to access organization administration.'}/>
-        </Grid> }
-        { isSetAccess && <UserCreation paginationOptions={paginationOptions} /> }
-        { !isSetAccess && isAdminOrganization && isEnterpriseEdition && <SettingsOrganizationUserCreation paginationOptions={paginationOptions}/> }
-      </div>
+    <div className={classes.container}>
+      <AccessesMenu />
+      {isSetAccess || isEnterpriseEdition ? (
+        renderLines(paginationOptions)
+      ) : (
+        <Grid item={true} xs={12}>
+          <EnterpriseEdition
+            message={
+              'You need to activate OpenCTI enterprise edition to access organization administration.'
+            }
+          />
+        </Grid>
+      )}
+      {isSetAccess && <UserCreation paginationOptions={paginationOptions} />}
+      {!isSetAccess && isAdminOrganization && isEnterpriseEdition && (
+        <SettingsOrganizationUserCreation
+          paginationOptions={paginationOptions}
+          variant="fab"
+        />
+      )}
+    </div>
   );
 };
 

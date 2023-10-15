@@ -96,7 +96,7 @@ const settingsOrganizationFragment = graphql`
     grantable_groups {
       id
       name
-      roles{
+      roles {
         name
         capabilities {
           name
@@ -130,16 +130,25 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
-  const capabilitiesPerGroup = new Map(organization.grantable_groups?.map((group) => [group.id, group.roles?.map((role) => role?.capabilities?.map((capa) => capa?.name)).flat()]));
-  const isOrganizationAdmin = (me.administrated_organizations ?? []).map((orga) => orga?.id).includes(organization.id);
+  const capabilitiesPerGroup = new Map(
+    organization.grantable_groups?.map((group) => [
+      group.id,
+      group.roles
+        ?.map((role) => role?.capabilities?.map((capa) => capa?.name))
+        .flat(),
+    ]),
+  );
+  const isOrganizationAdmin = (me.administrated_organizations ?? [])
+    .map((orga) => orga?.id)
+    .includes(organization.id);
   return (
     <div className={classes.container}>
       <AccessesMenu />
       <Security needs={[SETTINGS]}>
         <SettingsOrganizationEdition
-        organization={organization}
-        enableReferences={useIsEnforceReference('Organization')}
-        context={organization.editContext}
+          organization={organization}
+          enableReferences={useIsEnforceReference('Organization')}
+          context={organization.editContext}
         />
       </Security>
       <>
@@ -164,7 +173,9 @@ const SettingsOrganization = ({
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={12}>
-                  <SettingsOrganizationHiddenTypesChipList organizationData={organization} />
+                  <SettingsOrganizationHiddenTypesChipList
+                    organizationData={organization}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -259,27 +270,56 @@ const SettingsOrganization = ({
                   </Typography>
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
-                      {(organization.grantable_groups ?? []).map((group) => (
-                        <ListItem
-                          key={group.id}
-                          dense={true}
-                          divider={true}
-                          {...(isOrganizationAdmin ? { button: false } : {
-                            component: Link,
-                            to: `/dashboard/settings/accesses/groups/${group.id}`,
-                          })}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="Group" />
-                          </ListItemIcon>
-                          <ListItemText primary={group.name} />
-                          { (capabilitiesPerGroup.get(group.id)?.includes(SETTINGS_SETACCESSES) || capabilitiesPerGroup.get(group.id)?.includes(BYPASS))
-                            && <Tooltip title={t('This Group allows the user to bypass restriction. It should not be added here.')}>
-                              <WarningOutlined color="warning" />
-                            </Tooltip>
-                          }
-                        </ListItem>
-                      ))}
+                      {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
+                          <ListItem
+                            key={group.id}
+                            dense={true}
+                            divider={true}
+                            button={true}
+                            component={Link}
+                            to={`/dashboard/settings/accesses/groups/${group.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="Group" />
+                            </ListItemIcon>
+                            <ListItemText primary={group.name} />
+                            {(capabilitiesPerGroup
+                              .get(group.id)
+                              ?.includes(SETTINGS_SETACCESSES)
+                              || capabilitiesPerGroup
+                                .get(group.id)
+                                ?.includes(BYPASS)) && (
+                              <Tooltip
+                                title={t(
+                                  'This Group allows the user to bypass restriction. It should not be added here.',
+                                )}
+                              >
+                                <WarningOutlined color="warning" />
+                              </Tooltip>
+                            )}
+                          </ListItem>
+                      ) : (
+                          <ListItem key={group.id} dense={true} divider={true}>
+                            <ListItemIcon>
+                              <ItemIcon type="Group" />
+                            </ListItemIcon>
+                            <ListItemText primary={group.name} />
+                            {(capabilitiesPerGroup
+                              .get(group.id)
+                              ?.includes(SETTINGS_SETACCESSES)
+                              || capabilitiesPerGroup
+                                .get(group.id)
+                                ?.includes(BYPASS)) && (
+                              <Tooltip
+                                title={t(
+                                  'This Group allows the user to bypass restriction. It should not be added here.',
+                                )}
+                              >
+                                <WarningOutlined color="warning" />
+                              </Tooltip>
+                            )}
+                          </ListItem>
+                      )))}
                     </List>
                   </FieldOrEmpty>
                 </Grid>
@@ -287,12 +327,20 @@ const SettingsOrganization = ({
             </Paper>
           </div>
         </Grid>
-        { setAccess || isEnterpriseEdition ? <>
-          <Triggers recipientId={organization.id} filter="organization_ids" />
-          <SettingsOrganizationUsers organization={organization}/>
-        </> : <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-          <EnterpriseEdition message={'You need to activate OpenCTI enterprise edition to access organization administration.'}/>
-        </Grid> }
+        {setAccess || isEnterpriseEdition ? (
+          <>
+            <Triggers recipientId={organization.id} filter="organization_ids" />
+            <SettingsOrganizationUsers organization={organization} />
+          </>
+        ) : (
+          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+            <EnterpriseEdition
+              message={
+                'You need to activate OpenCTI enterprise edition to access organization administration.'
+              }
+            />
+          </Grid>
+        )}
       </Grid>
     </div>
   );
