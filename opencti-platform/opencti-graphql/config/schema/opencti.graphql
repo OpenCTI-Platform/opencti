@@ -4162,6 +4162,7 @@ input IdentityAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  x_opencti_workflow_id: String
   clientMutationId: String
   created: DateTime
   modified: DateTime
@@ -4354,6 +4355,7 @@ input IndividualAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4539,6 +4541,7 @@ input SectorAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
