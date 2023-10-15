@@ -17,22 +17,27 @@ const inlineStyles = {
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
+    borderColor: '#4caf50',
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
     color: '#5c7bf5',
+    borderColor: '#5c7bf5',
   },
   red: {
     backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
+    borderColor: '#f44336',
   },
   orange: {
     backgroundColor: 'rgba(255, 152, 0, 0.08)',
     color: '#ff9800',
+    borderColor: '#ff9800',
   },
   blueGrey: {
     backgroundColor: 'rgba(96, 125, 139, 0.08)',
     color: '#607d8b',
+    borderColor: '#607d8b',
     fontStyle: 'italic',
   },
 };
@@ -43,7 +48,9 @@ interface ItemAccountStatusProps {
   variant?: 'outlined' | 'filled';
 }
 
-const computeAccountStatusStyle = (account_status: string | undefined | null) => {
+const computeAccountStatusStyle = (
+  account_status: string | undefined | null,
+) => {
   switch (account_status) {
     case 'Active':
       return inlineStyles.green;
@@ -70,10 +77,10 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   const classStyle = computeAccountStatusStyle(account_status);
   return (
     <Chip
-    classes={{ root: style }}
-    variant={variant}
-    label={label}
-    style={classStyle}
+      classes={{ root: style }}
+      variant={variant}
+      label={label}
+      style={classStyle}
     />
   );
 };

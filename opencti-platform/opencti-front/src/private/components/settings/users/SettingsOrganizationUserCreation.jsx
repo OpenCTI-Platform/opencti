@@ -87,7 +87,6 @@ const SettingsOrganizationUserCreation = ({
   const classes = useStyles();
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
-
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       omit(['confirmation']),

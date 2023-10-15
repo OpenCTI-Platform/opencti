@@ -99,7 +99,7 @@ const Users = () => {
     <div className={classes.container}>
       <AccessesMenu />
       {isSetAccess || isEnterpriseEdition ? (
-        renderLines(paginationOptions)
+        renderLines()
       ) : (
         <Grid item={true} xs={12}>
           <EnterpriseEdition

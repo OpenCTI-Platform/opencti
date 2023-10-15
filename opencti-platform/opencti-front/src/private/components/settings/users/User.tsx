@@ -410,17 +410,17 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Account Status')}
+                  {t('Account status')}
                 </Typography>
                 <ItemAccountStatus
                   account_status={user.account_status}
                   label={t(user.account_status || 'Unknown')}
-                  variant={'outlined'}
+                  variant="outlined"
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Account Expire Date')}
+                  {t('Account expiration date')}
                 </Typography>
                 {accountExpireDate || '-'}
               </Grid>
