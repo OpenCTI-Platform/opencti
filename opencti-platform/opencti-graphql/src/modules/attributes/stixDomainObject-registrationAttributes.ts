@@ -124,7 +124,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: true,
       label: 'Note types'
     },
-    { name: 'likelihood', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Likelihood' },
+    { name: 'likelihood', type: 'numeric', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Likelihood' },
     { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [

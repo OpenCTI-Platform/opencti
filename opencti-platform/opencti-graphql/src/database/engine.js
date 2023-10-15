@@ -587,7 +587,6 @@ const elCreateIndexTemplate = async (index) => {
             height: {
               type: 'nested',
               properties: {
-                id: { type: 'keyword' },
                 measure: { type: 'float' },
                 date_seen: { type: 'date' },
               },
@@ -595,7 +594,6 @@ const elCreateIndexTemplate = async (index) => {
             weight: {
               type: 'nested',
               properties: {
-                id: { type: 'keyword' },
                 measure: { type: 'float' },
                 date_seen: { type: 'date' },
               },
@@ -713,6 +711,17 @@ const elCreateIndexTemplate = async (index) => {
     },
   }).catch((e) => {
     throw DatabaseError('[SEARCH] Error creating index template', { error: e });
+  });
+};
+export const elUpdateMapping = async (properties) => {
+  const indices = await elPlatformIndices();
+  await engine.indices.putMapping({
+    index: indices.map((i) => i.index),
+    body: {
+      properties
+    }
+  }).catch((e) => {
+    throw DatabaseError('[SEARCH] Error updating index mapping', { error: e });
   });
 };
 export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
@@ -1074,7 +1083,6 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
   }
   return hits;
 };
-
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
@@ -1159,7 +1167,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   }
   return toMap ? hits : Object.values(hits);
 };
-
 export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);
   /* istanbul ignore if */
