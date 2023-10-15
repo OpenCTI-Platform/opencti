@@ -123,8 +123,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_CONNECTOR]: [
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'active', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'auto', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'only_contextual', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'auto', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'only_contextual', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_scope', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_state', type: 'json', mandatoryType: 'no', multiple: false, upsert: false },
