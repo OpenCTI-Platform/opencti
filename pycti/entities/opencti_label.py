@@ -38,6 +38,7 @@ class Label:
 
     def list(self, **kwargs):
         filters = kwargs.get("filters", None)
+        search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -46,13 +47,13 @@ class Label:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
         query = (
             """
-            query Labels($filters: [LabelsFiltering], $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
-                labels(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Labels($filters: [LabelsFiltering], search: $search, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
+                labels(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -75,13 +76,38 @@ class Label:
             query,
             {
                 "filters": filters,
+                "search": search,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["labels"], with_pagination)
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["labels"])
+            final_data = final_data + data
+            while result["data"]["labels"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["labels"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing Labels after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["labels"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["labels"], with_pagination
+            )
 
     """
         Read a Label object
