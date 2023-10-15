@@ -24916,6 +24916,7 @@ export type SystemAddInput = {
   x_opencti_lastname?: InputMaybe<Scalars['String']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SystemConnection = {
