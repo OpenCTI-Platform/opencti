@@ -1,6 +1,6 @@
 # OpenCTI Documentation Space
 
-[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
+[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://opencti.io)
 [![Slack Status](https://img.shields.io/badge/slack-3K%2B%20members-4A154B)](https://community.filigran.io)
 
 ## Introduction
