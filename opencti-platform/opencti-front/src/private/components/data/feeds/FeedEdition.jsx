@@ -155,7 +155,9 @@ const FeedEditionContainer = (props) => {
     const updatedFeedAttributes = [];
     for (let index = 0; index < attrValues.length; index += 1) {
       const feedAttr = attrValues[index];
-      const mappingEntries = isNotEmptyField(feedAttr) ? Object.entries(feedAttr.mappings) : [];
+      const mappingEntries = isNotEmptyField(feedAttr)
+        ? Object.entries(feedAttr.mappings)
+        : [];
       const keepMappings = mappingEntries.filter(([k]) => types.includes(k));
       updatedFeedAttributes.push({
         attribute: feedAttr.attribute,
@@ -174,10 +176,13 @@ const FeedEditionContainer = (props) => {
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', JSON.stringify(filters)),
-      R.assoc('authorized_members', values.authorized_members.map(({ value }) => ({
-        id: value,
-        access_right: 'view',
-      }))),
+      R.assoc(
+        'authorized_members',
+        values.authorized_members.map(({ value }) => ({
+          id: value,
+          access_right: 'view',
+        })),
+      ),
     )(values);
     commitMutation({
       mutation: feedEditionMutation,
@@ -349,38 +354,43 @@ const FeedEditionContainer = (props) => {
                         fullWidth={true}
                       />
                       <Field
-                          component={TextField}
-                          variant="standard"
-                          name="description"
-                          label={t('Description')}
-                          fullWidth={true}
-                          style={{ marginTop: 20 }}
+                        component={TextField}
+                        variant="standard"
+                        name="description"
+                        label={t('Description')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
                       />
                       <Alert
-                          icon={false}
-                          classes={{ root: classes.alert, message: classes.message }}
-                          severity="warning"
-                          variant="outlined"
-                          style={{ position: 'relative' }}
+                        icon={false}
+                        classes={{
+                          root: classes.alert,
+                          message: classes.message,
+                        }}
+                        severity="warning"
+                        variant="outlined"
+                        style={{ position: 'relative' }}
                       >
                         <AlertTitle>
                           {t('Make this feed public and available to anyone')}
                         </AlertTitle>
                         <Field
-                            component={SwitchField}
-                            type="checkbox"
-                            name="feed_public"
-                            containerstyle={{ marginLeft: 2, marginTop: 20 }}
-                            label={t('Public feed')}
+                          component={SwitchField}
+                          type="checkbox"
+                          name="feed_public"
+                          containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                          label={t('Public feed')}
                         />
                         {!values.feed_public && (
-                            <ObjectMembersField
-                                label={'Accessible for'}
-                                style={fieldSpacingContainerStyle}
-                                multiple={true}
-                                helpertext={t('Let the field empty to grant all authenticated users')}
-                                name="authorized_members"
-                            />
+                          <ObjectMembersField
+                            label={'Accessible for'}
+                            style={fieldSpacingContainerStyle}
+                            multiple={true}
+                            helpertext={t(
+                              'Let the field empty to grant all authenticated users',
+                            )}
+                            name="authorized_members"
+                          />
                         )}
                       </Alert>
                       <Field
@@ -418,15 +428,20 @@ const FeedEditionContainer = (props) => {
                         }}
                       />
                       <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="feed_date_attribute"
-                          label={t('Base attribute')}
-                          fullWidth={true}
-                          multiple={false}
-                          containerstyle={{ width: '100%', marginTop: 20 }}>
-                        <MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
-                        <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                        component={SelectField}
+                        variant="standard"
+                        name="feed_date_attribute"
+                        label={t('Base attribute')}
+                        fullWidth={true}
+                        multiple={false}
+                        containerstyle={{ width: '100%', marginTop: 20 }}
+                      >
+                        <MenuItem key={'created_at'} value={'created_at'}>
+                          {t('Creation date')}
+                        </MenuItem>
+                        <MenuItem key={'updated_at'} value={'updated_at'}>
+                          {t('Update date')}
+                        </MenuItem>
                       </Field>
                       <Field
                         component={SelectField}
@@ -455,7 +470,6 @@ const FeedEditionContainer = (props) => {
                         <Filters
                           variant="text"
                           availableFilterKeys={[
-                            'entity_type',
                             'x_opencti_workflow_id',
                             'assigneeTo',
                             'objectContains',
@@ -467,6 +481,7 @@ const FeedEditionContainer = (props) => {
                             'severity',
                             'x_opencti_score',
                             'x_opencti_detection',
+                            'x_opencti_main_observable_type',
                             'revoked',
                             'confidence',
                             'indicator_types',
@@ -489,7 +504,10 @@ const FeedEditionContainer = (props) => {
                         redirection
                       />
                       {selectedTypes.length > 0 && (
-                        <div className={classes.container} style={{ marginTop: 20 }}>
+                        <div
+                          className={classes.container}
+                          style={{ marginTop: 20 }}
+                        >
                           {Object.keys(feedAttributes).map((i) => (
                             <div key={i} className={classes.step}>
                               <IconButton
@@ -543,10 +561,12 @@ const FeedEditionContainer = (props) => {
                                                 (n) => !R.includes(
                                                   n.value,
                                                   ignoredAttributesInFeeds,
-                                                ) && !n.value.startsWith('i_'),
+                                                )
+                                                  && !n.value.startsWith('i_'),
                                               ),
                                             )(
-                                              resultProps.schemaAttributeNames.edges,
+                                              resultProps.schemaAttributeNames
+                                                .edges,
                                             );
                                             if (
                                               attributes.filter(

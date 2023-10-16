@@ -234,10 +234,13 @@ const FeedCreation = (props) => {
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', JSON.stringify(filters)),
-      R.assoc('authorized_members', values.authorized_members.map(({ value }) => ({
-        id: value,
-        access_right: 'view',
-      }))),
+      R.assoc(
+        'authorized_members',
+        values.authorized_members.map(({ value }) => ({
+          id: value,
+          access_right: 'view',
+        })),
+      ),
     )(values);
     commitMutation({
       mutation: feedCreationMutation,
@@ -425,7 +428,13 @@ const FeedCreation = (props) => {
                     onSubmit={onSubmit}
                     onReset={onReset}
                   >
-                    {({ values, submitForm, setFieldValue, handleReset, isSubmitting }) => (
+                    {({
+                      values,
+                      submitForm,
+                      setFieldValue,
+                      handleReset,
+                      isSubmitting,
+                    }) => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
                           component={TextField}
@@ -435,39 +444,45 @@ const FeedCreation = (props) => {
                           fullWidth={true}
                         />
                         <Field
-                            component={TextField}
-                            variant="standard"
-                            name="description"
-                            label={t('Description')}
-                            fullWidth={true}
-                            style={{ marginTop: 20 }}
+                          component={TextField}
+                          variant="standard"
+                          name="description"
+                          label={t('Description')}
+                          fullWidth={true}
+                          style={{ marginTop: 20 }}
                         />
                         <Alert
-                            icon={false}
-                            classes={{ root: classes.alert, message: classes.message }}
-                            severity="warning"
-                            variant="outlined"
-                            style={{ position: 'relative' }}
+                          icon={false}
+                          classes={{
+                            root: classes.alert,
+                            message: classes.message,
+                          }}
+                          severity="warning"
+                          variant="outlined"
+                          style={{ position: 'relative' }}
                         >
                           <AlertTitle>
                             {t('Make this feed public and available to anyone')}
                           </AlertTitle>
                           <FormControlLabel
-                              control={<Switch />}
-                              style={{ marginLeft: 1 }}
-                              name="feed_public"
-                              onChange={(_, checked) => setFieldValue('feed_public', checked)}
-                              label={t('Public feed')}
+                            control={<Switch />}
+                            style={{ marginLeft: 1 }}
+                            name="feed_public"
+                            onChange={(_, checked) => setFieldValue('feed_public', checked)
+                            }
+                            label={t('Public feed')}
                           />
                           {!values.feed_public && (
-                              <ObjectMembersField
-                                  label={'Accessible for'}
-                                  style={fieldSpacingContainerStyle}
-                                  onChange={setFieldValue}
-                                  multiple={true}
-                                  helpertext={t('Let the field empty to grant all authenticated users')}
-                                  name="authorized_members"
-                              />
+                            <ObjectMembersField
+                              label={'Accessible for'}
+                              style={fieldSpacingContainerStyle}
+                              onChange={setFieldValue}
+                              multiple={true}
+                              helpertext={t(
+                                'Let the field empty to grant all authenticated users',
+                              )}
+                              name="authorized_members"
+                            />
                           )}
                         </Alert>
                         <Field
@@ -505,15 +520,20 @@ const FeedCreation = (props) => {
                           }}
                         />
                         <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="feed_date_attribute"
-                            label={t('Base attribute')}
-                            fullWidth={true}
-                            multiple={false}
-                            containerstyle={{ width: '100%', marginTop: 20 }}>
-                          <MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
-                          <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                          component={SelectField}
+                          variant="standard"
+                          name="feed_date_attribute"
+                          label={t('Base attribute')}
+                          fullWidth={true}
+                          multiple={false}
+                          containerstyle={{ width: '100%', marginTop: 20 }}
+                        >
+                          <MenuItem key={'created_at'} value={'created_at'}>
+                            {t('Creation date')}
+                          </MenuItem>
+                          <MenuItem key={'updated_at'} value={'updated_at'}>
+                            {t('Update date')}
+                          </MenuItem>
                         </Field>
                         <Field
                           component={SelectField}
@@ -542,7 +562,6 @@ const FeedCreation = (props) => {
                           <Filters
                             variant="text"
                             availableFilterKeys={[
-                              'entity_type',
                               'x_opencti_workflow_id',
                               'assigneeTo',
                               'objectContains',
@@ -554,6 +573,7 @@ const FeedCreation = (props) => {
                               'severity',
                               'x_opencti_score',
                               'x_opencti_detection',
+                              'x_opencti_main_observable_type',
                               'revoked',
                               'confidence',
                               'indicator_types',

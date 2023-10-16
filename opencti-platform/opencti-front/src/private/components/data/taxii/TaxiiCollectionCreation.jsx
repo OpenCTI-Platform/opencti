@@ -268,6 +268,7 @@ const TaxiiCollectionCreation = (props) => {
                       'severity',
                       'x_opencti_score',
                       'x_opencti_detection',
+                      'x_opencti_main_observable_type',
                       'revoked',
                       'confidence',
                       'indicator_types',
