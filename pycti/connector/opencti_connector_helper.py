@@ -1295,7 +1295,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return None
 
     def get_data_from_enrichment(self, data, opencti_entity):
-        stix_id = data["entity_id"]
+        stix_id = opencti_entity["standard_id"]
         bundle = data.get("bundle", None)
         # Extract IPv4, IPv6 and Domain from entity data
         if bundle is None:
