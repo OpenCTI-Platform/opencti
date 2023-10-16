@@ -98,10 +98,8 @@ class ThreatActorGroupLocationsComponent extends Component {
                   </ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  {isInferred ? (
-                    <></>
-                  ) : (
+                {isInferred && (
+                  <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -111,8 +109,8 @@ class ThreatActorGroupLocationsComponent extends Component {
                         <LinkOff />
                       </IconButton>
                     </Security>
-                  )}
-                </ListItemSecondaryAction>
+                  </ListItemSecondaryAction>
+                )}
               </ListItem>
             );
           })}

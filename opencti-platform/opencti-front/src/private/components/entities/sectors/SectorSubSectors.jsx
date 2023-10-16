@@ -71,10 +71,8 @@ class SectorSubSectorsComponent extends Component {
                   <Domain color="primary" />
                 </ListItemIcon>
                 <ListItemText primary={subSector.name} />
-                <ListItemSecondaryAction>
-                  {isInferred ? (
-                    <></>
-                  ) : (
+                {isInferred && (
+                  <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -84,8 +82,8 @@ class SectorSubSectorsComponent extends Component {
                         <LinkOff />
                       </IconButton>
                     </Security>
-                  )}
-                </ListItemSecondaryAction>
+                  </ListItemSecondaryAction>
+                )}
               </ListItem>
             );
           })}

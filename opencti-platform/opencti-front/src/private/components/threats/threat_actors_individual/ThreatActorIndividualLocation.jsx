@@ -98,21 +98,19 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   )}
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  {isInferred ? (
-                      <></>
-                  ) : (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={() => this.removeLocation(locationEdge)}
-                          size="large"
-                        >
-                          <LinkOff />
-                        </IconButton>
-                      </Security>
-                  )}
-                </ListItemSecondaryAction>
+                {isInferred && (
+                  <ListItemSecondaryAction>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => this.removeLocation(locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  </ListItemSecondaryAction>
+                )}
               </ListItem>
             );
           })}
