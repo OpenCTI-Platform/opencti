@@ -444,7 +444,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   return (
     <Drawer
       title={t('Create an indicator')}
-      variant={DrawerVariant.create}
+      variant={DrawerVariant.createWithLargePanel}
     >
       {({ onClose }) => (
         <IndicatorCreationForm
