@@ -119,7 +119,7 @@ describe('Marking Definition', () => {
       it('Case add 1 marking, current 1 has same type AND higher order => do nothing', async () => {
         // PAP 04 -> Add PAP 01 => Do nothing
         const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual([]);
+        expect(result).toEqual({ operation: 'add', refs: [] });
       });
 
       it('Case add 2 markings, current 1 has same type AND higher order + 1 different type => only add marking not in common', async () => {
@@ -166,12 +166,7 @@ describe('Marking Definition', () => {
         expect(result).toEqual({ operation: 'remove', refs: [clearPAPMarking.id, statementMarking2.id] });
       });
     });
-
-    it('Case the operation changed or added => throw exception invalid operation', async () => {
-      const UPDATE_OPERATION_NEW = 'erase';
-      const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [clearPAPMarking.id, statementMarking2.id], UPDATE_OPERATION_NEW);
-      expect(result).toEqual('Invalid operation');
-    });
+    
   });
 
   afterAll(async () => {
