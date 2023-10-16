@@ -15,6 +15,7 @@ export enum DrawerVariant {
   create = 'create',
   update = 'update',
   createWithPanel = 'createWithPanel',
+  createWithLargePanel = 'createWithLargePanel',
   updateWithPanel = 'updateWithPanel',
 }
 
@@ -43,6 +44,9 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     position: 'fixed',
     bottom: `${bannerHeightNumber + 30}px`,
   }),
+  withLargePanel: {
+    right: 280,
+  },
   withPanel: {
     right: 230,
   },
@@ -108,6 +112,7 @@ const Drawer = ({
           className={classNames({
             [classes.mainButton]: true,
             [classes.withPanel]: [DrawerVariant.createWithPanel, DrawerVariant.updateWithPanel].includes(variant),
+            [classes.withLargePanel]: [DrawerVariant.createWithLargePanel].includes(variant),
             [classes.noPanel]: [DrawerVariant.create, DrawerVariant.update].includes(variant),
           })}
         >
