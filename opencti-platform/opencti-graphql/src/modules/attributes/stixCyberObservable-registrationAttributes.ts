@@ -42,7 +42,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, st
 
 const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_AUTONOMOUS_SYSTEM]: [
-    { name: 'number', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'number', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'rir', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
@@ -208,7 +208,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_WINDOWS_REGISTRY_KEY]: [
     { name: 'attribute_key', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'modified_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'modified_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'number_of_subkeys', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [

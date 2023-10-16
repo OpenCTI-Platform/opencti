@@ -166,7 +166,6 @@ describe('Marking Definition', () => {
         expect(result).toEqual({ operation: 'remove', refs: [clearPAPMarking.id, statementMarking2.id] });
       });
     });
-    
   });
 
   afterAll(async () => {
