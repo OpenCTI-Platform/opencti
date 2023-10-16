@@ -313,7 +313,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           {user.name}
         </Typography>
         <div className={classes.popover}>
-          <UserPopover userId={user.id} />
+          <UserPopover userId={user.id} disabled={user.id === me.id} />
         </div>
         <div className="clearfix" />
       </>
