@@ -14,6 +14,7 @@ import { FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
+import { userSessionRefresh } from '../../domain/user';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -54,6 +55,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     message: `Promoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
     context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
   });
+  await userSessionRefresh(memberId);
   return updated;
 };
 
@@ -78,6 +80,7 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
     message: `Demoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
     context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
   });
+  await userSessionRefresh(memberId);
   return updated;
 };
 

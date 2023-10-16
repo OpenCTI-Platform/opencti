@@ -29,7 +29,7 @@ export const findById = (context, user, groupId) => {
 
 export const findAll = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => orga.grantable_groups).flat());
+    const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
     return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);

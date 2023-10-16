@@ -50,7 +50,9 @@ const organizationResolvers: Resolvers = {
   Mutation: {
     organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),
     organizationDelete: (_, { id }, context) => stixDomainObjectDelete(context, context.user, id),
-    organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+    organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+    },
     organizationContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
     organizationContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
     organizationRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),

@@ -58,9 +58,13 @@ const roleSessionRefresh = async (context, user, roleId) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
-export const userSessionRefresh = async (userId) => {
-  const sessions = await findSessionsForUsers([userId]);
+export const usersSessionRefresh = async (userIds) => {
+  const sessions = await findSessionsForUsers(userIds);
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+};
+
+export const userSessionRefresh = async (userId) => {
+  return usersSessionRefresh([userId]);
 };
 
 export const userWithOrigin = (req, user) => {

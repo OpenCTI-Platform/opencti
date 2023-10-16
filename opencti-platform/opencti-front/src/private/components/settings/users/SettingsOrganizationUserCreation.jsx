@@ -243,14 +243,14 @@ const SettingsOrganizationUserCreation = ({
                 label="Organizations"
                 style={fieldSpacingContainerStyle}
               />
-              <GroupField
+              { organization && <GroupField
                 name="groups"
                 label={t('Add a group')}
                 multiple={true}
                 containerStyle={{ width: '100%' }}
                 predefinedGroups={convertGrantableGroups(organization)}
                 style={fieldSpacingContainerStyle}
-              />
+              /> }
               <Field
                 component={SelectField}
                 variant="standard"

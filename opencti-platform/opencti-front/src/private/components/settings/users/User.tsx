@@ -54,6 +54,7 @@ import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
+import {SimplePaletteColorOptions} from "@mui/material/styles/createPalette";
 
 Transition.displayName = 'TransitionSlide';
 
@@ -522,7 +523,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                                 organizationEdge.node.authorized_authorities
                                 ?? []
                               ).includes(user.id)
-                                ? theme.palette.warning.main
+                                ? (theme.palette.warning as SimplePaletteColorOptions).main
                                 : theme.palette.primary.main
                             }
                           />

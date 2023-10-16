@@ -50,7 +50,7 @@ export const findSessions = () => {
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
           return {
-            id: s.redis_key_id.split(store.prefix)[1],
+            id: s.redis_key_id,
             created: s.user.session_creation,
             ttl: s.redis_key_ttl,
             originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
@@ -75,7 +75,7 @@ export const findUserSessions = async (userId) => {
 export const killSession = async (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    store.destroy(id, (data) => {
+    store.destroy(id, (_, data) => {
       accept(data);
     });
   });

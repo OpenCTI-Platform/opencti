@@ -84,9 +84,10 @@ class SessionStoreMemory extends Store {
 
   destroy(sid, fn) {
     const { store } = this;
-    const data = store.get(sid);
-    store.delete(sid);
-    return fn && fn(data);
+    store.get(sid, (error, data) => {
+      store.delete(sid);
+      return fn && fn(error, data);
+    });
   }
 
   ids(fn) {
