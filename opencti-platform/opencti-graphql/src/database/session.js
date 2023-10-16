@@ -31,6 +31,7 @@ const createSessionMiddleware = () => {
       store,
       secret: sessionSecret,
       proxy: true,
+      rolling: true,
       saveUninitialized: false,
       resave: false,
       cookie: {
