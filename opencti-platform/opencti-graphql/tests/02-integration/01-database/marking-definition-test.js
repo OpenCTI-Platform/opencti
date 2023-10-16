@@ -119,7 +119,7 @@ describe('Marking Definition', () => {
       it('Case add 1 marking, current 1 has same type AND higher order => do nothing', async () => {
         // PAP 04 -> Add PAP 01 => Do nothing
         const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual(null);
+        expect(result).toEqual([]);
       });
 
       it('Case add 2 markings, current 1 has same type AND higher order + 1 different type => only add marking not in common', async () => {
