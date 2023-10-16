@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
+import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -54,7 +55,6 @@ import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
-import {SimplePaletteColorOptions} from "@mui/material/styles/createPalette";
 
 Transition.displayName = 'TransitionSlide';
 

@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { batchListThroughGetFrom, batchListThroughGetTo, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, patchAttribute, updateAttribute, } from '../database/middleware';
 import { internalFindByIds, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
@@ -55,7 +56,7 @@ export const defaultMarkingDefinitions = async (context, group) => {
   });
 };
 
-export const mergeDefaultMarking = async (context, defaultMarkings) => {
+export const mergeDefaultMarking = async (defaultMarkings) => {
   const results = [];
   defaultMarkings.filter((d) => !!d.entity_type)
     .forEach((d) => {
@@ -84,7 +85,7 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
       });
     }).flat())
     // Merge default marking by group
-    .then((defaultMarkings) => mergeDefaultMarking(context, defaultMarkings))
+    .then((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
     // Clean default marking by entity type
     .then((defaultMarkings) => {
       return Promise.all(defaultMarkings.map(async (d) => {
