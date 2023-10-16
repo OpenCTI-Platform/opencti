@@ -34,7 +34,7 @@ const userEditionOrganizationsAdminAddMutation = graphql`
   ) {
     organizationAdminAdd(id: $id, memberId: $memberId) {
       id
-      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
+      members (filters: { mode: and, filters: [{ key: "user_email", values: [$userEmail] }], filterGroups: [] } ) {
         edges {
           node {
             id
@@ -53,7 +53,7 @@ const userEditionOrganizationsAdminRemoveMutation = graphql`
   ) {
     organizationAdminRemove(id: $id, memberId: $memberId) {
       id
-      members (filters: [{ key: user_email, values: [$userEmail] }] ) {
+      members (filters: { mode: and, filters: [{ key: "user_email", values: [$userEmail] }], filterGroups: [] } ) {
         edges {
           node {
             id

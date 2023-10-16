@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const searchObjectOrganizationFieldQuery = graphql`
-  query ObjectOrganizationFieldQuery($search: String, $filters: [OrganizationsFiltering!]) {
+  query ObjectOrganizationFieldQuery($search: String, $filters: FilterGroup) {
     organizations(orderBy: name, search: $search, filters: $filters) {
       edges {
         node {

@@ -70,17 +70,6 @@ enum CsvMapperOrdering {
   name
 }
 
-# Filtering
-enum CsvMapperFilter {
-  name
-}
-input CsvMapperFiltering {
-  key: [CsvMapperFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type CsvMapperConnection {
   pageInfo: PageInfo!
@@ -105,7 +94,7 @@ type Query {
     after: ID
     orderBy: CsvMapperOrdering
     orderMode: OrderingMode
-    filters: [CsvMapperFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
   ): CsvMapperConnection @auth

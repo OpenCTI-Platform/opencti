@@ -113,7 +113,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: UsersOrdering
     orderMode: OrderingMode
     search: String
-    filters: [UsersFiltering]
+    filters: FilterGroup
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   authorized_authorities: [String] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   grantable_groups: [Group!]

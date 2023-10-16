@@ -4733,17 +4733,6 @@ export type CsvMapperEdge = {
   node: CsvMapper;
 };
 
-export enum CsvMapperFilter {
-  Name = 'name'
-}
-
-export type CsvMapperFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<CsvMapperFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum CsvMapperOrdering {
   Name = 'name'
 }
@@ -15940,7 +15929,7 @@ export type OrganizationJobsArgs = {
 
 export type OrganizationMembersArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<Array<InputMaybe<UsersFiltering>>>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<UsersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -17787,7 +17776,7 @@ export type QueryCsvMapperTestArgs = {
 export type QueryCsvMappersArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<CsvMapperFiltering>>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<CsvMapperOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -27794,8 +27783,6 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperAddInput: CsvMapperAddInput;
   CsvMapperConnection: ResolverTypeWrapper<Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversTypes['CsvMapperEdge']> }>;
   CsvMapperEdge: ResolverTypeWrapper<Omit<CsvMapperEdge, 'node'> & { node: ResolversTypes['CsvMapper'] }>;
-  CsvMapperFilter: CsvMapperFilter;
-  CsvMapperFiltering: CsvMapperFiltering;
   CsvMapperOrdering: CsvMapperOrdering;
   CsvMapperRepresentation: ResolverTypeWrapper<CsvMapperRepresentation>;
   CsvMapperRepresentationAttribute: ResolverTypeWrapper<CsvMapperRepresentationAttribute>;
@@ -28526,7 +28513,6 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperAddInput: CsvMapperAddInput;
   CsvMapperConnection: Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversParentTypes['CsvMapperEdge']> };
   CsvMapperEdge: Omit<CsvMapperEdge, 'node'> & { node: ResolversParentTypes['CsvMapper'] };
-  CsvMapperFiltering: CsvMapperFiltering;
   CsvMapperRepresentation: CsvMapperRepresentation;
   CsvMapperRepresentationAttribute: CsvMapperRepresentationAttribute;
   CsvMapperRepresentationAttributeInput: CsvMapperRepresentationAttributeInput;
@@ -28614,6 +28600,7 @@ export type ResolversParentTypes = ResolversObject<{
   GroupingAddInput: GroupingAddInput;
   GroupingConnection: Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupingEdge']>>> };
   GroupingEdge: Omit<GroupingEdge, 'node'> & { node: ResolversParentTypes['Grouping'] };
+  GroupsFiltering: GroupsFiltering;
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
