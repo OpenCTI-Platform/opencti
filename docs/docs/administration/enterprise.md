@@ -34,9 +34,18 @@ As a reminder:
 
 Audit logs help you answer "who did what, where, and when?" within your data with the maximum level of transparency. Please read [Activity monitoring page](audit/overview.md) to get all information.
 
+### Playbooks and automation
+
+OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. Please read [Playbook automation page](../usage/automation.md) to get all information.
+
+### Organizations management and segregation
+
+Organizations segregation is a way to segregate your data considering the organization associated to the users. Useful when your platform aims to share date to multiple organizations that share the access to the same OpenCTI platform. See [Organizations RBAC](../administration/users.md)
+
 ## More to come
 
 More feature will be available in OpenCTI in the future. Features like:
-- Automation scenarios and playbooks engine.
+
+- Full text indexing of documents
 - Generative AI for correlation and content generation.
 - Supervised machine learning for natural language processing.
