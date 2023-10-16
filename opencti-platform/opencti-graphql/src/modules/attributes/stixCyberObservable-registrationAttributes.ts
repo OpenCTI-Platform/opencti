@@ -155,7 +155,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_PROCESS]: [
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'is_hidden', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'pid', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'pid', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'created_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'cwd', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'command_line', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
