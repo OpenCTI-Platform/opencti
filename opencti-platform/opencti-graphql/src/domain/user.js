@@ -670,6 +670,13 @@ export const meEditField = async (context, user, userId, inputs, password = null
 };
 
 export const userDelete = async (context, user, userId) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+    const myAdministratedOrganizationsIds = user.administrated_organizations.map(({ id }) => id);
+    if (!userData.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+      throw ForbiddenAccess();
+    }
+  }
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
