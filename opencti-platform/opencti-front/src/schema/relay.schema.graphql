@@ -7503,7 +7503,7 @@ type Query {
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
-  csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: [CsvMapperFiltering!], filterMode: FilterMode, search: String): CsvMapperConnection
+  csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, filterMode: FilterMode, search: String): CsvMapperConnection
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
 }
 
@@ -10745,7 +10745,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_reliability: String
   x_opencti_organization_type: String
   sectors: SectorConnection
-  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: [UsersFiltering]): UserConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): UserConnection
   authorized_authorities: [String]
   grantable_groups: [Group!]
   subOrganizations: OrganizationConnection
@@ -10898,17 +10898,6 @@ type CsvMapper implements InternalObject & BasicObject {
 
 enum CsvMapperOrdering {
   name
-}
-
-enum CsvMapperFilter {
-  name
-}
-
-input CsvMapperFiltering {
-  key: [CsvMapperFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type CsvMapperConnection {
