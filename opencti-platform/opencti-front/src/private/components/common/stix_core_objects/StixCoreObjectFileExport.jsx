@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {FunctionComponent, useState} from 'react';
 import FileExportViewer from "@components/common/files/FileExportViewer";
 import Drawer from "@mui/material/Drawer";
 import makeStyles from "@mui/styles/makeStyles";
@@ -32,12 +32,33 @@ import SelectField from "../../../../components/SelectField";
 import MenuItem from "@mui/material/MenuItem";
 import {fieldSpacingContainerStyle} from "../../../../utils/field";
 import {markingDefinitionsLinesSearchQuery} from "@components/settings/marking_definitions/MarkingDefinitionsLines";
-import Loader from "../../../../components/Loader";
+import Loader, {LoaderVariant} from "../../../../components/Loader";
+import {graphql} from "react-relay";
+import useVocabularyCategory from "../../../../utils/hooks/useVocabularyCategory";
+import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
+import {OpenVocabFieldQuery} from "@components/common/form/__generated__/OpenVocabFieldQuery.graphql";
+import {vocabularyQuery} from "@components/common/form/OpenVocabField";
 
 
 const useStyles = makeStyles((theme) => ({
 
 }));
+
+export const StixCoreObjectFileExportQuery = graphql`
+    query StixCoreObjectFileExportQuery($id: String!) {
+        stixCoreObject(id: $id) {
+            id
+            exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
+                edges {
+                    node {
+                        id
+                        ...FileLine_file
+                    }
+                }
+            }
+        }
+    }
+`;
 
 const exportValidation = (t) => Yup.object().shape({
     format: Yup.string().required(t('This field is required')),
@@ -82,14 +103,12 @@ const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     });
 };
 
-const StixCoreObjectFileExport = ({  entity }) => {
+const StixCoreObjectFileExportComponent = ({ queryRef, entity }) => {
     console.log('StixCoreObjectFileExport', StixCoreObjectFileExport)
+
     const classes = useStyles();
     const { t } = useFormatter();
     const isExportPossible = true; // TODO changeMe
-    const [displayFileExport, setFileExport] = useState(false);
-    const handleOpenExport = () => setFileExport(true);
-    const handleCloseExport = () => setFileExport(false);
 
     const { id, exportFiles } = entity;
     const [open, setOpen] = useState(false);
@@ -221,5 +240,22 @@ const StixCoreObjectFileExport = ({  entity }) => {
 
         );
 }
+const StixCoreObjectFileExport = (
+    props,
+) => {
+    const { typeToCategory } = useVocabularyCategory();
+    const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(vocabularyQuery, {
+        category: typeToCategory(props.type),
+    });
+    console.log('StixCoreObjectFileExportQuery', StixCoreObjectFileExportQuery)
+
+    return queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixCoreObjectFileExportComponent {...props} queryRef={queryRef} />
+        </React.Suspense>
+    ) : (
+        <Loader variant={LoaderVariant.inElement} />
+    );
+};
 
 export default StixCoreObjectFileExport;

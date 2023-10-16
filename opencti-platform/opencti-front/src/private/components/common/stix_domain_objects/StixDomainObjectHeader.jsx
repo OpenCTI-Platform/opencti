@@ -41,6 +41,13 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { defaultValue } from '../../../../utils/Graph';
 import Transition from '../../../../components/Transition';
+import StixCoreObjectsExportCreation from "@components/common/stix_core_objects/StixCoreObjectsExportCreation";
+import StixCoreObjectFileExport from "@components/common/stix_core_objects/StixCoreObjectFileExport";
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -479,6 +486,7 @@ const StixDomainObjectHeader = (props) => {
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixDomainObject.id} />
           )}
+          <StixCoreObjectFileExport entity={container}/>
           {enableQuickSubscription && (
             <StixCoreObjectQuickSubscription
               instanceId={stixDomainObject.id}

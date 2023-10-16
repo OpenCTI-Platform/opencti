@@ -12,7 +12,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
-import ContainerHeaderTaskNoteExternal from "@components/common/containers/ContainerHeaderTaskNoteExternal";
+import ContainerHeaderTaskNoteExternals from "@components/common/containers/ContainerHeaderTaskNoteExternals";
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -99,7 +99,7 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
 
   return (
     <div className={classes.container}>
-      <ContainerHeaderTaskNoteExternal
+      <ContainerHeaderTaskNoteExternals
         container={task}
         PopoverComponent={<TaskPopover id={task.id} />}
         enableSuggestions={false}
