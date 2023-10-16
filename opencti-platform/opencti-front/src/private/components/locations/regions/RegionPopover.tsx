@@ -3,7 +3,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,27 +16,13 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { Theme } from '../../../../components/Theme';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import RegionEditionContainer, {
-  regionEditionQuery,
-} from './RegionEditionContainer';
+import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -79,9 +64,6 @@ const RegionPopover = ({ id }: { id: string }) => {
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
-  };
-  const handleCloseEdit = () => {
-    setDisplayEdit(false);
   };
   const submitDelete = () => {
     setDeleting(true);
@@ -133,25 +115,17 @@ const RegionPopover = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <RegionEditionContainer
-              queryRef={queryRef}
-              handleClose={handleClose}
-            />
-          </React.Suspense>
-        )}
-      </Drawer>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <RegionEditionContainer
+            queryRef={queryRef}
+            handleClose={handleClose}
+            open={displayEdit}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

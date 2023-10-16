@@ -2,15 +2,13 @@ import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Close } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Drawer from '@components/common/drawer/Drawer';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import { Theme } from '../../../../../components/Theme';
@@ -38,30 +36,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -119,58 +93,38 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>
-      {selectedLog && (
-        <Drawer
-          open={true}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={() => setSelectedLog(null)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={() => setSelectedLog(null)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Activity raw detail')}
+      <Drawer
+        open={!!selectedLog}
+        title={t('Activity raw detail')}
+        onClose={() => setSelectedLog(null)}
+      >
+        <>
+          <div>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Message')}
             </Typography>
-            <div className="clearfix" />
+            <MarkdownDisplay
+              content={message}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
           </div>
-          <div className={classes.container}>
-            <div>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('Message')}
-              </Typography>
-              <MarkdownDisplay
-                content={message}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />
-            </div>
-            {data.context_uri && (
-              <div style={{ marginTop: 16 }}>
-                <Typography variant="h4" gutterBottom={true}>
-                  {t('Instance context')}
-                </Typography>
-                <Link to={data.context_uri}>View the element</Link>
-              </div>
-            )}
+          {data.context_uri && (
             <div style={{ marginTop: 16 }}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Raw data')}
+                {t('Instance context')}
               </Typography>
-              <pre>{data.raw_data}</pre>
+              <Link to={data.context_uri}>View the element</Link>
             </div>
+          )}
+          <div style={{ marginTop: 16 }}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Raw data')}
+            </Typography>
+            <pre>{data.raw_data}</pre>
           </div>
-        </Drawer>
-      )}
+        </>
+      </Drawer>
       <ListItem
         classes={{ root: classes.item }}
         divider={true}

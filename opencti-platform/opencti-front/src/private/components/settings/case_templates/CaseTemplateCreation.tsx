@@ -1,16 +1,12 @@
-import { Add, Close } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
@@ -21,40 +17,12 @@ import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutati
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -82,12 +50,6 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => setOpen(false);
-
   const [commitMutation] = useMutation(caseTemplateMutation);
 
   const onSubmit: FormikConfig<CaseTemplateAddInput>['onSubmit'] = (
@@ -109,105 +71,81 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
       },
     });
   };
 
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a case template')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-              tasks: [],
-            }}
-            validationSchema={caseTemplateValidation(t)}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <CaseTemplateTasks
-                  onChange={setFieldValue}
-                  values={values.tasks}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </Drawer>
-    </div>
+    <Drawer
+      title={t('Create a case template')}
+      variant={DrawerVariant.createWithPanel}
+    >
+      {({ onClose }) => (
+        <Formik<CaseTemplateAddInput>
+          initialValues={{
+            name: '',
+            description: '',
+            tasks: [],
+          }}
+          validationSchema={caseTemplateValidation(t)}
+          onSubmit={(values, formikHelpers) => {
+            onSubmit(values, formikHelpers);
+            onClose();
+          }}
+          onReset={onClose}
+        >
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+              <CaseTemplateTasks
+                onChange={setFieldValue}
+                values={values.tasks}
+              />
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Create')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      )}
+    </Drawer>
   );
 };
 

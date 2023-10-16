@@ -1,5 +1,4 @@
 import { Add } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -23,17 +22,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginTop: theme.spacing(1.5),
     padding: '10px 20px 10px 20px',
     borderRadius: 6,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -151,19 +139,11 @@ const SettingsMessages = ({
           />
         </ListLines>
       </Paper>
-      <Drawer
+      <SettingsMessageCreation
+        settingsId={settings.id}
+        handleClose={handleCloseCreate}
         open={displayCreate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseCreate}
-      >
-        <SettingsMessageCreation
-          settingsId={settings.id}
-          handleClose={handleCloseCreate}
-        />
-      </Drawer>
+      />
     </>
   );
 };

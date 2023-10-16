@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -19,20 +18,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import RoleEdition from './RoleEdition';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 });
 
@@ -147,30 +135,22 @@ class RolePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={roleEditionQuery}
-            variables={{ id: roleId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <RoleEdition
-                    role={props.role}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={roleEditionQuery}
+          variables={{ id: roleId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <RoleEdition
+                  role={props.role}
+                  handleClose={this.handleCloseUpdate.bind(this)}
+                  open={this.state.displayUpdate}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}

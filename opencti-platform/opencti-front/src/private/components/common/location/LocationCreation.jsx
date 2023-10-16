@@ -1,21 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -135,123 +130,13 @@ class LocationCreation extends Component {
     });
   }
 
-  onResetClassic() {
-    this.handleClose();
-  }
-
   onResetContextual() {
     if (this.props.handleClose) {
       this.props.handleClose();
     }
   }
 
-  renderClassic() {
-    const { t, classes } = this.props;
-    return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create an entity')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-                type: '',
-              }}
-              validationSchema={locationValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['City', 'Country', 'Region']}
-                  />
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="type"
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={fieldSpacingContainerStyle}
-                  >
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                  </Field>
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
-    );
-  }
-
-  renderContextual() {
+  render() {
     const { t, inputValue, open, onlyAuthors } = this.props;
     return (
       <div>
@@ -337,14 +222,6 @@ class LocationCreation extends Component {
         </Formik>
       </div>
     );
-  }
-
-  render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
-    return this.renderClassic();
   }
 }
 

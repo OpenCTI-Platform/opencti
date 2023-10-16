@@ -1,17 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import { assoc, compose, pipe } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
+import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -83,19 +79,6 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 class KillChainPhaseCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, killChainPhases: [] };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       assoc('x_opencti_order', parseInt(values.x_opencti_order, 10)),
@@ -120,111 +103,78 @@ class KillChainPhaseCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
       },
     });
-  }
-
-  onReset() {
-    this.handleClose();
   }
 
   render() {
     const { t, classes } = this.props;
     return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">
-              {t('Create a kill chain phase')}
-            </Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                kill_chain_name: '',
-                phase_name: '',
-                x_opencti_order: '',
-              }}
-              validationSchema={killChainPhaseValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="kill_chain_name"
-                    label={t('Kill chain name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="phase_name"
-                    label={t('Phase name')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="x_opencti_order"
-                    label={t('Order')}
-                    fullWidth={true}
-                    type="number"
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
+      <Drawer
+        title={t('Create a kill chain phase')}
+        variant={DrawerVariant.createWithPanel}
+      >
+        {({ onClose }) => (
+          <Formik
+            initialValues={{
+              kill_chain_name: '',
+              phase_name: '',
+              x_opencti_order: '',
+            }}
+            validationSchema={killChainPhaseValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={onClose}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="kill_chain_name"
+                  label={t('Kill chain name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="phase_name"
+                  label={t('Phase name')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="x_opencti_order"
+                  label={t('Order')}
+                  fullWidth={true}
+                  type="number"
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </Drawer>
     );
   }
 }

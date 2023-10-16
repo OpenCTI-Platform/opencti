@@ -1,51 +1,12 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import { CloudRefreshOutline } from 'mdi-material-ui';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
+import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectEnrichmentLines, {
-  stixCoreObjectEnrichmentLinesQuery,
-} from './StixCoreObjectEnrichmentLines';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  title: {
-    float: 'left',
-  },
-  enrichButton: {
-    float: 'right',
-    margin: '-12px -5px 0 5px',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
-  },
-});
+import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
 
 class StixCoreObjectEnrichment extends Component {
   constructor(props) {
@@ -62,7 +23,7 @@ class StixCoreObjectEnrichment extends Component {
   }
 
   render() {
-    const { t, classes, stixCoreObjectId } = this.props;
+    const { t, stixCoreObjectId } = this.props;
     return (
       <React.Fragment>
         <Tooltip title={t('Enrichment')}>
@@ -76,47 +37,28 @@ class StixCoreObjectEnrichment extends Component {
         </Tooltip>
         <Drawer
           open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
+          title={t('Enrichment connectors')}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Enrichment connectors')}
-            </Typography>
-          </div>
-          <div className={classes.container}>
-            <QueryRenderer
-              query={stixCoreObjectEnrichmentLinesQuery}
-              variables={{ id: stixCoreObjectId }}
-              render={({ props: queryProps }) => {
-                if (
-                  queryProps
-                  && queryProps.stixCoreObject
-                  && queryProps.connectorsForImport
-                ) {
-                  return (
-                    <StixCoreObjectEnrichmentLines
-                      stixCoreObject={queryProps.stixCoreObject}
-                      connectorsForImport={queryProps.connectorsForImport}
-                    />
-                  );
-                }
-                return <div />;
-              }}
-            />
-          </div>
+          <QueryRenderer
+            query={stixCoreObjectEnrichmentLinesQuery}
+            variables={{ id: stixCoreObjectId }}
+            render={({ props: queryProps }) => {
+              if (
+                queryProps
+                && queryProps.stixCoreObject
+                && queryProps.connectorsForImport
+              ) {
+                return (
+                  <StixCoreObjectEnrichmentLines
+                    stixCoreObject={queryProps.stixCoreObject}
+                    connectorsForImport={queryProps.connectorsForImport}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
         </Drawer>
       </React.Fragment>
     );
@@ -125,5 +67,4 @@ class StixCoreObjectEnrichment extends Component {
 
 export default R.compose(
   inject18n,
-  withStyles(styles),
 )(StixCoreObjectEnrichment);

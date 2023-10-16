@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,26 +14,12 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { positionEditionQuery } from './PositionEdition';
 import PositionEditionContainer from './PositionEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -103,7 +87,7 @@ class PositionPopover extends Component {
   }
 
   render() {
-    const { classes, t, id } = this.props;
+    const { t, id } = this.props;
     return (
       <>
         <IconButton
@@ -156,30 +140,22 @@ class PositionPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={positionEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <PositionEditionContainer
-                    position={props.position}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={positionEditionQuery}
+          variables={{ id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <PositionEditionContainer
+                  position={props.position}
+                  handleClose={this.handleCloseEdit.bind(this)}
+                  open={this.state.displayEdit}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </>
     );
   }
@@ -187,7 +163,6 @@ class PositionPopover extends Component {
 
 PositionPopover.propTypes = {
   id: PropTypes.string,
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
@@ -195,5 +170,4 @@ PositionPopover.propTypes = {
 export default compose(
   inject18n,
   withRouter,
-  withStyles(styles),
 )(PositionPopover);

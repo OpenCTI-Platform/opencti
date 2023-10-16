@@ -4,7 +4,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -21,20 +20,9 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -113,30 +101,22 @@ const GroupingPopover = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        <QueryRenderer
-          query={groupingEditionQuery}
-          variables={{ id }}
-          render={({ props: editionProps }) => {
-            if (editionProps) {
-              return (
-                <GroupingEditionContainer
-                  grouping={editionProps.grouping}
-                  handleClose={handleCloseEdit}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={groupingEditionQuery}
+        variables={{ id }}
+        render={({ props: editionProps }) => {
+          if (editionProps) {
+            return (
+              <GroupingEditionContainer
+                grouping={editionProps.grouping}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+              />
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
     </div>
   );
 };

@@ -1,10 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import * as R from 'ramda';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -13,27 +11,17 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import ContainerAddStixCoreObjectsLines, {
-  containerAddStixCoreObjectsLinesQuery,
-} from './ContainerAddStixCoreObjectsLines';
+import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import {
-  stixCyberObservableTypes,
-  stixDomainObjectTypes,
-} from '../../../../utils/hooks/useAttributes';
+import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { convertFilters } from '../../../../utils/ListParameters';
+import Drawer from '../drawer/Drawer';
 
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    padding: 0,
-    zIndex: 1,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -49,24 +37,6 @@ const useStyles = makeStyles((theme) => ({
   createButtonSimple: {
     float: 'left',
     marginTop: -15,
-  },
-  title: {
-    float: 'left',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '15px 0 0 0',
-    height: '100%',
-    width: '100%',
   },
   speedDial: {
     position: 'fixed',
@@ -112,10 +82,10 @@ const ContainerAddStixCoreObjects = (props) => {
   const [orderAsc, setOrderAsc] = useState(false);
   const [filters, setFilters] = useState(
     targetStixCoreObjectTypes
-      && !(
-        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-      )
+    && !(
+      targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+      || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+    )
       ? {
         entity_type: targetStixCoreObjectTypes.map((n) => ({
           id: n,
@@ -480,10 +450,10 @@ const ContainerAddStixCoreObjects = (props) => {
     setSearchTerm('');
     setFilters(
       targetStixCoreObjectTypes
-        && !(
-          targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-          || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-        )
+      && !(
+        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+      )
         ? {
           entity_type: targetStixCoreObjectTypes.map((n) => ({
             id: n,
@@ -499,10 +469,6 @@ const ContainerAddStixCoreObjects = (props) => {
       {!mapping && renderButton()}
       <Drawer
         open={mapping ? openDrawer : open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={() => {
           resetState();
           if (mapping) {
@@ -511,38 +477,12 @@ const ContainerAddStixCoreObjects = (props) => {
             setOpen(false);
           }
         }}
-        PaperProps={{
-          ref: containerRef,
-        }}
+        title={t('Add entities')}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={() => {
-              resetState();
-              if (mapping) {
-                handleClose();
-              } else {
-                setOpen(false);
-              }
-            }}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          {(isTypeDomainObject(targetStixCoreObjectTypes)
-            || isTypeObservable(targetStixCoreObjectTypes)) && (
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add entities')}
-            </Typography>
-          )}
-        </div>
-        <div className={classes.container}>
+        <>
           {renderSearchResults(searchPaginationOptions)}
-        </div>
-        {renderEntityCreation(searchPaginationOptions)}
+          {renderEntityCreation(searchPaginationOptions)}
+        </>
       </Drawer>
     </div>
   );

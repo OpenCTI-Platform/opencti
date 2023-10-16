@@ -5,11 +5,12 @@ import { GroupEditionContainerQuery } from './__generated__/GroupEditionContaine
 import GroupEditionContainer, { groupEditionContainerQuery } from './GroupEditionContainer';
 
 interface GroupEditionProps {
-  handleClose: () => void,
-  groupId: string,
+  handleClose?: () => void
+  groupId: string
+  open?: boolean
 }
 
-const GroupEdition: FunctionComponent<GroupEditionProps> = ({ handleClose, groupId }) => {
+const GroupEdition: FunctionComponent<GroupEditionProps> = ({ handleClose, groupId, open }) => {
   const groupQueryRef = useQueryLoading<GroupEditionContainerQuery>(groupEditionContainerQuery, { id: groupId });
   return (
     <div>
@@ -18,6 +19,7 @@ const GroupEdition: FunctionComponent<GroupEditionProps> = ({ handleClose, group
           <GroupEditionContainer
             groupQueryRef={groupQueryRef}
             handleClose={handleClose}
+            open={open}
           />
         </React.Suspense>
       )}

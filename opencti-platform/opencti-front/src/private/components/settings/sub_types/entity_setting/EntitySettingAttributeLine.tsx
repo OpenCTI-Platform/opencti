@@ -7,7 +7,6 @@ import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -34,17 +33,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
   goIcon: {
     position: 'absolute',
@@ -74,9 +62,7 @@ interface EntitySettingAttributeLineProps {
   entitySetting: EntitySettingAttributes_entitySetting$data;
 }
 
-const EntitySettingAttributeLine: FunctionComponent<
-EntitySettingAttributeLineProps
-> = ({ node = null, dataColumns, entitySetting }) => {
+const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({ node = null, dataColumns, entitySetting }) => {
   const classes = useStyles();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
 
@@ -119,20 +105,12 @@ EntitySettingAttributeLineProps
           <NorthEastOutlined />
         </ListItemIcon>
       </ListItemButton>
-      <Drawer
+      <EntitySettingAttributeEdition
+        attribute={attribute}
+        entitySetting={entitySetting}
+        handleClose={handleCloseUpdate}
         open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <EntitySettingAttributeEdition
-          attribute={attribute}
-          entitySetting={entitySetting}
-          handleClose={handleCloseUpdate}
-        />
-      </Drawer>
+      />
     </>
   );
 };

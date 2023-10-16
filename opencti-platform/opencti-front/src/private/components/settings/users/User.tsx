@@ -3,13 +3,7 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
-import {
-  DeleteForeverOutlined,
-  DeleteOutlined,
-  EditOutlined,
-} from '@mui/icons-material';
+import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -39,7 +33,6 @@ import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Transition from '../../../../components/Transition';
 import { User_user$key } from './__generated__/User_user.graphql';
-import { Theme } from '../../../../components/Theme';
 import AccessesMenu from '../AccessesMenu';
 import Chart from '../../common/charts/Chart';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
@@ -55,6 +48,7 @@ import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { Theme } from '../../../../components/Theme';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -62,7 +56,7 @@ const interval$ = interval(FIVE_SECONDS);
 const startDate = yearsAgo(1);
 const endDate = now();
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -70,11 +64,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   floatingButton: {
     float: 'left',
     margin: '-8px 0 0 5px',
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
   },
   gridContainer: {
     marginBottom: 20,
@@ -92,17 +81,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -230,7 +208,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const { t, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
-  const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
@@ -255,12 +232,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   }, []);
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsCapability = userCapabilities.includes(SETTINGS) || userCapabilities.includes(BYPASS);
-  const handleOpenUpdate = () => {
-    setDisplayUpdate(true);
-  };
-  const handleCloseUpdate = () => {
-    setDisplayUpdate(false);
-  };
   const handleOpenKillSession = (sessionId: string) => {
     setDisplayKillSession(true);
     setSessionToKill(sessionId);
@@ -597,9 +568,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <HiddenTypesChipList
-                  hiddenTypes={user.default_hidden_types ?? []}
-                />
+                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []} />
               </Grid>
             </Grid>
           </Paper>
@@ -690,38 +659,20 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           <UserHistory userId={user.id} />
         </Grid>
       </Grid>
-      <Fab
-        onClick={handleOpenUpdate}
-        color="secondary"
-        aria-label="Edit"
-        className={classes.editButton}
-      >
-        <EditOutlined />
-      </Fab>
-      <Drawer
-        open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <QueryRenderer
-          query={userEditionQuery}
-          variables={{ id: user.id }}
-          render={({ props }: { props: UserPopoverEditionQuery$data }) => {
-            if (props && props.user) {
-              return (
-                <UserEdition
-                  user={props.user}
-                  handleClose={handleCloseUpdate}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={userEditionQuery}
+        variables={{ id: user.id }}
+        render={({ props }: { props: UserPopoverEditionQuery$data }) => {
+          if (props && props.user) {
+            return (
+              <UserEdition
+                user={props.user}
+              />
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
       <Dialog
         open={displayKillSession}
         PaperProps={{ elevation: 1 }}
@@ -791,14 +742,14 @@ export const userQuery = graphql`
       id
       name
       ...User_user
-        @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;

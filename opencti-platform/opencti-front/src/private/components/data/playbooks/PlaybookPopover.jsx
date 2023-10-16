@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -34,20 +33,9 @@ import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -175,30 +163,22 @@ const PlaybookPopover = (props) => {
         <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
-      <Drawer
-        open={displayUpdate}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={() => setDisplayUpdate(false)}
-      >
-        <QueryRenderer
-          query={playbookEditionQuery}
-          variables={{ id: playbookId }}
-          render={({ props: resultProps }) => {
-            if (resultProps) {
-              return (
-                <PlaybookEdition
-                  playbook={resultProps.playbook}
-                  handleClose={() => setDisplayUpdate(false)}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={playbookEditionQuery}
+        variables={{ id: playbookId }}
+        render={({ props: resultProps }) => {
+          if (resultProps) {
+            return (
+              <PlaybookEdition
+                playbook={resultProps.playbook}
+                handleClose={() => setDisplayUpdate(false)}
+                open={displayUpdate}
+              />
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayDelete}

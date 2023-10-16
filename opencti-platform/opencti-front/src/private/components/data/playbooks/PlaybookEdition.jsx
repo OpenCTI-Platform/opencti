@@ -16,31 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-
-const useStyles = makeStyles((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
+import Drawer from '../../common/drawer/Drawer';
 
 export const playbookMutationFieldPatch = graphql`
   mutation PlaybookEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -55,8 +36,7 @@ const playbookValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const PlaybookEditionContainer = ({ handleClose, playbook }) => {
-  const classes = useStyles();
+const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
   const { t } = useFormatter();
   const initialValues = R.pickAll(['name', 'description'], playbook);
   const handleSubmitField = (name, value) => {
@@ -74,20 +54,11 @@ const PlaybookEditionContainer = ({ handleClose, playbook }) => {
       .catch(() => false);
   };
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Update a playbook')}</Typography>
-      </div>
-      <div className={classes.container}>
+    <Drawer
+      title={t('Update a playbook')}
+      open={open}
+      onClose={handleClose}
+    >
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
@@ -115,8 +86,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook }) => {
             </Form>
           )}
         </Formik>
-      </div>
-    </>
+    </Drawer>
   );
 };
 

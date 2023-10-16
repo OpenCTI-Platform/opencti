@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -20,20 +19,9 @@ import Loader from '../../../../components/Loader';
 import RetentionEdition from './RetentionEdition';
 import { deleteNode } from '../../../../utils/store';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 });
 
@@ -144,31 +132,23 @@ class RetentionPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={retentionEditionQuery}
-            variables={{ id: retentionRuleId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <RetentionEdition
-                    retentionRule={props.retentionRule}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={retentionEditionQuery}
+          variables={{ id: retentionRuleId }}
+          render={({ props }) => {
+            if (props) {
+              // Done
+              return (
+                <RetentionEdition
+                  retentionRule={props.retentionRule}
+                  handleClose={this.handleCloseUpdate.bind(this)}
+                  open={this.state.displayUpdate}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}

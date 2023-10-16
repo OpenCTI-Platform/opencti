@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DrawerMUI from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -53,7 +53,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 
 interface DrawerProps {
   title: string
-  children?: React.ReactElement | null
+  children?: ((props: { onClose: () => void }) => React.ReactElement) | React.ReactElement | null
   open?: boolean
   onClose?: () => void
   variant?: DrawerVariant
@@ -64,7 +64,7 @@ interface DrawerProps {
   header?: React.ReactElement
 }
 
-const Drawer: FunctionComponent<DrawerProps> = ({
+const Drawer = ({
   title,
   children,
   open: defaultOpen = false,
@@ -72,7 +72,7 @@ const Drawer: FunctionComponent<DrawerProps> = ({
   variant,
   context,
   header,
-}) => {
+}: DrawerProps) => {
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -90,6 +90,14 @@ const Drawer: FunctionComponent<DrawerProps> = ({
   };
 
   const update = variant ? [DrawerVariant.update, DrawerVariant.updateWithPanel].includes(variant) : undefined;
+  let component;
+  if (children) {
+    if (typeof children === 'function') {
+      component = children({ onClose: handleClose });
+    } else {
+      component = React.cloneElement(children as React.ReactElement, { onClose: handleClose });
+    }
+  }
   return (
     <>
       {variant && (
@@ -128,7 +136,7 @@ const Drawer: FunctionComponent<DrawerProps> = ({
           {header}
         </div>
         <div className={classes.container}>
-          {children && React.cloneElement(children, { onClose: handleClose })}
+          {component}
         </div>
       </DrawerMUI>
     </>

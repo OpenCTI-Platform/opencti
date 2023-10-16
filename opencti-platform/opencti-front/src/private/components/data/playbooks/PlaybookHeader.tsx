@@ -19,18 +19,8 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  Close,
-  ManageHistoryOutlined,
-  AutoAwesomeOutlined,
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  CheckCircleOutlined,
-  ErrorOutlined,
-} from '@mui/icons-material';
+import { AutoAwesomeOutlined, CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -42,16 +32,16 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
+import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import PlaybookPopover from './PlaybookPopover';
-import { Theme } from '../../../../components/Theme';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Transition from '../../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
     textTransform: 'uppercase',
@@ -74,27 +64,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   activity: {
     marginTop: -10,
     float: 'right',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  drawerTitle: {
-    float: 'left',
-  },
-  content: {
-    margin: 0,
   },
 }));
 
@@ -189,96 +158,77 @@ const PlaybookHeaderComponent = ({
       </div>
       <Drawer
         open={openLastExecutions}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={() => setOpenLastExecutions(false)}
+        title={t('Last execution traces')}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={() => setOpenLastExecutions(false)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.drawerTitle }}>
-            {t('Last execution traces')}
-          </Typography>
-        </div>
-        <div className={classes.content}>
-          <List>
-            {(playbook.last_executions ?? []).map((lastExecution) => {
-              return (
-                <React.Fragment key={lastExecution.id}>
-                  <ListItem
-                    dense={true}
-                    button={true}
-                    divider={openExecution !== lastExecution.id}
-                    onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
-                    }
-                  >
-                    <ListItemIcon>
-                      <AutoAwesomeOutlined fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${t('Execution at')} ${nsdt(
-                        lastExecution.execution_start,
-                      )}`}
-                      secondary={`${(lastExecution.steps ?? []).length} ${t(
-                        'steps executed',
-                      )}`}
-                    />
-                    {openExecution === lastExecution.id ? (
-                      <ExpandLessOutlined />
-                    ) : (
-                      <ExpandMoreOutlined />
-                    )}
-                  </ListItem>
-                  <Collapse
-                    in={openExecution === lastExecution.id}
-                    timeout="auto"
-                    unmountOnExit
-                  >
-                    <List component="div" disablePadding={true}>
-                      {(lastExecution.steps ?? []).map((step) => (
-                        <ListItem
-                          key={step.id}
-                          dense={true}
-                          button={true}
-                          sx={{ pl: 4 }}
-                          onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
-                        >
-                          <ListItemIcon>
-                            <Tooltip title={t(step.status)}>
-                              {step.status === 'success' ? (
-                                <CheckCircleOutlined
-                                  fontSize="small"
-                                  color="success"
-                                />
-                              ) : (
-                                <ErrorOutlined fontSize="small" color="error" />
-                              )}
-                            </Tooltip>
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={step.message}
-                            secondary={`${t('Execution ended at')} ${nsdt(
-                              step.out_timestamp,
-                            )}`}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Collapse>
-                </React.Fragment>
-              );
-            })}
-          </List>
-        </div>
+        <List>
+          {(playbook.last_executions ?? []).map((lastExecution) => {
+            return (
+              <React.Fragment key={lastExecution.id}>
+                <ListItem
+                  dense={true}
+                  button={true}
+                  divider={openExecution !== lastExecution.id}
+                  onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
+                  }
+                >
+                  <ListItemIcon>
+                    <AutoAwesomeOutlined fontSize="small" color="primary" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={`${t('Execution at')} ${nsdt(
+                      lastExecution.execution_start,
+                    )}`}
+                    secondary={`${(lastExecution.steps ?? []).length} ${t(
+                      'steps executed',
+                    )}`}
+                  />
+                  {openExecution === lastExecution.id ? (
+                    <ExpandLessOutlined />
+                  ) : (
+                    <ExpandMoreOutlined />
+                  )}
+                </ListItem>
+                <Collapse
+                  in={openExecution === lastExecution.id}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <List component="div" disablePadding={true}>
+                    {(lastExecution.steps ?? []).map((step) => (
+                      <ListItem
+                        key={step.id}
+                        dense={true}
+                        button={true}
+                        sx={{ pl: 4 }}
+                        onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
+                      >
+                        <ListItemIcon>
+                          <Tooltip title={t(step.status)}>
+                            {step.status === 'success' ? (
+                              <CheckCircleOutlined
+                                fontSize="small"
+                                color="success"
+                              />
+                            ) : (
+                              <ErrorOutlined fontSize="small" color="error" />
+                            )}
+                          </Tooltip>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={step.message}
+                          secondary={`${t('Execution ended at')} ${nsdt(
+                            step.out_timestamp,
+                          )}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
+              </React.Fragment>
+            );
+          })}
+        </List>
       </Drawer>
       <Dialog
         PaperProps={{ elevation: 1 }}

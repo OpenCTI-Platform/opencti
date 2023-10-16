@@ -6,7 +6,7 @@ import { React } from 'mdi-material-ui';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { NorthEastOutlined } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
 import { DataColumns } from '../../../../components/list_lines';
@@ -34,17 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
   goIcon: {
     position: 'absolute',
@@ -117,10 +106,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
       </ListItem>
       <Drawer
         open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
+        title={t('Update a picture')}
         onClose={handleCloseUpdate}
       >
         <PictureManagementEdition

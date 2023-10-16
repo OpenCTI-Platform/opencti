@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,20 +13,9 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -73,30 +61,22 @@ const ReportPopover = ({ id }) => {
         handleClose={handleClose}
         handleCloseDelete={handleCloseDelete}
       />
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        <QueryRenderer
-          query={reportEditionQuery}
-          variables={{ id }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <ReportEditionContainer
-                  report={props.report}
-                  handleClose={handleCloseEdit}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={reportEditionQuery}
+        variables={{ id }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <ReportEditionContainer
+                report={props.report}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+              />
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
     </div>
   );
 };

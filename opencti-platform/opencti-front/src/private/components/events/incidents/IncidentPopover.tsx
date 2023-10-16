@@ -3,7 +3,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -14,32 +13,18 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../components/i18n';
-import IncidentEditionContainer, {
-  IncidentEditionQuery,
-} from './IncidentEditionContainer';
+import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -141,25 +126,17 @@ const IncidentPopover = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <IncidentEditionContainer
-              queryRef={queryRef}
-              handleClose={handleCloseEdit}
-            />
-          </React.Suspense>
-        )}
-      </Drawer>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <IncidentEditionContainer
+            queryRef={queryRef}
+            handleClose={handleCloseEdit}
+            open={displayEdit}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

@@ -1,37 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { pick } from 'ramda';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { Theme } from '../../../../components/Theme';
 import { StatusTemplateEdition_statusTemplate$key } from './__generated__/StatusTemplateEdition_statusTemplate.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
 
 export const StatusTemplateEditionFragment = graphql`
   fragment StatusTemplateEdition_statusTemplate on StatusTemplate {
@@ -73,10 +49,8 @@ interface StatusTemplateEditionProps {
 }
 
 const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
-  handleClose,
   statusTemplate,
 }) => {
-  const classes = useStyles();
   const data = useFragment(StatusTemplateEditionFragment, statusTemplate);
 
   const { t } = useFormatter();
@@ -122,54 +96,36 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   };
 
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a status template')}
-        </Typography>
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={statusTemplateValidation(t)}
-          onSubmit={() => {}}
-        >
-          {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={ColorPickerField}
-                name="color"
-                label={t('Color')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={statusTemplateValidation(t)}
+      onSubmit={() => {
+      }}
+    >
+      {() => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+          />
+          <Field
+            component={ColorPickerField}
+            name="color"
+            label={t('Color')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+          />
+        </Form>
+      )}
+    </Formik>
   );
 };
 

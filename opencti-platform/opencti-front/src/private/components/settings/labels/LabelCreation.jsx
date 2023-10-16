@@ -2,12 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -16,6 +11,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
@@ -100,19 +96,6 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 class LabelCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, labels: [] };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     if (this.props.dryrun && this.props.contextual) {
       this.props.creationCallback({ labelAdd: values });
@@ -143,15 +126,9 @@ class LabelCreation extends Component {
         if (this.props.contextual) {
           this.props.creationCallback(response);
           this.props.handleClose();
-        } else {
-          this.handleClose();
         }
       },
     });
-  }
-
-  onResetClassic() {
-    this.handleClose();
   }
 
   onResetContextual() {
@@ -161,86 +138,60 @@ class LabelCreation extends Component {
   renderClassic() {
     const { t, classes } = this.props;
     return (
-      <>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a label')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                value: '',
-                color: '',
-              }}
-              validationSchema={labelValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="value"
-                    label={t('Value')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="color"
-                    label={t('Color')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </>
+      <Drawer
+        title={t('Create a label')}
+        variant={DrawerVariant.createWithPanel}
+      >
+        {({ onClose }) => (
+          <Formik
+            initialValues={{
+              value: '',
+              color: '',
+            }}
+            validationSchema={labelValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={onClose}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="value"
+                  label={t('Value')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={ColorPickerField}
+                  name="color"
+                  label={t('Color')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </Drawer>
     );
   }
 

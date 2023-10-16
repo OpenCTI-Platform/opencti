@@ -2,10 +2,6 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,25 +13,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-});
+import Drawer from '../../common/drawer/Drawer';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -69,7 +47,7 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
 
 const IngestionTaxiiEditionContainer = ({
   t,
-  classes,
+  open,
   handleClose,
   ingestionTaxii,
 }) => {
@@ -172,188 +150,178 @@ const IngestionTaxiiEditionContainer = ({
     ]),
   )(ingestionTaxii);
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Update a TAXII ingester')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={ingestionTaxiiValidation(t)}
-        >
-          {({ values }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="uri"
-                label={t('TAXII server URL')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="version"
-                label={t('TAXII version')}
-                onSubmit={handleSubmitField}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="v1" disabled={true}>
-                  {t('TAXII 1.0')}
-                </MenuItem>
-                <MenuItem value="v2" disabled={true}>
-                  {t('TAXII 2.0')}
-                </MenuItem>
-                <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
-              </Field>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="collection"
-                label={t('TAXII Collection')}
-                onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="authentication_type"
-                label={t('Authentication type')}
-                onSubmit={handleSubmitField}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="none">{t('None')}</MenuItem>
-                <MenuItem value="basic">{t('Basic user / password')}</MenuItem>
-                <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
-                  {t('Client certificate')}
-                </MenuItem>
-              </Field>
-              {values.authentication_type === 'basic' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="username"
-                    label={t('Username')}
-                    onSubmit={handleSubmitField}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password"
-                    label={t('Password')}
-                    onSubmit={handleSubmitField}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
-              )}
-              {values.authentication_type === 'bearer' && (
+    <Drawer
+      title={t('Update a TAXII ingester')}
+      open={open}
+      onClose={handleClose}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={ingestionTaxiiValidation(t)}
+      >
+        {({ values }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onSubmit={handleSubmitField}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+              onSubmit={handleSubmitField}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="uri"
+              label={t('TAXII server URL')}
+              fullWidth={true}
+              onSubmit={handleSubmitField}
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="version"
+              label={t('TAXII version')}
+              onSubmit={handleSubmitField}
+              fullWidth={true}
+              containerstyle={{
+                width: '100%',
+                marginTop: 20,
+              }}
+            >
+              <MenuItem value="v1" disabled={true}>
+                {t('TAXII 1.0')}
+              </MenuItem>
+              <MenuItem value="v2" disabled={true}>
+                {t('TAXII 2.0')}
+              </MenuItem>
+              <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
+            </Field>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="collection"
+              label={t('TAXII Collection')}
+              onSubmit={handleSubmitField}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="authentication_type"
+              label={t('Authentication type')}
+              onSubmit={handleSubmitField}
+              fullWidth={true}
+              containerstyle={{
+                width: '100%',
+                marginTop: 20,
+              }}
+            >
+              <MenuItem value="none">{t('None')}</MenuItem>
+              <MenuItem value="basic">{t('Basic user / password')}</MenuItem>
+              <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
+              <MenuItem value="certificate">
+                {t('Client certificate')}
+              </MenuItem>
+            </Field>
+            {values.authentication_type === 'basic' && (
+              <>
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="authentication_value"
-                  label={t('Token')}
+                  name="username"
+                  label={t('Username')}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
-              )}
-              {values.authentication_type === 'certificate' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="cert"
-                    label={t('Certificate (base64)')}
-                    onSubmit={handleSubmitField}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="key"
-                    label={t('Key (base64)')}
-                    onSubmit={handleSubmitField}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="ca"
-                    label={t('CA certificate (base64)')}
-                    onSubmit={handleSubmitField}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
-              )}
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="password"
+                  label={t('Password')}
+                  onSubmit={handleSubmitField}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
+            )}
+            {values.authentication_type === 'bearer' && (
               <Field
-                component={DateTimePickerField}
-                name="added_after_start"
+                component={TextField}
+                variant="standard"
+                name="authentication_value"
+                label={t('Token')}
                 onSubmit={handleSubmitField}
-                TextFieldProps={{
-                  label: t(
-                    'Import from date (empty = all TAXII collection possible items)',
-                  ),
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
               />
-              <CreatorField
-                name="user_id"
-                label={t('User responsible for data creation (empty = System)')}
-                onChange={handleSubmitField}
-                containerStyle={fieldSpacingContainerStyle}
-              />
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </>
+            )}
+            {values.authentication_type === 'certificate' && (
+              <>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="cert"
+                  label={t('Certificate (base64)')}
+                  onSubmit={handleSubmitField}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="key"
+                  label={t('Key (base64)')}
+                  onSubmit={handleSubmitField}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="ca"
+                  label={t('CA certificate (base64)')}
+                  onSubmit={handleSubmitField}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
+            )}
+            <Field
+              component={DateTimePickerField}
+              name="added_after_start"
+              onSubmit={handleSubmitField}
+              TextFieldProps={{
+                label: t(
+                  'Import from date (empty = all TAXII collection possible items)',
+                ),
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+            />
+            <CreatorField
+              name="user_id"
+              label={t('User responsible for data creation (empty = System)')}
+              onChange={handleSubmitField}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 
@@ -391,5 +359,4 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
 
 export default R.compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
 )(IngestionTaxiiEditionFragment);

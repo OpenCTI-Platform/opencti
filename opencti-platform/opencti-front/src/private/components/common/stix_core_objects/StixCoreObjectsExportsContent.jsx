@@ -2,10 +2,6 @@ import React, { useEffect } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
 import StixCoreObjectsExportCreation from './StixCoreObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
@@ -15,30 +11,15 @@ import { useFormatter } from '../../../../components/i18n';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const useStyles = makeStyles((theme) => ({
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-}));
-
 const StixCoreObjectsExportsContentComponent = ({
   relay,
   isOpen,
   data,
   exportEntityType,
   paginationOptions,
-  handleToggle,
   context,
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       if (isOpen) {
@@ -66,18 +47,6 @@ const StixCoreObjectsExportsContentComponent = ({
   }
   return (
     <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleToggle}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Exports list')}</Typography>
-      </div>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
           stixCoreObjectsExportFiles.map((file) => file?.node && (
@@ -139,7 +108,7 @@ export default createRefetchContainer(
         type: { type: "String!" }
       ) {
         stixCoreObjectsExportFiles(first: $count, type: $type)
-          @connection(key: "Pagination_stixCoreObjectsExportFiles") {
+        @connection(key: "Pagination_stixCoreObjectsExportFiles") {
           edges {
             node {
               id

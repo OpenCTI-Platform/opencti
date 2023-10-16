@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
@@ -12,8 +11,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql, useMutation } from 'react-relay';
+import Drawer from '@components/common/drawer/Drawer';
 import VocabularyEdition from './VocabularyEdition';
-import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import Transition from '../../../../components/Transition';
@@ -21,20 +20,9 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -146,11 +134,8 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
         </DialogActions>
       </Dialog>
       <Drawer
+        title={t('Update an attribute')}
         open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseUpdate}
       >
         <VocabularyEdition vocab={vocab} handleClose={handleCloseUpdate} />

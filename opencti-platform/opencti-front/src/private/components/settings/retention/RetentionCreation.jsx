@@ -2,18 +2,14 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -89,17 +85,8 @@ const RetentionCreationValidation = (t) => Yup.object().shape({
 
 const RetentionCreation = (props) => {
   const { t, classes } = props;
-  const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState({});
   const [verified, setVerified] = useState(false);
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
@@ -123,13 +110,8 @@ const RetentionCreation = (props) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
       },
     });
-  };
-
-  const onReset = () => {
-    handleClose();
   };
 
   const handleVerify = (values) => {
@@ -177,145 +159,120 @@ const RetentionCreation = (props) => {
   };
 
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a retention policy')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <Formik
-            initialValues={{ name: '', max_retention: '31' }}
-            validationSchema={RetentionCreationValidation(t)}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              values: formValues,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
+    <Drawer
+      title={t('Create a retention policy')}
+      variant={DrawerVariant.createWithPanel}
+      onClose={() => setFilters({})}
+    >
+      {({ onClose }) => (
+        <Formik
+          initialValues={{ name: '', max_retention: '31' }}
+          validationSchema={RetentionCreationValidation(t)}
+          onSubmit={onSubmit}
+          onReset={onClose}
+        >
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            values: formValues,
+          }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="max_retention"
+                label={t('Maximum retention days')}
+                fullWidth={true}
+                onChange={() => setVerified(false)}
+                style={{ marginTop: 20 }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Tooltip
+                        title={t(
+                          'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                        )}
+                      >
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'default' }}
+                        />
+                      </Tooltip>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <div style={{ marginTop: 35 }}>
+                <Filters
+                  variant="text"
+                  availableFilterKeys={[
+                    'entity_type',
+                    'markedBy',
+                    'labelledBy',
+                    'createdBy',
+                    'x_opencti_score',
+                    'x_opencti_detection',
+                    'revoked',
+                    'confidence',
+                    'pattern_type',
+                    'x_opencti_main_observable_type',
+                  ]}
+                  currentFilters={[]}
+                  handleAddFilter={handleAddFilter}
+                  noDirectFilters={true}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="max_retention"
-                  label={t('Maximum retention days')}
-                  fullWidth={true}
-                  onChange={() => setVerified(false)}
-                  style={{ marginTop: 20 }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip
-                          title={t(
-                            'All objects matching the filters that have not been updated since this amount of days will be deleted',
-                          )}
-                        >
-                          <InformationOutline
-                            fontSize="small"
-                            color="primary"
-                            style={{ cursor: 'default' }}
-                          />
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <div style={{ marginTop: 35 }}>
-                  <Filters
-                    variant="text"
-                    availableFilterKeys={[
-                      'entity_type',
-                      'markedBy',
-                      'labelledBy',
-                      'createdBy',
-                      'x_opencti_score',
-                      'x_opencti_detection',
-                      'revoked',
-                      'confidence',
-                      'pattern_type',
-                      'x_opencti_main_observable_type',
-                    ]}
-                    currentFilters={[]}
-                    handleAddFilter={handleAddFilter}
-                    noDirectFilters={true}
-                  />
-                </div>
-                <div className="clearfix" />
-                <FilterIconButton
-                  filters={filters}
-                  handleRemoveFilter={handleRemoveFilter}
-                  classNameNumber={2}
-                  styleNumber={2}
-                  redirection
-                />
-                <div className="clearfix" />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleVerify(formValues)}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Verify')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={!verified || isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </Drawer>
-    </div>
+              </div>
+              <div className="clearfix" />
+              <FilterIconButton
+                filters={filters}
+                handleRemoveFilter={handleRemoveFilter}
+                classNameNumber={2}
+                styleNumber={2}
+                redirection
+              />
+              <div className="clearfix" />
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => handleVerify(formValues)}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Verify')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={!verified || isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Create')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      )}
+    </Drawer>
   );
 };
 

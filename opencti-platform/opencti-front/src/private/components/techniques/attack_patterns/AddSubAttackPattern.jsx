@@ -2,16 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSubAttackPatternsLines, {
-  addSubAttackPatternsLinesQuery,
-} from './AddSubAttackPatternsLines';
+import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
 
 const styles = (theme) => ({
@@ -33,7 +30,8 @@ const styles = (theme) => ({
     float: 'left',
   },
   search: {
-    float: 'right',
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -95,25 +93,9 @@ class AddSubAttackPattern extends Component {
         </IconButton>
         <Drawer
           open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add sub attack patterns')}
-            </Typography>
+          title={t('Add sub attack patterns')}
+          header={(
             <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
@@ -121,8 +103,9 @@ class AddSubAttackPattern extends Component {
                 onSubmit={this.handleSearch.bind(this)}
               />
             </div>
-          </div>
-          <div className={classes.container}>
+          )}
+        >
+          <>
             <QueryRenderer
               query={addSubAttackPatternsLinesQuery}
               variables={{
@@ -141,13 +124,13 @@ class AddSubAttackPattern extends Component {
                 );
               }}
             />
-          </div>
-          <AttackPatternCreation
-            display={this.state.open}
-            contextual={true}
-            inputValue={this.state.search}
-            paginationOptions={paginationOptions}
-          />
+            <AttackPatternCreation
+              display={this.state.open}
+              contextual={true}
+              inputValue={this.state.search}
+              paginationOptions={paginationOptions}
+            />
+          </>
         </Drawer>
       </div>
     );

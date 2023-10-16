@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
-import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubSectorsLines, { addSubSectorsLinesQuery } from './AddSubSectorsLines';
 import SectorCreation from './SectorCreation';
@@ -93,34 +91,10 @@ class AddSubSector extends Component {
         </IconButton>
         <Drawer
           open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
+          title={t('Add subsectors')}
           onClose={this.handleClose.bind(this)}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add subsectors')}
-            </Typography>
-            <div className={classes.search}>
-              <SearchInput
-                variant="inDrawer"
-                placeholder={`${t('Search')}...`}
-                onSubmit={this.handleSearch.bind(this)}
-              />
-            </div>
-          </div>
-          <div className={classes.container}>
+          <>
             <QueryRenderer
               query={addSubSectorsLinesQuery}
               variables={{
@@ -137,13 +111,13 @@ class AddSubSector extends Component {
                 );
               }}
             />
-          </div>
-          <SectorCreation
-            display={this.state.open}
-            contextual={true}
-            inputValue={this.state.search}
-            paginationOptions={paginationOptions}
-          />
+            <SectorCreation
+              display={this.state.open}
+              contextual={true}
+              inputValue={this.state.search}
+              paginationOptions={paginationOptions}
+            />
+          </>
         </Drawer>
       </div>
     );

@@ -1,39 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import AdministrativeAreaEditionOverview from './AdministrativeAreaEditionOverview';
-import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
-
 interface AdministrativeAreaEditionContainerProps {
-  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>;
-  handleClose: () => void;
+  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>
+  handleClose: () => void
+  open?: boolean
 }
 
 export const administrativeAreaEditionQuery = graphql`
@@ -47,44 +24,29 @@ export const administrativeAreaEditionQuery = graphql`
     }
   }
 `;
-const AdministrativeAreaEditionContainer: FunctionComponent<
-AdministrativeAreaEditionContainerProps
-> = ({ queryRef, handleClose }) => {
-  const classes = useStyles();
+const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({ queryRef, handleClose, open }) => {
   const { t } = useFormatter();
-  const queryData = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
-  if (queryData.administrativeArea === null) {
+  const { administrativeArea } = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
+  if (administrativeArea === null) {
     return <ErrorNotFound />;
   }
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an area')}
-        </Typography>
-        <SubscriptionAvatars
-          context={queryData.administrativeArea.editContext}
-        />
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
+    <Drawer
+      title={t('Update an area')}
+      variant={open == null ? DrawerVariant.update : undefined}
+      context={administrativeArea.editContext}
+      onClose={handleClose}
+      open={open}
+    >
+      {({ onClose }) => (
         <AdministrativeAreaEditionOverview
-          administrativeAreaRef={queryData.administrativeArea}
-          context={queryData.administrativeArea.editContext}
-          handleClose={handleClose}
+          administrativeAreaRef={administrativeArea}
+          context={administrativeArea.editContext}
+          handleClose={onClose}
           enableReferences={useIsEnforceReference('Administrative-Area')}
         />
-      </div>
-    </>
+      )}
+    </Drawer>
   );
 };
 

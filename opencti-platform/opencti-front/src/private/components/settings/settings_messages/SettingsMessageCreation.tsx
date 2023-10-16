@@ -4,15 +4,18 @@ import SettingsMessageForm from './SettingsMessageForm';
 const SettingsMessageCreation = ({
   settingsId,
   handleClose,
+  open,
 }: {
-  settingsId: string;
-  handleClose: () => void;
+  settingsId: string
+  handleClose: () => void
+  open?: boolean
 }) => {
   return (
     <SettingsMessageForm
       settingsId={settingsId}
       handleClose={handleClose}
-      creation={true}
+      creation
+      open={open}
     />
   );
 };

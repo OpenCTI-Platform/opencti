@@ -12,12 +12,16 @@ import { Link } from 'react-router-dom';
 import { FilePdfBox } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import { createStyles } from '@mui/styles';
+import { Theme } from '../../../../components/Theme';
+import useAuth from '../../../../utils/hooks/useAuth';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({
   bottomNav: {
     zIndex: 1000,
     display: 'flex',
     overflow: 'hidden',
+    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
   },
 }));
 
@@ -51,7 +55,10 @@ StixDomainObjectContentBarProps
   changed,
   navOpen,
 }) => {
-  const classes = useStyles();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
+  const classes = useStyles({ bannerHeightNumber });
   const enableZoom = handleZoomIn && handleZoomOut && currentZoom;
   return (
     <Drawer

@@ -1,19 +1,17 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig, FormikErrors } from 'formik/dist/types';
-import { Box, Tab, Tabs } from '@mui/material';
-import Badge, { BadgeProps } from '@mui/material/Badge';
+import { FormikConfig } from 'formik/dist/types';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { styled } from '@mui/material/styles';
+import { Badge, BadgeProps } from '@mui/material';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -31,12 +29,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { MeasureInput, ThreatActorIndividualCreationMutation, ThreatActorIndividualCreationMutation$variables } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { ThreatActorsIndividualCardsPaginationQuery$variables } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
-import {
-  MeasureInput,
-  ThreatActorIndividualCreationMutation,
-  ThreatActorIndividualCreationMutation$variables,
-} from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import DatePickerField from '../../../../components/DatePickerField';
 import { HeightFieldAdd } from '../../common/form/HeightField';
 import { WeightFieldAdd } from '../../common/form/WeightField';
@@ -45,40 +39,12 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -156,9 +122,7 @@ interface ThreatActorIndividualFormProps {
   inputValue?: string;
 }
 
-export const ThreatActorIndividualCreationForm: FunctionComponent<
-ThreatActorIndividualFormProps
-> = ({
+export const ThreatActorIndividualCreationForm: FunctionComponent<ThreatActorIndividualFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -622,11 +586,7 @@ const ThreatActorIndividualCreation = ({
 }: {
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsIndividuals',
@@ -634,46 +594,18 @@ const ThreatActorIndividualCreation = ({
     'threatActorIndividualAdd',
   );
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">
-            {t('Create a threat actor individual')}
-          </Typography>
-        </div>
-        <div className={classes.container}>
-          <ThreatActorIndividualCreationForm
-            updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
-          />
-        </div>
-      </Drawer>
-    </div>
+    <Drawer
+      title={t('Create a threat actor individual')}
+      variant={DrawerVariant.create}
+    >
+      {({ onClose }) => (
+        <ThreatActorIndividualCreationForm
+          updater={updater}
+          onCompleted={onClose}
+          onReset={onClose}
+        />
+      )}
+    </Drawer>
   );
 };
 

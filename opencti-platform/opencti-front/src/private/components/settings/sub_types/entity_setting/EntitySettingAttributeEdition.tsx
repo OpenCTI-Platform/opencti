@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik, FormikErrors, FormikValues } from 'formik';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { head } from 'ramda';
 import Alert from '@mui/lab/Alert/Alert';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/SwitchField';
@@ -34,22 +32,6 @@ import KillChainPhasesField from '../../../common/form/KillChainPhasesField';
 import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -91,10 +73,12 @@ const EntitySettingAttributeEdition = ({
   attribute,
   handleClose,
   entitySetting,
+  open,
 }: {
-  attribute: EntitySettingAttributeLine_attribute$data;
-  handleClose: () => void;
-  entitySetting: EntitySettingAttributes_entitySetting$data;
+  attribute: EntitySettingAttributeLine_attribute$data
+  handleClose: () => void
+  entitySetting: EntitySettingAttributes_entitySetting$data
+  open?: boolean
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -383,75 +367,62 @@ const EntitySettingAttributeEdition = ({
   const text = attribute.label ?? attribute.name;
   const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {`${t('Update the attribute')} "${attributeName}"`}
-        </Typography>
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={values}
-          validationSchema={attributeValidation()}
-          onSubmit={onSubmit}
-        >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            initialValues,
-            isValid,
-          }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="mandatory"
-                label={t('Mandatory')}
-                disabled={attribute.mandatoryType !== 'customizable'}
+    <Drawer
+      title={`${t('Update the attribute')} "${attributeName}"`}
+      open={open}
+      onClose={handleClose}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={values}
+        validationSchema={attributeValidation()}
+        onSubmit={onSubmit}
+      >
+        {({
+          submitForm,
+          isSubmitting,
+          setFieldValue,
+          initialValues,
+          isValid,
+        }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="mandatory"
+              label={t('Mandatory')}
+              disabled={attribute.mandatoryType !== 'customizable'}
+            />
+            {field(setFieldValue)}
+            {attribute.scale && (
+              <ScaleConfiguration
+                initialValues={initialValues.scale}
+                fieldName="scale"
+                setFieldValue={setFieldValue}
+                setErrors={setScaleErrors}
+                customScale={customScale}
+                style={{ marginTop: 20 }}
               />
-              {field(setFieldValue)}
-              {attribute.scale && (
-                <ScaleConfiguration
-                  initialValues={initialValues.scale}
-                  fieldName="scale"
-                  setFieldValue={setFieldValue}
-                  setErrors={setScaleErrors}
-                  customScale={customScale}
-                  style={{ marginTop: 20 }}
-                />
-              )}
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={
-                    isSubmitting
-                    || !isValid
-                    || Object.keys(scaleErrors).length > 0
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+            )}
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={submitForm}
+                disabled={
+                  isSubmitting
+                  || !isValid
+                  || Object.keys(scaleErrors).length > 0
+                }
+                classes={{ root: classes.button }}
+              >
+                {t('Update')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 

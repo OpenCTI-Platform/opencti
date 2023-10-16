@@ -1,15 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
+import { Add } from '@mui/icons-material';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import SearchInput from '../../../../components/SearchInput';
-import AddDataComponentsLines, {
-  addDataComponentsLinesQuery,
-} from './AddDataComponentsLines';
+import AddDataComponentsLines, { addDataComponentsLinesQuery } from './AddDataComponentsLines';
 import { AddAttackPatternsLinesToDataComponentQuery$variables } from '../data_components/__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -17,39 +13,13 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles(() => ({
   createButton: {
     float: 'left',
     marginTop: -15,
   },
-  title: {
-    float: 'left',
-  },
   search: {
     float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
   },
 }));
 
@@ -91,25 +61,9 @@ const AddDataComponents: FunctionComponent<{
       </IconButton>
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Add data components')}
-          </Typography>
+        title={t('Add data components')}
+        header={(
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
@@ -117,8 +71,8 @@ const AddDataComponents: FunctionComponent<{
               onSubmit={handleSearch}
             />
           </div>
-        </div>
-        <div className={classes.container}>
+        )}
+      >
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -129,7 +83,6 @@ const AddDataComponents: FunctionComponent<{
               />
             </React.Suspense>
           )}
-        </div>
       </Drawer>
       <DataComponentCreation
         display={open}

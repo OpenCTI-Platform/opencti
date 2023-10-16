@@ -1,13 +1,8 @@
-import {
-  AddOutlined,
-  CloseOutlined,
-  ContentPasteGoOutlined,
-} from '@mui/icons-material';
+import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
@@ -17,6 +12,7 @@ import { Form, Formik } from 'formik';
 import React, { FunctionComponent, MutableRefObject, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation } from 'react-relay';
 import { GridTypeMap } from '@mui/material';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -30,22 +26,9 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLine } from './CaseTasksLine';
 import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
-import {
-  CaseTasksLinesQuery,
-  CaseTasksLinesQuery$variables,
-} from './__generated__/CaseTasksLinesQuery.graphql';
+import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -61,22 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   applyButton: {
     float: 'right',
     marginTop: -15,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  title: {
-    float: 'left',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
   buttons: {
     marginTop: 20,
@@ -96,13 +63,13 @@ export const caseTasksLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...CaseTasksLines_data
-      @arguments(
-        count: $count
-        filters: $filters
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      count: $count
+      filters: $filters
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -160,10 +127,8 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [commit] = useMutation(caseSetTemplateQuery);
-  const { data } = usePreloadedPaginationFragment<
-  CaseTasksLinesQuery,
-  CaseTasksLines_data$key
-  >({
+  const { data } = usePreloadedPaginationFragment<CaseTasksLinesQuery,
+  CaseTasksLines_data$key>({
     queryRef,
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,
@@ -269,34 +234,15 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       </Dialog>
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+        title={t('Create a task')}
         onClose={handleClose}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <CloseOutlined fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a task')}
-          </Typography>
-        </div>
-        <div className={classes.container}>
-          <CaseTaskCreation
-            caseId={caseId}
-            onClose={handleClose}
-            paginationOptions={paginationOptions}
-            defaultMarkings={defaultMarkings}
-          />
-        </div>
+        <CaseTaskCreation
+          caseId={caseId}
+          onClose={handleClose}
+          paginationOptions={paginationOptions}
+          defaultMarkings={defaultMarkings}
+        />
       </Drawer>
       <div className="clearfix" />
       <Paper classes={{ root: classes.paper }} variant="outlined">

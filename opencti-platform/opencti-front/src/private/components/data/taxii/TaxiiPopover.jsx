@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -15,6 +14,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 
@@ -151,11 +151,8 @@ class TaxiiCollectionPopover extends Component {
         </Menu>
         <Drawer
           open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
+          title={t('Update a TAXII collection')}
         >
           <QueryRenderer
             query={taxiiCollectionEditionQuery}
@@ -166,7 +163,6 @@ class TaxiiCollectionPopover extends Component {
                 return (
                   <TaxiiCollectionEdition
                     taxiiCollection={props.taxiiCollection}
-                    handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
               }

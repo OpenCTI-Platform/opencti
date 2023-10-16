@@ -3,46 +3,28 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
-import {
-  ExternalReferenceAddInput,
-  ExternalReferenceCreationMutation$data,
-} from './__generated__/ExternalReferenceCreationMutation.graphql';
+import { ExternalReferenceAddInput, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -60,19 +42,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -116,9 +85,7 @@ interface ExternalReferenceCreationProps {
   dryrun?: boolean;
 }
 
-const ExternalReferenceCreation: FunctionComponent<
-ExternalReferenceCreationProps
-> = ({
+const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProps> = ({
   contextual,
   paginationOptions,
   display,
@@ -229,113 +196,88 @@ ExternalReferenceCreationProps
   const isEmbeddedInExternalReferenceCreation = true;
   const renderClassic = () => {
     return (
-      <div>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">
-              {t('Create an external reference')}
-            </Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                source_name: '',
-                external_id: '',
-                url: '',
-                description: '',
-                file: '',
-              }}
-              validationSchema={externalReferenceValidation(t)}
-              onSubmit={onSubmit}
-              onReset={onResetClassic}
-            >
-              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="source_name"
-                    label={t('Source name')}
-                    fullWidth={true}
+      <Drawer
+        title={t('Create an external reference')}
+        variant={DrawerVariant.create}
+      >
+        {({ onClose }) => (
+          <Formik
+            initialValues={{
+              source_name: '',
+              external_id: '',
+              url: '',
+              description: '',
+              file: '',
+            }}
+            validationSchema={externalReferenceValidation(t)}
+            onSubmit={onSubmit}
+            onReset={() => {
+              onResetClassic();
+              onClose();
+            }}
+          >
+            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  name="source_name"
+                  label={t('Source name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={TextField}
+                  name="external_id"
+                  id={'external_id'}
+                  label={t('External ID')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  name="url"
+                  label={t('URL')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                {!dryrun && (
+                  <CustomFileUploader
+                    setFieldValue={setFieldValue}
+                    isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                   />
-                  <Field
-                    component={TextField}
-                    name="external_id"
-                    id={'external_id'}
-                    label={t('External ID')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="url"
-                    label={t('URL')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  {!dryrun && (
-                    <CustomFileUploader
-                      setFieldValue={setFieldValue}
-                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
-                    />
-                  )}
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
+                )}
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </Drawer>
     );
   };
 

@@ -3,7 +3,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -15,7 +14,6 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import { workspaceEditionQuery } from './WorkspaceEdition';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Loader from '../../../components/Loader';
 import Security from '../../../utils/Security';
@@ -23,22 +21,19 @@ import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
 }));
+
+const workspaceEditionQuery = graphql`
+  query WorkspacePopoverContainerQuery($id: String!) {
+    workspace(id: $id) {
+      ...WorkspaceEditionContainer_workspace
+    }
+  }
+`;
 
 const WorkspacePopoverDeletionMutation = graphql`
   mutation WorkspacePopoverDeletionMutation($id: ID!) {
@@ -130,30 +125,22 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        <QueryRenderer
-          query={workspaceEditionQuery}
-          variables={{ id }}
-          render={({ props: editionProps }) => {
-            if (editionProps) {
-              return (
-                <WorkspaceEditionContainer
-                  workspace={editionProps.workspace}
-                  handleClose={handleCloseEdit}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={workspaceEditionQuery}
+        variables={{ id }}
+        render={({ props: editionProps }) => {
+          if (editionProps) {
+            return (
+              <WorkspaceEditionContainer
+                workspace={editionProps.workspace}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+              />
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
     </div>
   );
 };
