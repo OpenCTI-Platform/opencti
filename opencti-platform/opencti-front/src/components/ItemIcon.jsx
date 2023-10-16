@@ -36,7 +36,6 @@ import {
   SurroundSoundOutlined,
   TaskAltOutlined,
   TranslateOutlined,
-  Visibility,
   WebAssetOutlined,
   WifiTetheringOutlined,
   WorkOutline,
@@ -56,6 +55,8 @@ import {
   EditOutlined,
   MemoryOutlined,
   NotificationsOutlined,
+  LinkOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -84,6 +85,11 @@ import {
   AccountGroupOutline,
   Group,
   FilterVariant,
+  FlaskOutline,
+  Gauge,
+  SourceFork,
+  SourcePull,
+  Target,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -336,7 +342,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'memory':
       return <MemoryOutlined style={style} fontSize={fontSize} role="img" />;
     case 'notification':
-      return <NotificationsOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <NotificationsOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'observable':
     case 'stix-cyber-observable':
     case 'autonomous-system':
@@ -370,7 +378,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
     case 'sighting':
-      return <Visibility style={style} fontSize={fontSize} role="img" />;
+      return (
+        <VisibilityOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'reduce':
       return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;
     case 'filter':
@@ -389,6 +399,18 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
           role="img"
         />
       );
+    case 'related':
+      return <LinkOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'threats':
+      return <FlaskOutline style={style} fontSize={fontSize} role="img" />;
+    case 'overview':
+      return <Gauge style={style} fontSize={fontSize} role="img" />;
+    case 'variant':
+      return <SourceFork style={style} fontSize={fontSize} role="img" />;
+    case 'attribution':
+      return <SourcePull style={style} fontSize={fontSize} role="img" />;
+    case 'victimology':
+      return <Target style={style} fontSize={fontSize} role="img" />;
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':

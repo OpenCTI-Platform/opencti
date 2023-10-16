@@ -9,8 +9,6 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
-import { DomainOutlined, GroupOutlined, LinkOutlined, TerminalOutlined, VisibilityOutlined } from '@mui/icons-material';
-import { FlaskOutline, Gauge, GlobeModel, SourceFork, SourcePull, Target } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -31,7 +29,10 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) => {
+const StixCoreObjectKnowledgeBar = ({
+  stixCoreObjectLink,
+  availableSections,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
@@ -39,721 +40,703 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
   const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
-      <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
-        <div className={classes.toolbar} />
-        <MenuList style={{ paddingBottom: 0, marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight }} component="nav">
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/overview`}
-            selected={location.pathname === `${stixCoreObjectLink}/overview`}
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <Gauge />
-            </ListItemIcon>
-            <ListItemText primary={t('Overview')} />
-          </MenuItem>
-          {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
-            <MenuList
-              style={{ paddingBottom: 0 }}
-              component="nav"
-              subheader={
-                <ListSubheader style={{ height: 35 }}>
-                  {t('Entities')}
-                </ListSubheader>
-              }
-            >
-              {includes('sectors', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/sectors`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/sectors`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Sector' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Sectors')} />
-                </MenuItem>
-              )}
-              {includes('regions', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/regions`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/regions`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Region' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Regions')} />
-                </MenuItem>
-              )}
-              {includes('countries', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/countries`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/countries`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Country' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Countries')} />
-                </MenuItem>
-              )}
-              {includes('areas', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/areas`}
-                  selected={location.pathname === `${stixCoreObjectLink}/areas`}
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Administrative-Area' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Areas')} />
-                </MenuItem>
-              )}
-              {includes('cities', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/cities`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/cities`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='City' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Cities')} />
-                </MenuItem>
-              )}
-              {includes('organizations', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/organizations`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/organizations`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Organization' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Organizations')} />
-                </MenuItem>
-              )}
-              {includes('individuals', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/individuals`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/individuals`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <GroupOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Individuals')} />
-                </MenuItem>
-              )}
-              {includes('locations', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/locations`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/locations`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <GlobeModel />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Locations')} />
-                </MenuItem>
-              )}
-              {includes('used_tools', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/used_tools`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/used_tools`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Tool' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Used tools')} />
-                </MenuItem>
-              )}
-            </MenuList>
-          ) : (
-            <div>
-              {includes('sectors', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/sectors`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/sectors`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Sector' color='white'/>
-                    <DomainOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Sectors')} />
-                </MenuItem>
-              )}
-              {includes('regions', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/regions`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/regions`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Region' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Regions')} />
-                </MenuItem>
-              )}
-              {includes('countries', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/countries`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/countries`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Country' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Countries')} />
-                </MenuItem>
-              )}
-              {includes('areas', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/areas`}
-                  selected={location.pathname === `${stixCoreObjectLink}/areas`}
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Administrative-Area' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Areas')} />
-                </MenuItem>
-              )}
-              {includes('cities', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/cities`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/cities`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='City' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Cities')} />
-                </MenuItem>
-              )}
-              {includes('locations', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/locations`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/locations`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <GlobeModel />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Locations')} />
-                </MenuItem>
-              )}
-              {includes('organizations', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/organizations`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/organizations`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Identity' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Organizations')} />
-                </MenuItem>
-              )}
-              {includes('individuals', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/individuals`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/individuals`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <GroupOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Individuals')} />
-                </MenuItem>
-              )}
-              {includes('used_tools', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/used_tools`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/used_tools`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <ItemIcon type='Tool' color='white'/>
-                  </ListItemIcon>
-                  <ListItemText primary={t('Used tools')} />
-                </MenuItem>
-              )}
-            </div>
-          )}
-        </MenuList>
-        {isInAvailableSection([
-          'targets',
-          'attribution',
-          'victimology',
-          'intrusion_sets',
-          'campaigns',
-        ]) ? (
+    <Drawer
+      variant="permanent"
+      anchor="right"
+      classes={{ paper: classes.drawer }}
+    >
+      <div className={classes.toolbar} />
+      <MenuList
+        style={{
+          paddingBottom: 0,
+          marginTop:
+            bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
+        }}
+        component="nav"
+      >
+        <MenuItem
+          component={Link}
+          to={`${stixCoreObjectLink}/overview`}
+          selected={location.pathname === `${stixCoreObjectLink}/overview`}
+          dense={false}
+          classes={{ root: classes.item }}
+        >
+          <ListItemIcon style={{ minWidth: 35 }}>
+            <ItemIcon type="overview" />
+          </ListItemIcon>
+          <ListItemText primary={t('Overview')} />
+        </MenuItem>
+        {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
           <MenuList
             style={{ paddingBottom: 0 }}
             component="nav"
             subheader={
               <ListSubheader style={{ height: 35 }}>
-                {t('Threats')}
+                {t('Entities')}
               </ListSubheader>
             }
           >
-            {includes('threats', availableSections) && (
+            {includes('sectors', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/threats`}
-                selected={location.pathname === `${stixCoreObjectLink}/threats`}
+                to={`${stixCoreObjectLink}/sectors`}
+                selected={location.pathname === `${stixCoreObjectLink}/sectors`}
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <FlaskOutline />
+                  <ItemIcon type="Sector" />
                 </ListItemIcon>
-                <ListItemText primary={t('All threats')} />
+                <ListItemText primary={t('Sectors')} />
               </MenuItem>
             )}
-            {includes('attribution', availableSections) && (
+            {includes('regions', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/attribution`}
+                to={`${stixCoreObjectLink}/regions`}
+                selected={location.pathname === `${stixCoreObjectLink}/regions`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Region" />
+                </ListItemIcon>
+                <ListItemText primary={t('Regions')} />
+              </MenuItem>
+            )}
+            {includes('countries', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/countries`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/attribution`
+                  location.pathname === `${stixCoreObjectLink}/countries`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <SourcePull />
+                  <ItemIcon type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={t('Attribution')} />
+                <ListItemText primary={t('Countries')} />
               </MenuItem>
             )}
-            {includes('victimology', availableSections) && (
+            {includes('areas', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/victimology`}
+                to={`${stixCoreObjectLink}/areas`}
+                selected={location.pathname === `${stixCoreObjectLink}/areas`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Administrative-Area" />
+                </ListItemIcon>
+                <ListItemText primary={t('Areas')} />
+              </MenuItem>
+            )}
+            {includes('cities', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/cities`}
+                selected={location.pathname === `${stixCoreObjectLink}/cities`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="City" />
+                </ListItemIcon>
+                <ListItemText primary={t('Cities')} />
+              </MenuItem>
+            )}
+            {includes('organizations', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/organizations`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/victimology`
+                  location.pathname === `${stixCoreObjectLink}/organizations`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <Target />
+                  <ItemIcon type="Organization" />
                 </ListItemIcon>
-                <ListItemText primary={t('Victimology')} />
+                <ListItemText primary={t('Organizations')} />
               </MenuItem>
             )}
-            {includes('threat_actors', availableSections) && (
+            {includes('individuals', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/threat_actors`}
+                to={`${stixCoreObjectLink}/individuals`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/threat_actors`
+                  location.pathname === `${stixCoreObjectLink}/individuals`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Threat-Actor-Individual' color='white'/>
+                  <ItemIcon type="Individual" />
                 </ListItemIcon>
-                <ListItemText primary={t('Threat actors')} />
+                <ListItemText primary={t('Individuals')} />
               </MenuItem>
             )}
-            {includes('intrusion_sets', availableSections) && (
+            {includes('locations', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/intrusion_sets`}
+                to={`${stixCoreObjectLink}/locations`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/intrusion_sets`
+                  location.pathname === `${stixCoreObjectLink}/locations`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Intrusion-Set' color='white'/>
+                  <ItemIcon type="location" />
                 </ListItemIcon>
-                <ListItemText primary={t('Intrusion sets')} />
+                <ListItemText primary={t('Locations')} />
               </MenuItem>
             )}
-            {includes('campaigns', availableSections) && (
+            {includes('used_tools', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/campaigns`}
+                to={`${stixCoreObjectLink}/used_tools`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/campaigns`
+                  location.pathname === `${stixCoreObjectLink}/used_tools`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Campaign' color='white'/>
+                  <ItemIcon type="Tool" />
                 </ListItemIcon>
-                <ListItemText primary={t('Campaigns')} />
+                <ListItemText primary={t('Used tools')} />
               </MenuItem>
             )}
           </MenuList>
-          ) : (
-            ''
-          )}
-        {isInAvailableSection([
-          'variants',
-          'malwares',
-          'tools',
-          'vulnerabilities',
-          'channels',
-        ]) && (
-          <MenuList
-            style={{ paddingBottom: 0 }}
-            component="nav"
-            subheader={
-              <ListSubheader style={{ height: 35 }}>
-                {t('Arsenal')}
-              </ListSubheader>
-            }
-          >
-            {includes('variants', availableSections) && (
+        ) : (
+          <div>
+            {includes('sectors', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/variants`}
+                to={`${stixCoreObjectLink}/sectors`}
+                selected={location.pathname === `${stixCoreObjectLink}/sectors`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Sector" />
+                </ListItemIcon>
+                <ListItemText primary={t('Sectors')} />
+              </MenuItem>
+            )}
+            {includes('regions', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/regions`}
+                selected={location.pathname === `${stixCoreObjectLink}/regions`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Region" />
+                </ListItemIcon>
+                <ListItemText primary={t('Regions')} />
+              </MenuItem>
+            )}
+            {includes('countries', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/countries`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/variants`
+                  location.pathname === `${stixCoreObjectLink}/countries`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <SourceFork />
+                  <ItemIcon type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={t('Variants')} />
+                <ListItemText primary={t('Countries')} />
               </MenuItem>
             )}
-            {includes('malwares', availableSections) && (
+            {includes('areas', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/malwares`}
+                to={`${stixCoreObjectLink}/areas`}
+                selected={location.pathname === `${stixCoreObjectLink}/areas`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Administrative-Area" />
+                </ListItemIcon>
+                <ListItemText primary={t('Areas')} />
+              </MenuItem>
+            )}
+            {includes('cities', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/cities`}
+                selected={location.pathname === `${stixCoreObjectLink}/cities`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="City" />
+                </ListItemIcon>
+                <ListItemText primary={t('Cities')} />
+              </MenuItem>
+            )}
+            {includes('locations', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/locations`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/malwares`
+                  location.pathname === `${stixCoreObjectLink}/locations`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Malware' color='white'/>
+                  <ItemIcon type="Location" />
                 </ListItemIcon>
-                <ListItemText primary={t('Malwares')} />
+                <ListItemText primary={t('Locations')} />
               </MenuItem>
             )}
-            {includes('channels', availableSections) && (
+            {includes('organizations', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/channels`}
+                to={`${stixCoreObjectLink}/organizations`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/channels`
+                  location.pathname === `${stixCoreObjectLink}/organizations`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Channel' color='white'/>
+                  <ItemIcon type="Identity" />
                 </ListItemIcon>
-                <ListItemText primary={t('Channels')} />
+                <ListItemText primary={t('Organizations')} />
               </MenuItem>
             )}
-            {includes('tools', availableSections) && (
+            {includes('individuals', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/tools`}
-                selected={location.pathname === `${stixCoreObjectLink}/tools`}
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <TerminalOutlined />
-                </ListItemIcon>
-                <ListItemText primary={t('Tools')} />
-              </MenuItem>
-            )}
-            {includes('vulnerabilities', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/vulnerabilities`}
+                to={`${stixCoreObjectLink}/individuals`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/vulnerabilities`
+                  location.pathname === `${stixCoreObjectLink}/individuals`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Vulnerability' color='white'/>
+                  <ItemIcon type="Individual" />
                 </ListItemIcon>
-                <ListItemText primary={t('Vulnerabilities')} />
+                <ListItemText primary={t('Individuals')} />
               </MenuItem>
             )}
-          </MenuList>
+            {includes('used_tools', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/used_tools`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/used_tools`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type="Tool" />
+                </ListItemIcon>
+                <ListItemText primary={t('Used tools')} />
+              </MenuItem>
+            )}
+          </div>
         )}
-        {isInAvailableSection(['attack_patterns', 'narratives']) && (
-          <MenuList
-            style={{ paddingBottom: 0 }}
-            component="nav"
-            subheader={
-              <ListSubheader style={{ height: 35 }}>
-                {t('Techniques')}
-              </ListSubheader>
-            }
-          >
-            {includes('attack_patterns', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/attack_patterns`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/attack_patterns`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Attack-Pattern' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Attack patterns')} />
-              </MenuItem>
-            )}
-            {includes('narratives', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/narratives`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/narratives`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Narrative' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Narratives')} />
-              </MenuItem>
-            )}
-          </MenuList>
-        )}
-        {isInAvailableSection([
-          'observables',
-          'indicators',
-          'observables',
-          'infrastructures',
-        ]) && (
-          <MenuList
-            style={{ paddingBottom: 0 }}
-            component="nav"
-            subheader={
-              <ListSubheader style={{ height: 35 }}>
-                {t('Observations')}
-              </ListSubheader>
-            }
-          >
-            {includes('indicators', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/indicators`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/indicators`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Indicator' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Indicators')} />
-              </MenuItem>
-            )}
-            {includes('observables', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/observables`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/observables`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Stix-Cyber-Observable' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Observables')} />
-              </MenuItem>
-            )}
-            {includes('infrastructures', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/infrastructures`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/infrastructures`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Infrastructure' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Infrastructures')} />
-              </MenuItem>
-            )}
-          </MenuList>
-        )}
-        {isInAvailableSection(['incidents', 'observed_data', 'sightings']) && (
-          <MenuList
-            style={{ paddingBottom: 0 }}
-            component="nav"
-            subheader={
-              <ListSubheader style={{ height: 35 }}>
-                {t('Events')}
-              </ListSubheader>
-            }
-          >
-            {includes('incidents', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/incidents`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/incidents`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Incident' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Incidents')} />
-              </MenuItem>
-            )}
-            {includes('observed_data', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/observed_data`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/observed_data`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <ItemIcon type='Observed-Data' color='white'/>
-                </ListItemIcon>
-                <ListItemText primary={t('Observed data')} />
-              </MenuItem>
-            )}
-            {includes('sightings', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/sightings`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/sightings`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <VisibilityOutlined />
-                </ListItemIcon>
-                <ListItemText primary={t('Sightings')} />
-              </MenuItem>
-            )}
-          </MenuList>
-        )}
-        <MenuList style={{ paddingBottom: 0 }} sx={{ marginBottom: bannerSettings.bannerHeight }}
+      </MenuList>
+      {isInAvailableSection([
+        'targets',
+        'attribution',
+        'victimology',
+        'intrusion_sets',
+        'campaigns',
+      ]) ? (
+        <MenuList
+          style={{ paddingBottom: 0 }}
           component="nav"
           subheader={
-            <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>
+            <ListSubheader style={{ height: 35 }}>{t('Threats')}</ListSubheader>
           }
         >
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/related`}
-            selected={location.pathname === `${stixCoreObjectLink}/related`}
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <LinkOutlined />
-            </ListItemIcon>
-            <ListItemText primary={t('Related entities')} />
-          </MenuItem>
+          {includes('threats', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/threats`}
+              selected={location.pathname === `${stixCoreObjectLink}/threats`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="threats" />
+              </ListItemIcon>
+              <ListItemText primary={t('All threats')} />
+            </MenuItem>
+          )}
+          {includes('attribution', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/attribution`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/attribution`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="attribution" />
+              </ListItemIcon>
+              <ListItemText primary={t('Attribution')} />
+            </MenuItem>
+          )}
+          {includes('victimology', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/victimology`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/victimology`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="victimology" />
+              </ListItemIcon>
+              <ListItemText primary={t('Victimology')} />
+            </MenuItem>
+          )}
+          {includes('threat_actors', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/threat_actors`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/threat_actors`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Threat-Actor-Individual" />
+              </ListItemIcon>
+              <ListItemText primary={t('Threat actors')} />
+            </MenuItem>
+          )}
+          {includes('intrusion_sets', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/intrusion_sets`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/intrusion_sets`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Intrusion-Set" />
+              </ListItemIcon>
+              <ListItemText primary={t('Intrusion sets')} />
+            </MenuItem>
+          )}
+          {includes('campaigns', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/campaigns`}
+              selected={location.pathname === `${stixCoreObjectLink}/campaigns`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Campaign" />
+              </ListItemIcon>
+              <ListItemText primary={t('Campaigns')} />
+            </MenuItem>
+          )}
         </MenuList>
-      </Drawer>
+        ) : (
+          ''
+        )}
+      {isInAvailableSection([
+        'variants',
+        'malwares',
+        'tools',
+        'vulnerabilities',
+        'channels',
+      ]) && (
+        <MenuList
+          style={{ paddingBottom: 0 }}
+          component="nav"
+          subheader={
+            <ListSubheader style={{ height: 35 }}>{t('Arsenal')}</ListSubheader>
+          }
+        >
+          {includes('variants', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/variants`}
+              selected={location.pathname === `${stixCoreObjectLink}/variants`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="variant" />
+              </ListItemIcon>
+              <ListItemText primary={t('Variants')} />
+            </MenuItem>
+          )}
+          {includes('malwares', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/malwares`}
+              selected={location.pathname === `${stixCoreObjectLink}/malwares`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Malware" />
+              </ListItemIcon>
+              <ListItemText primary={t('Malwares')} />
+            </MenuItem>
+          )}
+          {includes('channels', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/channels`}
+              selected={location.pathname === `${stixCoreObjectLink}/channels`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Channel" />
+              </ListItemIcon>
+              <ListItemText primary={t('Channels')} />
+            </MenuItem>
+          )}
+          {includes('tools', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/tools`}
+              selected={location.pathname === `${stixCoreObjectLink}/tools`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="tool" />
+              </ListItemIcon>
+              <ListItemText primary={t('Tools')} />
+            </MenuItem>
+          )}
+          {includes('vulnerabilities', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/vulnerabilities`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/vulnerabilities`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Vulnerability" />
+              </ListItemIcon>
+              <ListItemText primary={t('Vulnerabilities')} />
+            </MenuItem>
+          )}
+        </MenuList>
+      )}
+      {isInAvailableSection(['attack_patterns', 'narratives']) && (
+        <MenuList
+          style={{ paddingBottom: 0 }}
+          component="nav"
+          subheader={
+            <ListSubheader style={{ height: 35 }}>
+              {t('Techniques')}
+            </ListSubheader>
+          }
+        >
+          {includes('attack_patterns', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/attack_patterns`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/attack_patterns`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Attack-Pattern" />
+              </ListItemIcon>
+              <ListItemText primary={t('Attack patterns')} />
+            </MenuItem>
+          )}
+          {includes('narratives', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/narratives`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/narratives`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Narrative" />
+              </ListItemIcon>
+              <ListItemText primary={t('Narratives')} />
+            </MenuItem>
+          )}
+        </MenuList>
+      )}
+      {isInAvailableSection([
+        'observables',
+        'indicators',
+        'observables',
+        'infrastructures',
+      ]) && (
+        <MenuList
+          style={{ paddingBottom: 0 }}
+          component="nav"
+          subheader={
+            <ListSubheader style={{ height: 35 }}>
+              {t('Observations')}
+            </ListSubheader>
+          }
+        >
+          {includes('indicators', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/indicators`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/indicators`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Indicator" />
+              </ListItemIcon>
+              <ListItemText primary={t('Indicators')} />
+            </MenuItem>
+          )}
+          {includes('observables', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/observables`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/observables`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Stix-Cyber-Observable" />
+              </ListItemIcon>
+              <ListItemText primary={t('Observables')} />
+            </MenuItem>
+          )}
+          {includes('infrastructures', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/infrastructures`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/infrastructures`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Infrastructure" />
+              </ListItemIcon>
+              <ListItemText primary={t('Infrastructures')} />
+            </MenuItem>
+          )}
+        </MenuList>
+      )}
+      {isInAvailableSection(['incidents', 'observed_data', 'sightings']) && (
+        <MenuList
+          style={{ paddingBottom: 0 }}
+          component="nav"
+          subheader={
+            <ListSubheader style={{ height: 35 }}>{t('Events')}</ListSubheader>
+          }
+        >
+          {includes('incidents', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/incidents`}
+              selected={location.pathname === `${stixCoreObjectLink}/incidents`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Incident" />
+              </ListItemIcon>
+              <ListItemText primary={t('Incidents')} />
+            </MenuItem>
+          )}
+          {includes('observed_data', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/observed_data`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/observed_data`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="Observed-Data" />
+              </ListItemIcon>
+              <ListItemText primary={t('Observed data')} />
+            </MenuItem>
+          )}
+          {includes('sightings', availableSections) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/sightings`}
+              selected={location.pathname === `${stixCoreObjectLink}/sightings`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <ItemIcon type="sighting" />
+              </ListItemIcon>
+              <ListItemText primary={t('Sightings')} />
+            </MenuItem>
+          )}
+        </MenuList>
+      )}
+      <MenuList
+        style={{ paddingBottom: 0 }}
+        sx={{ marginBottom: bannerSettings.bannerHeight }}
+        component="nav"
+        subheader={
+          <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>
+        }
+      >
+        <MenuItem
+          component={Link}
+          to={`${stixCoreObjectLink}/related`}
+          selected={location.pathname === `${stixCoreObjectLink}/related`}
+          dense={false}
+          classes={{ root: classes.item }}
+        >
+          <ListItemIcon style={{ minWidth: 35 }}>
+            <ItemIcon type="related" />
+          </ListItemIcon>
+          <ListItemText primary={t('Related entities')} />
+        </MenuItem>
+      </MenuList>
+    </Drawer>
   );
 };
 
