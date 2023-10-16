@@ -36,6 +36,7 @@ const dataSourceQuery = graphql`
   query RootDataSourceQuery($id: String!) {
     dataSource(id: $id) {
       id
+      standard_id
       name
       x_opencti_graph_data
       ...DataSource_dataSource

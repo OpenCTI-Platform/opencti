@@ -40,7 +40,7 @@ const externalReferenceResolvers = {
     },
     references: (container, args, context) => references(context, context.user, container.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
-    jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.id, args),
+    jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
     importFiles: async (externalReference, { first }, context) => {
       const listing = await filesListing(context, context.user, first, `import/${externalReference.entity_type}/${externalReference.id}/`, externalReference);

@@ -111,7 +111,7 @@ const stixCoreObjectResolvers = {
     notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
     opinions: (stixCoreObject, _, context) => opinionsLoader.load(stixCoreObject.id, context, context.user),
     observedData: (stixCoreObject, _, context) => observedDataLoader.load(stixCoreObject.id, context, context.user),
-    jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.id, args),
+    jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject, prefixMimeType),
     pendingFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, 'import/pending/', stixCoreObject),

@@ -30,6 +30,7 @@ export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
     myOpinion(id: $id) {
       id
+      standard_id
       opinion
       explanation
       confidence

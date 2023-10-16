@@ -34,6 +34,7 @@ const courseOfActionQuery = graphql`
   query RootCourseOfActionQuery($id: String!) {
     courseOfAction(id: $id) {
       id
+      standard_id
       entity_type
       name
       x_opencti_aliases

@@ -248,7 +248,7 @@ const executeMerge = async (context, user, actionContext, element) => {
 const executeEnrichment = async (context, user, actionContext, element) => {
   const askConnectors = await internalFindByIds(context, user, actionContext.values);
   await BluePromise.map(askConnectors, async (connector) => {
-    await askElementEnrichmentForConnector(context, user, element.internal_id, connector.internal_id);
+    await askElementEnrichmentForConnector(context, user, element.standard_id, connector.internal_id);
   }, { concurrency: ES_MAX_CONCURRENCY });
 };
 const executePromote = async (context, user, element) => {

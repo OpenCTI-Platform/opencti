@@ -37,6 +37,7 @@ const dataComponentQuery = graphql`
   query RootDataComponentQuery($id: String!) {
     dataComponent(id: $id) {
       id
+      standard_id
       name
       x_opencti_graph_data
       ...DataComponent_dataComponent

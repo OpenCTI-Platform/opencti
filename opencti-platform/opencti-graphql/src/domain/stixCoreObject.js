@@ -201,7 +201,7 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
   }
-  const work = await createWork(context, user, connector, 'Manual enrichment', elementId);
+  const work = await createWork(context, user, connector, 'Manual enrichment', element.standard_id);
   const message = {
     internal: {
       work_id: work.id, // Related action for history

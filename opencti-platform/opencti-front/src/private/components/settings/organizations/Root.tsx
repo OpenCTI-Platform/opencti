@@ -28,6 +28,7 @@ const organizationQuery = graphql`
   query RootSettingsOrganizationQuery($id: String!) {
     organization(id: $id) {
       id
+      standard_id
       name
       x_opencti_aliases
       ...SettingsOrganization_organization
