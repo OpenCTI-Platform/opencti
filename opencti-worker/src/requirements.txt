@@ -1,4 +1,4 @@
-git+https://github.com/OpenCTI-Platform/client-python@master
+pycti==5.11.0
 opentelemetry-api==1.20.0
 opentelemetry-sdk==1.20.0
 opentelemetry-exporter-prometheus==1.12.0rc1
