@@ -6,8 +6,8 @@ import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import {
-  DeleteOutlined,
   DeleteForeverOutlined,
+  DeleteOutlined,
   EditOutlined,
 } from '@mui/icons-material';
 import List from '@mui/material/List';
@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
+import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -51,6 +52,9 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
+import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -198,6 +202,7 @@ const userFragment = graphql`
         node {
           id
           name
+          authorized_authorities
         }
       }
     }
@@ -223,7 +228,8 @@ interface UserProps {
 const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const classes = useStyles();
   const { t, nsdt, fsd, fldt } = useFormatter();
-  const theme = useTheme();
+  const { me } = useAuth();
+  const theme = useTheme<Theme>();
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
@@ -247,6 +253,8 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       subscription.unsubscribe();
     };
   }, []);
+  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
+  const userHasSettingsCapability = userCapabilities.includes(SETTINGS) || userCapabilities.includes(BYPASS);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
@@ -322,7 +330,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     );
 
   const accountExpireDate = fldt(user.account_lock_after_date);
-
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -403,20 +410,20 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 {user.lastname || '-'}
               </Grid>
               <Grid item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Account Status')}
-                  </Typography>
-                  <ItemAccountStatus
-                    account_status={user.account_status}
-                    label={t(user.account_status || 'Unknown')}
-                    variant={'outlined'}
-                  />
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Account status')}
+                </Typography>
+                <ItemAccountStatus
+                  account_status={user.account_status}
+                  label={t(user.account_status || 'Unknown')}
+                  variant="outlined"
+                />
               </Grid>
               <Grid item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Account Expire Date')}
-                  </Typography>
-                  {accountExpireDate || '-'}
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Account expiration date')}
+                </Typography>
+                {accountExpireDate || '-'}
               </Grid>
             </Grid>
           </Paper>
@@ -433,21 +440,28 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </Typography>
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
-                    {(user.roles ?? []).map((role) => (
-                      <ListItem
-                        key={role?.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Role" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItem>
-                    ))}
+                    {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
+                        <ListItem
+                          key={role?.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          button={true}
+                          to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                    ) : (
+                        <ListItem key={role?.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Role" />
+                          </ListItemIcon>
+                          <ListItemText primary={role?.name} />
+                        </ListItem>
+                    )))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
@@ -457,21 +471,32 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </Typography>
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
-                    {(user.groups?.edges ?? []).map((groupEdge) => (
-                      <ListItem
-                        key={groupEdge?.node.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
-                    ))}
+                    {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
+                        <ListItem
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                    ) : (
+                        <ListItem
+                          key={groupEdge?.node.id}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={groupEdge?.node.name} />
+                        </ListItem>
+                    )))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
@@ -491,7 +516,17 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                       >
                         <ListItemIcon>
-                          <ItemIcon type="Organization" />
+                          <ItemIcon
+                            type="Organization"
+                            color={
+                              (
+                                organizationEdge.node.authorized_authorities
+                                ?? []
+                              ).includes(user.id)
+                                ? (theme.palette.warning as SimplePaletteColorOptions).main
+                                : theme.palette.primary.main
+                            }
+                          />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
                       </ListItem>
@@ -507,15 +542,17 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 >
                   {t('Sessions')}
                 </Typography>
-                <IconButton
-                  color="secondary"
-                  aria-label="Delete all"
-                  onClick={handleOpenKillSessions}
-                  classes={{ root: classes.floatingButton }}
-                  size="small"
-                >
-                  <DeleteForeverOutlined fontSize="small" />
-                </IconButton>
+                <Security needs={[SETTINGS]}>
+                  <IconButton
+                    color="secondary"
+                    aria-label="Delete all"
+                    onClick={handleOpenKillSessions}
+                    classes={{ root: classes.floatingButton }}
+                    size="small"
+                  >
+                    <DeleteForeverOutlined fontSize="small" />
+                  </IconButton>
+                </Security>
                 <div className="clearfix" />
                 <FieldOrEmpty source={orderedSessions}>
                   <List style={{ marginTop: -2 }}>
@@ -560,7 +597,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []}/>
+                <HiddenTypesChipList
+                  hiddenTypes={user.default_hidden_types ?? []}
+                />
               </Grid>
             </Grid>
           </Paper>
@@ -708,6 +747,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
         open={displayKillSessions}
         PaperProps={{ elevation: 1 }}

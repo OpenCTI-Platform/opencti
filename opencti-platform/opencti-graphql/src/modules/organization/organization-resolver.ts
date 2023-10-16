@@ -1,12 +1,13 @@
 import { elBatchIds } from '../../database/engine';
 import { batchLoader } from '../../database/middleware';
-import { addOrganization,
+import {
+  addOrganization,
   batchMembers,
   batchParentOrganizations,
   batchSectors,
-  batchSubOrganizations,
+  batchSubOrganizations, buildAdministratedOrganizations, editAuthorizedAuthorities,
   findAll,
-  findById
+  findById, findGrantableGroups, organizationAdminAdd, organizationAdminRemove
 } from './organization-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -36,6 +37,10 @@ const organizationResolvers: Resolvers = {
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
+    grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
+  },
+  User: {
+    administrated_organizations: (user, _, context) => buildAdministratedOrganizations(context, context.user, user),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -45,12 +50,23 @@ const organizationResolvers: Resolvers = {
   Mutation: {
     organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),
     organizationDelete: (_, { id }, context) => stixDomainObjectDelete(context, context.user, id),
-    organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+    organizationFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+    },
     organizationContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
     organizationContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
     organizationRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
     organizationRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+    organizationEditAuthorizedAuthorities: (_, { id, input }, context) => {
+      return editAuthorizedAuthorities(context, context.user, id, input);
+    },
+    organizationAdminAdd: (_, { id, memberId }, context) => {
+      return organizationAdminAdd(context, context.user, id, memberId);
+    },
+    organizationAdminRemove: (_, { id, memberId }, context) => {
+      return organizationAdminRemove(context, context.user, id, memberId);
     },
   },
 };

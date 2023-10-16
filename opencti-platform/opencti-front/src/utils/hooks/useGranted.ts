@@ -20,11 +20,18 @@ export const EXPLORE_EXUPDATE_EXDELETE = 'EXPLORE_EXUPDATE_EXDELETE';
 export const MODULES = 'MODULES';
 export const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 export const SETTINGS = 'SETTINGS';
+export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const TAXIIAPI_SETCSVMAPPERS = 'TAXIIAPI_SETCSVMAPPERS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+
+export const isOnlyOrganizationAdmin = () => {
+  const { me: user } = useAuth();
+  const userCapabilities = user.capabilities.map((n) => n.name);
+  return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS);
+};
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
   const { me } = useAuth();

@@ -1,30 +1,17 @@
-import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetFrom,
-  patchAttribute,
-  updateAttribute,
-} from '../database/middleware';
+import * as R from 'ramda';
+import { batchListThroughGetFrom, batchListThroughGetTo, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, patchAttribute, updateAttribute, } from '../database/middleware';
 import { internalFindByIds, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import {
-  isInternalRelationship,
-  RELATION_ACCESSES_TO,
-  RELATION_HAS_ROLE,
-  RELATION_MEMBER_OF
-} from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
@@ -41,7 +28,11 @@ export const findById = (context, user, groupId) => {
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = (context, user, args) => {
+export const findAll = async (context, user, args) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
+    return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
+  }
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
@@ -65,7 +56,7 @@ export const defaultMarkingDefinitions = async (context, group) => {
   });
 };
 
-export const mergeDefaultMarking = async (context, defaultMarkings) => {
+export const mergeDefaultMarking = async (defaultMarkings) => {
   const results = [];
   defaultMarkings.filter((d) => !!d.entity_type)
     .forEach((d) => {
@@ -94,7 +85,7 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
       });
     }).flat())
     // Merge default marking by group
-    .then((defaultMarkings) => mergeDefaultMarking(context, defaultMarkings))
+    .then((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
     // Clean default marking by entity type
     .then((defaultMarkings) => {
       return Promise.all(defaultMarkings.map(async (d) => {

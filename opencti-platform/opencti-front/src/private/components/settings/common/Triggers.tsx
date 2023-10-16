@@ -8,18 +8,12 @@ import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
-import TriggersLines, {
-  triggersLinesQuery,
-} from '../../profile/triggers/TriggersLines';
+import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
 import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  TriggerFilter,
-  TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables,
-} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggerFilter, TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../../components/list_lines';
@@ -116,7 +110,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <Typography
         variant="h4"
         gutterBottom={true}
-        style={{ float: 'left', marginRight: 12 }}
+        style={{ float: 'left' }}
       >
         {t('Triggers and Digests')}
       </Typography>

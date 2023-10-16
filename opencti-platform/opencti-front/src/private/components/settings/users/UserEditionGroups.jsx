@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -11,19 +9,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import { GroupOutlined } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
-
-const styles = (theme) => ({
-  list: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-});
+import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
 
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
@@ -54,13 +41,15 @@ const userMutationRelationDelete = graphql`
   }
 `;
 
-class UserEditionGroupsComponent extends Component {
-  handleToggle(groupId, userGroup, event) {
+const UserEditionGroupsComponent = ({ user }) => {
+  const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
+
+  const handleToggle = (groupId, userGroup, event) => {
     if (event.target.checked) {
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
-          id: this.props.user.id,
+          id: user.id,
           input: {
             toId: groupId,
             relationship_type: 'member-of',
@@ -71,71 +60,70 @@ class UserEditionGroupsComponent extends Component {
       commitMutation({
         mutation: userMutationRelationDelete,
         variables: {
-          id: this.props.user.id,
+          id: user.id,
           toId: userGroup.id,
           relationship_type: 'member-of',
         },
       });
     }
-  }
+  };
 
-  render() {
-    const { classes, user } = this.props;
-    const userGroups = (user?.groups?.edges ?? []).map((n) => ({
-      id: n.node.id,
-    }));
+  const userGroups = (user?.groups?.edges ?? []).map((n) => ({
+    id: n.node.id,
+  }));
+
+  const render = (groups) => {
     return (
-      <QueryRenderer
-        query={groupsSearchQuery}
-        variables={{ search: '' }}
-        render={({ props }) => {
-          if (props) {
-            // Done
-            const groups = (props.groups?.edges ?? []).map((n) => n.node);
-            return (
-              <List className={classes.root}>
-                {groups.map((group) => {
-                  const userGroup = userGroups.find((g) => g.id === group.id);
-                  return (
-                    <ListItem key={group.id} divider={true}>
-                      <ListItemIcon color="primary">
-                        <GroupOutlined />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={group.name}
-                        secondary={group.description ?? ''}
-                      />
-                      <ListItemSecondaryAction>
-                        <Checkbox
-                          onChange={this.handleToggle.bind(
-                            this,
-                            group.id,
-                            userGroup,
-                          )}
-                          checked={userGroup !== undefined}
-                        />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  );
-                })}
-              </List>
-            );
-          }
-          // Loading
-          return <List> &nbsp; </List>;
-        }}
-      />
+      <List>
+        {groups.map((group) => {
+          const userGroup = userGroups.find((g) => g.id === group.id);
+          return (
+            <ListItem key={group.id} divider={true}>
+              <ListItemIcon color="primary">
+                <GroupOutlined />
+              </ListItemIcon>
+              <ListItemText
+                primary={group.name}
+                secondary={group.description ?? ''}
+              />
+              <ListItemSecondaryAction>
+                <Checkbox
+                  onChange={(event) => handleToggle(
+                    group.id,
+                    userGroup,
+                    event,
+                  )}
+                  checked={userGroup !== undefined}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+          );
+        })}
+      </List>
     );
+  };
+  if (userIsOnlyOrganizationAdmin) {
+    return render(user.objectOrganization.edges.flatMap(({ node }) => node.grantable_groups));
   }
-}
+  return (
+    <QueryRenderer
+      query={groupsSearchQuery}
+      variables={{ search: '' }}
+      render={({ props }) => {
+        if (props) {
+          // Done
+          const groups = (props.groups?.edges ?? []).map((n) => n.node);
+          return render(groups);
+        }
+        // Loading
+        return <List> &nbsp; </List>;
+      }}
+    />
+  );
+};
 
 UserEditionGroupsComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
   user: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
 };
 
 const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
@@ -144,8 +132,22 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
     @argumentDefinitions(
       groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
       groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+      organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
+      objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+        edges {
+          node {
+            id
+            name
+            grantable_groups {
+              id
+              name
+            }
+          }
+        }
+      }
       groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
         edges {
           node {
@@ -158,7 +160,4 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(UserEditionGroups);
+export default UserEditionGroups;

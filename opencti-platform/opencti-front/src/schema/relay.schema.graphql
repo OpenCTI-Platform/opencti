@@ -55,6 +55,7 @@ enum Capabilities {
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
   TAXIIAPI_SETCSVMAPPERS
+  VIRTUAL_ORGANIZATION_ADMIN
 }
 
 enum MemberType {
@@ -1216,6 +1217,17 @@ enum GroupsOrdering {
   updated_at
 }
 
+enum GroupsFilter {
+  user_id
+}
+
+input GroupsFiltering {
+  key: [GroupsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
 type GroupConnection {
   pageInfo: PageInfo!
   edges: [GroupEdge]
@@ -1417,6 +1429,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  administrated_organizations: [Organization!]!
   unit_system: UnitSystem
   editContext: [EditUserContext!]
 }
@@ -1450,6 +1463,7 @@ type MeUser implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  administrated_organizations: [Organization!]!
   unit_system: UnitSystem
 }
 
@@ -1478,6 +1492,7 @@ input UserAddInput {
   account_status: String
   account_lock_after_date: DateTime
   unit_system: String
+  groups: [ID!]
 }
 
 scalar user_email_String_NotNull_minLength_5_format_email
@@ -9149,6 +9164,9 @@ type Mutation {
   organizationContextClean(id: ID!): Organization
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization
+  organizationEditAuthorizedAuthorities(id: ID!, input: [String!]!): Organization
+  organizationAdminAdd(id: ID!, memberId: String!): Organization
+  organizationAdminRemove(id: ID!, memberId: String!): Organization
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
@@ -12152,7 +12170,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_reliability: String
   x_opencti_organization_type: String
   sectors: SectorConnection
-  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: [UsersFiltering]): UserConnection
+  authorized_authorities: [String]
+  grantable_groups: [Group!]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
@@ -12197,6 +12217,7 @@ enum OrganizationsFilter {
   description
   contact_information
   revoked
+  authorized_authorities
 }
 
 input OrganizationsFiltering {

@@ -6,7 +6,7 @@ import passport, { PROVIDERS } from '../config/providers';
 import { batchLoader } from '../database/middleware';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
-import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
 import { addBookmark,
   addUser, assignOrganizationToUser,
@@ -125,7 +125,9 @@ const userResolvers = {
       throw AuthenticationFailure();
     },
     sessionKill: async (_, { id }, context) => {
-      const kill = await killSession(id);
+      const { store } = applicationSession;
+      const userSessionId = id.split(store.prefix)[1]; // Prefix must be removed on this case
+      const kill = await killSession(userSessionId);
       const { user } = kill.session;
       const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email;
       await publishUserAction({

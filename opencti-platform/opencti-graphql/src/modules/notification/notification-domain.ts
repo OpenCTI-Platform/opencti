@@ -50,6 +50,7 @@ import {
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
   MEMBER_ACCESS_RIGHT_VIEW,
+  VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
 } from '../../utils/access';
@@ -86,7 +87,7 @@ const extractUniqRecipient = async (
   const { recipients } = triggerInput;
   let recipient = user.id;
   if (recipients?.length && recipients?.length === 1) {
-    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && !isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
       throw ForbiddenAccess();
     }
     if (recipients?.length && recipients?.length > 1) {
@@ -123,7 +124,7 @@ export const addTrigger = async (
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
     authorized_members: authorizedMembers,
-    authorized_authorities: [SETTINGS_SET_ACCESSES] // Add extra capabilities
+    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
@@ -222,6 +223,14 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   const userAccessRight = getUserAccessRight(user, trigger);
   if (userAccessRight !== MEMBER_ACCESS_RIGHT_ADMIN) {
     throw ForbiddenAccess();
+  }
+  // If user is only organization admin, check if he has access on all targets
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+    const adminOrganizationIds = (user.administrated_organizations ?? []).map((o) => o.internal_id);
+    if (!adminOrganizationIds.every((v) => memberIds.includes(v))) {
+      throw ForbiddenAccess();
+    }
   }
   const adminIds = (trigger.authorized_members ?? [])
     .filter((a: AuthorizedMember) => a.access_right === 'admin')

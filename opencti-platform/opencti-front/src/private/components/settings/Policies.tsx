@@ -20,6 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
@@ -32,6 +33,7 @@ import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 import SelectField from '../../../components/SelectField';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -116,6 +118,7 @@ interface PoliciesComponentProps {
 
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef }) => {
   const data = usePreloadedQuery(policiesQuery, queryRef);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
@@ -179,14 +182,20 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                           'When you set a platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
                         )}
                       </Alert>
-                      <ObjectOrganizationField
-                        name="platform_organization"
-                        label={'Platform organization'}
-                        onChange={(name: string, value: Option) => handleSubmitField(name, value)}
-                        style={{ width: '100%', marginTop: 20 }}
-                        multiple={false}
-                        outlined={false}
-                      />
+
+                      <Tooltip title={!isEnterpriseEdition ? t('You need to activate OpenCTI enterprise edition to use this feature.') : null}>
+                        <span>
+                              <ObjectOrganizationField
+                                  name="platform_organization"
+                                  disabled={!isEnterpriseEdition}
+                                  label={'Platform organization'}
+                                  onChange={(name: string, value: Option) => handleSubmitField(name, value)}
+                                  style={{ width: '100%', marginTop: 20 }}
+                                  multiple={false}
+                                  outlined={false}
+                              />
+                        </span>
+                      </Tooltip>
                     </Paper>
                   </Grid>
                   <Grid item={true} xs={6}>

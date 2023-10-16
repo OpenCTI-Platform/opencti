@@ -23,6 +23,8 @@ export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const TAXIIAPI_SETCSVMAPPERS = 'TAXIIAPI_SETCSVMAPPERS';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
+export const SETTINGS = 'SETTINGS';
+export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
@@ -70,7 +72,8 @@ export const SYSTEM_USER: AuthUser = {
   all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
-  account_status: ACCOUNT_STATUS_ACTIVE
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -93,6 +96,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -115,6 +119,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const AUTOMATION_MANAGER_USER: AuthUser = {
@@ -137,9 +142,11 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
 };
 
 export const REDACTED_USER: AuthUser = {
+  administrated_organizations: [],
   entity_type: 'User',
   id: REDACTED_USER_UUID,
   internal_id: REDACTED_USER_UUID,

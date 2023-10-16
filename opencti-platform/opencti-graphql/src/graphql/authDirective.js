@@ -1,11 +1,11 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
-import { mapSchema, MapperKind, getDirective } from '@graphql-tools/utils';
-import { includes, map, filter } from 'ramda';
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
+import { filter, includes, map } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import { BYPASS } from '../utils/access';
+import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 
 // eslint-disable-next-line
 export const authDirectiveBuilder = (directiveName) => {
@@ -58,6 +58,12 @@ export const authDirectiveBuilder = (directiveName) => {
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
+              if (typeName === 'Organization' && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
+                if (user.administrated_organizations.some(({ id }) => id === source.id)) {
+                  return resolve(source, args, context, info);
+                }
+                return null;
+              }
               // Check the user capabilities
               let numberOfAvailableCapabilities = 0;
               for (let index = 0; index < requiredCapabilities.length; index += 1) {
@@ -68,7 +74,7 @@ export const authDirectiveBuilder = (directiveName) => {
                 }
               }
               const isAccessForbidden = numberOfAvailableCapabilities === 0
-                  || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
+                || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
               if (isAccessForbidden) {
                 throw ForbiddenAccess();
               }

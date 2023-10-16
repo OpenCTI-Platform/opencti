@@ -183,6 +183,17 @@ const useFormEditor = (
       });
     }
   };
+  const changeGrantableGroups = (name: string, values: Option[]) => {
+    validate(name, values, () => {
+      const finalValues = values.map((v) => v.value);
+      commitFieldPatch({
+        variables: {
+          id: data.id,
+          input: [{ key: 'grantable_groups', value: finalValues }],
+        },
+      });
+    });
+  };
 
   return {
     changeMarking,
@@ -194,6 +205,7 @@ const useFormEditor = (
     changeFocus,
     changeField,
     fieldPatch: commitFieldPatch,
+    changeGrantableGroups,
   };
 };
 

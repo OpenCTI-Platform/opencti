@@ -17,16 +17,8 @@ import {
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
-import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listAllEntities,
-  listAllEntitiesForFilter,
-  listAllRelations,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
+import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
+import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -39,17 +31,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import {
-  BYPASS,
-  executionContext,
-  INTERNAL_USERS,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  REDACTED_USER,
-  SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, VIRTUAL_ORGANIZATION_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
@@ -76,9 +58,13 @@ const roleSessionRefresh = async (context, user, roleId) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
-export const userSessionRefresh = async (userId) => {
-  const sessions = await findSessionsForUsers([userId]);
+export const usersSessionRefresh = async (userIds) => {
+  const sessions = await findSessionsForUsers(userIds);
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+};
+
+export const userSessionRefresh = async (userId) => {
+  return usersSessionRefresh([userId]);
 };
 
 export const userWithOrigin = (req, user) => {
@@ -126,11 +112,31 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
+    // if no organization in common with the logged user
+    const memberOrgas = await listThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
+    if (!memberOrgas.map((organization) => organization.id).find((orgaId) => myOrgasIds.includes(orgaId))) {
+      throw ForbiddenAccess();
+    }
+  }
   const withoutPassword = data ? R.dissoc('password', data) : data;
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAll = (context, user, args) => {
+export const findAll = async (context, user, args) => {
+  // if user is orga_admin && not set_accesses
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const organisationIds = user.administrated_organizations.map((orga) => orga.id);
+    const users = R.uniq((await listThroughGetFrom(
+      context,
+      user,
+      organisationIds,
+      RELATION_PARTICIPATE_TO,
+      ENTITY_TYPE_USER,
+    )).map((n) => ({ node: n })));
+    return buildPagination(0, null, users, users.length);
+  }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 
@@ -321,6 +327,9 @@ export const roleEditContext = async (context, user, roleId, input) => {
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    throw ForbiddenAccess();
+  }
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -415,15 +424,23 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const isPasswordPoliciesInvalid = async (context, password) => {
-  return checkPasswordFromPolicy(context, password).then(() => false).catch(() => true);
-};
-
 export const addUser = async (context, user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (existingUser) {
     throw FunctionalError('User already exists', { email: userEmail });
+  }
+  if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // user is Organization Admin
+    // Check organization
+    const myOrganizationIds = user.administrated_organizations.map((organization) => organization.id);
+    if (newUser.objectOrganization.length === 0 || !newUser.objectOrganization.every((orga) => myOrganizationIds.includes(orga))) {
+      throw ForbiddenAccess();
+    }
+    const myGroupIds = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+    if (!newUser.groups.every((group) => myGroupIds.includes(group))) {
+      throw ForbiddenAccess();
+    }
   }
   // Create the user
   let userPassword = newUser.password;
@@ -448,7 +465,12 @@ export const addUser = async (context, user, newUser) => {
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, element.id, organization), userOrganizations));
+  const relationOrganizations = userOrganizations.map((organizationId) => ({
+    fromId: element.id,
+    toId: organizationId,
+    relationship_type: RELATION_PARTICIPATE_TO,
+  }));
+  await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
   // Assign default groups to user
   const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   const relationGroups = defaultGroups.edges.map((e) => ({
@@ -534,6 +556,13 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
+  // Check in an organization admin edits a user that's not in its administrated organizations
+  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    if (!userToUpdate.objectOrganization.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+      throw ForbiddenAccess();
+    }
+  }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
@@ -548,7 +577,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       }
       // If moving to unexpired status and expiration date is already in the past, reset the value
       if (R.head(input.value) !== ACCOUNT_STATUS_EXPIRED && userToUpdate.account_lock_after_date
-          && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
+        && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
         inputs.push({ key: 'account_lock_after_date', value: [null] });
       }
     }
@@ -663,6 +692,13 @@ export const userAddRelation = async (context, user, userId, input) => {
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
+  // Check in case organization admins adds non-grantable goup a user
+  const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+      throw ForbiddenAccess();
+    }
+  }
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
@@ -709,6 +745,9 @@ export const userIdDeleteRelation = async (context, user, userId, toId, relation
 };
 
 export const userDeleteOrganizationRelation = async (context, user, userId, toId) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
+    throw ForbiddenAccess();
+  }
   const targetUser = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
@@ -910,6 +949,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organizations: user.organizations ?? [],
     allowed_organizations: user.allowed_organizations,
+    administrated_organizations: user.administrated_organizations ?? [],
     inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
@@ -936,6 +976,16 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     ...user.provider_metadata
   };
 };
+
+const virtualOrganizationAdminCapability = {
+  id: uuid(),
+  standard_id: `capability--${uuid()}`,
+  name: VIRTUAL_ORGANIZATION_ADMIN,
+  entity_type: 'Capability',
+  parent_types: ['Basic-Object', 'Internal-Object'],
+  created_at: Date.now(),
+  updated_at: Date.now()
+};
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
@@ -954,6 +1004,10 @@ export const buildCompleteUser = async (context, client) => {
   const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
   const [capabilities] = await Promise.all([capabilitiesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
+  const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
+  if (administrated_organizations.length > 0) {
+    capabilities.push(virtualOrganizationAdminCapability);
+  }
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
 
   // Default hidden types
@@ -968,6 +1022,7 @@ export const buildCompleteUser = async (context, client) => {
     groups,
     organizations,
     allowed_organizations,
+    administrated_organizations,
     individual_id: individualId,
     inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,

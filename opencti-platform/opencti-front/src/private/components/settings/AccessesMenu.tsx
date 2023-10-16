@@ -10,10 +10,10 @@ import {
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
+  VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS_SETACCESSES,
   SETTINGS_SETMARKINGS,
 } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
 
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
@@ -42,12 +42,12 @@ const AccessesMenu: FunctionComponent = () => {
       label: 'Sessions',
       icon: <ReceiptOutlined fontSize="medium" />,
     },
+    {
+      path: '/dashboard/settings/accesses/policies',
+      label: 'Policies',
+      icon: <LocalPoliceOutlined fontSize="medium" />,
+    },
   ];
-  const policiesEntry = {
-    path: '/dashboard/settings/accesses/policies',
-    label: 'Policies',
-    icon: <LocalPoliceOutlined fontSize="medium" />,
-  };
   const markingEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/marking',
@@ -57,20 +57,31 @@ const AccessesMenu: FunctionComponent = () => {
   ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
+  const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const menuEntries = [];
   if (setAccess) {
-    return (
-      <Security needs={[SETTINGS_SETACCESSES]}>
-        <NavToolbarMenu
-          entries={
-            setMarkings
-              ? [...entries, ...markingEntries, policiesEntry]
-              : [...entries, policiesEntry]
-          }
-        />
-      </Security>
+    menuEntries.push(...entries);
+  }
+  if (setMarkings) {
+    menuEntries.push(...markingEntries);
+  }
+  if (menuEntries.length === 0 && isOrgaAdmin) {
+    menuEntries.push(
+      ...[
+        {
+          path: '/dashboard/settings/accesses/organizations',
+          label: 'Organizations',
+          icon: <AccountBalanceOutlined fontSize="medium" />,
+        },
+        {
+          path: '/dashboard/settings/accesses/users',
+          label: 'Users',
+          icon: <PermIdentityOutlined fontSize="medium" />,
+        },
+      ],
     );
   }
-  return <NavToolbarMenu entries={markingEntries} />;
+  return <NavToolbarMenu entries={menuEntries} />;
 };
 
 export default AccessesMenu;

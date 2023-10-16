@@ -27,6 +27,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
+import { usersSessionRefresh } from './user';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -221,6 +222,13 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   )(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {
+    // Refresh user sessions for organization authorities
+    if (isNotEmptyField(updatedElem.authorized_authorities)) {
+      const grantedGroupsInput = input.find((i) => i.key === 'grantable_groups');
+      if (grantedGroupsInput) {
+        await usersSessionRefresh(updatedElem.authorized_authorities);
+      }
+    }
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
   }
   return updatedElem;

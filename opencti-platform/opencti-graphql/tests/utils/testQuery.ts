@@ -161,6 +161,7 @@ interface User {
 }
 
 export const ADMIN_USER: AuthUser = {
+  administrated_organizations: [],
   entity_type: 'User',
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
@@ -425,6 +426,7 @@ export const getUserIdByEmail = async (email: string) => {
 type markingType = { standard_id: string; internal_id: string };
 export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: markingType[]): AuthUser => {
   return {
+    administrated_organizations: [],
     entity_type: 'User',
     id: '88ec0c6a-12ce-5e39-b486-354fe4a7084f',
     internal_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f',

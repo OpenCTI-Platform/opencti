@@ -46,6 +46,11 @@ const rootPrivateQuery = graphql`
           definition
         }
       }
+      administrated_organizations {
+        id
+        name
+        authorized_authorities
+      }
       allowed_marking {
         id
         entity_type
