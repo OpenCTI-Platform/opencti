@@ -15,12 +15,9 @@ import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDo
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
-import {
-  ThreatActorIndividualKnowledge_ThreatActorIndividual$key,
-} from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualKnowledge_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
-import EntityStixCoreRelationshipsIndicators
-  from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,19 +27,19 @@ const useStyles = makeStyles(() => ({
 }));
 
 const threatActorIndividualKnowledgeFragment = graphql`
-fragment ThreatActorIndividualKnowledge_ThreatActorIndividual on ThreatActorIndividual {
-  id
-  name
-  aliases
-  first_seen
-  last_seen
+  fragment ThreatActorIndividualKnowledge_ThreatActorIndividual on ThreatActorIndividual {
+    id
+    name
+    aliases
+    first_seen
+    last_seen
   }
 `;
 
 const ThreatActorIndividualKnowledgeComponent = ({
   threatActorIndividualData,
 }: {
-  threatActorIndividualData: ThreatActorIndividualKnowledge_ThreatActorIndividual$key
+  threatActorIndividualData: ThreatActorIndividualKnowledge_ThreatActorIndividual$key;
 }) => {
   const classes = useStyles();
   const threatActorIndividual = useFragment<ThreatActorIndividualKnowledge_ThreatActorIndividual$key>(
@@ -55,7 +52,9 @@ const ThreatActorIndividualKnowledgeComponent = ({
       <StixDomainObjectHeader
         entityType={'Threat-Actor-Individual'}
         stixDomainObject={threatActorIndividual}
-        PopoverComponent={<ThreatActorIndividualPopover id={threatActorIndividual.id} />}
+        PopoverComponent={
+          <ThreatActorIndividualPopover id={threatActorIndividual.id} />
+        }
       />
       <Switch>
         <Route
@@ -301,19 +300,19 @@ const ThreatActorIndividualKnowledgeComponent = ({
             />
           )}
         />
-          <Route
-            exact
-            path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
-            render={(routeProps: any) => (
-              <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
-                entityId={threatActorIndividual.id}
-                entityLink={link}
-                defaultStartTime={threatActorIndividual.first_seen}
-                defaultStopTime={threatActorIndividual.last_seen}
-              />
-            )}
-          />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationshipsIndicators
+              {...routeProps}
+              entityId={threatActorIndividual.id}
+              entityLink={link}
+              defaultStartTime={threatActorIndividual.first_seen}
+              defaultStopTime={threatActorIndividual.last_seen}
+            />
+          )}
+        />
         <Route
           exact
           path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/observables"
