@@ -9,7 +9,7 @@ import {
   restAllCollections, restBuildCollection,
   restCollectionManifest,
   restCollectionStix,
-  restLoadCollectionById,
+  getCollectionById,
 } from '../domain/taxii';
 import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 
@@ -61,7 +61,7 @@ const extractUserAndCollection = async (context, req, res, id) => {
     return { user: SYSTEM_USER, collection };
   }
   const authUser = await extractUserFromRequest(context, req, res);
-  const userCollection = await restLoadCollectionById(context, authUser, id);
+  const userCollection = await getCollectionById(context, authUser, id);
   return { user: authUser, collection: userCollection };
 };
 
@@ -117,7 +117,7 @@ const initTaxiiApi = (app) => {
     try {
       const context = executionContext('taxii');
       const { collection } = await extractUserAndCollection(context, req, res, id);
-      res.json(collection);
+      res.json(restBuildCollection(collection));
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);

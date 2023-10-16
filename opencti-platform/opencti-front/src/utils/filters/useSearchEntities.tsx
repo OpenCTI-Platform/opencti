@@ -42,6 +42,9 @@ import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../privat
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { isNotEmptyField } from '../utils';
+import {
+  useSearchEntitiesSchemaSCOSearchQuery$data,
+} from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -233,6 +236,19 @@ const filtersStixCoreObjectsSearchQuery = graphql`
               }
             }
           }
+        }
+      }
+    }
+  }
+`;
+
+const filtersSchemaSCOSearchQuery = graphql`
+  query useSearchEntitiesSchemaSCOSearchQuery {
+    schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
+      edges {
+        node {
+          id
+          label
         }
       }
     }
@@ -1097,19 +1113,13 @@ const useSearchEntities = ({
           });
         break;
       case 'x_opencti_main_observable_type':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'x_opencti_main_observable_type',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
+        fetchQuery(filtersSchemaSCOSearchQuery)
           .toPromise()
           .then((data) => {
             const mainObservableTypeEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
+              (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs?.edges ?? []).map((n) => ({
+              label: n?.node.label,
+              value: n?.node.id,
               type: 'Vocabulary',
             }));
             unionSetEntities(

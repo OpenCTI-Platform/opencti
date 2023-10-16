@@ -161,12 +161,12 @@ export const restBuildCollection = (collection) => {
     media_types: [STIX_MEDIA_TYPE],
   };
 };
-export const restLoadCollectionById = async (context, user, collectionId) => {
+export const getCollectionById = async (context, user, collectionId) => {
   const collection = await storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   if (!collection) {
     throw ForbiddenAccess();
   }
-  return restBuildCollection(collection);
+  return collection;
 };
 export const restAllCollections = async (context, user) => {
   const collections = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {

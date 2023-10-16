@@ -239,7 +239,6 @@ const TaxiiCollectionEditionContainer = (props) => {
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
-            disabledPossible={true}
             classNameNumber={2}
             styleNumber={2}
             redirection
