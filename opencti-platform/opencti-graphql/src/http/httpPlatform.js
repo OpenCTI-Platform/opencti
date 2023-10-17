@@ -70,7 +70,7 @@ const createApp = async (app) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
+  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -96,7 +96,6 @@ const createApp = async (app) => {
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
-          'https://www.googletagmanager.com/'
         ],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
