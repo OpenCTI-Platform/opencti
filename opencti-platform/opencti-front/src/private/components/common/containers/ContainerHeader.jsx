@@ -47,7 +47,6 @@ import useGranted, {
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import StixCoreObjectsExportsContent from "@components/common/stix_core_objects/StixCoreObjectsExportsContent";
 import StixCoreObjectFileExport from "@components/common/stix_core_objects/StixCoreObjectFileExport";
 
 const useStyles = makeStyles({
@@ -863,7 +862,7 @@ const ContainerHeader = (props) => {
                           variant="header"
                         />
                       )}
-                      <StixCoreObjectFileExport entity={container}/>
+                      <StixCoreObjectFileExport entity={container} />
                       {enableSuggestions && (
                         <React.Fragment>
                           <Tooltip title={t('Open the suggestions')}>

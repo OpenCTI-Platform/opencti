@@ -76,8 +76,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const containerHeaderObjectsQuery = graphql`
-    query ContainerHeaderObjectsQuery($id: String!) {
+export const containerHeaderTaskNoteExternalsObjectsQuery = graphql`
+    query ContainerHeaderTaskNoteExternalsQuery($id: String!) {
         container(id: $id) {
             id
             x_opencti_graph_data
@@ -460,7 +460,7 @@ export const containerHeaderObjectsQuery = graphql`
     }
 `;
 
-const ContainerHeader = (props) => {
+const ContainerHeaderTaskNoteExternals= (props) => {
     const {
         container,
         PopoverComponent,
@@ -837,7 +837,7 @@ const ContainerHeader = (props) => {
             )}
             <div className={classes.actions}>
                 <QueryRenderer
-                    query={containerHeaderObjectsQuery}
+                    query={containerHeaderTaskNoteExternalsObjectsQuery}
                     variables={{ id: container.id }}
                     render={({ props: containerProps }) => {
                         if (containerProps && containerProps.container) {
@@ -1013,9 +1013,9 @@ const ContainerHeader = (props) => {
     );
 };
 
-export default createFragmentContainer(ContainerHeader, {
+export default createFragmentContainer(ContainerHeaderTaskNoteExternals, {
     container: graphql`
-        fragment ContainerHeader_container on Container {
+        fragment ContainerHeaderTaskNoteExternals_container on Container {
             id
             confidence
             created
