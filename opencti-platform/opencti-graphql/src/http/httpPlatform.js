@@ -96,6 +96,7 @@ const createApp = async (app) => {
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
+          'https://www.googletagmanager.com/'
         ],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
