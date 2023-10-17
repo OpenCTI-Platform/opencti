@@ -189,7 +189,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               paddingRight={noPadding ? null : 220}
               paginationOptions={finalPaginationOptions}
               variant={undefined}
-              stixCoreObject={undefined}
               onCreate={undefined}
             />
           ) : (
@@ -201,7 +200,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               paddingRight={noPadding ? null : 220}
               paginationOptions={finalPaginationOptions}
               variant={undefined}
-              stixCoreObject={undefined}
               onCreate={undefined}
             />
           )}

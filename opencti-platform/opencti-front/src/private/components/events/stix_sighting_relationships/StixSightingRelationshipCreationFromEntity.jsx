@@ -161,7 +161,6 @@ const StixSightingRelationshipCreationFromEntity = ({
   variant,
   targetStixCyberObservableTypes,
   paddingRight,
-  stixCoreObject,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
