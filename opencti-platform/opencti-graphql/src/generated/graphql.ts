@@ -22837,6 +22837,7 @@ export enum StixCoreRelationshipsFilter {
   RelationshipType = 'relationship_type',
   Revoked = 'revoked',
   ToCreatedAt = 'toCreatedAt',
+  ToId = 'toId',
   ToMainObservableType = 'toMainObservableType',
   ToName = 'toName',
   ToPatternType = 'toPatternType',

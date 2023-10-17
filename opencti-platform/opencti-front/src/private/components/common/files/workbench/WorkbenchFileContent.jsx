@@ -3,7 +3,6 @@ import {
   ArrowDropDown,
   ArrowDropUp,
   CheckCircleOutlined,
-  Close,
   DeleteOutlined,
   DoubleArrow,
 } from '@mui/icons-material';
@@ -105,16 +104,6 @@ const useStyles = makeStyles((theme) => ({
     float: 'left',
     marginTop: '-13px',
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -123,16 +112,6 @@ const useStyles = makeStyles((theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   linesContainer: {
     marginTop: 0,
@@ -722,7 +701,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => !objectsToBeDeletedIds.includes(o)
-          && !stixCoreRelationshipsToRemove.includes(o),
+            && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1031,7 +1010,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => o !== toDeleteObject.id
-          && !stixCoreRelationshipsToRemove.includes(o),
+            && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1129,7 +1108,7 @@ const WorkbenchFileContentComponent = ({
           newEntity.identity_class = resolveIdentityClass(currentEntityType);
         } else if (
           newEntity.type === 'location'
-          && !newEntity.x_opencti_location_type
+            && !newEntity.x_opencti_location_type
         ) {
           newEntity.x_opencti_location_type = currentEntityType;
         }
@@ -1482,7 +1461,7 @@ const WorkbenchFileContentComponent = ({
     );
     setContainerSelectAll(
       (container.object_refs || []).length
-      >= Object.keys(indexedStixObjects).length,
+        >= Object.keys(indexedStixObjects).length,
     );
     setContainerStep(1);
     setStixDomainObjects(
@@ -3196,7 +3175,7 @@ const WorkbenchFileContentComponent = ({
                             render={({ props }) => {
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
-                                > 0 ? (
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
@@ -3438,7 +3417,7 @@ const WorkbenchFileContentComponent = ({
                             render={({ props }) => {
                               if (props && props.stixCyberObservables) {
                                 return props.stixCyberObservables.edges.length
-                                > 0 ? (
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
@@ -3494,28 +3473,13 @@ const WorkbenchFileContentComponent = ({
         </Fab>
         <Drawer
           open={displayObservable}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
           onClose={handleCloseObservable}
+          title={t('Manage an observable')}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleCloseObservable}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Manage an observable')}</Typography>
-          </div>
-          <div className={classes.container}>
+          <>
             {!observableType && renderObservableTypesList()}
             {observableType && renderObservableForm()}
-          </div>
+          </>
         </Drawer>
       </div>
     );
@@ -3655,28 +3619,11 @@ const WorkbenchFileContentComponent = ({
           ))}
         </List>
         <Drawer
-          open={relationshipId}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
+          open={entityStep != null}
           onClose={handleCloseRelationship}
+          title={t('Manage a relationship')}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleCloseRelationship}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Manage a relationship')}</Typography>
-          </div>
-          <div className={classes.container}>
-            {relationshipId && renderRelationshipForm()}
-          </div>
+          <>{relationshipId && renderRelationshipForm()}</>
         </Drawer>
       </>
     );
@@ -4013,7 +3960,7 @@ const WorkbenchFileContentComponent = ({
                             render={({ props }) => {
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
-                                > 0 ? (
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
@@ -4069,29 +4016,14 @@ const WorkbenchFileContentComponent = ({
         </Fab>
         <Drawer
           open={containerStep != null}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
           onClose={handleCloseContainer}
+          title={t('Manage a container')}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleCloseContainer}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Manage a container')}</Typography>
-          </div>
-          <div className={classes.container}>
+          <>
             {!containerType && renderContainerTypesList()}
             {containerType && containerStep === 0 && renderContainerForm()}
             {containerType && containerStep === 1 && renderContainerContext()}
-          </div>
+          </>
         </Drawer>
       </div>
     );
