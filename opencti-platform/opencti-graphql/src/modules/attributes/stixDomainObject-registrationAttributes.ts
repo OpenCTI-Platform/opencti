@@ -410,7 +410,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     iAliasedIds,
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'x_opencti_base_score', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'x_opencti_base_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_base_severity', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_attack_vector', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_integrity_impact', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
