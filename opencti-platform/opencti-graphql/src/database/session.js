@@ -46,8 +46,8 @@ const createSessionMiddleware = () => {
 export const findSessions = () => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    store.all((err, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.impersonate_user_id ?? s.user.id, R.filter((n) => n.user, result));
+    store.all((_, result) => {
+      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
           return {
@@ -105,9 +105,7 @@ export const markSessionForRefresh = async (id) => {
 
 export const findSessionsForUsers = async (userIds) => {
   const sessions = await findSessions();
-  // Looking for sessions inside direct user or impersonate
-  return sessions.filter((s) => userIds.includes(s.user_id) || userIds.includes(s.impersonate_user_id))
-    .map((s) => s.sessions).flat();
+  return sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.sessions).flat();
 };
 
 export const applicationSession = createSessionMiddleware();
