@@ -163,7 +163,7 @@ const StixSightingRelationshipCreationForm = ({
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(fromEntity.entity_type)}`,
+                  border: `2px solid ${itemColor(fromEntity?.entity_type)}`,
                   top: 10,
                   left: 0,
                 }}
@@ -171,20 +171,20 @@ const StixSightingRelationshipCreationForm = ({
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(fromEntity.entity_type)}`,
+                    borderBottom: `1px solid ${itemColor(fromEntity?.entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={fromEntity.entity_type}
-                      color={itemColor(fromEntity.entity_type)}
+                      type={fromEntity?.entity_type}
+                      color={itemColor(fromEntity?.entity_type)}
                       size="small"
                     />
                   </div>
                   <div className={classes.type}>
-                    {fromEntity.relationship_type
-                      ? t(`relationship_${fromEntity.entity_type}`)
-                      : t(`entity_${fromEntity.entity_type}`)}
+                    {fromEntity?.relationship_type
+                      ? t(`relationship_${fromEntity?.entity_type}`)
+                      : t(`entity_${fromEntity?.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>

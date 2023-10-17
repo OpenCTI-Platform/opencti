@@ -493,7 +493,7 @@ const StixSightingRelationshipCreationFromEntity = ({
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? renderSelectEntity() : ''}
-                    {step === 1 ? renderForm(stixCoreObject) : ''}
+                    {step === 1 ? renderForm(props.stixCoreObject) : ''}
                   </div>
                 );
               }
