@@ -901,7 +901,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   let finalKey = key;
   // TODO Add support for these restrictions
   // TODO Change R.head(value) limitation
-  if (isDictionaryAttribute(key)) {
+  if (isDictionaryAttribute(key) && isNotEmptyField(R.head(value))) { // Only allow full cleanup
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
   }
   if (!isMultiple && isObjectAttribute(key)) {
@@ -2364,21 +2364,35 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
   }
   return null;
 };
-const buildAttributeUpdate = (isFullSync, attribute, data) => {
+const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
   const inputs = [];
   const fieldKey = attribute.name;
   if (isDictionaryAttribute(fieldKey)) {
-    Object.entries(data).forEach(([k, v]) => {
-      inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
-    });
+    if (isNotEmptyField(inputData)) {
+      // In standard mode, just patch inner dictionary keys
+      const inputEntries = Object.entries(inputData);
+      inputEntries.forEach(([k, v]) => {
+        inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
+      });
+      if (isFullSync && isNotEmptyField(currentData)) {
+        const inputDictMap = new Map(inputEntries);
+        Object.entries(currentData).forEach(([k]) => {
+          if (!inputDictMap.has(k)) { // If known, replace
+            inputs.push({ key: `${fieldKey}.${k}`, value: [null] });
+          }
+        });
+      }
+    } else if (isFullSync) { // We only allowed removal for full synchronization
+      inputs.push({ key: fieldKey, value: [inputData] });
+    }
   } else if (attribute.multiple) {
     const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
-    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(data))) {
-      inputs.push({ key: fieldKey, value: data, operation });
+    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
+      inputs.push({ key: fieldKey, value: inputData, operation });
     }
   } else {
-    inputs.push({ key: fieldKey, value: [data] });
+    inputs.push({ key: fieldKey, value: [inputData] });
   }
   return inputs;
 };
@@ -2529,7 +2543,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       const canBeUpsert = applyUpdate && attribute.upsert; // If field can be upsert
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isNotEmptyField(inputData); // If the element current data is empty, we always expect to put the value
       if (isFullSync || canBeUpsert || isCurrentlyEmpty) {
-        inputs.push(...buildAttributeUpdate(isFullSync, attribute, inputData));
+        inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
       }
     }
   }
