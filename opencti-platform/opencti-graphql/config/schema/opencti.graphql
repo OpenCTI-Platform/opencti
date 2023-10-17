@@ -11599,6 +11599,7 @@ enum StixCoreRelationshipsFilter {
   toTypes
   entity_type
   fromId
+  toId
   elementId
 }
 input StixCoreRelationshipsFiltering {
