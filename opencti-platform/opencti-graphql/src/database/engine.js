@@ -1913,10 +1913,11 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     );
 };
 export const elList = async (context, user, indexName, options = {}) => {
-  const { first = MAX_SEARCH_SIZE, infinite = false } = options;
+  const { first = MAX_SEARCH_SIZE, maxSize = undefined, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;
   let searchAfter = options.after;
+  let emitSize = 0;
   const listing = [];
   const publish = async (elements) => {
     const { callback } = options;
@@ -1931,7 +1932,10 @@ export const elList = async (context, user, indexName, options = {}) => {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, opts);
-    if (!infinite && (elements.length === 0 || elements.length < first)) {
+    emitSize += elements.length;
+    const noMoreElements = elements.length === 0 || elements.length < first;
+    const moreThanMax = maxSize ? emitSize >= maxSize : false;
+    if (!infinite && (noMoreElements || moreThanMax)) {
       if (elements.length > 0) {
         await publish(elements);
       }
