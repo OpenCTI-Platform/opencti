@@ -1149,7 +1149,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     const query = {
       index: indices,
-      size: MAX_TERMS_SPLIT,
+      size: workingIds.length,
       ignore_throttled: ES_IGNORE_THROTTLED,
       _source: baseData ? baseFields : true,
       body,
