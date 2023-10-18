@@ -1,7 +1,8 @@
-import amqp from 'amqplib';
+import amqp from 'amqplib/callback_api';
+import util from 'util';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
-import { DatabaseError, UnknownError } from '../config/errors';
+import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX } from './utils';
@@ -51,29 +52,51 @@ export const config = () => {
 };
 
 const amqpExecute = async (execute) => {
-  try {
-    const amqpConnection = await amqp.connect(amqpUri(), USE_SSL ? {
-      ...amqpCred(),
-      ...configureCA(RABBITMQ_CA),
-      cert: RABBITMQ_CA_CERT,
-      key: RABBITMQ_CA_KEY,
-      pfx: RABBITMQ_CA_PFX,
-      passphrase: RABBITMQ_CA_PASSPHRASE,
-      rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-      // checkServerIdentity: () => undefined,
-    } : amqpCred());
-    const channel = await amqpConnection.createConfirmChannel();
-    const response = await execute(channel);
-    await channel.close();
-    await amqpConnection.close();
-    return response;
-  } catch (err) {
-    throw UnknownError('Error in amqp command execution', { error: err });
-  }
+  const connOptions = USE_SSL ? {
+    ...amqpCred(),
+    ...configureCA(RABBITMQ_CA),
+    cert: RABBITMQ_CA_CERT,
+    key: RABBITMQ_CA_KEY,
+    pfx: RABBITMQ_CA_PFX,
+    passphrase: RABBITMQ_CA_PASSPHRASE,
+    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+  } : amqpCred();
+  return new Promise((resolve, reject) => {
+    try {
+      amqp.connect(amqpUri(), connOptions, (err, conn) => {
+        if (err) {
+          reject(err);
+        } else { // Connection success
+          conn.on('error', (onConnectError) => {
+            reject(onConnectError);
+          });
+          conn.createConfirmChannel((channelError, channel) => {
+            if (channelError) {
+              reject(channelError);
+            } else {
+              channel.on('error', (onChannelError) => {
+                reject(onChannelError);
+              });
+              execute(channel).then((data) => {
+                channel.close();
+                conn.close();
+                resolve(data);
+              }).catch((executeError) => reject(executeError));
+            }
+          });
+        }
+      });
+    } catch (globalError) {
+      reject(globalError);
+    }
+  });
 };
 
 export const send = (exchangeName, routingKey, message) => {
-  return amqpExecute((channel) => channel.publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 }));
+  return amqpExecute(async (channel) => {
+    const publish = util.promisify(channel.publish).bind(channel);
+    return publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 });
+  });
 };
 
 export const metrics = async (context, user) => {
@@ -117,62 +140,67 @@ export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_rout
 
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
-export const existsConnectorQueues = async (id, cbError) => {
-  const { listen, push } = connectorConfig(id);
-  try {
-    await amqpExecute(async (channel) => {
-      // Check queue exists and call callback method if not
-      await channel.on('error', async (error) => await cbError(error));
-      await channel.checkQueue(listen);
-      await channel.checkQueue(push);
-    });
-  } catch (e) { /* nothing */ }
-};
-
 export const registerConnectorQueues = async (id, name, type, scope) => {
   const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;
   const pushQueue = `${RABBIT_QUEUE_PREFIX}push_${id}`;
   await amqpExecute(async (channel) => {
     // 01. Ensure exchange exists
-    await channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
-    await channel.assertExchange(WORKER_EXCHANGE, 'direct', { durable: true });
+    const assertExchange = util.promisify(channel.assertExchange).bind(channel);
+    await assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
+    await assertExchange(WORKER_EXCHANGE, 'direct', { durable: true });
     // 02. Ensure listen queue exists
-    await channel.assertQueue(listenQueue, {
+    const assertQueue = util.promisify(channel.assertQueue).bind(channel);
+    await assertQueue(listenQueue, {
       exclusive: false,
       durable: true,
       autoDelete: false,
       arguments: { name, config: { id, type, scope }, 'x-queue-type': QUEUE_TYPE },
     });
     // 03. bind queue for each connector scope
-    await channel.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id));
+    const bindQueue = util.promisify(channel.bindQueue).bind(channel);
+    await bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id), {});
     // 04. Create stix push queue
-    await channel.assertQueue(pushQueue, {
+    await assertQueue(pushQueue, {
       exclusive: false,
       durable: true,
       autoDelete: false,
       arguments: { name, config: { id, type, scope }, 'x-queue-type': QUEUE_TYPE },
     });
     // 05. Bind push queue to direct default exchange
-    await channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id));
+    await bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id), {});
+    return true;
   });
   return connectorConfig(id);
 };
 
 export const unregisterConnector = async (id) => {
-  const listen = await amqpExecute((channel) => channel.deleteQueue(`${RABBIT_QUEUE_PREFIX}listen_${id}`));
-  const push = await amqpExecute((channel) => channel.deleteQueue(`${RABBIT_QUEUE_PREFIX}push_${id}`));
+  const listen = await amqpExecute(async (channel) => {
+    const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
+    return deleteQueue(`${RABBIT_QUEUE_PREFIX}listen_${id}`);
+  });
+  const push = await amqpExecute(async (channel) => {
+    const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
+    return deleteQueue(`${RABBIT_QUEUE_PREFIX}push_${id}`);
+  });
   return { listen, push };
 };
 
 export const unregisterExchanges = async () => {
-  await amqpExecute((channel) => channel.deleteExchange(CONNECTOR_EXCHANGE));
-  await amqpExecute((channel) => channel.deleteExchange(WORKER_EXCHANGE));
+  await amqpExecute(async (channel) => {
+    const deleteExchange = util.promisify(channel.deleteExchange).bind(channel);
+    return deleteExchange(CONNECTOR_EXCHANGE);
+  });
+  await amqpExecute(async (channel) => {
+    const deleteExchange = util.promisify(channel.deleteExchange).bind(channel);
+    return deleteExchange(WORKER_EXCHANGE);
+  });
 };
 
 export const rabbitMQIsAlive = async () => {
-  await amqpExecute((channel) => channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
-    durable: true,
-  })).catch(
+  return amqpExecute(async (channel) => {
+    const assertExchange = util.promisify(channel.assertExchange).bind(channel);
+    return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
+  }).catch(
     /* istanbul ignore next */ (e) => {
       throw DatabaseError('RabbitMQ seems down', { error: e.data });
     }
@@ -200,12 +228,11 @@ export const getRabbitMQVersion = (context) => {
 export const consumeQueue = async (context, id, callback) => {
   const cfg = connectorConfig(id);
   const listenQueue = cfg.listen;
-  await amqpExecute(async (channel) => {
-    await channel.consume(listenQueue, async (msg) => {
-      if (msg !== null) {
-        channel.ack(msg); // TODO: Should be after the callback
-        await callback(context, msg.content.toString());
-      }
-    });
+  const data = await amqpExecute(async (channel) => {
+    const queueGet = util.promisify(channel.get).bind(channel);
+    return queueGet(listenQueue, { noAck: true });
   });
+  if (data) {
+    await callback(context, data.content.toString());
+  }
 };
