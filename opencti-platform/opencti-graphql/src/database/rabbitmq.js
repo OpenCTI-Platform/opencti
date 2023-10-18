@@ -176,11 +176,11 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const unregisterConnector = async (id) => {
   const listen = await amqpExecute(async (channel) => {
     const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
-    return deleteQueue(`${RABBIT_QUEUE_PREFIX}listen_${id}`);
+    return deleteQueue(`${RABBIT_QUEUE_PREFIX}listen_${id}`, {});
   });
   const push = await amqpExecute(async (channel) => {
     const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);
-    return deleteQueue(`${RABBIT_QUEUE_PREFIX}push_${id}`);
+    return deleteQueue(`${RABBIT_QUEUE_PREFIX}push_${id}`, {});
   });
   return { listen, push };
 };
@@ -188,11 +188,11 @@ export const unregisterConnector = async (id) => {
 export const unregisterExchanges = async () => {
   await amqpExecute(async (channel) => {
     const deleteExchange = util.promisify(channel.deleteExchange).bind(channel);
-    return deleteExchange(CONNECTOR_EXCHANGE);
+    return deleteExchange(CONNECTOR_EXCHANGE, {});
   });
   await amqpExecute(async (channel) => {
     const deleteExchange = util.promisify(channel.deleteExchange).bind(channel);
-    return deleteExchange(WORKER_EXCHANGE);
+    return deleteExchange(WORKER_EXCHANGE, {});
   });
 };
 
