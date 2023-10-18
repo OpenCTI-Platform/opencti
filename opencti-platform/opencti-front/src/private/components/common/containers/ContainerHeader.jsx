@@ -48,6 +48,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from "@components/common/stix_core_objects/StixCoreObjectFileExport";
+import FileExportViewer from "@components/common/files/FileExportViewer";
 
 const useStyles = makeStyles({
   title: {
@@ -476,6 +477,8 @@ const ContainerHeader = (props) => {
     onApplied,
     enableQuickSubscription,
     investigationAddFromContainer,
+      id,
+      entity
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -862,6 +865,7 @@ const ContainerHeader = (props) => {
                           variant="header"
                         />
                       )}
+
                       <StixCoreObjectFileExport entity={container} />
                       {enableSuggestions && (
                         <React.Fragment>
@@ -907,7 +911,6 @@ const ContainerHeader = (props) => {
                       <StixCoreObjectEnrichment
                         stixCoreObjectId={container.id}
                       />
-
                     </ToggleButtonGroup>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
