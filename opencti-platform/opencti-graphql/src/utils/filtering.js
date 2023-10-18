@@ -680,7 +680,7 @@ export const checkedAndConvertedFilters = (filters, entityTypes) => {
     filters.filters.forEach((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
       console.log('entityTypes', entityTypes);
-      const databaseName = schemaRelationsRefDefinition.getDatabaseName(key, entityTypes);
+      const databaseName = schemaRelationsRefDefinition.getDatabaseName(key);
       console.log('key', key);
       console.log('databaseName', databaseName);
       if (databaseName) {

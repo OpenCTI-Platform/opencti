@@ -128,10 +128,7 @@ export const schemaRelationsRefDefinition = {
       .map((rel) => rel.databaseName);
   },
 
-  getDatabaseName(inputName: string, entityTypes?: string[]): string | undefined {
-    if (entityTypes) {
-      entityTypes.forEach((type) => this.computeCache(type));
-    }
+  getDatabaseName(inputName: string): string | undefined {
     return this.inputNameToDatabaseName.get(inputName);
   }
 };
