@@ -1500,6 +1500,10 @@ type RoleEdge {
   cursor: String!
   node: Role!
 }
+type RoleEntityOverride {
+  entity: String
+  capabilities: [Capability]
+}
 type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1511,6 +1515,7 @@ type Role implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   capabilities: [Capability]
+  overrides: [RoleEntityOverride]
   editContext: [EditUserContext!]
 }
 input RoleAddInput {

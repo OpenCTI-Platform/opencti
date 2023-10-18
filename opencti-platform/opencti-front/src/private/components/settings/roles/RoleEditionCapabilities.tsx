@@ -14,6 +14,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
+import { Tooltip } from '@mui/material';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -133,6 +135,18 @@ RoleEditionCapabilitiesComponentProps
             );
             const isDisabled = matchingCapabilities.length > 0;
             const isChecked = isDisabled || roleCapability !== undefined;
+
+            const overrides = [];
+            for (const override of role.overrides ?? []) {
+              var hasCapability = false;
+              for (const c of override?.capabilities ?? []) {
+                if (c?.name === capability.name) hasCapability = true;
+              }
+              if (isDisabled) continue;
+              if (!hasCapability && isChecked) overrides.push(override?.entity);
+              else if (hasCapability && !isChecked) overrides.push(override?.entity);
+            }
+
             return (
               <ListItem
                 key={capability.name}
@@ -143,6 +157,11 @@ RoleEditionCapabilitiesComponentProps
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
+                {overrides.length > 0 &&
+                  <Tooltip title={`${t_i18n('Except for')} ${overrides.join(', ')}`} placement='left'>
+                    <ErrorIcon color='error' />
+                  </Tooltip>
+                }
                 <ListItemSecondaryAction>
                   <Checkbox
                     onChange={(event) => handleToggle(capability.id, event)}
@@ -171,6 +190,14 @@ const RoleEditionCapabilities = createFragmentContainer(
           id
           name
           description
+        }
+        overrides {
+          entity
+          capabilities {
+            id
+            name
+            description
+          }
         }
       }
     `,
