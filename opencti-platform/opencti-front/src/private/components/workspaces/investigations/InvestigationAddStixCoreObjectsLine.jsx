@@ -1,0 +1,418 @@
+import React from 'react';
+import { graphql, createFragmentContainer } from 'react-relay';
+import * as R from 'ramda';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
+import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
+
+const useStyles = makeStyles((theme) => ({
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  itemIconDisabled: {
+    color: theme.palette.grey[700],
+  },
+  chip: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
+}));
+
+const InvestigationAddStixCoreObjectsLineComponent = ({
+  dataColumns,
+  node,
+  onLabelClick,
+  onToggleEntity,
+  addedElements,
+}) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      onClick={(event) => onToggleEntity(node, event)}
+    >
+      <ListItemIcon style={{ paddingLeft: 10 }}>
+        {node.id in (addedElements || {}) ? (
+          <CheckCircleOutlined
+            classes={{ root: classes.icon }}
+            color="primary"
+          />
+        ) : (
+          <CircleOutlined classes={{ root: classes.icon }} />
+        )}
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type={node.entity_type} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
+                  color: itemColor(node.entity_type),
+                  border: `1px solid ${itemColor(node.entity_type)}`,
+                }}
+                label={t(`entity_${node.entity_type}`)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              {defaultValue(node, true)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {R.pathOr('', ['createdBy', 'name'], node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={node.objectLabel}
+                onClick={onLabelClick}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges}
+                limit={1}
+              />
+            </div>
+          </div>
+        }
+      />
+    </ListItem>
+  );
+};
+
+export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
+  InvestigationAddStixCoreObjectsLineComponent,
+  {
+    node: graphql`
+      fragment InvestigationAddStixCoreObjectsLine_node on StixCoreObject {
+        id
+        standard_id
+        parent_types
+        entity_type
+        created_at
+        ... on StixDomainObject {
+          created
+        }
+        ... on AttackPattern {
+          name
+          description
+          x_mitre_id
+        }
+        ... on Campaign {
+          name
+          description
+          first_seen
+          last_seen
+        }
+        ... on Channel {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on ObservedData {
+          name
+          first_observed
+          last_observed
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on Report {
+          name
+          description
+          published
+        }
+        ... on Grouping {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+          valid_from
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+          first_seen
+          last_seen
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+          first_seen
+          last_seen
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on ThreatActor {
+          name
+          description
+          first_seen
+          last_seen
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Task {
+          name
+        }
+        ... on Narrative {
+          name
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Event {
+          name
+        }
+        ... on Incident {
+          name
+          description
+          first_seen
+          last_seen
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+          x_opencti_description
+        }
+        ... on StixFile {
+          observableName: name
+        }
+        createdBy {
+          id
+          entity_type
+          ... on Identity {
+            name
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
+        creators {
+          id
+          name
+        }
+        reports {
+          pageInfo {
+            globalCount
+          }
+        }
+      }
+    `,
+  },
+);
+
+export const InvestigationAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
+  const classes = useStyles();
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      style={{ minWidth: 40 }}
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
+      >
+        <CircleOutlined />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
+        }
+      />
+    </ListItem>
+  );
+};

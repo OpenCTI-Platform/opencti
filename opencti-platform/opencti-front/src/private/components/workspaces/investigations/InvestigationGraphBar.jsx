@@ -62,9 +62,9 @@ import StixCoreRelationshipCreation from '../../common/stix_core_relationships/S
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
-import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
+import InvestigationAddStixCoreObjects from "@components/workspaces/investigations/InvestigationAddStixCoreObjects";
 
 const styles = () => ({
   bottomNav: {
@@ -809,10 +809,6 @@ class InvestigationGraphBar extends Component {
                       <InvestigationAddStixCoreObjects
                         workspaceId={workspace.id}
                         workspaceStixCoreObjects={workspace.objects.edges}
-                        defaultCreatedBy={workspace.createdBy ?? null}
-                        defaultMarkingDefinitions={(
-                          workspace.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
                         targetStixCoreObjectTypes={[
                           'Stix-Domain-Object',
                           'Stix-Cyber-Observable',
