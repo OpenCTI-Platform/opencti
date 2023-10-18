@@ -484,7 +484,7 @@ const FeedCreation = (props) => {
                         label={t('Include headers in the feed')}
                         containerstyle={{ marginTop: 20 }}
                       />
-                      <div style={{ marginTop: 35 }}>
+                      <div style={{ paddingTop: 35 }}>
                         <Filters
                           variant="text"
                           availableFilterKeys={[
