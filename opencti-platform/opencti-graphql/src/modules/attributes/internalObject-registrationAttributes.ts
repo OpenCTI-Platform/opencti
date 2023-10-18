@@ -325,7 +325,37 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    {
+      name: 'overrides',
+      label: 'Overrides',
+      type: 'object',
+      format: 'standard',
+      mandatoryType: 'no',
+      editDefault: true,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+      mappings: [
+        { name: 'entity', label: 'Entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+        {
+          name: 'capabilities',
+          label: 'Capabilities',
+          type: 'object',
+          format: 'standard',
+          mandatoryType: 'no',
+          editDefault: true,
+          multiple: true,
+          upsert: false,
+          isFilterable: false,
+          mappings: [
+            id,
+            { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+            { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+          ],
+        }
+      ],
+    },
   ],
   [ENTITY_TYPE_RULE]: [
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }

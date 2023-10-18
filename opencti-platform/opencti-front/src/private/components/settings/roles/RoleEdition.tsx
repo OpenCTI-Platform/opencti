@@ -11,6 +11,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEdition_role$data } from './__generated__/RoleEdition_role.graphql';
+import RoleEditionOverride from './RoleEditionOverride';
 
 interface RoleEditionProps {
   role: RoleEdition_role$data
@@ -42,6 +43,7 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
+            <Tab label={t_i18n('Entities Override')} />
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={editContext} />}
@@ -50,6 +52,13 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
             <RoleEditionCapabilities role={role} queryRef={queryRef} />
+          </React.Suspense>
+        )}
+        {currentTab === 2 && queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <RoleEditionOverride role={role} queryRef={queryRef} />
           </React.Suspense>
         )}
       </>
@@ -63,6 +72,7 @@ const RoleEditionFragment = createFragmentContainer(RoleEdition, {
       id
       ...RoleEditionOverview_role
       ...RoleEditionCapabilities_role
+      ...RoleEditionOverride_role
       editContext {
         name
         focusOn

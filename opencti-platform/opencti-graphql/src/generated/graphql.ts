@@ -20877,6 +20877,7 @@ export type Role = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  overrides?: Maybe<Array<Maybe<RoleEntityOverride>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -20929,6 +20930,12 @@ export type RoleEditMutationsRelationAddArgs = {
 export type RoleEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+export type RoleEntityOverride = {
+  __typename?: 'RoleEntityOverride';
+  capabilities?: Maybe<Array<Maybe<Capability>>>;
+  entity?: Maybe<Scalars['String']['output']>;
 };
 
 export enum RolesOrdering {
@@ -28420,6 +28427,7 @@ export type ResolversTypes = ResolversObject<{
   RoleConnection: ResolverTypeWrapper<RoleConnection>;
   RoleEdge: ResolverTypeWrapper<RoleEdge>;
   RoleEditMutations: ResolverTypeWrapper<RoleEditMutations>;
+  RoleEntityOverride: ResolverTypeWrapper<RoleEntityOverride>;
   RolesOrdering: RolesOrdering;
   Rule: ResolverTypeWrapper<Rule>;
   RuleExecutionError: ResolverTypeWrapper<RuleExecutionError>;
@@ -29128,6 +29136,7 @@ export type ResolversParentTypes = ResolversObject<{
   RoleConnection: RoleConnection;
   RoleEdge: RoleEdge;
   RoleEditMutations: RoleEditMutations;
+  RoleEntityOverride: RoleEntityOverride;
   Rule: Rule;
   RuleExecutionError: RuleExecutionError;
   RuleManager: RuleManager;
@@ -35417,6 +35426,7 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  overrides?: Resolver<Maybe<Array<Maybe<ResolversTypes['RoleEntityOverride']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -35442,6 +35452,12 @@ export type RoleEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RoleEntityOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['RoleEntityOverride'] = ResolversParentTypes['RoleEntityOverride']> = ResolversObject<{
+  capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38151,6 +38167,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RoleConnection?: RoleConnectionResolvers<ContextType>;
   RoleEdge?: RoleEdgeResolvers<ContextType>;
   RoleEditMutations?: RoleEditMutationsResolvers<ContextType>;
+  RoleEntityOverride?: RoleEntityOverrideResolvers<ContextType>;
   Rule?: RuleResolvers<ContextType>;
   RuleExecutionError?: RuleExecutionErrorResolvers<ContextType>;
   RuleManager?: RuleManagerResolvers<ContextType>;
