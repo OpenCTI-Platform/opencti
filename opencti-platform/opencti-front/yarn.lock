@@ -15048,7 +15048,7 @@ __metadata:
     react-cookie: 6.1.1
     react-csv: 2.2.2
     react-dom: 18.2.0
-    react-force-graph-2d: 1.25.1
+    react-force-graph-2d: 1.25.2
     react-force-graph-3d: 1.23.1
     react-grid-layout: 1.4.2
     react-intl: 6.4.7
@@ -16423,16 +16423,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.25.1":
-  version: 1.25.1
-  resolution: "react-force-graph-2d@npm:1.25.1"
+"react-force-graph-2d@npm:1.25.2":
+  version: 1.25.2
+  resolution: "react-force-graph-2d@npm:1.25.2"
   dependencies:
     force-graph: 1
     prop-types: 15
     react-kapsule: 2
   peerDependencies:
     react: "*"
-  checksum: a9a8c8ee7aa750e1cdf7f95aa59cac13cbc4dae5f83d0a8c0cd0729d3705b34a7cfcaa1f0b3cbbe3046195f5b04588b8dfceea4f710f7018d5fc1df40054e0b7
+  checksum: c5454d0d124f443ed394e25ed93614256324d2e5fb3a76b2cc7d551d952b49fa584af13d4be694238b4e04bfc803de2c1786fdff8e14013e38273922b2cf41c2
   languageName: node
   linkType: hard
 
