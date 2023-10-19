@@ -1,0 +1,12 @@
+diff --git a/lib/connection/UndiciConnection.js b/lib/connection/UndiciConnection.js
+index 6a1567880..4acbe0fff 100644
+--- a/lib/connection/UndiciConnection.js
++++ b/lib/connection/UndiciConnection.js
+@@ -58,6 +58,7 @@ class Connection extends BaseConnection_1.default {
+             throw new errors_1.ConfigurationError('Bad agent configuration for Undici agent');
+         }
+         this[symbols_1.kEmitter] = new events_1.EventEmitter();
++        this[symbols_1.kEmitter].setMaxListeners(100);
+         const undiciOptions = {
+             keepAliveTimeout: 600e3,
+             keepAliveMaxTimeout: 600e3,
