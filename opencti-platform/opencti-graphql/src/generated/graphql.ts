@@ -1764,6 +1764,7 @@ export enum CampaignsFilter {
   Name = 'name',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

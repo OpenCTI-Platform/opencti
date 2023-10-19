@@ -2512,6 +2512,7 @@ enum CampaignsFilter {
   revoked
   confidence
   source_reliability
+  targets
   creator
 }
 
