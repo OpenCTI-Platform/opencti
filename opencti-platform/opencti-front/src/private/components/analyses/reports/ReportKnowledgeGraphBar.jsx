@@ -599,6 +599,7 @@ class ReportKnowledgeGraphBar extends Component {
                       <IconButton
                         color="primary"
                         onClick={this.handleOpenSelectByType.bind(this)}
+                        disabled={stixCoreObjectsTypes.length === 0}
                         size="large"
                       >
                         <SelectGroup />
@@ -727,6 +728,7 @@ class ReportKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenMarkedBy.bind(this)}
                         size="large"
+                        disabled={markedBy.length === 0}
                       >
                         <Badge
                           badgeContent={currentMarkedBy.length}
@@ -784,6 +786,7 @@ class ReportKnowledgeGraphBar extends Component {
                       <IconButton
                         color="primary"
                         onClick={this.handleOpenCreatedBy.bind(this)}
+                        disabled={createdBy.length === 0}
                         size="large"
                       >
                         <Badge

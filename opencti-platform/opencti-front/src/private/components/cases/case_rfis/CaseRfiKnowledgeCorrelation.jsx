@@ -231,49 +231,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.caseData.objects.edges);
-    const stixCoreObjectsTypes = R.pipe(
-      R.map((n) => n.node.entity_type),
-      R.filter((n) => n && n.length > 0),
-      R.uniq,
-    )(props.caseData.objects.edges);
-    const markedBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.caseData.objects.edges),
-        R.pipe(
-          R.filter((m) => m.node.cases),
-          R.map((m) => m.node.cases.edges),
-          R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.caseData.objects.edges),
-      ),
-    );
-    const createdBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.createdBy),
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m.id),
-          R.map((n) => n.id),
-        )(props.caseData.objects.edges),
-        R.pipe(
-          R.filter((m) => m && m.node.cases),
-          R.map((m) => m.node.cases.edges),
-          R.flatten,
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m && m.id),
-          R.map((n) => n.id),
-        )(props.caseData.objects.edges),
-      ),
-    );
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -303,18 +260,18 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
-      stixCoreObjectsTypes,
-      markedBy,
-      createdBy,
+      stixCoreObjectsTypes: [],
+      markedBy: [],
+      createdBy: [],
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
     const filterAdjust = {
-      markedBy,
-      createdBy,
-      stixCoreObjectsTypes,
+      markedBy: [],
+      createdBy: [],
+      stixCoreObjectsTypes: [],
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
@@ -938,7 +895,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
           const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
           return (
-              <>
+            <>
               <CaseRfiKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
                 currentMode3D={mode3D}
@@ -978,7 +935,9 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
-                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
+                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
+                  this,
+                )}
                 handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
                   this,
                 )}
@@ -1114,7 +1073,10 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
                       this.handleRectSelectUp(e);
                     }}
                     style={{
-                      backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+                      backgroundColor: hexToRGB(
+                        theme.palette.background.accent,
+                        0.3,
+                      ),
                       borderColor: theme.palette.warning.main,
                     }}
                     disabled={!selectRectangleModeFree}
@@ -1229,7 +1191,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
                   </RectangleSelection>
                 </>
               )}
-              </>
+            </>
           );
         }}
       </UserContext.Consumer>

@@ -235,49 +235,6 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
-    const stixCoreObjectsTypes = R.pipe(
-      R.map((n) => n.node.entity_type),
-      R.filter((n) => n && n.length > 0),
-      R.uniq,
-    )(props.report.objects.edges);
-    const markedBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.report.objects.edges),
-        R.pipe(
-          R.filter((m) => m.node.reports),
-          R.map((m) => m.node.reports.edges),
-          R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.report.objects.edges),
-      ),
-    );
-    const createdBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.createdBy),
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m.id),
-          R.map((n) => n.id),
-        )(props.report.objects.edges),
-        R.pipe(
-          R.filter((m) => m && m.node.reports),
-          R.map((m) => m.node.reports.edges),
-          R.flatten,
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m && m.id),
-          R.map((n) => n.id),
-        )(props.report.objects.edges),
-      ),
-    );
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -307,18 +264,18 @@ class ReportKnowledgeCorrelationComponent extends Component {
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
-      stixCoreObjectsTypes,
-      markedBy,
-      createdBy,
+      stixCoreObjectsTypes: [],
+      markedBy: [],
+      createdBy: [],
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
     const filterAdjust = {
-      markedBy,
-      createdBy,
-      stixCoreObjectsTypes,
+      markedBy: [],
+      createdBy: [],
+      stixCoreObjectsTypes: [],
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
@@ -964,8 +921,8 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                stixCoreObjectsTypes={currentStixCoreObjectsTypes}
-                currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+                stixCoreObjectsTypes={stixCoreObjectsTypes}
+                currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}
                 selectModeFreeReady={selectModeFreeReady}
