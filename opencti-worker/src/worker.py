@@ -25,8 +25,10 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
 from pycti import OpenCTIApiClient
-from pycti.connector.opencti_connector_helper import (create_mq_ssl_context,
-                                                      get_config_variable)
+from pycti.connector.opencti_connector_helper import (
+    create_mq_ssl_context,
+    get_config_variable,
+)
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
@@ -330,6 +332,22 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     + ")",
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
+            elif "MissingReferenceError" in error_msg:
+                self.api.log("warning", error_msg)
+                self.processing_count = 0
+                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
+                if work_id is not None:
+                    self.api.work.report_expectation(
+                        work_id,
+                        {
+                            "error": error,
+                            "source": content
+                            if len(content) < 50000
+                            else "Bundle too large",
+                        },
+                    )
+                return False
             elif "Bad Gateway" in error_msg:
                 bundles_bad_gateway_error_counter.add(1)
                 self.api.log(
