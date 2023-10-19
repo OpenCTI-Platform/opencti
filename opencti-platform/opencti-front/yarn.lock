@@ -5,16 +5,16 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"3d-force-graph@npm:1":
-  version: 1.72.3
-  resolution: "3d-force-graph@npm:1.72.3"
+"3d-force-graph@npm:^1.73":
+  version: 1.73.0
+  resolution: "3d-force-graph@npm:1.73.0"
   dependencies:
     accessor-fn: 1
     kapsule: 1
     three: ">=0.118 <1"
     three-forcegraph: 1
-    three-render-objects: 1
-  checksum: 479d344699ab82ce8856060cede556737fa89c26b7b29d61338620a24c275bf0efdc7a60f25442611e313b698401a3760b84d592c87085b68913f24bf9d62113
+    three-render-objects: ^1.29
+  checksum: be9057ced895131b8788f2f20f6fc587d027e697a353bb69df2ddd6a64e91670202b13e9ea44b794491a562f20551c779d18f85c35b6f8604dbfc27a9a3f77bc
   languageName: node
   linkType: hard
 
@@ -15067,7 +15067,7 @@ __metadata:
     react-csv: 2.2.2
     react-dom: 18.2.0
     react-force-graph-2d: 1.25.2
-    react-force-graph-3d: 1.23.1
+    react-force-graph-3d: 1.24.0
     react-grid-layout: 1.4.2
     react-intl: 6.4.7
     react-leaflet: 4.2.1
@@ -16454,16 +16454,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-3d@npm:1.23.1":
-  version: 1.23.1
-  resolution: "react-force-graph-3d@npm:1.23.1"
+"react-force-graph-3d@npm:1.24.0":
+  version: 1.24.0
+  resolution: "react-force-graph-3d@npm:1.24.0"
   dependencies:
-    3d-force-graph: 1
+    3d-force-graph: ^1.73
     prop-types: 15
     react-kapsule: 2
   peerDependencies:
     react: "*"
-  checksum: 1c2c33623e29ab9c39c79ced8aab5e816f098f35ef9ad51e493bdeca1da65e308ddba0ce3efb99d894a928a0508a2173e8eda90631fcf6041b6838bb62c24b31
+  checksum: 5084491aac5629a38176c4fef52513e423cddb4d98a41f445851bedb1895f1800e3ab04e908b5ad39544bb13610a214518348465c0baf7d6d7c709fa0024e179
   languageName: node
   linkType: hard
 
@@ -19030,9 +19030,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three-render-objects@npm:1":
-  version: 1.28.6
-  resolution: "three-render-objects@npm:1.28.6"
+"three-render-objects@npm:^1.29":
+  version: 1.29.0
+  resolution: "three-render-objects@npm:1.29.0"
   dependencies:
     "@tweenjs/tween.js": 18 - 21
     accessor-fn: 1
@@ -19040,7 +19040,7 @@ __metadata:
     polished: 4
   peerDependencies:
     three: "*"
-  checksum: 2e5afd210d5a096c437efdbabdc51a55413c358fb3d3cb2f39ad84de6fbab5bc1e2b2e546aa1a4e0bd14ad3d49d6d5fb459f90977b4f7afb4b448e88c528e715
+  checksum: 90824e427aa4605d9b52844a6a021ac323cd5890a02e5f9ed1651c23304366e57c1670d3cd607ac18a867a852be977127b4303729aabd586791e73c8b39b089c
   languageName: node
   linkType: hard
 
