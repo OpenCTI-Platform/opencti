@@ -5,7 +5,7 @@ import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
-import { consumeQueue, existsConnectorQueues, pushToSync, registerConnectorQueues } from '../../database/rabbitmq';
+import { consumeQueue, pushToSync, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile, upload } from '../../database/file-storage';
 import {
   reportExpectation,
@@ -49,9 +49,7 @@ const initImportCsvConnector = () => {
     try {
       const csvMapper = parseCsvMapper(JSON.parse(messageParsed.configuration));
       const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
-
       await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
-
       if (stream) {
         const chunks: Uint8Array[] = [];
         stream.on('data', async (chunk) => {
@@ -87,7 +85,6 @@ const initImportCsvConnector = () => {
             }
           });
       }
-
       await updateProcessedTime(context, applicantUser, workId, ' generated bundle(s) for worker import');
     } catch (error: any) {
       const errorData = {
@@ -112,14 +109,9 @@ const initImportCsvConnector = () => {
 
   return {
     start: async () => {
-      logApp.info(`[OPENCTI-MODULE] Starting ${connectorConfig.name} manager`);
-
       const context = executionContext(connectorConfig.id.toLowerCase());
-      // Register connector queues if not exists
-      const cbError = async (error: any) => {
-        if (error) await registerConnectorQueues(connector.id, connector.name, connector.connector_type, connector.connector_scope);
-      };
-      await existsConnectorQueues(connector.id, cbError);
+      logApp.info(`[OPENCTI-MODULE] Starting ${connectorConfig.name} manager`);
+      await registerConnectorQueues(connector.id, connector.name, connector.connector_type, connector.connector_scope);
       // Polling
       scheduler = setIntervalAsync(async () => {
         await handler(context);
@@ -134,7 +126,6 @@ const initImportCsvConnector = () => {
     },
     shutdown: async () => {
       logApp.info(`[OPENCTI-MODULE] Stopping ${connectorConfig.name} manager`);
-
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
