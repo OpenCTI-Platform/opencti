@@ -806,16 +806,18 @@ class InvestigationGraphBar extends Component {
                         height: '100%',
                       }}
                     >
-                      <InvestigationAddStixCoreObjects
-                        workspaceId={workspace.id}
-                        workspaceStixCoreObjects={workspace.objects.edges}
-                        targetStixCoreObjectTypes={[
-                          'Stix-Domain-Object',
-                          'Stix-Cyber-Observable',
-                        ]}
-                        onAdd={onAdd}
-                        onDelete={onDelete}
-                      />
+                      {onAdd && (
+                        <InvestigationAddStixCoreObjects
+                          workspaceId={workspace.id}
+                          workspaceStixCoreObjects={workspace.objects.edges}
+                          targetStixCoreObjectTypes={[
+                            'Stix-Domain-Object',
+                            'Stix-Cyber-Observable',
+                          ]}
+                          onAdd={onAdd}
+                          onDelete={onDelete}
+                        />
+                      )}
                       <Tooltip title={t('Edit the selected item')}>
                         <span>
                           <IconButton

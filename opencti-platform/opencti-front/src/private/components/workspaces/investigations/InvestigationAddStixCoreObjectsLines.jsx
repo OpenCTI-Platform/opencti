@@ -12,6 +12,7 @@ import {
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import {setNumberOfElements} from "../../../../utils/Number";
 
 const styles = (theme) => ({
   investigation: {
@@ -86,8 +87,20 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
     super(props);
     this.state = {
       expandedPanels: {},
-      addedStixCoreObjects: (props.workspaceStixCoreObjects || []).map((n) => n.node.id),
+      addedStixCoreObjects: R.indexBy(
+        R.prop('id'),
+        (props.workspaceStixCoreObjects || []).map((n) => n.node),
+      ),
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixCoreObjects',
+      this.props.setNumberOfElements.bind(this),
+    );
   }
 
   toggleStixCoreObject(stixCoreObject) {
@@ -139,7 +152,10 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         },
         onCompleted: () => {
           this.setState({
-            addedStixCoreObjects: [...addedStixCoreObjects, stixCoreObject.id],
+            addedStixCoreObjects: {
+              ...this.state.addedStixCoreObjects,
+              [stixCoreObject.id]: stixCoreObject,
+            },
           });
           if (typeof onAdd === 'function') {
             onAdd(stixCoreObject);
@@ -190,86 +206,94 @@ InvestigationAddStixCoreObjectsLinesInvestigation.propTypes = {
 };
 
 export const investigationAddStixCoreObjectsLinesQuery = graphql`
-    query InvestigationAddStixCoreObjectsLinesQuery(
-        $types: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixCoreObjectsOrdering
-        $orderMode: OrderingMode
-    ) {
-        ...InvestigationAddStixCoreObjectsLines_data
-        @arguments(
-            types: $types
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-        )
-    }
+  query InvestigationAddStixCoreObjectsLinesQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreObjectsOrdering
+    $orderMode: OrderingMode
+    $filters: [StixCoreObjectsFiltering]
+    $filterMode: FilterMode
+  ) {
+    ...InvestigationAddStixCoreObjectsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      filterMode: $filterMode
+    )
+  }
 `;
 
 const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
   InvestigationAddStixCoreObjectsLinesInvestigation,
   {
     data: graphql`
-        fragment InvestigationAddStixCoreObjectsLines_data on Query
-        @argumentDefinitions(
-            types: { type: "[String]" }
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
-            orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
-            stixCoreObjects(
-                types: $types
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-            ) @connection(key: "Pagination_stixCoreObjects") {
+      fragment InvestigationAddStixCoreObjectsLines_data on Query
+      @argumentDefinitions(
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCoreObjectsFiltering]" }
+        filterMode: { type: "FilterMode" }
+      ) {
+      stixCoreObjects(
+        types: $types
+        search: $search
+        first: $count
+        after: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        filterMode: $filterMode
+      ) @connection(key: "Pagination_stixCoreObjects") {
+          edges {
+            node {
+              id
+              entity_type
+              parent_types
+              numberOfConnectedElement
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              creators {
+                id
+                name
+              }
+              objectMarking {
                 edges {
-                    node {
-                        id
-                        entity_type
-                        parent_types
-                        numberOfConnectedElement
-                        created_at
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        creators {
-                            id
-                            name
-                        }
-                        objectMarking {
-                            edges {
-                                node {
-                                    id
-                                    definition_type
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                }
-                            }
-                        }
-                        ...InvestigationAddStixCoreObjectsLine_node
-                    }
+                  node {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                  }
                 }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
+              }
+              ...InvestigationAddStixCoreObjectsLine_node
             }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
+      }
     `,
   },
   {
@@ -290,6 +314,8 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: investigationAddStixCoreObjectsLinesQuery,
