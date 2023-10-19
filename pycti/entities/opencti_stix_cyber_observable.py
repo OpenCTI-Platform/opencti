@@ -96,19 +96,6 @@ class StixCyberObservable:
                         external_id
                         created
                         modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -312,19 +299,6 @@ class StixCyberObservable:
                 media_category
                 url
                 publication_date
-            }
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                    }
-                }
             }
         """
         self.properties_with_files = """
