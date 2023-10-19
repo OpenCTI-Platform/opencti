@@ -142,7 +142,7 @@ class Indicator:
                 }
             }
         """
-        self.properties = """
+        self.properties_with_files = """
             id
             standard_id
             entity_type

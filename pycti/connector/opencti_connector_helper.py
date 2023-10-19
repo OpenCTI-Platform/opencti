@@ -228,6 +228,7 @@ class ListenQueue(threading.Thread):
         time_wait = 0
         # Wait for end of execution of the _data_handler
         while self.thread.is_alive():  # Loop while the thread is processing
+            self.pika_connection.sleep(0.05)
             if (
                 self.helper.work_id is not None and time_wait > five_minutes
             ):  # Ping every 5 minutes
@@ -312,10 +313,12 @@ class ListenQueue(threading.Thread):
                 )
                 self.channel.start_consuming()
             except (KeyboardInterrupt, SystemExit):
+                self.channel.stop_consuming()
                 LOGGER.info("Connector stop")
                 sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
                 LOGGER.error("%s", err)
+            self.pika_connection.close()
 
     def stop(self):
         self.exit_event.set()
