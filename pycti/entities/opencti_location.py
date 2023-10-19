@@ -90,6 +90,99 @@ class Location:
                         external_id
                         created
                         modified
+                    }
+                }
+            }
+            revoked
+            confidence
+            created
+            modified
+            name
+            description
+            latitude
+            longitude
+            precision
+            x_opencti_aliases
+        """
+        self.properties_with_files = """
+            id
+            standard_id
+            entity_type
+            parent_types
+            spec_version
+            created_at
+            updated_at
+            createdBy {
+                ... on Identity {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                    spec_version
+                    identity_class
+                    name
+                    description
+                    roles
+                    contact_information
+                    x_opencti_aliases
+                    created
+                    modified
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }
+                }
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
+                }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        definition_type
+                        definition
+                        created
+                        modified
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
+            objectLabel {
+                edges {
+                    node {
+                        id
+                        value
+                        color
+                    }
+                }
+            }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                        created
+                        modified
                         importFiles {
                             edges {
                                 node {
