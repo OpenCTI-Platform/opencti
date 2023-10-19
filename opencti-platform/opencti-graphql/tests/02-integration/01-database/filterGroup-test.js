@@ -3,6 +3,8 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { addMarkingDefinition } from '../../../src/domain/markingDefinition';
 
+// test queries involving dynamic filters
+
 const LIST_QUERY = gql`
     query reports(
         $first: Int
