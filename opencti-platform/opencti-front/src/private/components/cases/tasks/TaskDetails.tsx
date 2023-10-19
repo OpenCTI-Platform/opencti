@@ -4,14 +4,10 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  TaskDetails_task$data,
-  TaskDetails_task$key,
-} from './__generated__/TaskDetails_task.graphql';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { TaskDetails_task$data, TaskDetails_task$key } from './__generated__/TaskDetails_task.graphql';
+import ItemDueDate from '../../../../components/ItemDueDate';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -20,9 +16,6 @@ const useStyles = makeStyles(() => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  label: {
-    borderRadius: 5,
   },
 }));
 
@@ -85,14 +78,12 @@ interface TasksDetailsProps {
 }
 
 const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
-  const { t, fldt } = useFormatter();
+  const { t } = useFormatter();
   const classes = useStyles();
   const data: TaskDetails_task$data = useFragment(
     TaskDetailsFragment,
     tasksData,
   );
-  const currentDate = new Date();
-  const isoDate = currentDate.toISOString();
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -110,14 +101,7 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
             <Typography variant="h3" gutterBottom={true}>
               {t('Due Date')}
             </Typography>
-            <FieldOrEmpty source={data.due_date}>
-              <Chip
-                label={fldt(data.due_date)}
-                variant="outlined"
-                color={data.due_date < isoDate ? 'error' : 'info'}
-                classes={{ root: classes.label }}
-              />
-            </FieldOrEmpty>
+            <ItemDueDate due_date={data.due_date} variant={'inElement'} />
           </Grid>
         </Grid>
       </Paper>
