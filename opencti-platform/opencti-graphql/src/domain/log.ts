@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import { elCount, elPaginate } from '../database/engine';
+import { elCount } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
 import {

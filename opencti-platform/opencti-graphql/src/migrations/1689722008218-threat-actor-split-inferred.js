@@ -5,7 +5,7 @@ import {
   READ_INDEX_STIX_DOMAIN_OBJECTS,
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
-import { elList } from '../database/middleware-loader';
+import { elList } from '../database/engine-loader';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { logApp } from '../config/conf';
 

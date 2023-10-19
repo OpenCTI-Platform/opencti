@@ -9,7 +9,7 @@ import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
 import { READ_STIX_INDICES } from '../database/utils';
-import { elPaginate } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
 
 // Retention manager responsible to cleanup old data

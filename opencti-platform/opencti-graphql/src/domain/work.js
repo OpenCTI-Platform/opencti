@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elUpdate, } from '../database/engine';
+import { elDeleteInstances, elIndex, elLoadById, elUpdate, } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import {

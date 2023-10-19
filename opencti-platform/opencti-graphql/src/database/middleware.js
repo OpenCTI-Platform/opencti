@@ -49,8 +49,6 @@ import {
   elFindByIds,
   elHistogramCount,
   elIndexElements,
-  elList,
-  elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -60,6 +58,7 @@ import {
   ROLE_FROM,
   ROLE_TO,
 } from './engine';
+import { elList, elPaginate } from './engine-loader';
 import {
   FIRST_OBSERVED,
   FIRST_SEEN,

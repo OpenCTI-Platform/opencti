@@ -2,7 +2,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from './config/conf';
-import { elCreateIndices, elIndexExists, searchEngineInit } from './database/engine';
+import { elCreateIndices, elIndexExists } from './database/engine';
+import { searchEngineInit } from './database/engine-loader';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';

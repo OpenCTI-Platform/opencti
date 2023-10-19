@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elIndex, elPaginate } from '../database/engine';
+import { elIndex } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import {
   INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_OBJECTS,

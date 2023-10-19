@@ -7,7 +7,8 @@ import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import { ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import { elList } from '../database/engine-loader';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,

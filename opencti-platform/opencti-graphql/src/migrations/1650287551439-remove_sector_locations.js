@@ -1,6 +1,6 @@
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
-import { elList } from '../database/engine';
+import { elList } from '../database/engine-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';

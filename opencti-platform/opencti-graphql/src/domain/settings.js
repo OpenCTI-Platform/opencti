@@ -10,7 +10,7 @@ import conf, {
   PLATFORM_VERSION
 } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
-import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
+import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine-loader';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';

@@ -4,7 +4,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
 import { elDeleteInstances, elUpdate } from '../database/engine';
-import { elList } from '../database/middleware-loader';
+import { elList } from '../database/engine-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';

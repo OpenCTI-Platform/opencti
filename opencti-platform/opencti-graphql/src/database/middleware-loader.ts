@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 import {
   buildPagination,
-  offsetToCursor,
   READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
 } from './utils';
-import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
+import { elAggregationsList, elCount, elFindByIds, elLoadById } from './engine';
+import { elPaginate, elList } from './engine-loader';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -22,8 +22,6 @@ import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql'
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-
-const MAX_SEARCH_SIZE = 5000;
 
 export interface Filter {
   key: any;
@@ -43,9 +41,9 @@ export interface ListFilter<T extends BasicStoreCommon> {
   useWildcardPrefix?: boolean;
   useWildcardSuffix?: boolean;
   first?: number | null;
-  infinite?: boolean;
   after?: string | undefined | null;
   orderBy?: any,
+  maxSize?: number,
   orderMode?: InputMaybe<OrderingMode>;
   filters?: Array<Filter> | null;
   filterMode?: FilterMode | undefined | null;
@@ -76,39 +74,6 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
   indices?: Array<string>;
   includeAuthorities?: boolean | null
 }
-
-export const elList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {
-  const { first = MAX_SEARCH_SIZE, infinite = false } = options;
-  let hasNextPage = true;
-  let continueProcess = true;
-  let searchAfter = options.after;
-  const listing: Array<T> = [];
-  const publish = async (elements: Array<T>) => {
-    const { callback } = options;
-    if (callback) {
-      const callbackResult = await callback(elements);
-      continueProcess = callbackResult || callbackResult === undefined;
-    } else {
-      listing.push(...elements);
-    }
-  };
-  while (continueProcess && hasNextPage) {
-    // Force options to prevent connection format and manage search after
-    const opts = { ...options, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(context, user, indices, opts);
-    if (!infinite && (elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE))) {
-      if (elements.length > 0) {
-        await publish(elements);
-      }
-      hasNextPage = false;
-    } else if (elements.length > 0) {
-      const { sort } = elements[elements.length - 1];
-      searchAfter = offsetToCursor(sort);
-      await publish(elements);
-    }
-  }
-  return listing;
-};
 
 // relations
 interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {

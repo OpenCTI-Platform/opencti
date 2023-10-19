@@ -10,7 +10,8 @@ import {
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
-import { elList, listAllEntities } from '../database/middleware-loader';
+import { listAllEntities } from '../database/middleware-loader';
+import { elList } from '../database/engine-loader';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';

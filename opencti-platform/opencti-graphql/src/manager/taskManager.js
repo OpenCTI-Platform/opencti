@@ -38,7 +38,8 @@ import {
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
-import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
+import { elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,

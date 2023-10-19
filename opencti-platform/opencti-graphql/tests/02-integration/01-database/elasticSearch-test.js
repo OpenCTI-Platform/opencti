@@ -2,7 +2,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import moment from 'moment';
-import { elAggregationCount, elAggregationRelationsCount, elCount, elCreateIndices, elDeleteElements, elDeleteIndices, elHistogramCount, elIndex, elIndexElements, elIndexExists, elLoadById, elPaginate, elRebuildRelation, searchEngineInit, } from '../../../src/database/engine';
+import { elAggregationCount, elAggregationRelationsCount, elCount, elCreateIndices, elDeleteElements, elDeleteIndices, elHistogramCount, elIndex, elIndexElements, elIndexExists, elLoadById, elPaginate } from '../../../src/database/engine';
+import { elRebuildRelation, searchEngineInit, } from '../../../src/database/engine-loader';
 import { ES_INDEX_PREFIX, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES, } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';

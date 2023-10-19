@@ -1,4 +1,5 @@
-import { elIndex, elPaginate } from '../database/engine';
+import { elIndex } from '../database/engine';
+import { elPaginate } from '../database/engine-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
