@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
-import { append, union } from 'ramda';
+import { append, union, take } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -10,7 +10,10 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { truncate } from '../../../../utils/String';
 import { ExternalReferenceCreationMutation$data } from '../../analyses/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
-import { ExternalReferencesQueriesSearchQuery$data, ExternalReferencesQueriesSearchQuery$variables } from '../../analyses/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
+import {
+  ExternalReferencesQueriesSearchQuery$data,
+  ExternalReferencesQueriesSearchQuery$variables,
+} from '../../analyses/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
 import { externalReferenceLinesMutationRelationAdd } from '../../analyses/external_references/AddExternalReferencesLines';
 import ExternalReferenceCreation from '../../analyses/external_references/ExternalReferenceCreation';
 import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
@@ -62,7 +65,7 @@ interface ExternalReferencesFieldProps {
         url: string | null;
       };
     }[],
-    shouldValidate?: boolean
+    shouldValidate?: boolean,
   ) => void;
   values?: ExternalReferencesValues;
   helpertext?: string;
@@ -147,12 +150,12 @@ ExternalReferencesFieldProps
             value: n.node.id,
             entity: n.node,
           }));
-        setExternalReferences((o) => union(o, newExternalReferences));
+        setExternalReferences((o) => union(take(50, o), newExternalReferences));
       });
   };
 
   return (
-    <div>
+    <>
       <Field
         component={AutocompleteField}
         style={style}
@@ -244,6 +247,6 @@ ExternalReferencesFieldProps
           }
         }}
       />
-    </div>
+    </>
   );
 };
