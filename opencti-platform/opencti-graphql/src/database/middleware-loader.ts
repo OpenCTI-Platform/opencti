@@ -226,16 +226,12 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const finalFilters = (Array.isArray(filters) || !filters) ? { // TODO remove hardcoded format and replace by 'filter' when front is migrated
-    mode: 'and',
-    filters: filters ?? [] as Filter[],
-    filterGroups: [],
-  } : filters as FilterGroup;
+  const filtersContent = filters?.filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
-    finalFilters.filters.push({ key: buildRefRelationKey(relation), values: [id] });
+    filtersContent.push({ key: buildRefRelationKey(relation), values: [id] });
     if (relationId) {
-      finalFilters.filters.push({ key: 'internal_id', values: [relationId] });
+      filtersContent.push({ key: 'internal_id', values: [relationId] });
     }
   }
   // region element filtering
@@ -245,7 +241,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
-    finalFilters.filters.push({ key: 'connections', nested: nestedElement });
+    filtersContent.push({ key: 'connections', nested: nestedElement });
   }
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
@@ -256,7 +252,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     }
   }
   if (nestedElementTypes.length > 0) {
-    finalFilters.filters.push({ key: 'connections', nested: nestedElementTypes });
+    filtersContent.push({ key: 'connections', nested: nestedElementTypes });
   }
   // endregion
   // region from filtering
@@ -273,7 +269,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
   }
   if (nestedFrom.length > 0) {
-    finalFilters.filters.push({ key: 'connections', nested: nestedFrom });
+    filtersContent.push({ key: 'connections', nested: nestedFrom });
   }
   // endregion
   // region to filtering
@@ -290,23 +286,31 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedTo.length > 0) {
-    finalFilters.filters.push({ key: 'connections', nested: nestedTo });
+    filtersContent.push({ key: 'connections', nested: nestedTo });
   }
   // endregion
-  if (startTimeStart) finalFilters.filters.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
-  if (startTimeStop) finalFilters.filters.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
-  if (stopTimeStart) finalFilters.filters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
-  if (stopTimeStop) finalFilters.filters.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
-  if (firstSeenStart) finalFilters.filters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
-  if (firstSeenStop) finalFilters.filters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
-  if (lastSeenStart) finalFilters.filters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
-  if (lastSeenStop) finalFilters.filters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-  if (startDate) finalFilters.filters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
-  if (endDate) finalFilters.filters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
+  if (startTimeStart) filtersContent.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
+  if (startTimeStop) filtersContent.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
+  if (stopTimeStart) filtersContent.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
+  if (stopTimeStop) filtersContent.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
+  if (firstSeenStart) filtersContent.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
+  if (firstSeenStop) filtersContent.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
+  if (lastSeenStart) filtersContent.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
+  if (lastSeenStop) filtersContent.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
+  if (startDate) filtersContent.push({ key: 'created_at', values: [startDate], operator: 'gt' });
+  if (endDate) filtersContent.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) {
-    finalFilters.filters.push({ key: 'confidence', values: confidences });
+    filtersContent.push({ key: 'confidence', values: confidences });
   }
-  return R.pipe(R.assoc('types', relationsToGet), R.assoc('filters', finalFilters))(args);
+  return {
+    ...args,
+    types: relationsToGet,
+    filters: {
+      mode: filters?.mode ?? 'and',
+      filters: filtersContent,
+      filterGroups: filters?.filterGroups ?? [],
+    }
+  };
 };
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
@@ -439,7 +443,9 @@ export const listEntities: InternalListEntities = async (context, user, entityTy
   const { indices = READ_ENTITIES_INDICES } = args;
   const { filters } = args;
   const convertedFilters = (noFiltersChecking || !filters) ? filters : checkedAndConvertedFilters(filters, entityTypes);
-  console.log('convertedFilters', convertedFilters);
+  if (!noFiltersChecking) {
+    console.log('convertedFilters', convertedFilters);
+  }
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');

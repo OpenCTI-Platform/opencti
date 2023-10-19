@@ -36,74 +36,89 @@ export const findAll = (context, user, args, noFiltersChecking = false) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args, noFiltersChecking);
 };
 
-const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
-  const types = [];
+const buildQueryFiltersContent = (adaptedFiltersGroup) => {
+  if (!adaptedFiltersGroup) {
+    return {
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    };
+  }
+  const { filters, filterGroups } = adaptedFiltersGroup;
+  const queryFilterGroups = [];
+  if (filterGroups && filterGroups.length > 0) {
+    for (let index = 0; index < filterGroups.length; index += 1) {
+      const currentGroup = filterGroups[index];
+      const { filters: filtersResult } = buildQueryFiltersContent(currentGroup);
+      queryFilterGroups.push(filtersResult);
+    }
+  }
   const queryFilters = [];
+  const nestedFrom = [];
+  const nestedTo = [];
+  let nestedFromRole = false;
+  let nestedToRole = false;
+  for (let index = 0; index < filters.length; index += 1) {
+    const { key, operator, values, mode } = filters[index];
+    if (key === TYPE_FILTER) {
+      // filter types to keep only the ones that can be handled by background tasks
+      const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
+      queryFilters.push({ key, values: filteredTypes, operator, mode }); // also push types in the filters !
+    } else if (key === 'elementId') {
+      const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
+      queryFilters.push({ key: 'connections', nested: nestedElement });
+    } else if (key === 'elementWithTargetTypes') {
+      const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
+      queryFilters.push({ key: 'connections', nested: nestedElementTypes });
+    } else if (key === 'fromId') {
+      nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });
+      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+      nestedFromRole = true;
+    } else if (key === 'fromTypes') {
+      nestedFrom.push({ key: 'types', values: values.map((v) => v.id) });
+      if (!nestedFromRole) {
+        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+      }
+    } else if (key === 'toId' || key === 'toSightingId') {
+      nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
+      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      nestedToRole = true;
+    } else if (key === 'toTypes') {
+      nestedTo.push({ key: 'types', values: values.map((v) => v.id) });
+      if (!nestedToRole) {
+        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      }
+    } else {
+      queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, mode });
+    }
+  }
+  if (nestedFrom.length > 0) {
+    queryFilters.push({ key: 'connections', nested: nestedFrom });
+  }
+  if (nestedTo.length > 0) {
+    queryFilters.push({ key: 'connections', nested: nestedTo });
+  }
+  return {
+    mode: adaptedFiltersGroup?.mode ?? 'and',
+    filters: queryFilters,
+    filterGroups: queryFilterGroups,
+  };
+};
+
+const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
   let adaptedFilterGroup;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
     adaptedFilterGroup = await convertFiltersFrontendFormat(context, user, filters);
-    const adaptedFilters = adaptedFilterGroup.filters;
-    const nestedFrom = [];
-    const nestedTo = [];
-    let nestedFromRole = false;
-    let nestedToRole = false;
-    for (let index = 0; index < adaptedFilters.length; index += 1) {
-      const { key, operator, values, mode } = adaptedFilters[index];
-      if (key === TYPE_FILTER) {
-        // filter types to keep only the ones that can be handled by background tasks
-        const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
-        types.push(...filteredTypes);
-      } else if (key === 'elementId') {
-        const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
-        queryFilters.push({ key: 'connections', nested: nestedElement });
-      } else if (key === 'elementWithTargetTypes') {
-        const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
-        queryFilters.push({ key: 'connections', nested: nestedElementTypes });
-      } else if (key === 'fromId') {
-        nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });
-        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-        nestedFromRole = true;
-      } else if (key === 'fromTypes') {
-        nestedFrom.push({ key: 'types', values: values.map((v) => v.id) });
-        if (!nestedFromRole) {
-          nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-        }
-      } else if (key === 'toId' || key === 'toSightingId') {
-        nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
-        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-        nestedToRole = true;
-      } else if (key === 'toTypes') {
-        nestedTo.push({ key: 'types', values: values.map((v) => v.id) });
-        if (!nestedToRole) {
-          nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-        }
-      } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, mode });
-      }
-    }
-    if (nestedFrom.length > 0) {
-      queryFilters.push({ key: 'connections', nested: nestedFrom });
-    }
-    if (nestedTo.length > 0) {
-      queryFilters.push({ key: 'connections', nested: nestedTo });
-    }
   }
-  // Avoid empty type which will target internal objects and relationships as well
-  if (types.length === 0) {
-    types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
-  }
+  const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   return {
-    types,
+    types: [ABSTRACT_STIX_DOMAIN_OBJECT], // Avoid empty type which will target internal objects and relationships as well
     first: MAX_TASK_ELEMENTS,
     orderMode: 'asc',
     orderBy: 'created_at',
     after: taskPosition,
-    filters: {
-      mode: adaptedFilterGroup?.mode ?? 'and',
-      filters: queryFilters,
-      filterGroups: adaptedFilterGroup?.filterGroups ?? [],
-    },
+    filters: newFilters,
     search: search && search.length > 0 ? search : null,
   };
 };

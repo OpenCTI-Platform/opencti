@@ -151,21 +151,28 @@ export const convertFiltersFrontendFormat = async (context, user, filterGroup) =
   return adaptedFilterGroup;
 };
 
-export const convertFiltersToQueryOptions = async (context, user, filters, opts = {}) => {
-  const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
+const convertFiltersToQueryOptionsContent = (adaptedFilters, field = 'updated_at', after = undefined, before = undefined) => {
+  if (!adaptedFilters) {
+    return {
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    };
+  }
   const queryFilters = [];
-  const types = [...defaultTypes];
-  if (filters) {
-    const adaptedFilters = await convertFiltersFrontendFormat(context, user, filters);
-    for (let index = 0; index < adaptedFilters.length; index += 1) {
-      // eslint-disable-next-line prefer-const
-      let { key, operator, values, filterMode } = adaptedFilters[index];
-      if (key === TYPE_FILTER) {
-        types.push(...values.map((v) => v.id));
-      } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
-      }
+  const queryFilterGroups = [];
+  const { filters, filterGroups } = adaptedFilters;
+  if (filterGroups && filterGroups.length > 0) {
+    for (let index = 0; index < filterGroups.length; index += 1) {
+      const currentGroup = filterGroups[index];
+      const newFilters = convertFiltersToQueryOptionsContent(currentGroup);
+      queryFilterGroups.push(newFilters);
     }
+  }
+  for (let index = 0; index < filters.length; index += 1) {
+    // eslint-disable-next-line prefer-const
+    let { key, operator, values, filterMode } = filters[index];
+    queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
   }
   if (after) {
     queryFilters.push({ key: field, values: [after], operator: 'gte' });
@@ -173,7 +180,22 @@ export const convertFiltersToQueryOptions = async (context, user, filters, opts 
   if (before) {
     queryFilters.push({ key: field, values: [before], operator: 'lte' });
   }
-  return { types, orderMode, orderBy: [field, 'internal_id'], filters: queryFilters };
+  return {
+    mode: adaptedFilters.mode,
+    filters: queryFilters,
+    filterGroups: queryFilterGroups,
+  };
+};
+
+export const convertFiltersToQueryOptions = async (context, user, filters, opts = {}) => {
+  const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
+  const types = [...defaultTypes];
+  let adaptedFilters;
+  if (filters) {
+    adaptedFilters = await convertFiltersFrontendFormat(context, user, filters);
+  }
+  const finalFilters = convertFiltersToQueryOptionsContent(adaptedFilters, field, after, before);
+  return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
 };
 
 export const testRelationFromFilter = (stix, extractedIds, operator) => {

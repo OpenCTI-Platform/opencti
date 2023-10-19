@@ -2061,8 +2061,10 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       }
     );
 };
-export const elList = async (context, user, indexName, options = {}) => {
-  const convertedFilters = checkedAndConvertedFilters(options.filters, options.types ?? []);
+export const elList = async (context, user, indexName, options = {}, noFiltersChecking = false) => {
+  const convertedFilters = (noFiltersChecking || !options.filters)
+    ? options.filters
+    : checkedAndConvertedFilters(options.filters, options.types ?? []);
   const { first = MAX_SEARCH_SIZE, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;

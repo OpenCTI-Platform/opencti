@@ -295,7 +295,12 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
     ],
   };
-  const filters = [directionInternalIdFilter, oppositeTypeFilter];
+  const filtersContent = [directionInternalIdFilter, oppositeTypeFilter];
+  const filters = {
+    mode: 'and',
+    filters: filtersContent,
+    filterGroups: [],
+  };
   // Resolve all relations
   const indices = withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
   const relations = await elList(context, user, indices, {
@@ -303,7 +308,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     types: [relationType],
     connectionFormat: false,
     search,
-  });
+  }, true);
   // For each relation resolved the target entity
   // Filter on element id if necessary
   let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
@@ -1033,9 +1038,13 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
   }
   const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
   return listEntities(context, user, [type], {
-    filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+      filterGroups: [],
+    },
     connectionFormat: false,
-  });
+  }, true);
 };
 export const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
@@ -1825,8 +1834,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
-    const args = { filters: [{ key: 'user_email', values: [initial.contact_information] }], connectionFormat: false };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'user_email', values: [initial.contact_information] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
     if (users.length > 0) {
       throw FunctionalError('Cannot update an individual corresponding to a user');
     }
@@ -2053,10 +2069,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
       const args = {
-        filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
+          filterGroups: [],
+        },
         connectionFormat: false
       };
-      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args, true);
       if (individuals.length > 0) {
         const individualId = R.head(individuals).id;
         const patch = {
@@ -2473,7 +2493,11 @@ export const buildDynamicFilterArgs = (filters) => {
   // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
   // We need to rebuild the filters
   // Extract elementId and relationship_type
-  const elementId = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'rel_*.internal_id' : n.key === 'rel_*.internal_id')))?.values || null;
+  const elementId = R.head(filters
+    .filter((n) => (Array.isArray(n.key)
+    ? R.head(n.key) === 'rel_*.internal_id'
+    : n.key === 'rel_*.internal_id')
+    ))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
   // Build filter without it
   let dynamicFilters = filters.filter((n) => !['rel_*.internal_id', 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
@@ -3279,8 +3303,15 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // Prevent individual deletion if linked to a user
   if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
-    const args = { filters: [{ key: 'user_email', values: [element.contact_information] }], connectionFormat: false };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'user_email', values: [element.contact_information] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
     if (users.length > 0) {
       throw FunctionalError('Cannot delete an individual corresponding to a user');
     }
