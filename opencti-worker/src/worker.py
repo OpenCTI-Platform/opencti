@@ -301,6 +301,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.processing_count = 0
             return False
         except Exception as ex:  # pylint: disable=broad-except
+            error = str(ex)
             error_msg = traceback.format_exc()
             if (
                 "LockError" in error_msg
@@ -357,7 +358,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     self.api.work.report_expectation(
                         work_id,
                         {
-                            "error": error_msg,
+                            "error": error,
                             "source": content
                             if len(content) < 50000
                             else "Bundle too large",
