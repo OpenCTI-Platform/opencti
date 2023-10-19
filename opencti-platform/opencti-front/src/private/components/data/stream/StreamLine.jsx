@@ -69,6 +69,7 @@ class StreamLineLineComponent extends Component {
         button={true}
         component="a"
         href={`/stream/${node.id}`}
+        target={'_blank'} // open in new tab
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Stream />

@@ -62,6 +62,7 @@ class FeedLineLineComponent extends Component {
         button={true}
         component="a"
         href={`/feeds/${node.id}`}
+        target={'_blank'} // open in new tab
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <FileDelimitedOutline />
