@@ -8,18 +8,14 @@ import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import {
-  TasksLine_node$data,
-  TasksLine_node$key,
-} from './__generated__/TasksLine_node.graphql';
+import { TasksLine_node$data, TasksLine_node$key } from './__generated__/TasksLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemStatus from '../../../../components/ItemStatus';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ItemDueDate from '../../../../components/ItemDueDate';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -41,13 +37,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   goIcon: {
     position: 'absolute',
     right: -10,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    borderRadius: 5,
   },
 }));
 
@@ -107,21 +96,9 @@ export const tasksDataColumns: DataColumns = {
     label: 'Due Date',
     width: '15%',
     isSortable: true,
-    render: (task: TasksLine_node$data, { fld, classes }) => {
-      const isoDate = new Date().toISOString();
-      return (
-        <div>
-        <FieldOrEmpty source={task.due_date}>
-          <Chip
-            label={fld(task.due_date)}
-            variant="outlined"
-            color={task.due_date < isoDate ? 'error' : 'info'}
-            classes={{ root: classes.chipInList }}
-          />
-        </FieldOrEmpty>
-        </div>
-      );
-    },
+    render: (task: TasksLine_node$data) => (
+      <ItemDueDate due_date={task.due_date} variant={'inList'} />
+    ),
   },
   assigneeTo: {
     label: 'Assignees',
