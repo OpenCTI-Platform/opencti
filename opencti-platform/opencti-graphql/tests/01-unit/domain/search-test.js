@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
+import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine-loader';
 import { isNotEmptyField } from '../../../src/database/utils';
 
 const parse = (search) => {
