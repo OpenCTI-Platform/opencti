@@ -52,36 +52,44 @@ const initImportCsvConnector = () => {
       await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
       if (stream) {
         const chunks: Uint8Array[] = [];
+        let hasError: boolean = false;
         stream.on('data', async (chunk) => {
           chunks.push(chunk.toString('utf8'));
-        }).on('error', (err) => {
-          throw err;
+        }).on('error', async (error) => {
+          hasError = true;
+          const errorData = {
+            error: error.message,
+            source: fileId,
+          };
+          await reportExpectation(context, applicantUser, workId, errorData);
         })
           .on('end', async () => {
-            const string = chunks.join('');
-            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, entity);
-            await updateExpectationsNumber(context, applicantUser, workId, 1);
+            if (!hasError) {
+              const string = chunks.join('');
+              const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, entity);
+              await updateExpectationsNumber(context, applicantUser, workId, 1);
 
-            const validateBeforeImport = connectorConfig.config.validate_before_import;
-            if (validateBeforeImport) {
-              const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
-              const file = {
-                createReadStream: () => contentStream,
-                filename: `${workId}.json`,
-                mimetype: 'application/json',
-              };
-              await upload(context, applicantUser, 'import/pending', file, { entity });
+              const validateBeforeImport = connectorConfig.config.validate_before_import;
+              if (validateBeforeImport) {
+                const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
+                const file = {
+                  createReadStream: () => contentStream,
+                  filename: `${workId}.json`,
+                  mimetype: 'application/json',
+                };
+                await upload(context, applicantUser, 'import/pending', file, { entity });
 
-              await reportExpectation(context, applicantUser, workId);
-            } else {
-              const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-              await pushToSync({
-                type: 'bundle',
-                update: true,
-                applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
-                work_id: workId,
-                content
-              });
+                await reportExpectation(context, applicantUser, workId);
+              } else {
+                const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
+                await pushToSync({
+                  type: 'bundle',
+                  update: true,
+                  applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
+                  work_id: workId,
+                  content
+                });
+              }
             }
           });
       }
