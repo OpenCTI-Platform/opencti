@@ -98,7 +98,7 @@ const styles = (theme) => ({
   },
   bottomNavWithMediumPadding: {
     zIndex: 1100,
-    padding: '0 220px 0 0',
+    padding: '0 200px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',

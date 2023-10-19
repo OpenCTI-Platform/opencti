@@ -46,7 +46,7 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   }
   return (
-    <div>
+    <>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
           stixCoreObjectsExportFiles.map((file) => file?.node && (
@@ -85,7 +85,7 @@ const StixCoreObjectsExportsContentComponent = ({
           }
         />
       </Security>
-    </div>
+    </>
   );
 };
 

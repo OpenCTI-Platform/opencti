@@ -242,6 +242,11 @@ export const verticalBarsChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -337,6 +342,9 @@ export const horizontalBarsChartOptions = (
     foreColor: theme.palette.text.secondary,
     stacked,
     events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
           const { labelIndex } = config;
@@ -493,6 +501,11 @@ export const radarChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     offsetY: offset ? -20 : 0,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -574,6 +587,11 @@ export const polarAreaChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -658,6 +676,11 @@ export const donutChartOptions = (
       background: 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
+      events: {
+        animationEnd: (chart) => {
+          chart.windowResizeHandler();
+        },
+      },
     },
     theme: {
       mode: theme.palette.mode,
@@ -721,6 +744,11 @@ export const treeMapOptions = (
       background: 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
+      events: {
+        animationEnd: (chart) => {
+          chart.windowResizeHandler();
+        },
+      },
     },
     theme: {
       mode: theme.palette.mode,
@@ -790,6 +818,11 @@ export const heatMapOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,

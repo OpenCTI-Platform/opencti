@@ -26,7 +26,8 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     position: 'fixed',
     overflow: 'auto',
     transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
     }),
     paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
     paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
@@ -56,16 +57,19 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 interface DrawerProps {
-  title: string
-  children?: ((props: { onClose: () => void }) => React.ReactElement) | React.ReactElement | null
-  open?: boolean
-  onClose?: () => void
-  variant?: DrawerVariant
+  title: string;
+  children?:
+  | ((props: { onClose: () => void }) => React.ReactElement)
+  | React.ReactElement
+  | null;
+  open?: boolean;
+  onClose?: () => void;
+  variant?: DrawerVariant;
   context?: ReadonlyArray<{
-    readonly focusOn: string | null
-    readonly name: string
-  }> | null
-  header?: React.ReactElement
+    readonly focusOn: string | null;
+    readonly name: string;
+  }> | null;
+  header?: React.ReactElement;
 }
 
 const Drawer = ({
@@ -93,13 +97,17 @@ const Drawer = ({
     setOpen(false);
   };
 
-  const update = variant ? [DrawerVariant.update, DrawerVariant.updateWithPanel].includes(variant) : undefined;
+  const update = variant
+    ? [DrawerVariant.update, DrawerVariant.updateWithPanel].includes(variant)
+    : undefined;
   let component;
   if (children) {
     if (typeof children === 'function') {
       component = children({ onClose: handleClose });
     } else {
-      component = React.cloneElement(children as React.ReactElement, { onClose: handleClose });
+      component = React.cloneElement(children as React.ReactElement, {
+        onClose: handleClose,
+      });
     }
   }
   return (
@@ -111,9 +119,17 @@ const Drawer = ({
           aria-label={update ? 'Edit' : 'Add'}
           className={classNames({
             [classes.mainButton]: true,
-            [classes.withPanel]: [DrawerVariant.createWithPanel, DrawerVariant.updateWithPanel].includes(variant),
-            [classes.withLargePanel]: [DrawerVariant.createWithLargePanel].includes(variant),
-            [classes.noPanel]: [DrawerVariant.create, DrawerVariant.update].includes(variant),
+            [classes.withPanel]: [
+              DrawerVariant.createWithPanel,
+              DrawerVariant.updateWithPanel,
+            ].includes(variant),
+            [classes.withLargePanel]: [
+              DrawerVariant.createWithLargePanel,
+            ].includes(variant),
+            [classes.noPanel]: [
+              DrawerVariant.create,
+              DrawerVariant.update,
+            ].includes(variant),
           })}
         >
           {update ? <Edit /> : <Add />}
@@ -140,9 +156,7 @@ const Drawer = ({
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>
-        <div className={classes.container}>
-          {component}
-        </div>
+        <div className={classes.container}>{component}</div>
       </DrawerMUI>
     </>
   );

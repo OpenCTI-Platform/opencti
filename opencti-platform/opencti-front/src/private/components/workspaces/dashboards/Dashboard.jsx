@@ -1,16 +1,23 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Responsive, WidthProvider } from 'react-grid-layout';
+import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
-import { daysAgo, dayStartDate, monthsAgo, parse, yearsAgo } from '../../../../utils/Time';
+import {
+  daysAgo,
+  dayStartDate,
+  monthsAgo,
+  parse,
+  yearsAgo,
+} from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import Security from '../../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  EXPLORE_EXUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import WidgetPopover from './WidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WidgetConfig from './WidgetConfig';
@@ -73,7 +80,7 @@ const useStyles = makeStyles(() => ({
 const COL_WIDTH = 30;
 
 const DashboardComponent = ({ workspace, noToolbar }) => {
-  const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), []);
+  const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const classes = useStyles();
   const isExploreEditor = useGranted([EXPLORE_EXUPDATE]);
   const [manifest, setManifest] = useState(
@@ -91,6 +98,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   const [deleting, setDeleting] = useState(false);
   const userCanEdit = workspace.currentUserAccessRight === 'admin'
     || workspace.currentUserAccessRight === 'edit';
+  const isDashbaordUpdater = useGranted([EXPLORE_EXUPDATE]);
   const saveManifest = (newManifest) => {
     setManifest(newManifest);
     const newManifestEncoded = toB64(JSON.stringify(newManifest));
@@ -141,10 +149,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   };
   const getMaxX = () => {
     const y = getMaxY();
-    const maxX = Object.values(manifest.widgets).filter((n) => n.layout.y === y).reduce(
-      (max, n) => (n.layout.x > max ? n.layout.x : max),
-      0,
-    );
+    const maxX = Object.values(manifest.widgets)
+      .filter((n) => n.layout.y === y)
+      .reduce((max, n) => (n.layout.x > max ? n.layout.x : max), 0);
     return maxX + 4;
   };
   const handleAddWidget = (widgetManifest) => {
@@ -166,8 +173,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             y: maxY,
             w: 4,
             h: 2,
-            minW: 2,
-            minH: 2,
           },
           widgetManifest,
         ),
@@ -728,55 +733,12 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           variant="dashboard"
         />
       )}
-      <Security
-        needs={[EXPLORE_EXUPDATE]}
-        hasAccess={userCanEdit}
-        placeholder={
-          <ResponsiveGridLayout
-            className="layout"
-            margin={[20, 20]}
-            rowHeight={50}
-            breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
-            cols={{ lg: COL_WIDTH, md: COL_WIDTH, sm: COL_WIDTH, xs: COL_WIDTH, xxs: COL_WIDTH }}
-            isDraggable={false}
-            isResizable={false}
-          >
-            {R.values(manifest.widgets).map((widget) => {
-              return (
-                <Paper
-                  key={widget.id}
-                  data-grid={widget.layout}
-                  classes={{ root: classes.paper }}
-                  variant="outlined"
-                >
-                  <ErrorBoundary
-                    display={
-                      <div style={{ paddingTop: 28 }}>
-                        <SimpleError />
-                      </div>
-                    }
-                  >
-                    {widget.perspective === 'entities'
-                      && renderEntitiesVisualization(widget, manifest.config)}
-                    {widget.perspective === 'relationships'
-                      && renderRelationshipsVisualization(widget, manifest.config)}
-                    {widget.perspective === 'audits'
-                      && renderAuditsVisualization(widget, manifest.config)}
-                    {widget.perspective === null
-                      && renderRawVisualization(widget, manifest.config)}
-                  </ErrorBoundary>
-                </Paper>
-              );
-            })}
-          </ResponsiveGridLayout>
-        }
-      >
-        <ResponsiveGridLayout
+      {isDashbaordUpdater && userCanEdit ? (
+        <ReactGridLayout
           className="layout"
           margin={[20, 20]}
           rowHeight={50}
-          breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
-          cols={{ lg: COL_WIDTH, md: COL_WIDTH, sm: COL_WIDTH, xs: COL_WIDTH, xxs: COL_WIDTH }}
+          cols={12}
           isDraggable={!noToolbar}
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
@@ -815,9 +777,44 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               </ErrorBoundary>
             </Paper>
           ))}
-        </ResponsiveGridLayout>
-        {!noToolbar ? <WidgetConfig onComplete={handleAddWidget} /> : <></>}
-      </Security>
+        </ReactGridLayout>
+      ) : (
+        <ReactGridLayout
+          className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          cols={12}
+          isDraggable={false}
+          isResizable={false}
+        >
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper
+              key={widget.id}
+              data-grid={widget.layout}
+              classes={{ root: classes.paper }}
+              variant="outlined"
+            >
+              <ErrorBoundary
+                display={
+                  <div style={{ paddingTop: 28 }}>
+                    <SimpleError />
+                  </div>
+                }
+              >
+                {widget.perspective === 'entities'
+                  && renderEntitiesVisualization(widget, manifest.config)}
+                {widget.perspective === 'relationships'
+                  && renderRelationshipsVisualization(widget, manifest.config)}
+                {widget.perspective === 'audits'
+                  && renderAuditsVisualization(widget, manifest.config)}
+                {widget.perspective === null
+                  && renderRawVisualization(widget, manifest.config)}
+              </ErrorBoundary>
+            </Paper>
+          ))}
+        </ReactGridLayout>
+      )}
+      {!noToolbar && <WidgetConfig onComplete={handleAddWidget} />}
     </div>
   );
 };

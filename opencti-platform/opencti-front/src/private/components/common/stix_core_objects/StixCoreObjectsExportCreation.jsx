@@ -135,7 +135,7 @@ const StixCoreObjectsExportCreationComponent = ({
     <ExportContext.Consumer>
       {({ selectedIds }) => {
         return (
-          <div>
+          <>
             <Tooltip
               title={
                 isExportPossible
@@ -245,7 +245,7 @@ const StixCoreObjectsExportCreationComponent = ({
                 </Form>
               )}
             </Formik>
-          </div>
+          </>
         );
       }}
     </ExportContext.Consumer>
