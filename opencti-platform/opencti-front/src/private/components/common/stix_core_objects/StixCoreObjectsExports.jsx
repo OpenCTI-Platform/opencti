@@ -1,5 +1,6 @@
 import React from 'react';
-import Drawer from '@mui/material/Drawer';
+import Drawer, { DrawerVariant } from '../drawer/Drawer';
+
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectsExportsContent, { stixCoreObjectsExportsContentQuery } from './StixCoreObjectsExportsContent';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,6 +15,7 @@ const StixCoreObjectsExports = ({
   const { t } = useFormatter();
   return (
     <Drawer
+      variant={DrawerVariant.createWithPanel}
       open={open}
       title={t('Exports list')}
       onClose={handleToggle}
