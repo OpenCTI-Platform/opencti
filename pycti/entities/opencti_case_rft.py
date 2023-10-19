@@ -90,19 +90,6 @@ class CaseRft:
                         external_id
                         created
                         modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -226,20 +213,236 @@ class CaseRft:
                     }
                 }
             }
-            importFiles {
-                edges {
-                    node {
+        """
+        self.properties_with_files = """
+                id
+                standard_id
+                entity_type
+                parent_types
+                spec_version
+                created_at
+                updated_at
+                createdBy {
+                    ... on Identity {
                         id
+                        standard_id
+                        entity_type
+                        parent_types
+                        spec_version
+                        identity_class
                         name
-                        size
-                        metaData {
-                            mimetype
-                            version
+                        description
+                        roles
+                        contact_information
+                        x_opencti_aliases
+                        created
+                        modified
+                        objectLabel {
+                            edges {
+                                node {
+                                    id
+                                    value
+                                    color
+                                }
+                            }
+                        }
+                    }
+                    ... on Organization {
+                        x_opencti_organization_type
+                        x_opencti_reliability
+                    }
+                    ... on Individual {
+                        x_opencti_firstname
+                        x_opencti_lastname
+                    }
+                }
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
                         }
                     }
                 }
-            }
-        """
+                objectLabel {
+                    edges {
+                        node {
+                            id
+                            value
+                            color
+                        }
+                    }
+                }
+                externalReferences {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                            entity_type
+                            source_name
+                            description
+                            url
+                            hash
+                            external_id
+                            created
+                            modified
+                            importFiles {
+                                edges {
+                                    node {
+                                        id
+                                        name
+                                        size
+                                        metaData {
+                                            mimetype
+                                            version
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                revoked
+                confidence
+                created
+                modified
+                name
+                description
+                takedown_types
+                objects(all: true) {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                parent_types
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                parent_types
+                            }
+                            ... on StixObject {
+                                standard_id
+                                spec_version
+                                created_at
+                                updated_at
+                            }
+                            ... on AttackPattern {
+                                name
+                            }
+                            ... on Campaign {
+                                name
+                            }
+                            ... on CourseOfAction {
+                                name
+                            }
+                            ... on Individual {
+                                name
+                            }
+                            ... on Organization {
+                                name
+                            }
+                            ... on Sector {
+                                name
+                            }
+                            ... on System {
+                                name
+                            }
+                            ... on Indicator {
+                                name
+                            }
+                            ... on Infrastructure {
+                                name
+                            }
+                            ... on IntrusionSet {
+                                name
+                            }
+                            ... on Position {
+                                name
+                            }
+                            ... on City {
+                                name
+                            }
+                            ... on Country {
+                                name
+                            }
+                            ... on Region {
+                                name
+                            }
+                            ... on Malware {
+                                name
+                            }
+                            ... on ThreatActor {
+                                name
+                            }
+                            ... on Tool {
+                                name
+                            }
+                            ... on Vulnerability {
+                                name
+                            }
+                            ... on Incident {
+                                name
+                            }
+                            ... on Event {
+                                name
+                            }
+                            ... on Channel {
+                                name
+                            }
+                            ... on Narrative {
+                                name
+                            }
+                            ... on Language {
+                                name
+                            }
+                            ... on DataComponent {
+                                name
+                            }
+                            ... on DataSource {
+                                name
+                            }
+                            ... on StixCyberObservable {
+                                observable_value
+                            }                        
+                            ... on StixCoreRelationship {
+                                standard_id
+                                spec_version
+                                created_at
+                                updated_at
+                                relationship_type
+                            }
+                           ... on StixSightingRelationship {
+                                standard_id
+                                spec_version
+                                created_at
+                                updated_at
+                            }
+                        }
+                    }
+                }
+                importFiles {
+                    edges {
+                        node {
+                            id
+                            name
+                            size
+                            metaData {
+                                mimetype
+                                version
+                            }
+                        }
+                    }
+                }
+            """
 
     @staticmethod
     def generate_id(name, created):
@@ -271,6 +474,7 @@ class CaseRft:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
+        with_files = kwargs.get("withFiles", False)
         if get_all:
             first = 500
         LOGGER.info("Listing Case Rfts with filters " + json.dumps(filters) + ".")
@@ -281,7 +485,11 @@ class CaseRft:
                                 edges {
                                     node {
                                         """
-            + (custom_attributes if custom_attributes is not None else self.properties)
+            + (
+                custom_attributes
+                if custom_attributes is not None
+                else (self.properties_with_files if with_files else self.properties)
+            )
             + """
                         }
                     }
@@ -345,6 +553,7 @@ class CaseRft:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        with_files = kwargs.get("withFiles", False)
         if id is not None:
             self.opencti.log("info", "Reading Case Rft { " + id + "}.")
             query = (
@@ -355,7 +564,7 @@ class CaseRft:
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else self.properties
+                    else (self.properties_with_files if with_files else self.properties)
                 )
                 + """
                     }

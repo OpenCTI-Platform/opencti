@@ -164,6 +164,7 @@ class Location:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
+        with_files = kwargs.get("withFiles", False)
         if get_all:
             first = 500
 
@@ -175,7 +176,11 @@ class Location:
                     edges {
                         node {
                             """
-            + (custom_attributes if custom_attributes is not None else self.properties)
+            + (
+                custom_attributes
+                if custom_attributes is not None
+                else (self.properties_with_files if with_files else self.properties)
+            )
             + """
                         }
                     }
@@ -218,6 +223,7 @@ class Location:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        with_files = kwargs.get("withFiles", False)
         if id is not None:
             LOGGER.info("Reading Location {%s}.", id)
             query = (
@@ -228,7 +234,7 @@ class Location:
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else self.properties
+                    else (self.properties_with_files if with_files else self.properties)
                 )
                 + """
                     }

@@ -28,6 +28,21 @@ class ExternalReference:
             url
             hash
             external_id
+        """
+        self.properties_with_files = """
+            id
+            standard_id
+            entity_type
+            parent_types
+            created_at
+            updated_at
+            created
+            modified
+            source_name
+            description
+            url
+            hash
+            external_id
             importFiles {
                 edges {
                     node {
@@ -73,6 +88,7 @@ class ExternalReference:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
+        with_files = kwargs.get("withFiles", False)
         if get_all:
             first = 100
 
@@ -84,7 +100,11 @@ class ExternalReference:
                     edges {
                         node {
                             """
-            + (custom_attributes if custom_attributes is not None else self.properties)
+            + (
+                custom_attributes
+                if custom_attributes is not None
+                else (self.properties_with_files if with_files else self.properties)
+            )
             + """
                         }
                     }
