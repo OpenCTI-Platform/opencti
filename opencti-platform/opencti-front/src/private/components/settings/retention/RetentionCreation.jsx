@@ -206,7 +206,7 @@ const RetentionCreation = (props) => {
                   ),
                 }}
               />
-              <div style={{ marginTop: 35 }}>
+              <div style={{ paddingTop: 35 }}>
                 <Filters
                   variant="text"
                   availableFilterKeys={[
