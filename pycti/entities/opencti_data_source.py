@@ -90,6 +90,98 @@ class DataSource:
                         external_id
                         created
                         modified
+                    }
+                }
+            }
+            revoked
+            confidence
+            created
+            modified
+            name
+            description
+            aliases
+            x_mitre_platforms
+            collection_layers
+        """
+        self.properties_with_files = """
+            id
+            standard_id
+            entity_type
+            parent_types
+            spec_version
+            created_at
+            updated_at
+            createdBy {
+                ... on Identity {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                    spec_version
+                    identity_class
+                    name
+                    description
+                    roles
+                    contact_information
+                    x_opencti_aliases
+                    created
+                    modified
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }
+                }
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
+                }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        definition_type
+                        definition
+                        created
+                        modified
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
+            objectLabel {
+                edges {
+                    node {
+                        id
+                        value
+                        color
+                    }
+                }
+            }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                        created
+                        modified
                         importFiles {
                             edges {
                                 node {
@@ -158,6 +250,7 @@ class DataSource:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
+        with_files = kwargs.get("withFiles", False)
         if get_all:
             first = 100
 
@@ -172,7 +265,11 @@ class DataSource:
                     edges {
                         node {
                             """
-            + (custom_attributes if custom_attributes is not None else self.properties)
+            + (
+                custom_attributes
+                if custom_attributes is not None
+                else (self.properties_with_files if with_files else self.properties)
+            )
             + """
                         }
                     }
@@ -236,6 +333,7 @@ class DataSource:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        with_files = kwargs.get("withFiles", False)
         if id is not None:
             self.opencti.log("info", "Reading Data-Source {" + id + "}.")
             query = (
@@ -246,7 +344,7 @@ class DataSource:
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else self.properties
+                    else (self.properties_with_files if with_files else self.properties)
                 )
                 + """
                     }
