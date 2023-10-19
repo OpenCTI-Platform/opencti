@@ -83,6 +83,17 @@ enum FilterMode {
   and
   or
 }
+enum FilterOperator {
+  eq
+  not_eq
+  lt
+  lte
+  gt
+  gte
+  wildcard
+  script
+  match
+}
 
 input FilterGroup {
   mode: FilterMode!
@@ -92,7 +103,7 @@ input FilterGroup {
 input Filter {
   key: [String!]!
   values: [String]!
-  operator: String
+  operator: FilterOperator
   mode: FilterMode
 }
 
