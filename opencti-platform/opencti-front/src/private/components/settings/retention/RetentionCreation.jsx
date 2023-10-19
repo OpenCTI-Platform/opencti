@@ -171,12 +171,7 @@ const RetentionCreation = (props) => {
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            values: formValues,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -216,15 +211,26 @@ const RetentionCreation = (props) => {
                   variant="text"
                   availableFilterKeys={[
                     'entity_type',
+                    'x_opencti_workflow_id',
+                    'assigneeTo',
+                    'objectContains',
                     'markedBy',
                     'labelledBy',
+                    'creator',
                     'createdBy',
+                    'priority',
+                    'severity',
                     'x_opencti_score',
                     'x_opencti_detection',
+                    'x_opencti_main_observable_type',
                     'revoked',
                     'confidence',
+                    'indicator_types',
                     'pattern_type',
-                    'x_opencti_main_observable_type',
+                    'fromId',
+                    'toId',
+                    'fromTypes',
+                    'toTypes',
                   ]}
                   currentFilters={[]}
                   handleAddFilter={handleAddFilter}
