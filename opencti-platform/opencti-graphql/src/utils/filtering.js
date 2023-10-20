@@ -685,7 +685,8 @@ export const checkedAndConvertedFilters = (filters, entityTypes) => {
       entityTypes.forEach((type) => {
         const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
         const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
-        const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*']); // TODO remove hardcode when all the enum are removed
+        const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections']);
+        // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
         console.log('availableKeys', availableKeys);
         keys.forEach((k) => {
           if (availableKeys.includes(k)) {
