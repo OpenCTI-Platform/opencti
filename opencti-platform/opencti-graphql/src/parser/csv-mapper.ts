@@ -14,7 +14,7 @@ import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMa
 import type { AttributeColumn } from '../generated/graphql';
 import { isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
 
-export type InputType = string | string[] | number | Record<string, any>;
+export type InputType = string | string[] | boolean | number | Record<string, any>;
 
 // -- HANDLE VALUE --
 
@@ -23,10 +23,12 @@ const formatValue = (value: string, type: AttrType, column: AttributeColumn) => 
   const timezone = column.configuration?.timezone;
   if (type === 'string') {
     return value.trim();
-  } if (type === 'numeric') {
+  }
+  if (type === 'numeric') {
     const formattedValue = Number(value);
     return Number.isNaN(formattedValue) ? null : formattedValue;
-  } if (type === 'date') {
+  }
+  if (type === 'date') {
     try {
       moment.suppressDeprecationWarnings = true;
       if (isNotEmptyField(pattern_date)) {
@@ -39,6 +41,11 @@ const formatValue = (value: string, type: AttrType, column: AttributeColumn) => 
     } catch (error: any) {
       return null;
     }
+  }
+  if (type === 'boolean') {
+    const stringBoolean = value.toLowerCase().trim();
+    // TODO Matching value must be configurable in parser option
+    return stringBoolean === 'true' || stringBoolean === 'yes' || stringBoolean === '1';
   }
   return value;
 };

@@ -12,6 +12,7 @@ import { validateInputCreation } from '../schema/schema-validator';
 import { parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
+import { isEmptyField } from '../database/utils';
 
 const validateInput = async (context: AuthContext, user: AuthUser, inputs: Record<string, InputType>[]) => {
   await Promise.all(inputs.map(async (input) => {
@@ -35,10 +36,11 @@ export const bundleProcess = async (context: AuthContext, user: AuthUser, conten
   const records = await parsingProcess(content, mapper.separator);
   if (records) {
     await Promise.all((records.map(async (record: string[]) => {
+      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
       // Handle header
       if (skipLine) {
         skipLine = false;
-      } else {
+      } else if (!isEmptyLine) {
         // Compute input by representation
         const inputs = mappingProcess(sanitizedMapper, record);
         // Remove inline elements
