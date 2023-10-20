@@ -819,7 +819,7 @@ export const heatMapOptions = (
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
     events: {
-      animationEnd: (chart) => {
+      mounted: (chart) => {
         chart.windowResizeHandler();
       },
     },
