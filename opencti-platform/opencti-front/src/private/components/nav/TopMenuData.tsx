@@ -12,6 +12,7 @@ import useGranted, {
   SETTINGS,
   SETTINGS_SETACCESSES,
   TAXIIAPI_SETCOLLECTIONS,
+  TAXIIAPI_SETCSVMAPPERS,
 } from '../../../utils/hooks/useGranted';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -37,6 +38,7 @@ const TopMenuData = () => {
   const isSettingsManager = useGranted([SETTINGS]);
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isSharingManager = useGranted([TAXIIAPI_SETCOLLECTIONS]);
+  const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(path) : location.pathname === path);
   const getVariant = (path: string) => (isCompatiblePath(path) ? 'contained' : 'text');
   const getColor = (path: string) => (isCompatiblePath(path) ? 'secondary' : 'primary');
@@ -78,7 +80,7 @@ const TopMenuData = () => {
           {t('Ingestion')}
         </Button>
       )}
-      {(isKnowledgeUpdater || isAdministrator) && (
+      {(isKnowledgeUpdater || isAdministrator || isCsvMapperUpdater) && (
         <Tooltip
           title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
         >

@@ -11,6 +11,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
   SETTINGS_SETACCESSES,
+  TAXIIAPI_SETCSVMAPPERS,
 } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
@@ -34,6 +35,7 @@ const ProcessingMenu = () => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
+  const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   return (
     <Drawer
       variant="permanent"
@@ -58,16 +60,6 @@ const ProcessingMenu = () => {
             <ListItemText primary={t('Automation')} />
           </MenuItem>
         )}
-        <MenuItem
-          component={Link}
-          to={'/dashboard/data/processing/csv_mapper'}
-          selected={location.pathname.includes(
-            '/dashboard/data/processing/csv_mapper',
-          )}
-          dense={false}
-        >
-          <ListItemText primary={t('CSV Mappers')} />
-        </MenuItem>
         {isKnowledgeUpdater && (
           <MenuItem
             component={Link}
@@ -76,6 +68,18 @@ const ProcessingMenu = () => {
             dense={false}
           >
             <ListItemText primary={t('Tasks')} />
+          </MenuItem>
+        )}
+        {isCsvMapperUpdater && (
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/processing/csv_mapper'}
+            selected={location.pathname.includes(
+              '/dashboard/data/processing/csv_mapper',
+            )}
+            dense={false}
+          >
+            <ListItemText primary={t('CSV Mappers')} />
           </MenuItem>
         )}
       </MenuList>
