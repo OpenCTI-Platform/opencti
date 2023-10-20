@@ -1,7 +1,12 @@
 import { head, last, toPairs } from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { listAllEntities } from '../database/middleware-loader';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_BACKGROUND_TASK,
+  ENTITY_TYPE_FEED,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_TAXII_COLLECTION
+} from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
 import { READ_DATA_INDICES } from '../database/utils';
@@ -67,7 +72,7 @@ export const up = async (next) => {
   const entitiesToRefacto = await listAllEntities(
     context,
     SYSTEM_USER,
-    [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER],
+    [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER, ENTITY_TYPE_STREAM_COLLECTION],
   );
 
   let entitiesFiltersConvertor = {};
