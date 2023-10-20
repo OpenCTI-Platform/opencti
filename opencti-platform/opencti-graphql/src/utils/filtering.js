@@ -453,7 +453,7 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
       }
       // Numeric filtering
       if (key === SCORE_FILTER) {
-        const instanceValue = stix[SCORE_FILTER] ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score;
+        const instanceValue = stix[SCORE_FILTER] ?? stix.extensions?.[STIX_EXT_OCTI]?.score ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score;
         if (!isMatchNumeric(values, operator, instanceValue)) {
           return false;
         }
