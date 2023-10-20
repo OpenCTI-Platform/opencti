@@ -1,7 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS, getBaseUrl } from '../config/conf';
 import {
-  references,
   addExternalReference,
   externalReferenceAddRelation,
   externalReferenceCleanContext,
@@ -11,11 +10,10 @@ import {
   externalReferenceEditField,
   findAll,
   findById,
+  references,
 } from '../domain/externalReference';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { filesListing, loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
@@ -26,10 +24,6 @@ const externalReferenceResolvers = {
   Query: {
     externalReference: (_, { id }, context) => findById(context, context.user, id),
     externalReferences: (_, args, context) => findAll(context, context.user, args),
-  },
-  ExternalReferencesFilter: {
-    usedBy: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
-    creator: 'creator_id',
   },
   ExternalReference: {
     url: (externalReference, _, context) => {

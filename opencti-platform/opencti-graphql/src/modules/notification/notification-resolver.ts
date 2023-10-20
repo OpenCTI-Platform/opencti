@@ -23,12 +23,7 @@ import {
   triggersGet,
   triggersKnowledgeFind,
 } from './notification-domain';
-import {
-  type BasicStoreEntityLiveTrigger,
-  type BasicStoreEntityTrigger,
-  ENTITY_TYPE_NOTIFICATION,
-  NOTIFICATION_NUMBER
-} from './notification-types';
+import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -50,11 +45,6 @@ const notificationResolvers: Resolvers = {
     isDirectAdministrator: (trigger, _, context) => isDirectAdministrator(context.user, trigger),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
     notifiers: (trigger, _, context) => getNotifiers(context, context.user, trigger.notifiers),
-  },
-  TriggerFilter: {
-    user_ids: 'authorized_members.id',
-    group_ids: 'authorized_members.id',
-    organization_ids: 'authorized_members.id',
   },
   Mutation: {
     // Knowledge trigger

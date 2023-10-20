@@ -1,10 +1,10 @@
 import {
   addSector,
-  findAll,
-  findById,
   batchIsSubSector,
   batchParentSectors,
   batchSubSectors,
+  findAll,
+  findById,
   targetedOrganizations,
 } from '../domain/sector';
 import {
@@ -15,9 +15,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const parentSectorsLoader = batchLoader(batchParentSectors);
@@ -34,12 +31,6 @@ const sectorResolvers = {
     subSectors: (sector, _, context) => subSectorsLoader.load(sector.id, context, context.user),
     isSubSector: (sector, _, context) => isSubSectorLoader.load(sector.id, context, context.user),
     targetedOrganizations: (sector, _, context) => targetedOrganizations(context, context.user, sector.id),
-  },
-  SectorsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    partOf: buildRefRelationKey(RELATION_PART_OF),
   },
   Mutation: {
     sectorEdit: (_, { id }, context) => ({

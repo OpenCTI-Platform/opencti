@@ -12,13 +12,6 @@ import {
   groupingsTimeSeriesByAuthor,
   groupingsTimeSeriesByEntity
 } from './grouping-domain';
-import { buildRefRelationKey } from '../../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../../schema/stixRefRelationship';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -61,12 +54,6 @@ const groupingResolvers: Resolvers = {
     groupingContainsStixObjectOrStixRelationship: (_, args, context) => {
       return groupingContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
-  },
-  GroupingsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objects: buildRefRelationKey(RELATION_OBJECT),
   },
   Mutation: {
     groupingAdd: (_, { input }, context) => {

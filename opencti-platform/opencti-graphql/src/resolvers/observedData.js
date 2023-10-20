@@ -19,8 +19,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 
 const observedDataResolvers = {
   Query: {
@@ -53,12 +51,6 @@ const observedDataResolvers = {
   },
   ObservedData: {
     name: (observedData, _, context) => resolveName(context, context.user, observedData),
-  },
-  ObservedDatasFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objects: buildRefRelationKey(RELATION_OBJECT, '*')
   },
   Mutation: {
     observedDataEdit: (_, { id }, context) => ({

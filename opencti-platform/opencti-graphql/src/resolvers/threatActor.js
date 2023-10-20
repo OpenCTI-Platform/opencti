@@ -1,4 +1,9 @@
-import { findAll as genericFindAll, findById as genericFindById, batchCountries, batchLocations } from '../domain/threatActor';
+import {
+  batchCountries,
+  batchLocations,
+  findAll as genericFindAll,
+  findById as genericFindById
+} from '../domain/threatActor';
 import { addThreatActorGroup, findAll as groupFindAll, findById as groupFindById } from '../domain/threatActorGroup';
 import {
   stixDomainObjectAddRelation,
@@ -8,15 +13,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const locationsLoader = batchLoader(batchLocations);
 const countriesLoader = batchLoader(batchCountries);
@@ -37,14 +34,6 @@ const threatActorGroupResolvers = {
       }
       return 'Unknown';
     },
-  },
-  ThreatActorsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    creator: 'creator_id',
   },
   Mutation: {
     threatActorGroupAdd: (_, { input }, context) => addThreatActorGroup(context, context.user, input),

@@ -15,12 +15,13 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import {
   TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+  TriggersLinesPaginationQuery$variables,
+} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -38,7 +39,7 @@ const useStyles = makeStyles(() => ({
 
 interface TriggersProps {
   recipientId: string;
-  filter: TriggerFilter;
+  filter: FilterGroup;
 }
 const Triggers: FunctionComponent<TriggersProps> = ({
   recipientId,
