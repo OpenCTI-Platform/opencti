@@ -1413,6 +1413,12 @@ class StixCyberObservable:
                 type == "Cryptocurrency-Wallet"
                 or type == "X-OpenCTI-Cryptocurrency-Wallet"
             ):
+                # Cryptocurrency-Wallet is an OpenCTI object, description is directly inside the object
+                input_variables["x_opencti_description"] = (
+                    observable_data["description"]
+                    if "description" in observable_data
+                    else None
+                )
                 input_variables["CryptocurrencyWallet"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
