@@ -2495,9 +2495,8 @@ export const buildDynamicFilterArgs = (filters) => {
   // Extract elementId and relationship_type
   const elementId = R.head(filters
     .filter((n) => (Array.isArray(n.key)
-    ? R.head(n.key) === 'rel_*.internal_id'
-    : n.key === 'rel_*.internal_id')
-    ))?.values || null;
+      ? R.head(n.key) === 'rel_*.internal_id'
+      : n.key === 'rel_*.internal_id')))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
   // Build filter without it
   let dynamicFilters = filters.filter((n) => !['rel_*.internal_id', 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
