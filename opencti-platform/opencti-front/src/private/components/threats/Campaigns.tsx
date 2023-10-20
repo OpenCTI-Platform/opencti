@@ -3,9 +3,12 @@ import Grid from '@mui/material/Grid';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import {
   CampaignsCardsPaginationQuery$variables,
-  CampaignsCardsPaginationQuery } from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
+  CampaignsCardsPaginationQuery,
+} from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import CampaignsCards, { campaignsCardsQuery } from './campaigns/CampaignsCards';
+import CampaignsCards, {
+  campaignsCardsQuery,
+} from './campaigns/CampaignsCards';
 import CampaignCreation from './campaigns/CampaignCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -91,8 +94,13 @@ const Campaigns = () => {
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
-                    <Grid item={true} xs={3} key={idx}>
+                  .map((_, idx) => (
+                    <Grid
+                      item={true}
+                      xs={3}
+                      key={idx}
+                      style={{ marginTop: idx < 4 ? -22 : 0 }}
+                    >
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}

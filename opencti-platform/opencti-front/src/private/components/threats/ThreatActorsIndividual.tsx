@@ -94,8 +94,13 @@ const ThreatActorsIndividual = () => {
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
-                    <Grid item={true} xs={3} key={idx}>
+                  .map((_, idx) => (
+                    <Grid
+                      item={true}
+                      xs={3}
+                      key={idx}
+                      style={{ marginTop: idx < 4 ? -22 : 0 }}
+                    >
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}

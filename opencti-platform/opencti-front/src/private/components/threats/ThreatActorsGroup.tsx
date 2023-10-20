@@ -6,7 +6,9 @@ import {
   ThreatActorsGroupCardsPaginationQuery$variables,
 } from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import ThreatActorsGroupCards, { threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
+import ThreatActorsGroupCards, {
+  threatActorsGroupCardsQuery,
+} from './threat_actors_group/ThreatActorsGroupCards';
 import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -91,8 +93,13 @@ const ThreatActorsGroup = () => {
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
-                    <Grid item={true} xs={3} key={idx}>
+                  .map((_, idx) => (
+                    <Grid
+                      item={true}
+                      xs={3}
+                      key={idx}
+                      style={{ marginTop: idx < 4 ? -22 : 0 }}
+                    >
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
@@ -111,12 +118,12 @@ const ThreatActorsGroup = () => {
   };
 
   return (
-      <>
-        {renderCards()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ThreatActorGroupCreation paginationOptions={paginationOptions} />
-        </Security>
-      </>
+    <>
+      {renderCards()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ThreatActorGroupCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
   );
 };
 
