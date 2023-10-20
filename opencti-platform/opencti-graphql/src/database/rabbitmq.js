@@ -228,11 +228,30 @@ export const getRabbitMQVersion = (context) => {
 export const consumeQueue = async (context, id, callback) => {
   const cfg = connectorConfig(id);
   const listenQueue = cfg.listen;
-  const data = await amqpExecute(async (channel) => {
-    const queueGet = util.promisify(channel.get).bind(channel);
-    return queueGet(listenQueue, { noAck: true });
-  });
-  if (data) {
-    await callback(context, data.content.toString());
+  try {
+    const connOptions = USE_SSL ? {
+      ...amqpCred(),
+      ...configureCA(RABBITMQ_CA),
+      cert: RABBITMQ_CA_CERT,
+      key: RABBITMQ_CA_KEY,
+      pfx: RABBITMQ_CA_PFX,
+      passphrase: RABBITMQ_CA_PASSPHRASE,
+      rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+    } : amqpCred();
+    amqp.connect(amqpUri(), connOptions, (errorConnection, conn) => {
+      if (errorConnection) throw DatabaseError('Unable to listen RabbitMQ queue', { error: errorConnection });
+      conn.createChannel((errorChannel, channel) => {
+        if (errorChannel) throw DatabaseError('Unable to listen RabbitMQ queue', { error: errorChannel });
+        channel.assertQueue(listenQueue);
+        channel.consume(listenQueue, (data) => {
+          if (data !== null) {
+            callback(context, data.content.toString());
+            channel.ack(data);
+          }
+        });
+      });
+    });
+  } catch (error) {
+    throw DatabaseError('Unable to listen RabbitMQ queue', { error });
   }
 };

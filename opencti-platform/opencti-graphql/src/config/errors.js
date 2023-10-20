@@ -125,7 +125,7 @@ export const DuplicateEntryError = (reason, data) => error(TYPE_DUPLICATE_ENTRY,
 
 export const MISSING_REF_ERROR = 'MissingReferenceError';
 export const MissingReferenceError = (data) => error(MISSING_REF_ERROR, `Element(s) not found ${(data?.unresolvedIds ?? []).join(',')}`, {
-  reason: 'Missing reference to handle creation',
+  reason: `Element(s) not found ${(data?.unresolvedIds ?? []).join(',')}`,
   http_status: 404,
   category: CATEGORY_BUSINESS,
   ...data,
