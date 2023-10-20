@@ -27,13 +27,6 @@ const caseResolvers: Resolvers = {
     tasks: (current, _, context) => taskLoader.load(current.id, context, context.user),
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
   },
-  CasesFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    creator: 'creator_id',
-  },
   CasesOrdering: {
     creator: 'creator_id',
   },

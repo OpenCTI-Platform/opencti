@@ -1,24 +1,17 @@
 import { addIdentity, findAll, findById } from '../domain/identity';
 import {
-  stixDomainObjectEditContext,
-  stixDomainObjectCleanContext,
-  stixDomainObjectEditField,
   stixDomainObjectAddRelation,
-  stixDomainObjectDeleteRelation,
+  stixDomainObjectCleanContext,
   stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 
 const identityResolvers = {
   Query: {
     identity: (_, { id }, context) => findById(context, context.user, id),
     identities: (_, args, context) => findAll(context, context.user, args),
-  },
-  IdentitiesFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Identity: {
     __resolveType(obj) {

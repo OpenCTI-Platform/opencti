@@ -1,11 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addChannel, findById, findAll } from './channel-domain';
-import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { addChannel, findAll, findById } from './channel-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -14,11 +13,6 @@ const channelResolvers: Resolvers = {
   Query: {
     channel: (_, { id }, context) => findById(context, context.user, id),
     channels: (_, args, context) => findAll(context, context.user, args),
-  },
-  ChannelsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     channelAdd: (_, { input }, context) => {

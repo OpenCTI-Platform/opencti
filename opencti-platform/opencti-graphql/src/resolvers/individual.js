@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById, batchOrganizations, isUser } from '../domain/individual';
+import { addIndividual, batchOrganizations, findAll, findById, isUser } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,8 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const organizationsLoader = batchLoader(batchOrganizations);
@@ -21,12 +19,6 @@ const individualResolvers = {
   Individual: {
     organizations: (individual, _, context) => organizationsLoader.load(individual.id, context, context.user),
     isUser: (individual, _, context) => isUser(context, context.user, individual.contact_information),
-  },
-  IndividualsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    creator: 'creator_id',
   },
   Mutation: {
     individualEdit: (_, { id }, context) => ({

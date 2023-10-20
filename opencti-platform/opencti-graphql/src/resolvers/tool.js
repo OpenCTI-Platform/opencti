@@ -8,10 +8,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const killChainPhaseLoader = batchLoader(batchKillChainPhases);
 
@@ -19,12 +16,6 @@ const toolResolvers = {
   Query: {
     tool: (_, { id }, context) => findById(context, context.user, id),
     tools: (_, args, context) => findAll(context, context.user, args),
-  },
-  ToolsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    targets: buildRefRelationKey(RELATION_TARGETS),
   },
   Tool: {
     killChainPhases: (tool, _, context) => killChainPhaseLoader.load(tool.id, context, context.user),

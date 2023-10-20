@@ -1,19 +1,9 @@
-import {
-  addThreatActorIndividual,
-  findAll, findById,
-} from './threatActorIndividual-domain';
-import { buildRefRelationKey } from '../../schema/general';
-import {
-  RELATION_BORN_IN,
-  RELATION_CREATED_BY,
-  RELATION_ETHNICITY,
-  RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../../schema/stixRefRelationship';
+import { addThreatActorIndividual, findAll, findById, } from './threatActorIndividual-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -21,7 +11,6 @@ import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
 import { batchBornIn, batchEthnicity } from '../../domain/stixCoreObject';
 import { utcDate } from '../../utils/format';
-import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 
 const bornInLoader = batchLoader(batchBornIn);
 const ethnicityLoader = batchLoader(batchEthnicity);
@@ -40,16 +29,6 @@ const threatActorIndividualResolvers: Resolvers = {
     weight: (threatActorIndividual, _, __) => (threatActorIndividual.weight ?? [])
       .map((weight, index) => ({ ...weight, index }))
       .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
-  },
-  ThreatActorsIndividualFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    bornIn: buildRefRelationKey(RELATION_BORN_IN),
-    ethnicity: buildRefRelationKey(RELATION_ETHNICITY),
-    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    creator: 'creator_id',
   },
   Mutation: {
     threatActorIndividualAdd: (_, { input }, context) => {

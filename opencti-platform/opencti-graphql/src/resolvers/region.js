@@ -1,22 +1,20 @@
 import {
   addRegion,
-  findAll,
-  findById,
   batchCountries,
   batchIsSubRegion,
   batchParentRegions,
   batchSubRegions,
+  findAll,
+  findById,
 } from '../domain/region';
 import {
-  stixDomainObjectEditContext,
-  stixDomainObjectCleanContext,
-  stixDomainObjectEditField,
   stixDomainObjectAddRelation,
-  stixDomainObjectDeleteRelation,
+  stixDomainObjectCleanContext,
   stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const countriesLoader = batchLoader(batchCountries);
@@ -34,11 +32,6 @@ const regionResolvers = {
     subRegions: (region, _, context) => subRegionsLoader.load(region.id, context, context.user),
     isSubRegion: (region, _, context) => isSubRegionLoader.load(region.id, context, context.user),
     countries: (region, _, context) => countriesLoader.load(region.id, context, context.user),
-  },
-  RegionsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     regionEdit: (_, { id }, context) => ({

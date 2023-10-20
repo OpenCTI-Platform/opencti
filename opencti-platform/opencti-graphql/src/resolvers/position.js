@@ -1,4 +1,4 @@
-import { addPosition, findAll, findById, batchCity } from '../domain/position';
+import { addPosition, batchCity, findAll, findById } from '../domain/position';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,8 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const batchCityLoader = batchLoader(batchCity);
@@ -20,11 +18,6 @@ const positionResolvers = {
   },
   Position: {
     city: (position, _, context) => batchCityLoader.load(position.id, context, context.user),
-  },
-  PositionsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     positionEdit: (_, { id }, context) => ({

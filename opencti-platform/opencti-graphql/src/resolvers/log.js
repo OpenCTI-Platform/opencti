@@ -1,11 +1,11 @@
 import {
-  findHistory,
-  findAudits,
-  auditsTimeSeries,
-  auditsMultiTimeSeries,
-  logsWorkerConfig,
   auditsDistribution,
+  auditsMultiTimeSeries,
   auditsNumber,
+  auditsTimeSeries,
+  findAudits,
+  findHistory,
+  logsWorkerConfig,
 } from '../domain/log';
 import { batchCreator } from '../domain/user';
 import { storeLoadById } from '../database/middleware-loader';
@@ -40,16 +40,6 @@ const logResolvers = {
       return Promise.resolve(data.external_references ?? [])
         .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
     },
-  },
-  LogsFilter: {
-    entity_id: 'context_data.id',
-    elementId: 'context_data.*id', // Compatibility with standard filters
-    connection_id: 'context_data.*_id', // Compatibility with standard filters
-    created: 'timestamp',
-    user_id: 'user_id',
-    members_user: 'user_id',
-    members_group: 'group_ids',
-    members_organization: 'organization_ids',
   },
 };
 

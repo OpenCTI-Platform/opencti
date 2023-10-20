@@ -19,13 +19,8 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixRefRelationship';
-import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
+import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { userAddIndividual } from '../domain/user';
@@ -69,12 +64,6 @@ const noteResolvers = {
     noteContainsStixObjectOrStixRelationship: (_, args, context) => {
       return noteContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
-  },
-  NotesFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objects: buildRefRelationKey(RELATION_OBJECT, '*')
   },
   Mutation: {
     noteEdit: (_, { id }, context) => ({
