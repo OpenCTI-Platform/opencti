@@ -255,14 +255,13 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
               channel.on('error', (onChannelError) => {
                 reject(onChannelError);
               });
-              channel.assertQueue(listenQueue);
               channel.consume(listenQueue, (data) => {
                 if (data !== null) {
                   callback(context, data.content.toString());
                 }
               }, { noAck: true }, (consumeError) => {
                 if (consumeError) {
-                  logApp.error('CONNECTOR_CONSUMER_QUEUE_ERROR', { error: consumeError, connector: cfg.name });
+                  logApp.error('CONNECTOR_CONSUMER_QUEUE_CONSUME', { error: consumeError });
                 }
               });
             }
