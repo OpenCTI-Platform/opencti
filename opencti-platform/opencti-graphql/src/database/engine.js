@@ -1440,7 +1440,12 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       ENTITY_TYPE_IDENTITY_SYSTEM
     ];
     const reliabilityFilter = { key: ['x_opencti_reliability'], operator, values, localFilterMode };
-    const opts = { types: authorTypes, connectionFormat: false, filters: [reliabilityFilter] };
+    const filters = {
+      mode: 'and',
+      filters: [reliabilityFilter],
+      filterGroups: [],
+    };
+    const opts = { types: authorTypes, connectionFormat: false, filters };
     const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
     if (authors.length > 0) {
       arrayKeys.splice(0, 1);
@@ -2097,7 +2102,12 @@ export const elList = async (context, user, indexName, options = {}, noFiltersCh
   return listing;
 };
 export const elLoadBy = async (context, user, field, value, type = null, indices = READ_DATA_INDICES) => {
-  const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
+  const filters = {
+    mode: 'and',
+    filters: [{ key: field, values: [value] }],
+    filterGroups: [],
+  };
+  const opts = { filters, connectionFormat: false, types: type ? [type] : [] };
   const hits = await elPaginate(context, user, indices, opts);
   if (hits.length > 1) throw UnsupportedError(`[SEARCH] Expected only one response, found ${hits.length}`);
   return R.head(hits);
@@ -2420,7 +2430,15 @@ export const elDelete = (indexName, documentId) => {
 
 const getRelatedRelations = async (context, user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
-  const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
+  const filtersContent = [{
+    key: 'connections',
+    nested: [{ key: 'internal_id', values: elementIds }],
+  }];
+  const filters = {
+    mode: 'and',
+    filters: filtersContent,
+    filterGroups: [],
+  };
   const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   const hits = await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
