@@ -16,6 +16,9 @@ export const convertMarking = (element) => ({
   color: element.x_opencti_color,
   definition_type: element.definition_type,
   x_opencti_order: element.x_opencti_order,
+  entity: {
+    ...element,
+  },
 });
 
 export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => convertMarking(n.node));
@@ -27,7 +30,10 @@ export const convertTriggers = (element) => (element?.triggers ?? []).map((n) =>
   value: n.id,
 }));
 
-export const convertAuthorizedMembers = (element) => (element?.authorized_members ?? []).map(({ id, name }) => ({ value: id, label: name }));
+export const convertAuthorizedMembers = (element) => (element?.authorized_members ?? []).map(({ id, name }) => ({
+  value: id,
+  label: name,
+}));
 
 export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? []).map((n) => ({
   label: n.node.name,
@@ -59,7 +65,9 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
 
 export const convertImagesToCarousel = (element) => {
   const images = element.images.edges ?? [];
-  const carouselImages = images ? images.filter(({ node }) => node?.metaData.inCarousel === true) : [];
+  const carouselImages = images
+    ? images.filter(({ node }) => node?.metaData.inCarousel === true)
+    : [];
   return carouselImages.map((file) => ({
     tooltipTitle: file.node.metaData.description,
     imageSrc: getFileUri(file.node.id),
@@ -84,7 +92,7 @@ export const convertUser = (element, field = 'user') => (isEmptyField(element?.[
     type: element[field].entity_type,
   });
 
-export const convertNotifiers = (element) => (element?.notifiers?.map(({ id, name }) => ({ value: id, label: name })));
+export const convertNotifiers = (element) => element?.notifiers?.map(({ id, name }) => ({ value: id, label: name }));
 
 export const filterEventTypesOptions = [
   { value: 'create', label: 'Creation' },
@@ -97,6 +105,6 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
-export const convertEventTypes = (element) => (element?.event_types?.map((event_type) => {
+export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
   return filterEventTypesOptions.find((o) => o.value === event_type);
-}));
+});

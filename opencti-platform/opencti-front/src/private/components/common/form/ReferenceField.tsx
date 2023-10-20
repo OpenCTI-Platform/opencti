@@ -24,6 +24,7 @@ export interface Option {
   color?: string;
   [key: string]: ReactNode;
   type?: string;
+  standard_id?: string;
 }
 
 interface RelationFieldProps {
