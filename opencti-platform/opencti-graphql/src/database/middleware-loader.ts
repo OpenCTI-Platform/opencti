@@ -226,7 +226,12 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const filtersContent = filters?.filters ?? [];
+  const finalFilters = (Array.isArray(filters) || !filters) ? { // TODO remove hardcoded format and replace by 'filter' when front is migrated
+    mode: 'and',
+    filters: filters ?? [] as Filter[],
+    filterGroups: [],
+  } : filters as FilterGroup;
+  const filtersContent = finalFilters?.filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
     filtersContent.push({ key: buildRefRelationKey(relation), values: [id] });
@@ -306,9 +311,9 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     ...args,
     types: relationsToGet,
     filters: {
-      mode: filters?.mode ?? 'and',
+      mode: finalFilters?.mode ?? 'and',
       filters: filtersContent,
-      filterGroups: filters?.filterGroups ?? [],
+      filterGroups: finalFilters?.filterGroups ?? [],
     }
   };
 };
