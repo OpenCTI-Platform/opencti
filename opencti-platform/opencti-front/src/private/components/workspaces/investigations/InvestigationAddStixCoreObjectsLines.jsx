@@ -13,6 +13,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {setNumberOfElements} from "../../../../utils/Number";
+import {insertNode} from "../../../../utils/store";
 
 const styles = (theme) => ({
   investigation: {
@@ -140,15 +141,31 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         },
       });
     } else {
+      const input = {
+        key: 'investigated_entities_ids',
+        operation: 'add',
+        value: stixCoreObject.id,
+      };
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationAddMutation,
         variables: {
           id: workspaceId,
-          input: {
-            key: 'investigated_entities_ids',
-            operation: 'add',
-            value: stixCoreObject.id,
-          },
+          input,
+        },
+        updater: (store) => {
+          const options = { ...paginationOptions };
+          delete options.id;
+          delete options.count;
+          insertNode(
+            store,
+            'Pagination_objects',
+            options,
+            'workspaceFieldPatch',
+            workspaceId,
+            '',
+            input,
+            '',
+          );
         },
         onCompleted: () => {
           this.setState({
