@@ -4,11 +4,9 @@ import { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapp
 export interface ConnectorConfig {
   id: string;
   name: string;
-  running: boolean;
   config: {
     enable: boolean;
     validate_before_import: boolean;
-    scheduleTime: number;
   }
 }
 

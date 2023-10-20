@@ -1,5 +1,3 @@
-import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Readable } from 'stream';
 import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
@@ -21,21 +19,25 @@ import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { internalLoadById } from '../../database/middleware-loader';
 
+const RETRY_CONNECTION_PERIOD = 10000;
+
 const connectorConfig: ConnectorConfig = {
   id: 'IMPORT_CSV_BUILT_IN_CONNECTOR',
   name: 'Import Csv built in connector',
-  running: false,
   config: {
     enable: conf.get('import_csv_built_in_connector:enabled'),
-    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import'),
-    scheduleTime: conf.get('import_csv_built_in_connector:interval'),
+    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import')
   }
 };
 
 const initImportCsvConnector = () => {
   const { config } = connectorConfig;
-  let scheduler: SetIntervalAsyncTimer<unknown[]>;
   const connector = IMPORT_CSV_CONNECTOR;
+  let rabbitMqConnection: { close: () => void };
+
+  const connectionSetterCallback = (conn: any) => {
+    rabbitMqConnection = conn;
+  };
 
   const consumeQueueCallback = async (context: AuthContext, message: string) => {
     const messageParsed = JSON.parse(message);
@@ -103,16 +105,10 @@ const initImportCsvConnector = () => {
     }
   };
 
-  const handler = async (context: AuthContext) => {
-    try {
-      connectorConfig.running = true;
-      await consumeQueue(context, connector.id, consumeQueueCallback);
-    } catch (e: any) {
-      logApp.error(`[OPENCTI-MODULE] ${connectorConfig.name} manager failed to start`, { error: e });
-    } finally {
-      connectorConfig.running = false;
-      logApp.debug(`[OPENCTI-MODULE] ${connectorConfig.name} manager done`);
-    }
+  const handleCsvImport = async (context: AuthContext) => {
+    consumeQueue(context, connector.id, connectionSetterCallback, consumeQueueCallback).catch(() => {
+      setTimeout(handleCsvImport, RETRY_CONNECTION_PERIOD);
+    });
   };
 
   return {
@@ -120,23 +116,18 @@ const initImportCsvConnector = () => {
       const context = executionContext(connectorConfig.id.toLowerCase());
       logApp.info(`[OPENCTI-MODULE] Starting ${connectorConfig.name} manager`);
       await registerConnectorQueues(connector.id, connector.name, connector.connector_type, connector.connector_scope);
-      // Polling
-      scheduler = setIntervalAsync(async () => {
-        await handler(context);
-      }, config.scheduleTime);
+      await handleCsvImport(context);
     },
     status: () => {
       return {
         id: connectorConfig.id,
         enable: config.enable ?? false,
-        running: connectorConfig.running,
+        running: config.enable ?? false,
       };
     },
     shutdown: async () => {
       logApp.info(`[OPENCTI-MODULE] Stopping ${connectorConfig.name} manager`);
-      if (scheduler) {
-        return clearIntervalAsync(scheduler);
-      }
+      if (rabbitMqConnection) rabbitMqConnection.close();
       return true;
     },
   };
