@@ -1,7 +1,7 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
+import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
@@ -225,33 +225,52 @@ export const getRabbitMQVersion = (context) => {
     .catch(/* istanbul ignore next */ () => 'Disconnected');
 };
 
-export const consumeQueue = async (context, id, callback) => {
-  const cfg = connectorConfig(id);
+export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {
+  const cfg = connectorConfig(connectorId);
   const listenQueue = cfg.listen;
-  try {
-    const connOptions = USE_SSL ? {
-      ...amqpCred(),
-      ...configureCA(RABBITMQ_CA),
-      cert: RABBITMQ_CA_CERT,
-      key: RABBITMQ_CA_KEY,
-      pfx: RABBITMQ_CA_PFX,
-      passphrase: RABBITMQ_CA_PASSPHRASE,
-      rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-    } : amqpCred();
-    amqp.connect(amqpUri(), connOptions, (errorConnection, conn) => {
-      if (errorConnection) throw DatabaseError('Unable to listen RabbitMQ queue', { error: errorConnection });
-      conn.createChannel((errorChannel, channel) => {
-        if (errorChannel) throw DatabaseError('Unable to listen RabbitMQ queue', { error: errorChannel });
-        channel.assertQueue(listenQueue);
-        channel.consume(listenQueue, (data) => {
-          if (data !== null) {
-            callback(context, data.content.toString());
-            channel.ack(data);
-          }
-        });
+  const connOptions = USE_SSL ? {
+    ...amqpCred(),
+    ...configureCA(RABBITMQ_CA),
+    cert: RABBITMQ_CA_CERT,
+    key: RABBITMQ_CA_KEY,
+    pfx: RABBITMQ_CA_PFX,
+    passphrase: RABBITMQ_CA_PASSPHRASE,
+    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+  } : amqpCred();
+  return new Promise((_, reject) => {
+    try {
+      amqp.connect(amqpUri(), connOptions, (err, conn) => {
+        if (err) {
+          reject(err);
+        } else { // Connection success
+          logApp.info('Starting connector queue consuming');
+          conn.on('error', (onConnectError) => {
+            reject(onConnectError);
+          });
+          connectionSetterCallback(conn);
+          conn.createChannel((channelError, channel) => {
+            if (channelError) {
+              reject(channelError);
+            } else {
+              channel.on('error', (onChannelError) => {
+                reject(onChannelError);
+              });
+              channel.assertQueue(listenQueue);
+              channel.consume(listenQueue, (data) => {
+                if (data !== null) {
+                  callback(context, data.content.toString());
+                }
+              }, { noAck: true }, (consumeError) => {
+                if (consumeError) {
+                  logApp.error('CONNECTOR_CONSUMER_QUEUE_ERROR', { error: consumeError, connector: cfg.name });
+                }
+              });
+            }
+          });
+        }
       });
-    });
-  } catch (error) {
-    throw DatabaseError('Unable to listen RabbitMQ queue', { error });
-  }
+    } catch (globalError) {
+      reject(globalError);
+    }
+  });
 };
