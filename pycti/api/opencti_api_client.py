@@ -731,6 +731,8 @@ class OpenCTIApiClient:
             return object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ][key]
+        elif key in object:
+            return object[key]
         return None
 
     @staticmethod
