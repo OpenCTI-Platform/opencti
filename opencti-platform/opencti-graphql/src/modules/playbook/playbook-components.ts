@@ -192,7 +192,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   executor: async ({ bundle }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
     await pushToPlaybook({ type: 'bundle', applicant_id: AUTOMATION_MANAGER_USER_UUID, content, update: true });
-    return { output_port: undefined, bundle };
+    return { output_port: undefined, bundle, forceBundleTracking: true };
   }
 };
 
@@ -366,10 +366,10 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const created = now();
     const { container_type, all } = playbookNode.configuration;
     if (container_type && isStixDomainObjectContainer(container_type)) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+      const created = baseData.extensions[STIX_EXT_OCTI].created_at;
       const containerData = {
         name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
         created,
@@ -390,6 +390,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       } else {
         container.object_refs = [baseData.id];
       }
+      // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -401,6 +402,12 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       }
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+      }
+      if (baseData.extensions[STIX_EXT_OCTI].participant_ids) {
+        container.extensions[STIX_EXT_OCTI].participant_ids = baseData.extensions[STIX_EXT_OCTI].participant_ids;
+      }
+      if (baseData.extensions[STIX_EXT_OCTI].assignee_ids) {
+        container.extensions[STIX_EXT_OCTI].assignee_ids = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
       }
       bundle.objects.push(container);
     }
