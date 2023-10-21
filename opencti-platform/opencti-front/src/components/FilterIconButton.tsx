@@ -156,6 +156,22 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         const label = `${truncate(t(`filter_${filterKey}`), 20)}`;
         const negative = filterKey.endsWith('not_eq');
         const localFilterMode = negative ? t('AND') : t('OR');
+        const valuesToolip = (
+          <>
+            {filterContent.map((n) => (
+              <span key={n.value}>
+                <span>
+                  {n.value && n.value.length > 0 ? n.value : t('No label')}{' '}
+                </span>
+                {last(filterContent)?.value !== n.value && (
+                  <div className={classes.inlineOperator}>
+                    {localFilterMode}
+                  </div>
+                )}{' '}
+              </span>
+            ))}
+          </>
+        );
         const values = (
           <>
             {filterContent.map((n) => (
@@ -186,7 +202,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
             <Tooltip
               title={
                 <>
-                  <strong>{label}</strong>: {values}
+                  <strong>{label}</strong>: {valuesToolip}
                 </>
               }
             >

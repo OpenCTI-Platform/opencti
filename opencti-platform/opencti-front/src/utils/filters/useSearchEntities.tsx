@@ -42,9 +42,7 @@ import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../privat
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { isNotEmptyField } from '../utils';
-import {
-  useSearchEntitiesSchemaSCOSearchQuery$data,
-} from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
+import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -1117,7 +1115,9 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const mainObservableTypeEntities = (
-              (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs?.edges ?? []).map((n) => ({
+              (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs
+                ?.edges ?? []
+            ).map((n) => ({
               label: n?.node.label,
               value: n?.node.id,
               type: 'Vocabulary',
