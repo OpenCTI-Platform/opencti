@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';

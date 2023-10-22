@@ -102,11 +102,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - add_ssh_keys
       - run: sudo apt-get update -qq && sudo apt install curl         
-      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
-      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
-      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
@@ -118,7 +114,7 @@ jobs:
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
       - run:
           working_directory: ~/opencti/release
-          command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+          command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -135,8 +131,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - add_ssh_keys
-      - run: sudo apt-get update -qq && sudo apt install curl      
-      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
@@ -148,7 +143,7 @@ jobs:
           command: tar -zcvf "opencti-$(date '+%Y%m%d')_musl.tar.gz" opencti
       - run:
           working_directory: ~/opencti_musl/release
-          command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+          command: curl -usamuel.hassine@gmail.com:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
       - slack/notify:
           event: fail
           template: basic_fail_1
