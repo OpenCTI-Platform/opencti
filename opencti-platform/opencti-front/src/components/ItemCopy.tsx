@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
 import { Theme } from './Theme';
+import { truncate } from '../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   containerInline: {
@@ -44,9 +45,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ItemCopyProps {
   content: string;
   variant: string;
+  limit?: number;
 }
 
-const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content, variant }) => {
+const ItemCopy: FunctionComponent<ItemCopyProps> = ({
+  content,
+  variant,
+  limit = null,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   return (
@@ -55,7 +61,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content, variant }) => {
         variant === 'inLine' ? classes.containerInline : classes.container
       }
     >
-      {content}
+      {limit ? truncate(content, limit) : content}
       <span
         className={variant === 'inLine' ? classes.iconInline : classes.icon}
         onClick={(event) => {

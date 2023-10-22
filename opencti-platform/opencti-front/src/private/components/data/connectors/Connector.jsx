@@ -30,8 +30,8 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
-import { truncate } from '../../../../utils/String';
 import Loader from '../../../../components/Loader';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -350,7 +350,14 @@ class ConnectorComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('State')}
                   </Typography>
-                  <pre>{truncate(connector.connector_state, 200)}</pre>
+                  <Tooltip title={connector.connector_state}>
+                    <pre>
+                      <ItemCopy
+                        content={connector.connector_state}
+                        limit={200}
+                      />
+                    </pre>
+                  </Tooltip>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
