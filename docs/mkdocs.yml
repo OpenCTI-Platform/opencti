@@ -156,6 +156,7 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
+      - Indicators lifecycle: usage/indicators-lifecycle.md
     - Act on knowledge:    
       - Case management: usage/case-management.md
       - Notifications:
