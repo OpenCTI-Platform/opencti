@@ -2131,6 +2131,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/busboy@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@fastify/busboy@npm:2.0.0"
+  checksum: 41879937ce1dee6421ef9cd4da53239830617e1f0bb7a0e843940772cd72827205d05e518af6adabe6e1ea19301285fff432b9d11bad01a531e698bea95c781b
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/add@npm:^5.0.0":
   version: 5.0.0
   resolution: "@graphql-codegen/add@npm:5.0.0"
@@ -12984,11 +12991,11 @@ __metadata:
   linkType: hard
 
 "undici@npm:^5.22.1":
-  version: 5.25.2
-  resolution: "undici@npm:5.25.2"
+  version: 5.26.4
+  resolution: "undici@npm:5.26.4"
   dependencies:
-    busboy: ^1.6.0
-  checksum: 1177a9c4fc9a1ddb765508d0f69ae61c166559badce8d797aaa92beef70ec5ac8fdc420b643f5d8d40b9a37891ba5536e2070d86a9c54a128aec67ad0c862d06
+    "@fastify/busboy": ^2.0.0
+  checksum: 4d37f14ce56837d332ab1623be751f2a5b439069705671cc60b441133300b05bcb8803668132e7b3f98800db19cd6cb76b48831facbdbc2d73271b12383ab3cd
   languageName: node
   linkType: hard
 
