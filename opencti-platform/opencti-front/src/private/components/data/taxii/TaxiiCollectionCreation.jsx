@@ -307,26 +307,26 @@ const TaxiiCollectionCreation = (props) => {
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
                 handleSwitchGlobalMode={handleSwitchGlobalMode}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  classNameNumber={2}
-                  styleNumber={2}
-                  redirection
-                />
-                <div className="clearfix" />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
+                handleSwitchLocalMode={handleSwitchLocalMode}
+                classNameNumber={2}
+                styleNumber={2}
+                redirection
+              />
+              <div className="clearfix" />
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {t('Create')}
