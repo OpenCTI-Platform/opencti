@@ -39,7 +39,8 @@ import {
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -73,13 +74,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import {
-  BYPASS,
-  computeUserMemberAccessIds,
-  INTERNAL_USERS,
-  isBypassUser,
-  MEMBER_ACCESS_ALL,
-} from '../utils/access';
+import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -1086,7 +1081,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
+  const { withoutRels = false, onRelationship = null, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1103,18 +1098,38 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if ((types || []).some((typeElement) => isStixObjectAliased(typeElement)) || forceAliases) {
       elementTypes.push(INTERNAL_IDS_ALIASES);
     }
-    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-      const elementType = elementTypes[indexType];
-      const terms = { [`${elementType}.keyword`]: workingIds };
-      idsTermsPerType.push({ terms });
+    // With onRelationship option, the ids needs to be found on a relationship connection side.
+    // onRelationship must be from or to
+    if (onRelationship && (onRelationship === 'from' || onRelationship === 'to')) {
+      const nested = {
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [
+                { query_string: { query: `*_${onRelationship}`, fields: ['connections.role'] } },
+                { terms: { [`connections.${ID_INTERNAL}.keyword`]: workingIds } }
+              ]
+            },
+          },
+        }
+      };
+      mustTerms.push(nested);
+    } else {
+      // Compute combination terms
+      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+        const elementType = elementTypes[indexType];
+        const terms = { [`${elementType}.keyword`]: workingIds };
+        idsTermsPerType.push({ terms });
+      }
+      const should = {
+        bool: {
+          should: idsTermsPerType,
+          minimum_should_match: 1,
+        },
+      };
+      mustTerms.push(should);
     }
-    const should = {
-      bool: {
-        should: idsTermsPerType,
-        minimum_should_match: 1,
-      },
-    };
-    mustTerms.push(should);
     if (types && types.length > 0) {
       const typesShould = types.map((typeShould) => (
         [
@@ -1147,26 +1162,47 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
       const orderKey = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       body.sort = [{ [orderKey]: (opts.orderMode ?? 'asc') }];
+    } else {
+      body.sort = [{ [`${ID_INTERNAL}.keyword`]: 'asc' }];
     }
-    const query = {
-      index: indices,
-      size: workingIds.length,
-      ignore_throttled: ES_IGNORE_THROTTLED,
-      _source: baseData ? baseFields : true,
-      body,
-    };
-    logApp.debug('[SEARCH] elInternalLoadById', { query });
-    const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
-    const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
-    });
-    for (let j = 0; j < data.hits.hits.length; j += 1) {
-      const hit = data.hits.hits[j];
-      const element = elDataConverter(hit, withoutRels);
-      hits[element.internal_id] = element;
-      if (mapWithAllIds) {
-        if (element.standard_id) hits[element.standard_id] = element;
-        (element.x_opencti_stix_ids ?? []).forEach((id) => { hits[id] = element; });
+    let searchAfter;
+    let hasNextPage = true;
+    while (hasNextPage) {
+      if (searchAfter) {
+        body.search_after = searchAfter;
+      }
+      const query = {
+        index: indices,
+        size: MAX_SEARCH_SIZE,
+        ignore_throttled: ES_IGNORE_THROTTLED,
+        _source: baseData ? baseFields : true,
+        body,
+      };
+      logApp.debug('[SEARCH] elInternalLoadById', { query });
+      const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
+      const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+        throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
+      });
+      const elements = data.hits.hits;
+      if (elements.length > 0) {
+        for (let j = 0; j < elements.length; j += 1) {
+          const hit = elements[j];
+          const element = elDataConverter(hit, withoutRels);
+          hits[element.internal_id] = element;
+          if (mapWithAllIds) {
+            if (element.standard_id) hits[element.standard_id] = element;
+            (element.x_opencti_stix_ids ?? []).forEach((id) => { hits[id] = element; });
+          }
+        }
+        if (elements.length < MAX_SEARCH_SIZE) {
+          hasNextPage = false;
+        } else {
+          const { sort } = elements[elements.length - 1];
+          searchAfter = sort;
+          hasNextPage = true;
+        }
+      } else {
+        hasNextPage = false;
       }
     }
   }
