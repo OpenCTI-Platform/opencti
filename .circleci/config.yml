@@ -143,7 +143,7 @@ jobs:
           command: tar -zcvf "opencti-$(date '+%Y%m%d')_musl.tar.gz" opencti
       - run:
           working_directory: ~/opencti_musl/release
-          command: curl -usamuel.hassine@gmail.com:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
+          command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
       - slack/notify:
           event: fail
           template: basic_fail_1
