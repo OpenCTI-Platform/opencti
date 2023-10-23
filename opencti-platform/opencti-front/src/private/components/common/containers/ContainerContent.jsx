@@ -128,21 +128,49 @@ const ContainerContentComponent = ({ containerData }) => {
     queries,
     validator,
   );
-  const onSubmit = (values) => {
+
+  const toggleEditionMode = () => {
+    if (editionMode) {
+      setSelectedTab('preview');
+      setEditionMode(false);
+    } else {
+      setSelectedTab('write');
+      setEditionMode(true);
+    }
+  };
+  const handleChangeSelectedTab = (mode) => {
+    if (editionMode) {
+      setSelectedTab(mode);
+    }
+  };
+
+  // onSubmit will be called when a submit button is called, thus only
+  // when enforced references option is set (i.e enableReferences==true)
+  const onSubmit = (values, options) => {
+    const { setSubmitting } = options;
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
     editor.fieldPatch({
       variables: {
         id: containerData.id,
-        input: otherValues,
+        // rebuild an array of {key: x, value: y } objects for the query
+        input: Object.keys(otherValues).map(((k) => ({ key: k, value: otherValues[k] }))),
+        // the commit msg and ref might not be set if the user has the ability to bypass the enforced refs (Direct update)
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
+      onCompleted: () => {
+        setSubmitting(false);
+        toggleEditionMode();
+      },
     });
   };
   const handleSubmitField = (name, value) => {
+    // we try to update every time a field is changed (e.g. lose focus)
+    // with enforced references option for this entity, submit is done at the
+    // end with a button in <CommitMessage />
     if (!enableReferences) {
       validator
         .validateAt(name, { [name]: value })
@@ -157,12 +185,14 @@ const ContainerContentComponent = ({ containerData }) => {
         .catch(() => false);
     }
   };
+
   const handleTextSelection = (text) => {
     if (text && text.length > 2) {
       setSelectedText(text.trim());
       OPEN$.next({ action: 'OpenMapping' });
     }
   };
+
   const addMapping = (stixCoreObject) => {
     const { content_mapping } = containerData;
     const contentMappingData = decodeMappingData(content_mapping);
@@ -200,20 +230,7 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
-  const toggleEditionMode = () => {
-    if (editionMode) {
-      setSelectedTab('preview');
-      setEditionMode(false);
-    } else {
-      setSelectedTab('write');
-      setEditionMode(true);
-    }
-  };
-  const handleChangeSelectedTab = (mode) => {
-    if (editionMode) {
-      setSelectedTab(mode);
-    }
-  };
+
   const matchCase = (text, pattern) => {
     let result = '';
     // eslint-disable-next-line no-plusplus
@@ -256,22 +273,23 @@ const ContainerContentComponent = ({ containerData }) => {
     description: description || '',
     content: content || '',
   };
+
   return (
     <div className={classes.container}>
       <Grid
-        container={true}
+        container
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ marginTop: -15 }}>
           <Typography
             variant="h4"
-            gutterBottom={true}
+            gutterBottom
             style={{ float: 'left' }}
           >
             {t('Content')}
           </Typography>
-          <Tooltip title={t('Edition mode')}>
+          <Tooltip title={editionMode ? t('Turn off edition mode') : t('Turn on edition mode')}>
             <IconButton
               color={editionMode ? 'secondary' : 'primary'}
               aria-label="Edit"
@@ -297,7 +315,7 @@ const ContainerContentComponent = ({ containerData }) => {
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={openClearMapping}
-              keepMounted={true}
+              keepMounted
               TransitionComponent={Transition}
               onClose={() => setOpenClearMapping(false)}
             >
@@ -330,7 +348,7 @@ const ContainerContentComponent = ({ containerData }) => {
             style={{ marginTop: -5 }}
           >
             <Formik
-              enableReinitialize={true}
+              enableReinitialize
               initialValues={initialValues}
               validationSchema={validator}
               onSubmit={onSubmit}
@@ -348,8 +366,8 @@ const ContainerContentComponent = ({ containerData }) => {
                     component={MarkdownField}
                     name="description"
                     label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
+                    fullWidth
+                    multiline
                     rows="4"
                     onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
@@ -367,7 +385,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     component={RichTextField}
                     name="content"
                     label={t('Content')}
-                    fullWidth={true}
+                    fullWidth
                     onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
                     style={{
@@ -388,9 +406,9 @@ const ContainerContentComponent = ({ containerData }) => {
                       submitForm={submitForm}
                       disabled={isSubmitting || !isValid || !dirty}
                       setFieldValue={setFieldValue}
-                      open={false}
                       values={values.references}
                       id={containerData.id}
+                      open={false} // dialog closed at start
                     />
                   )}
                 </Form>
@@ -398,8 +416,8 @@ const ContainerContentComponent = ({ containerData }) => {
             </Formik>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: -15 }}>
-          <Typography variant="h4" gutterBottom={true}>
+        <Grid item xs={6} style={{ marginTop: -15 }}>
+          <Typography variant="h4" gutterBottom>
             {t('Mapping')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">

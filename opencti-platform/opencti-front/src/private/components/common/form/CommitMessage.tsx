@@ -50,12 +50,25 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
+
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
-  const handleOpen = () => setControlOpen(true);
-  const handleControlClose = () => setControlOpen(false);
+  const handleOpenControl = () => setControlOpen(true);
+  const handleCloseControl = () => setControlOpen(false);
+
   const validateReferences = (
     references: ExternalReferencesValues | undefined,
   ) => !!references && references.length > 0;
+
+  const onSubmitFromDialog = async () => {
+    await submitForm();
+    handleClose?.();
+    handleCloseControl(); // make sure the dialog is closed now
+  };
+
+  // 2 behaviors possible
+  // - "normal" behavior --> open a dialog with a ref selector and a commit message
+  // - BYPASSREFERENCE capa is defined --> user is able to bypass the ref selection + commit message, no dialog
+
   return (
     <div>
       {!handleClose && (
@@ -64,7 +77,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             <Button
               variant="outlined"
               color="primary"
-              onClick={submitForm}
+              onClick={submitForm} // directly submit
               disabled={disabled}
             >
               {t('Direct Update')}
@@ -73,7 +86,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={handleOpen}
+            onClick={handleOpenControl}
             disabled={disabled}
           >
             {t('Update')}
@@ -83,8 +96,8 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={handleClose ? open : controlOpen}
-        onClose={handleClose ?? handleControlClose}
-        fullWidth={true}
+        onClose={handleClose ?? handleCloseControl}
+        fullWidth
       >
         <DialogTitle>{t('Reference modification')}</DialogTitle>
         <DialogContent>
@@ -100,8 +113,8 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             component={MarkdownField}
             name="message"
             label={t('Message')}
-            fullWidth={true}
-            multiline={true}
+            fullWidth
+            multiline
             rows="2"
             style={{ marginTop: 20 }}
           />
@@ -109,7 +122,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         <DialogActions>
           <Button
             color="primary"
-            onClick={submitForm}
+            onClick={onSubmitFromDialog}
             disabled={disabled || !validateReferences(values)}
           >
             {t('Validate')}
