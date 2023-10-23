@@ -116,29 +116,6 @@ export const entityFilters = [
   'targets',
 ];
 
-export const filtersWithRepresentative = [
-  'toSightingId',
-  'members_user',
-  'members_group',
-  'members_organization',
-  'objectAssignee',
-  'objectParticipant',
-  'creator_id',
-  'createdBy',
-  'sightedBy',
-  'elementId',
-  'fromId',
-  'toId',
-  'targets',
-  'objects',
-  'indicates',
-  'containers',
-  'objectLabel',
-  'objectMarking',
-  'killChainPhases',
-  'x_opencti_workflow_id',
-];
-
 export const vocabularyFiltersWithTranslation = [
   'x_opencti_detection',
   'revoked',
@@ -225,8 +202,8 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
   return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
 };
 
-export const filterValue = (filterKey: string, id: string | null, value?: string | null) => {
-  const { t, nsdt } = useFormatter();
+export const filterValue = (filterKey: string, id: string | null, value?: string | null) => { // TODO do this in back with the schema
+  const { t, nsd } = useFormatter();
   if (value || value === null) { // resolved value or deleted entity
     return value;
   }
@@ -249,7 +226,7 @@ export const filterValue = (filterKey: string, id: string | null, value?: string
       );
   }
   if (dateFilters.includes(filterKey)) {
-    return nsdt(id);
+    return nsd(id);
   }
   return id;
 };

@@ -119,7 +119,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
             : truncate(t(`filter_${filterKey}`), 20);
           const label = `${negative ? `${t('NOT')} ` : ''}${keyLabel}`;
           const isNotLastFilter = lastKey !== filterKey || lastOperator !== currentFilter.operator;
-          const values = (
+          const values = (tooltip: boolean) => (
             <>
               {filterValues.map((id) => {
                 const value = currentFilter.representatives.filter((n) => n?.id === id)[0]?.value;
@@ -132,7 +132,8 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
                 return (
                   <span key={id}>
                     <FilterIconButtonContent
-                      redirection={redirection}
+                      redirection={tooltip ? false : redirection}
+                      filterTooltip={!!tooltip}
                       filterKey={filterKey}
                       id={id}
                       value={value}
@@ -154,7 +155,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
               <Tooltip
                 title={
                   <>
-                    <strong>{label}</strong>: {values}
+                    <strong>{label}</strong>: {values(true)}
                   </>
                 }
               >
@@ -163,7 +164,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
                   color={chipColor}
                   label={
                     <>
-                      <strong>{label}</strong>: {values}
+                      <strong>{label}</strong>: {values(false)}
                     </>
                   }
                   disabled={
