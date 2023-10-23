@@ -348,12 +348,11 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         },
                     )
                 return False
-            elif "Bad Gateway" in error_msg:
+            elif "Bad Gateway" in error_msg or "connection error" in error_msg:
                 bundles_bad_gateway_error_counter.add(1)
                 self.api.log(
-                    "error", "A connection error occurred: {{ " + error_msg + " }}"
+                    "error", "A connection error occurred: {{ " + error + " }}"
                 )
-                time.sleep(60)
                 self.api.log(
                     "info",
                     "Message (delivery_tag="
