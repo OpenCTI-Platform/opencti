@@ -1,11 +1,13 @@
 import { head, isEmpty } from 'ramda';
 import { FormikValues } from 'formik/dist/types';
+import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
+import { Option } from '@components/common/form/ReferenceField';
 import useEntitySettings from './useEntitySettings';
 import useAuth from './useAuth';
-import { Option } from '../../private/components/common/form/ReferenceField';
 import useVocabularyCategory from './useVocabularyCategory';
 import { isEmptyField } from '../utils';
 import { now } from '../Time';
+import { AuthorizedMembers, authorizedMembersToOptions, INPUT_AUTHORIZED_MEMBERS } from '../authorizedMembers';
 
 export const useComputeDefaultValues = (
   entityType: string,
@@ -13,6 +15,7 @@ export const useComputeDefaultValues = (
   multiple: boolean,
   type: string,
   defaultValues: readonly { id: string; name: string }[],
+  membersData?: EntitySettingAttributeEditionMembersQuery$data,
 ) => {
   const { fieldToCategory } = useVocabularyCategory();
   const ovCategory = fieldToCategory(entityType, attributeName);
@@ -24,6 +27,26 @@ export const useComputeDefaultValues = (
       ) ?? ''
     );
   }
+
+  if (attributeName === INPUT_AUTHORIZED_MEMBERS) {
+    const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
+      .map((v) => {
+        const parsed = JSON.parse(v.id);
+        const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
+        return {
+          id: parsed.id,
+          name: member?.node.name ?? '',
+          entity_type: member?.node.entity_type ?? '',
+          access_right: parsed.access_right,
+        };
+      })
+      .filter((v) => !!v.id && !!v.access_right);
+
+    return defaultAuthorizedMembers.length > 0
+      ? authorizedMembersToOptions(defaultAuthorizedMembers)
+      : null;
+  }
+
   // Handle OV
   if (ovCategory) {
     if (multiple) {

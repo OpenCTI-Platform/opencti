@@ -112,6 +112,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_AUTHORIZED_MEMBERS,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -189,6 +190,7 @@ import {
   isUserCanAccessStoreElement,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  MEMBER_ACCESS_CREATOR,
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
@@ -240,6 +242,7 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2250,7 +2253,19 @@ export const fillDefaultValues = (user, input, entitySetting) => {
     .filter((attr) => INPUT_MARKINGS !== attr.name)
     .forEach((attr) => {
       if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
-        filledValues.set(attr.name, getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name)));
+        const defaultValue = getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name));
+
+        if (attr.name === INPUT_AUTHORIZED_MEMBERS && defaultValue) {
+          const defaultAuthorizedMembers = defaultValue.map((v) => JSON.parse(v));
+          // Replace dynamic creator rule with the id of the user making the query.
+          const creator = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+          if (creator) {
+            creator.id = user.id;
+          }
+          filledValues.set(attr.name, defaultAuthorizedMembers);
+        } else {
+          filledValues.set(attr.name, defaultValue);
+        }
       }
     });
 
@@ -3098,6 +3113,13 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
+  }
+  // Feedback
+  if (type === ENTITY_TYPE_CONTAINER_FEEDBACK && !R.isNil(input.authorizedMembers)) {
+    data = R.pipe(
+      R.assoc('authorized_members', input.authorizedMembers),
+      R.dissoc('authorizedMembers'),
+    )(data);
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];

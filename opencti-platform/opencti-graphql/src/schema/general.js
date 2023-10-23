@@ -7,6 +7,7 @@ export const STIX_TYPE_SIGHTING = 'sighting';
 
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNORGARESTRICT';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
+export const KNOWLEDGE_MANAGE_AUTH_MEMBERS = 'KNMANAGEAUTHMEMBERS';
 export const KNOWLEDGE_UPDATE = 'KNUPDATE';
 export const KNOWLEDGE_COLLABORATION = 'KNPARTICIPATE';
 
@@ -32,6 +33,7 @@ export const INPUT_DOMAIN_FROM = 'from'; // source_ref
 export const INPUT_DOMAIN_TO = 'to'; // target_ref
 export const INPUT_BORN_IN = 'bornIn'; // Extension (TIM)
 export const INPUT_ETHNICITY = 'ethnicity'; // Extension (TIM)
+export const INPUT_AUTHORIZED_MEMBERS = 'authorized_members'; // Extension (TIM)
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';

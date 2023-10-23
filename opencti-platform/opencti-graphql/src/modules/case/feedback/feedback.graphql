@@ -134,6 +134,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: ParticipantConnection
   # Feedback
   rating: Int
+  authorizedMembers: [MemberAccess!]
+  currentUserAccessRight: String
 }
 
 # Ordering
@@ -202,9 +204,11 @@ input FeedbackAddInput {
   clientMutationId: String
   update: Boolean
   rating: Int
+  authorizedMembers: [MemberAccessInput!]
 }
 
 type Mutation {
   feedbackAdd(input: FeedbackAddInput!): Feedback @auth
   feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  feedbackEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }

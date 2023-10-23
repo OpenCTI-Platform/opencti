@@ -50,7 +50,7 @@ export const editAuthorizedMembers = async (context: AuthContext, user: AuthUser
   const filteredInput = input.filter((value, index, array) => {
     return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
   });
-  const hasValidAdmin = await containsValidAdmin(context, filteredInput);
+  const hasValidAdmin = await containsValidAdmin(context, filteredInput, ['EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE']);
   if (!hasValidAdmin) {
     throw FunctionalError('Workspace should have at least one admin');
   }

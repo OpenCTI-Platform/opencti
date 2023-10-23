@@ -6,13 +6,14 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
+import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
 import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
+import { INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -84,7 +85,10 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         onClick={handleOpenUpdate}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShortTextOutlined />
+          {attribute.name === INPUT_AUTHORIZED_MEMBERS
+            ? <LockPersonOutlined fontSize="small" color="warning" />
+            : <ShortTextOutlined />
+          }
         </ListItemIcon>
         <ListItemText
           primary={

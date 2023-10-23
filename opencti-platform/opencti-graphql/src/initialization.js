@@ -32,6 +32,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
 import {
   KNOWLEDGE_COLLABORATION,
   KNOWLEDGE_DELETE,
+  KNOWLEDGE_MANAGE_AUTH_MEMBERS,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   KNOWLEDGE_UPDATE
 } from './schema/general';
@@ -70,7 +71,8 @@ const KNOWLEDGE_CAPABILITIES = {
       attribute_order: 200,
       dependencies: [
         { name: KNOWLEDGE_ORGANIZATION_RESTRICT, attribute_order: 290, description: 'Restrict organization access' },
-        { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }
+        { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 },
+        { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
       ],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },

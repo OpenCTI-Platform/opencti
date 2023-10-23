@@ -5,8 +5,9 @@ import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
 import {
   type AuthorizedMember,
-  BYPASS,
+  isUserHasCapabilities,
   MEMBER_ACCESS_ALL,
+  MEMBER_ACCESS_CREATOR,
   MEMBER_ACCESS_RIGHT_ADMIN,
   SYSTEM_USER,
   validateUserAccessOperation
@@ -46,15 +47,10 @@ export const getAuthorizedMembers = async (
   return authorizedMembers;
 };
 
-const hasExplorationCapabilities = (u: AuthUser) => {
-  const userCapabilities = u.capabilities.map((n) => n.name);
-  return userCapabilities.includes(BYPASS)
-    || (userCapabilities.includes('EXPLORE_EXUPDATE_EXDELETE') && userCapabilities.includes('EXPLORE_EXUPDATE'));
-};
-
 export const containsValidAdmin = async (
   context: AuthContext,
   authorized_members: Array<AuthorizedMember>,
+  requiredCapabilities: string[] = []
 ) => {
   const adminIds = authorized_members
     .filter((n) => n.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
@@ -62,7 +58,7 @@ export const containsValidAdmin = async (
   if (adminIds.length === 0) { // no admin
     return false;
   }
-  if (adminIds.includes(MEMBER_ACCESS_ALL)) { // everyone is admin
+  if (adminIds.includes(MEMBER_ACCESS_ALL) || adminIds.includes(MEMBER_ACCESS_CREATOR)) { // everyone  or creator is admin
     return true;
   }
   // find the users that have admin rights
@@ -79,9 +75,8 @@ export const containsValidAdmin = async (
   // resolve the users
   const users: (AuthUser | undefined)[] = await Promise.all(userIds.map((userId) => findUser(context, SYSTEM_USER, userId)));
   // restrict to the users that exist and have admin exploration capability
-  const authorizedUsers = users.filter((u) => u && hasExplorationCapabilities(u));
-  if (authorizedUsers.length > 0) { // at least 1 user with admin access and admin exploration capability
-    return true;
-  }
-  return false;
+  const authorizedUsers = users.filter((u) => u && isUserHasCapabilities(u, requiredCapabilities));
+
+  // at least 1 user with admin access and admin exploration capability
+  return authorizedUsers.length > 0;
 };

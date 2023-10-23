@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik, FormikErrors, FormikValues } from 'formik';
 import Button from '@mui/material/Button';
@@ -8,6 +8,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { head } from 'ramda';
 import Alert from '@mui/lab/Alert/Alert';
 import Drawer from '@components/common/drawer/Drawer';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/SwitchField';
@@ -30,6 +32,8 @@ import RichTextField from '../../../../../components/RichTextField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../../common/form/KillChainPhasesField';
 import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
+import { fetchQuery, handleErrorInForm } from '../../../../../relay/environment';
+import { AccessRight, INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -52,6 +56,20 @@ const entitySettingAttributeEditionPatch = graphql`
   }
 `;
 
+const entitySettingAttributeEditionMembersQuery = graphql`
+  query EntitySettingAttributeEditionMembersQuery($filters: [MembersFiltering]) {
+    members(filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+`;
+
 const attributeValidation = () => Yup.object().shape({
   mandatory: Yup.boolean().nullable(),
   default_values: Yup.mixed().nullable(),
@@ -69,17 +87,19 @@ interface AttributeSubmitValues {
   scale?: { local_config: ScaleConfig };
 }
 
+interface EntitySettingAttributeEditionProps {
+  attribute: EntitySettingAttributeLine_attribute$data
+  handleClose: () => void
+  entitySetting: EntitySettingAttributes_entitySetting$data
+  open?: boolean
+}
+
 const EntitySettingAttributeEdition = ({
   attribute,
   handleClose,
   entitySetting,
   open,
-}: {
-  attribute: EntitySettingAttributeLine_attribute$data
-  handleClose: () => void
-  entitySetting: EntitySettingAttributes_entitySetting$data
-  open?: boolean
-}) => {
+}: EntitySettingAttributeEditionProps) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const { fieldToCategory } = useVocabularyCategory();
@@ -98,6 +118,30 @@ const EntitySettingAttributeEdition = ({
 
   const [commit] = useMutation(entitySettingAttributeEditionPatch);
 
+  const [membersData, setMembersData] = useState<EntitySettingAttributeEditionMembersQuery$data>();
+
+  useEffect(() => {
+    if (attribute.name === INPUT_AUTHORIZED_MEMBERS) {
+      const defaultAuthorizedMembers: { id: string, access_right: AccessRight }[] = (attribute.defaultValues ?? [])
+        .map((v) => JSON.parse(v.id))
+        .filter((v) => !!v.id && !!v.access_right);
+
+      const fetchMembers = async () => {
+        // Old way to fetch query here because doing it new way is a bit complicated
+        // due to the fact that this component managed all types of fields and this
+        // query is used only for one particular case.
+        const data = (await fetchQuery(entitySettingAttributeEditionMembersQuery, {
+          filters: {
+            key: 'id',
+            values: defaultAuthorizedMembers.map((m) => m.id),
+          },
+        }).toPromise()) as EntitySettingAttributeEditionMembersQuery$data;
+        setMembersData(data);
+      };
+      fetchMembers();
+    }
+  }, []);
+
   const isBoolean = (defaultValues: string | boolean | Option) => {
     return typeof defaultValues === 'boolean';
   };
@@ -115,21 +159,23 @@ const EntitySettingAttributeEdition = ({
 
   const onSubmit: FormikConfig<AttributeFormikValues>['onSubmit'] = (
     values,
-    { setSubmitting },
+    { setSubmitting, setErrors },
   ) => {
     const saveConfiguration = [...attributesConfiguration];
-    const defaultValues:
-    | string
-    | boolean
-    | Option
-    | string[]
-    | Option[]
-    | null = values.default_values;
+    const defaultValues = values.default_values;
     let default_values: string[] | null = null;
+
     if (defaultValues) {
       if (Array.isArray(defaultValues)) {
+        if (attribute.name === INPUT_AUTHORIZED_MEMBERS) {
+          default_values = (defaultValues as Option[])
+            .filter((v) => v.accessRight !== 'none')
+            .map((v) => JSON.stringify({
+              id: v.value,
+              access_right: v.accessRight,
+            }));
+        } else if (isMultipleOption(defaultValues)) {
         // Handle multiple options
-        if (isMultipleOption(defaultValues)) {
           default_values = defaultValues.map((v) => (v as Option).value);
         }
         // Handle single option
@@ -143,6 +189,7 @@ const EntitySettingAttributeEdition = ({
         default_values = [defaultValues as string];
       }
     }
+
     const newValues: AttributeSubmitValues = {
       default_values,
     };
@@ -176,6 +223,10 @@ const EntitySettingAttributeEdition = ({
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
     });
   };
@@ -242,6 +293,20 @@ const EntitySettingAttributeEdition = ({
           label={label}
           name="default_values"
           style={fieldSpacingContainerStyle}
+        />
+      );
+    }
+    // Handle authorized members
+    if (attribute.name === INPUT_AUTHORIZED_MEMBERS) {
+      return (
+        <Field
+          name="default_values"
+          component={AuthorizedMembersField}
+          style={fieldSpacingContainerStyle}
+          emptyAccessListLabel={t('No default value for authorized members')}
+          showAllMembersLine
+          showCreatorLine
+          canDeactivate
         />
       );
     }
@@ -353,6 +418,7 @@ const EntitySettingAttributeEdition = ({
       attribute.multiple ?? false,
       attribute.type,
       values,
+      attribute.name === INPUT_AUTHORIZED_MEMBERS ? membersData : undefined,
     );
   };
 

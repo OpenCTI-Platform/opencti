@@ -42,6 +42,7 @@ enum Capabilities {
   KNOWLEDGE_KNPARTICIPATE
   KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -64,6 +65,17 @@ enum MemberType {
   User
   Group
   Organization
+}
+enum MembersFilter {
+  id
+  name
+  entity_type
+}
+input MembersFiltering {
+  key: [MembersFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
 }
 
 ### RELAY
@@ -10895,7 +10907,13 @@ type Query {
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
   participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
-  members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
+  members(
+    first: Int,
+    search: String,
+    filters: [MembersFiltering],
+    filterMode: FilterMode,
+    entityTypes: [MemberType!]
+  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
   users(
     first: Int
     after: ID
