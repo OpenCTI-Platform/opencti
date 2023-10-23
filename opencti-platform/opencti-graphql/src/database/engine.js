@@ -88,7 +88,7 @@ import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } 
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkedAndConvertedFilters } from '../utils/filtering';
+import { checkedAndConvertedFilters, IDS_FILTER, TYPE_FILTER } from '../utils/filtering';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1430,6 +1430,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
   const arrayKeys = Array.isArray(key) ? key : [key];
+  // 00. Handle reliability
   // in case we want to filter by source reliability (reliability of author)
   // we need to find all authors filtered by reliability and filter on these authors
   const sourceReliabilityFilter = arrayKeys.find((k) => k === 'source_reliability');
@@ -1454,8 +1455,17 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       authors.forEach((author) => values.push(author.internal_id));
     }
   }
+  // 01. Handle special keys
   // In case of entity_type filters, we also look by default in the parent_types property.
-  const validKeys = R.uniq(arrayKeys.includes('entity_type') ? [...arrayKeys, 'parent_types'] : arrayKeys);
+  let validKeys = arrayKeys;
+  if (arrayKeys.includes(TYPE_FILTER)) {
+    validKeys.push('parent_types');
+  }
+  if (arrayKeys.includes(IDS_FILTER)) {
+    validKeys.push(ID_INTERNAL, ID_STANDARD, IDS_STIX);
+  }
+  validKeys = R.uniq(validKeys);
+  // 02. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
   // TODO Add connections like filters to have native fromId, toId filters handling.
   // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
@@ -1500,6 +1510,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
     };
     return { nested: nestedQuery };
   }
+  // 03. Handle values according to the operator
   for (let i = 0; i < values.length; i += 1) {
     if (values[i] === null) {
       if (validKeys.length > 1) {
@@ -1564,6 +1575,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
     }
   }
+  // 04. Push the values
   if (valuesFiltering.length > 0) {
     return {
       bool: {
@@ -1592,11 +1604,13 @@ const buildSubQueryForFilterGroup = async (context, user, filterGroup) => {
   const filters = filterGroup.filters ?? filterGroup; // TODO remove support both filterGroup and filters as entry
   const subFilterGroups = filterGroup.filterGroups ?? [];
   const localMustFilters = [];
+  // Handle filterGroups
   for (let index = 0; index < subFilterGroups.length; index += 1) {
     const group = subFilterGroups[index];
     const subQuery = await buildSubQueryForFilterGroup(context, user, group);
     localMustFilters.push(subQuery);
   }
+  // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
     const isValidFilter = filter?.values?.length > 0 || filter?.nested?.length > 0;
@@ -1620,69 +1634,37 @@ const buildSubQueryForFilterGroup = async (context, user, filterGroup) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
-  const { types = null, filters = [], filterMode = 'and', search = null } = options;
+  const { types = null, filterMode = 'and', search = null } = options;
+  let { filters = null } = options;
   const { startDate = null, endDate = null, dateAttribute = null } = options;
-  const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
   const { includeAuthorities = false } = options;
+  // Handle marking restrictions
   const markingRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
-  // Handle ids
-  if (ids.length > 0) {
-    const idsTermsPerType = [];
-    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-      const elementType = elementTypes[indexType];
-      const terms = { [`${elementType}.keyword`]: ids };
-      idsTermsPerType.push({ terms });
+  // Add special keys to filters
+  if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
+    const specialFiltersContent = [];
+    if (ids.length > 0) {
+      specialFiltersContent.push({ key: IDS_FILTER, values: ids });
     }
-    mustFilters.push({ bool: { should: idsTermsPerType, minimum_should_match: 1 } });
-  }
-  // Handle dates
-  if (startDate && endDate) {
-    dateFilter.push({
-      range: {
-        [dateAttribute || 'created_at']: {
-          format: 'strict_date_optional_time',
-          [intervalInclude ? 'gte' : 'gt']: startDate,
-          [intervalInclude ? 'lte' : 'lt']: endDate,
-        },
-      },
-    });
-  } else if (startDate) {
-    dateFilter.push({
-      range: {
-        [dateAttribute || 'created_at']: {
-          format: 'strict_date_optional_time',
-          [intervalInclude ? 'gte' : 'gt']: startDate,
-        },
-      },
-    });
-  } else if (endDate) {
-    dateFilter.push({
-      range: {
-        [dateAttribute || 'created_at']: {
-          format: 'strict_date_optional_time',
-          [intervalInclude ? 'lte' : 'lt']: endDate,
-        },
-      },
-    });
-  }
-  mustFilters.push(...dateFilter);
-  // Handle types
-  if (types !== null && types.length > 0) {
-    const should = R.flatten(
-      types.map((typeValue) => {
-        return [
-          { match_phrase: { 'entity_type.keyword': typeValue } },
-          { match_phrase: { 'parent_types.keyword': typeValue } },
-        ];
-      })
-    );
-    mustFilters.push({ bool: { should, minimum_should_match: 1 } });
+    if (startDate) {
+      specialFiltersContent.push({ key: dateAttribute || 'created_at', values: [startDate], operator: intervalInclude ? 'gte' : 'gt' });
+    }
+    if (endDate) {
+      specialFiltersContent.push({ key: dateAttribute || 'created_at', values: [endDate], operator: intervalInclude ? 'lte' : 'lt' });
+    }
+    if (types !== null && types.length > 0) {
+      specialFiltersContent.push({ key: TYPE_FILTER, values: types });
+    }
+    filters = {
+      mode: 'and',
+      filters: specialFiltersContent,
+      filterGroups: filters,
+    };
   }
   // Handle filters
   const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, filters);

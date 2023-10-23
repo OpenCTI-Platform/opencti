@@ -25,6 +25,7 @@ export const CREATOR_FILTER = 'creator_id';
 export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
+export const IDS_FILTER = 'ids';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const INSTANCE_FILTER = 'elementId';
