@@ -100,7 +100,7 @@ class OpenCTIApiClient:
     :type token: str
     :param log_level: log level for the client
     :type log_level: str, optional
-    :param ssl_verify:
+    :param ssl_verify: Requiring the requests to verify the TLS certificate at the server.
     :type ssl_verify: bool, optional
     :param proxies:
     :type proxies: dict, optional, The proxy configuration, would have `http` and `https` attributes. Defaults to {}
@@ -112,6 +112,10 @@ class OpenCTIApiClient:
         ```
     :param json_logging: format the logs as json if set to True
     :type json_logging: bool, optional
+    :param cert: If String, file path to pem file. If Tuple, a ('path_to_cert.crt', 'path_to_key.key') pair representing the certificate and the key.
+    :type cert: str, tuple, optional
+    :param auth: Add a AuthBase class with custom authentication for you OpenCTI infrastructure.
+    :type auth: requests.auth.AuthBase, optional
     """
 
     def __init__(
@@ -123,6 +127,7 @@ class OpenCTIApiClient:
         proxies=None,
         json_logging=False,
         cert=None,
+        auth=None,
     ):
         """Constructor method"""
 
@@ -157,7 +162,11 @@ class OpenCTIApiClient:
             "User-Agent": "pycti/" + __version__,
             "Authorization": "Bearer " + token,
         }
-        self.session = requests.session()
+
+        if auth is not None:
+            self.session = requests.session(auth=auth)
+        else:
+            self.session = requests.session()
 
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
