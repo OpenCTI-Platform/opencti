@@ -1007,7 +1007,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if self.connector_config["connection"]["use_ssl"]
             else None,
         )
-
         pika_connection = pika.BlockingConnection(pika_parameters)
         channel = pika_connection.channel()
         for sequence, bundle in enumerate(bundles, start=1):
@@ -1020,6 +1019,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 update=update,
             )
         channel.close()
+        pika_connection.close()
         return bundles
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:
