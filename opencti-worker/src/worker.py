@@ -274,24 +274,24 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             else:
                 # Unknown type, just move on.
                 return True
-        except Timeout:
-            error_msg = traceback.format_exc()
+        except Timeout as ex:
+            error = str(ex)
             bundles_timeout_error_counter.add(1)
             self.api.log(
-                "warning", "A connection timeout occurred: {{ " + error_msg + " }}"
+                "warning", "A connection timeout occurred: {{ " + error + " }}"
             )
+            time.sleep(30)
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
             self.data_handler(connection, channel, delivery_tag, data)
             return True
-        except RequestException:
-            error_msg = traceback.format_exc()
+        except RequestException as ex:
+            error = str(ex)
             bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
             self.api.log(
-                "error", "A connection error occurred: {{ " + error_msg + " }}"
+                "error", "A connection error occurred: {{ " + error + " }}"
             )
-            time.sleep(60)
             self.api.log(
                 "info",
                 "Message (delivery_tag="
@@ -348,11 +348,12 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         },
                     )
                 return False
-            elif "ConnectionError" in error_msg:
+            elif "Bad Gateway" in error_msg:
                 bundles_bad_gateway_error_counter.add(1)
                 self.api.log(
                     "error", "A connection error occurred: {{ " + error + " }}"
                 )
+                time.sleep(30)
                 self.api.log(
                     "info",
                     "Message (delivery_tag="

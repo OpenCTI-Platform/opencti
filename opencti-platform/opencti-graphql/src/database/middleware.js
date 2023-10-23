@@ -1985,14 +1985,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         if (relType === RELATION_GRANTED_TO && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
         }
-
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
-
         if (relType === RELATION_OBJECT_MARKING) {
           const markingsCleaned = await handleMarkingOperations(context, initial.objectMarking, refs, operation);
           ({ operation, refs } = { operation: markingsCleaned.operation, refs: markingsCleaned.refs });
         }
-
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
           const currentRels = await listAllRelations(context, user, relType, { fromId: id });
