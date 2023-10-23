@@ -2489,7 +2489,17 @@ const buildRelationTimeFilter = (input) => {
   }
   return args;
 };
-export const buildDynamicFilterArgs = (filters) => {
+
+export const buildDynamicFilterArgsContent = (inputFilters) => {
+  const { filters = [], filterGroups = [] } = inputFilters;
+  // 01. Handle filterGroups
+  const dynamicFilterGroups = [];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
+    const dynamicGroup = buildDynamicFilterArgsContent(group);
+    dynamicFilterGroups.push(dynamicGroup);
+  }
+  // 02. Handle filters
   // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
   // We need to rebuild the filters
   // Extract elementId and relationship_type
@@ -2518,7 +2528,15 @@ export const buildDynamicFilterArgs = (filters) => {
       }];
     }
   }
-  return { connectionFormat: false, first: 500, filters: dynamicFilters };
+  return {
+    mode: inputFilters.mode ?? 'and',
+    filters: dynamicFilters,
+    filterGroups: dynamicFilterGroups,
+  };
+};
+export const buildDynamicFilterArgs = (inputFilters) => {
+  const filters = buildDynamicFilterArgsContent(inputFilters);
+  return { connectionFormat: false, first: 500, filters };
 };
 
 const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
