@@ -353,18 +353,16 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
-  const builtFilters = { ...args };
+  const builtArgs = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
   const { elementId, elementWithTargetTypes = [] } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
-  const { filters = [] } = args;
+  const { filters = null } = args;
   // Config
-  const customFilters = (Array.isArray(filters) || !filters) ? { // TODO remove hardcoded format and replace by 'filter' when front is migrated
-    mode: 'and',
-    filters: filters ?? [],
-    filterGroups: [],
-  } : filters;
+  // TODO remove hardcoded format and replace newFilters by filters when front is migrated
+  const newFilters = (Array.isArray(filters) || !filters) ? { mode: 'and', filters: [], filterGroups: [] } : filters;
+  const customFiltersContent = newFilters?.filters ?? [];
   // region element
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
@@ -372,7 +370,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
-    customFilters.filters.push({ key: 'connections', nested: nestedElement });
+    customFiltersContent.push({ key: 'connections', nested: nestedElement });
   }
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
@@ -383,7 +381,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     }
   }
   if (nestedElementTypes.length > 0) {
-    customFilters.filters.push({ key: 'connections', nested: nestedElementTypes });
+    customFiltersContent.push({ key: 'connections', nested: nestedElementTypes });
   }
   // endregion
   // region from filtering
@@ -400,7 +398,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
   }
   if (nestedFrom.length > 0) {
-    customFilters.filters.push({ key: 'connections', nested: nestedFrom });
+    customFiltersContent.push({ key: 'connections', nested: nestedFrom });
   }
   // endregion
   // region to filtering
@@ -417,13 +415,17 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedTo.length > 0) {
-    customFilters.filters.push({ key: 'connections', nested: nestedTo });
+    customFiltersContent.push({ key: 'connections', nested: nestedTo });
   }
   // endregion
   // Override some special filters
-  builtFilters.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
-  builtFilters.filters = customFilters;
-  return builtFilters;
+  builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
+  const customFilters = {
+    mode: newFilters?.mode ?? 'and',
+    filters: customFiltersContent,
+    filterGroups: newFilters?.filterGroups ?? [],
+  };
+  return { ...builtArgs, filters: customFilters };
 };
 
 const entitiesAggregations = [
