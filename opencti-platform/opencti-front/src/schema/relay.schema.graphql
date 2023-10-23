@@ -7957,6 +7957,7 @@ enum StixSightingRelationshipsFilter {
   toPatternType
   toMainObservableType
   x_opencti_workflow_id
+  creator
 }
 
 input StixSightingRelationshipsFiltering {

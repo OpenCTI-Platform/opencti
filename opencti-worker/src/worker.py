@@ -280,7 +280,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.api.log(
                 "warning", "A connection timeout occurred: {{ " + error + " }}"
             )
-            time.sleep(30)
+            time.sleep(60)
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
@@ -353,7 +353,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 self.api.log(
                     "error", "A connection error occurred: {{ " + error + " }}"
                 )
-                time.sleep(30)
+                time.sleep(60)
                 self.api.log(
                     "info",
                     "Message (delivery_tag="

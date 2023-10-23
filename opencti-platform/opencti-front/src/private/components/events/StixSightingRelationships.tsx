@@ -145,6 +145,7 @@ const StixSightingRelationships = () => {
             'created_end_date',
             'toSightingId',
             'x_opencti_negative',
+            'creator',
           ]}
         >
           <QueryRenderer

@@ -24412,6 +24412,7 @@ export enum StixSightingRelationshipsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   FromId = 'fromId',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
