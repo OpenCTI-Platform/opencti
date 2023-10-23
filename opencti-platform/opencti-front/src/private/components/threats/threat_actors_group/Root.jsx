@@ -172,6 +172,7 @@ class RootThreatActorGroup extends Component {
                             entityType={'Threat-Actor-Group'}
                             stixDomainObject={props.threatActorGroup}
                             PopoverComponent={<ThreatActorGroupPopover />}
+                            enableQuickExport={true}
                           />
                           <FileManager
                             {...routeProps}

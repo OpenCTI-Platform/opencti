@@ -34,6 +34,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
           entityType="Threat-Actor-Group"
           stixDomainObject={threatActorGroup}
           PopoverComponent={<ThreatActorGroupPopover />}
+          enableQuickExport={false}
         />
         <Route
           exact

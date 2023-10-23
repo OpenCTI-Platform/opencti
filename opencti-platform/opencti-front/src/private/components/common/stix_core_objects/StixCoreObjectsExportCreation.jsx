@@ -23,6 +23,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
   createButton: {
@@ -198,6 +199,23 @@ const StixCoreObjectsExportCreationComponent = ({
                                     {value}
                                   </MenuItem>
                                 ))}
+                              </Field>
+                              <Field
+                                  component={SelectField}
+                                  variant="standard"
+                                  name="type"
+                                  label={t('Export type')}
+                                  fullWidth={true}
+                                  containerstyle={fieldSpacingContainerStyle}
+                              >
+                                <MenuItem value="simple">
+                                  {t('Simple export (just the entity)')}
+                                </MenuItem>
+                                <MenuItem value="full">
+                                  {t(
+                                    'Full export (entity and first neighbours)',
+                                  )}
+                                </MenuItem>
                               </Field>
                               <Field
                                 component={SelectField}

@@ -32,6 +32,7 @@ class ChannelKnowledgeComponent extends Component {
           entityType={'Channel'}
           stixDomainObject={channel}
           PopoverComponent={<ChannelPopover />}
+          enableQuickExport={false}
         />
         <Switch>
           <Route

@@ -97,6 +97,7 @@ const DataComponent: FunctionComponent<{
         PopoverComponent={
           <DataComponentPopover dataComponentId={dataComponent.id} />
         }
+        enableQuickExport={true}
       />
       <Grid
         container={true}

@@ -20,7 +20,7 @@ const StixCyberObservableKnowledge = (props) => {
   const { stixCyberObservable, classes } = props;
   return (
     <div className={classes.container}>
-      <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
+      <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} enableQuickExport={false}/>
       <div style={{ marginTop: 20 }}>
         <StixCyberObservableNestedEntities
           entityId={stixCyberObservable.id}

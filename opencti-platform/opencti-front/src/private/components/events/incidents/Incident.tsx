@@ -119,6 +119,7 @@ const Incident = ({
         stixDomainObject={incident}
         PopoverComponent={IncidentPopover}
         enableQuickSubscription
+        enableQuickExport
       />
       <Grid
         container={true}

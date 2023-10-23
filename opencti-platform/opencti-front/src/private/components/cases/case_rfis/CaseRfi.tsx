@@ -86,6 +86,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
         PopoverComponent={<CaseRfiPopover id={caseRfiData.id} />}
         enableSuggestions={false}
         enableQuickSubscription={true}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

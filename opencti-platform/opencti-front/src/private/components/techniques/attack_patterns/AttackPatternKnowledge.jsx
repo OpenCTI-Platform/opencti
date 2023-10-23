@@ -32,6 +32,7 @@ class AttackPatternKnowledgeComponent extends Component {
           entityType={'Attack-Pattern'}
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
+          enableQuickExport={false}
         />
         <Switch>
           <Route

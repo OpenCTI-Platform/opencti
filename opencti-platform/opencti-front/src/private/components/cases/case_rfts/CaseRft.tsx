@@ -86,6 +86,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         PopoverComponent={<CaseRftPopover id={caseRftData.id} />}
         enableSuggestions={false}
         enableQuickSubscription={true}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

@@ -284,6 +284,7 @@ class CaseRfiKnowledgeComponent extends Component {
             modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
+            enableQuickExport={false}
           />
         )}
         <Route

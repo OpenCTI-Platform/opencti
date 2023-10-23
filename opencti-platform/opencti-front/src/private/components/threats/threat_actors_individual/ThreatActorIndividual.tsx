@@ -173,6 +173,7 @@ const ThreatActorIndividualComponent = ({
         stixDomainObject={threatActorIndividual}
         PopoverComponent={ThreatActorIndividualPopover}
         enableQuickSubscription={true}
+        enableQuickExport
       />
       <Grid
         container={true}

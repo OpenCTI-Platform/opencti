@@ -42,6 +42,7 @@ DataSourceKnowledgeComponentProps
         entityType={'Data-Source'}
         stixDomainObject={dataSource}
         PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+        enableQuickExport={false}
       />
       <Switch>
         <Route

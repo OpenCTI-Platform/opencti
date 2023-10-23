@@ -33,6 +33,7 @@ class ChannelComponent extends Component {
           entityType="Channel"
           stixDomainObject={channel}
           PopoverComponent={<ChannelPopover />}
+          enableQuickExport={true}
         />
         <Grid
           container={true}

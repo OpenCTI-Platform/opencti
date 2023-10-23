@@ -36,6 +36,7 @@ class AttackPatternComponent extends Component {
           entityType={'Attack-Pattern'}
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
+          enableQuickExport={true}
         />
         <Grid
           container={true}

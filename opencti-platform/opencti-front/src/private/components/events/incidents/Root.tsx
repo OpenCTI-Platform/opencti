@@ -108,6 +108,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                     stixDomainObject={incident}
                     PopoverComponent={IncidentPopover}
                     disableSharing={true}
+                    enableQuickExport={true}
                   />
                   <StixDomainObjectContent
                     {...routeProps}

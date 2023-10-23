@@ -99,6 +99,7 @@ const IntrusionSetComponent = ({
         stixDomainObject={intrusionSetData}
         PopoverComponent={<IntrusionSetPopover />}
         enableQuickSubscription={true}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

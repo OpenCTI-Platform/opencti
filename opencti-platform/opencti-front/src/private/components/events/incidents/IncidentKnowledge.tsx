@@ -52,6 +52,7 @@ const IncidentKnowledge = ({
         entityType={'Incident'}
         stixDomainObject={incident}
         PopoverComponent={IncidentPopover}
+        enableQuickExport={false}
       />
       <Switch>
         <Route

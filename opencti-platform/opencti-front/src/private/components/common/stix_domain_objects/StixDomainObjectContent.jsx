@@ -384,6 +384,7 @@ class StixDomainObjectContentComponent extends Component {
 
   render() {
     const { classes, stixDomainObject, t } = this.props;
+
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -402,6 +403,7 @@ class StixDomainObjectContentComponent extends Component {
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 190;
+
     return (
       <div className={classes.container}>
         <StixDomainObjectContentFiles
@@ -621,6 +623,14 @@ const StixDomainObjectContent = createRefetchContainer(
               metaData {
                 mimetype
               }
+            }
+          }
+        }
+        exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
+          edges {
+            node {
+              id
+              ...FileLine_file
             }
           }
         }

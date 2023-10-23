@@ -107,6 +107,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         isOpenctiAlias={true}
         PopoverComponent={<RegionPopover id={region.id} />}
         enableQuickSubscription={true}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

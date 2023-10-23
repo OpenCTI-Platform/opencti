@@ -96,6 +96,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
         disableSharing={true}
         stixDomainObject={dataSource}
         PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

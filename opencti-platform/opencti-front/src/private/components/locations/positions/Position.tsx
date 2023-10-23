@@ -52,6 +52,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         stixDomainObject={position}
         isOpenctiAlias={true}
         PopoverComponent={<PositionPopover />}
+        enableQuickExport={true}
       />
       <Grid
         container={true}

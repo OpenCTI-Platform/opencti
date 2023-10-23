@@ -37,6 +37,7 @@ class IndicatorComponent extends Component {
           stixDomainObject={indicator}
           PopoverComponent={<IndicatorPopover />}
           noAliases={true}
+          enableQuickExport={true}
         />
         <Grid
           container={true}

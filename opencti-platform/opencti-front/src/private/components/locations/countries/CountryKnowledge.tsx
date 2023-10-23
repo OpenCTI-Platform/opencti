@@ -48,6 +48,7 @@ const CountryKnowledgeComponent = ({
         stixDomainObject={country}
         PopoverComponent={CountryPopover}
         variant="noaliases"
+        enableQuickExport={false}
       />
       <Switch>
         <Route

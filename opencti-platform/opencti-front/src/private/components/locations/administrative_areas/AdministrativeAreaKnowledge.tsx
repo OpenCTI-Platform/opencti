@@ -48,6 +48,7 @@ const AdministrativeAreaKnowledge = ({
         stixDomainObject={administrativeArea}
         PopoverComponent={AdministrativeAreaPopover}
         variant="noaliases"
+        enableQuickExport={false}
       />
       <Switch>
         <Route
