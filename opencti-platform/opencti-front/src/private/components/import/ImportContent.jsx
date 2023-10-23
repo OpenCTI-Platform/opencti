@@ -41,6 +41,7 @@ import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
+import {ManageImportConnectorMessage} from "@components/import/ManageImportConnectorMessage";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -171,17 +172,18 @@ const importValidation = (t, configurations) => {
   return Yup.object().shape(shape);
 };
 
+const initState = {
+  fileToImport: null,
+  fileToValidate: null,
+  displayCreate: false,
+  sortBy: 'name',
+  orderAsc: true,
+  selectedConnector: null,
+}
 class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      fileToImport: null,
-      fileToValidate: null,
-      displayCreate: false,
-      sortBy: 'name',
-      orderAsc: true,
-      selectedConnector: null,
-    };
+    this.state = {...initState};
   }
 
   componentDidMount() {
@@ -199,7 +201,7 @@ class ImportContentComponent extends Component {
   }
 
   handleCloseImport() {
-    this.setState({ fileToImport: null });
+    this.setState({...initState});
   }
 
   handleOpenValidate(file) {
@@ -301,8 +303,7 @@ class ImportContentComponent extends Component {
     const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations)); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
 
-    const handleSelectConnector = (_, value) => {
-      this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
+    const handleSelectConnector = (_, value) => {this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
 
     return (
@@ -520,7 +521,7 @@ class ImportContentComponent extends Component {
                       containerstyle={{ width: '100%' }}
                       onChange={handleSelectConnector}
                     >
-                      {connectors.map((connector, i) => {
+                      {connectors.map((connector) => {
                         const disabled = !fileToImport
                           || (connector.connector_scope.length > 0
                             && !R.includes(
@@ -529,7 +530,7 @@ class ImportContentComponent extends Component {
                             ));
                         return (
                           <MenuItem
-                            key={i}
+                            key={connector.id}
                             value={connector.id}
                             disabled={disabled || !connector.active}
                           >
@@ -539,7 +540,7 @@ class ImportContentComponent extends Component {
                       })}
                     </Field>
                     {this.state.selectedConnector?.configurations?.length > 0
-                      && <Field
+                      ? <Field
                         component={SelectField}
                         variant="standard"
                         name="configuration"
@@ -547,7 +548,7 @@ class ImportContentComponent extends Component {
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
-                        {this.state.selectedConnector.configurations.map((config) => {
+                        {this.state.selectedConnector.configurations?.map((config) => {
                           return (
                             <MenuItem
                               key={config.id}
@@ -558,6 +559,7 @@ class ImportContentComponent extends Component {
                           );
                         })}
                       </Field>
+                        : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
                   </DialogContent>
                   <DialogActions>
