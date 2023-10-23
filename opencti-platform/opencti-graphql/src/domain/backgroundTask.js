@@ -44,14 +44,12 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
       filterGroups: [],
     };
   }
-  const { filters, filterGroups } = adaptedFiltersGroup;
+  const { filters, filterGroups = [] } = adaptedFiltersGroup;
   const queryFilterGroups = [];
-  if (filterGroups && filterGroups.length > 0) {
-    for (let index = 0; index < filterGroups.length; index += 1) {
-      const currentGroup = filterGroups[index];
-      const { filters: filtersResult } = buildQueryFiltersContent(currentGroup);
-      queryFilterGroups.push(filtersResult);
-    }
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const currentGroup = filterGroups[index];
+    const filtersResult = buildQueryFiltersContent(currentGroup);
+    queryFilterGroups.push(filtersResult);
   }
   const queryFilters = [];
   const nestedFrom = [];
@@ -63,7 +61,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
     if (key === TYPE_FILTER) {
       // filter types to keep only the ones that can be handled by background tasks
       const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
-      queryFilters.push({ key, values: filteredTypes, operator, mode }); // also push types in the filters !
+      queryFilters.push({ key, values: filteredTypes, operator, mode });
     } else if (key === 'elementId') {
       const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
       queryFilters.push({ key: 'connections', nested: nestedElement });
@@ -106,14 +104,17 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
 };
 
 const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
+  // Construct filters
   let adaptedFilterGroup;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
     adaptedFilterGroup = await convertFiltersFrontendFormat(context, user, filters);
   }
   const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
+  // Avoid empty type which will target internal objects and relationships as well
+  const types = newFilters.filters.filter((f) => f.key === TYPE_FILTER)?.values ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   return {
-    types: [ABSTRACT_STIX_DOMAIN_OBJECT], // Avoid empty type which will target internal objects and relationships as well
+    types,
     first: MAX_TASK_ELEMENTS,
     orderMode: 'asc',
     orderBy: 'created_at',
