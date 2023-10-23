@@ -13,7 +13,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  findFilterFromKey,
+  findFilterIndexFromKey,
+  initialFilterGroup,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -79,18 +84,54 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key, id, value) => {
-    let newFilters;
-    if (filters[key] && filters[key].length > 0) {
-      newFilters = {
-        ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+  const filtersWithHandleAddFilter = (k, id, op) => {
+    if (filters && findFilterFromKey(filters.filters, k, op)) {
+      const filter = findFilterFromKey(filters.filters, k, op);
+      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+      const newFilterElement = {
+        key: k,
+        values: newValues,
+        operator: op,
+        mode: 'or',
       };
-    } else {
-      newFilters = { ...filters, [key]: [{ id, value }] };
+      const newBaseFilters = {
+        ...filters,
+        filters: [
+          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+          newFilterElement, // add new filter
+        ],
+      };
+      return newBaseFilters;
     }
+    const newFilterElement = {
+      key: k,
+      values: [id],
+      operator: op ?? 'eq',
+      mode: 'or',
+    };
+    const newBaseFilters = filters ? {
+      ...filters,
+      filters: [...filters.filters, newFilterElement], // add new filter
+    } : {
+      mode: 'and',
+      filterGroups: [],
+      filters: [newFilterElement],
+    };
+    return newBaseFilters;
+  };
+  const filtersWithHandleRemoveFilter = (k, op = 'eq') => {
+    if (filters) {
+      const newBaseFilters = {
+        ...filters,
+        filters: filters.filters
+          .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+      };
+      return newBaseFilters;
+    }
+    return undefined;
+  };
+  const handleAddFilter = (key, id, op = 'eq') => {
+    const newFilters = filtersWithHandleAddFilter(key, id, op);
     const jsonFilters = JSON.stringify(newFilters);
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
@@ -103,8 +144,8 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       },
     });
   };
-  const handleRemoveFilter = (key) => {
-    const newFilters = R.dissoc(key, filters);
+  const handleRemoveFilter = (key, op = 'eq') => {
+    const newFilters = filtersWithHandleRemoveFilter(key, op);
     const jsonFilters = JSON.stringify(newFilters);
     const variables = {
       id: streamCollection.id,
@@ -115,6 +156,50 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       variables,
       onCompleted: () => {
         setFilters(newFilters);
+      },
+    });
+  };
+  const handleSwitchLocalMode = (localFilter) => {
+    let newFiltersContent;
+    if (filters) {
+      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+      if (filterIndex !== null) {
+        newFiltersContent = [...filters.filters];
+        newFiltersContent[filterIndex] = {
+          ...localFilter,
+          mode: localFilter.mode === 'and' ? 'or' : 'and',
+        };
+      }
+    }
+    const variables = {
+      id: streamCollection.id,
+      input: { key: 'filters', value: JSON.stringify(newFiltersContent) },
+    };
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFiltersContent);
+      },
+    });
+  };
+
+  const handleSwitchGlobalMode = () => {
+    const newFiltersContent = filters
+      ? {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      }
+      : initialFilterGroup;
+    const variables = {
+      id: streamCollection.id,
+      input: { key: 'filters', value: JSON.stringify(newFiltersContent) },
+    };
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFiltersContent);
       },
     });
   };
@@ -206,6 +291,8 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
             classNameNumber={2}
             styleNumber={2}
             handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
             redirection
           />
         </Form>
