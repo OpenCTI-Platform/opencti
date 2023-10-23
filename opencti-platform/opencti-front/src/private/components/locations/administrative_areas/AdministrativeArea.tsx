@@ -102,6 +102,7 @@ const AdministrativeArea = ({
         isOpenctiAlias={true}
         PopoverComponent={AdministrativeAreaPopover}
         enableQuickSubscription={true}
+        enableQuickExport={true}
       />
       <Grid
         container={true}
