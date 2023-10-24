@@ -20,7 +20,6 @@ const InvestigationAddStixCoreObjects = (props) => {
   const {
     targetStixCoreObjectTypes,
     workspaceId,
-    paginationOptions,
     onAdd,
     onDelete,
     selectedText,
@@ -186,7 +185,6 @@ const InvestigationAddStixCoreObjects = (props) => {
                   <InvestigationAddStixCoreObjectsLines
                     data={renderProps}
                     workspaceId={workspaceId}
-                    paginationOptions={paginationOptions}
                     dataColumns={buildColumns(platformModuleHelpers)}
                     initialLoading={renderProps === null}
                     onAdd={onAdd}

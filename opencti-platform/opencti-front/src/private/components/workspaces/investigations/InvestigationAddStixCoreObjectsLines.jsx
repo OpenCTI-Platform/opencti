@@ -105,7 +105,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const { workspaceId, paginationOptions, onAdd, onDelete } = this.props;
+    const { workspaceId, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
     const alreadyAdded = stixCoreObject.id in addedStixCoreObjects;
     if (alreadyAdded) {
@@ -119,21 +119,12 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
             value: stixCoreObject.id,
           },
         },
-        updater: (store) => {
-          const options = { ...paginationOptions };
-          delete options.id;
-          delete options.count;
-          const conn = ConnectionHandler.getConnection(
-            store.get(workspaceId),
-            'Pagination_objects',
-            options,
-          );
-          ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-        },
         onCompleted: () => {
           this.setState({
-            addedStixCoreObjects: addedStixCoreObjects
-              .filter((n) => n !== stixCoreObject.id),
+            addedStixCoreObjects: R.dissoc(
+              stixCoreObject.id,
+              this.state.addedStixCoreObjects,
+            ),
           });
           if (typeof onDelete === 'function') {
             onDelete(stixCoreObject);
@@ -151,21 +142,6 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         variables: {
           id: workspaceId,
           input,
-        },
-        updater: (store) => {
-          const options = { ...paginationOptions };
-          delete options.id;
-          delete options.count;
-          insertNode(
-            store,
-            'Pagination_objects',
-            options,
-            'workspaceFieldPatch',
-            workspaceId,
-            '',
-            input,
-            '',
-          );
         },
         onCompleted: () => {
           this.setState({
@@ -216,7 +192,6 @@ InvestigationAddStixCoreObjectsLinesInvestigation.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  paginationOptions: PropTypes.object,
   workspaceStixCoreObjects: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
