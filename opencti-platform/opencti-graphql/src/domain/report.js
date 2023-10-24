@@ -142,13 +142,12 @@ export const addReport = async (context, user, report) => {
 // Delete all report contained entities if no other reports are linked
 const buildReportDeleteElementsFilter = (reportId) => {
   const refKey = buildRefRelationKey(RELATION_OBJECT);
-  const filters = [
-    { key: [refKey], values: [reportId] },
-    { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
-  ];
   return {
     mode: 'and',
-    filters,
+    filters: [
+      { key: [refKey], values: [reportId] },
+      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
+    ],
     filterGroups: [],
   };
 };
