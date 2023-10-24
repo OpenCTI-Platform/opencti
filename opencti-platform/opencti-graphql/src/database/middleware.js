@@ -114,7 +114,6 @@ import {
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -241,7 +240,7 @@ import { generateCreateMessage, generateUpdateMessage } from './generate-message
 import { confidence } from '../schema/attribute-definition';
 
 // region global variables
-export const MAX_BATCH_SIZE = 300;
+const MAX_BATCH_SIZE = 300;
 // endregion
 
 // region Loader common
@@ -3218,20 +3217,6 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
 export const createEntity = async (context, user, input, type, opts = {}) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
-  if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
-    const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
-    const firstSequence = objectSequences.shift();
-    const subObjectsEntity = R.assoc(INPUT_OBJECTS, firstSequence, input);
-    const created = await createEntityRaw(context, user, subObjectsEntity, type, opts);
-    // For each subsequences of objects
-    // We need to produce a batch upsert of object that will be upserted.
-    for (let index = 0; index < objectSequences.length; index += 1) {
-      const objectSequence = objectSequences[index];
-      const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
-      await createEntityRaw(context, user, upsertInput, type, opts);
-    }
-    return isCompleteResult ? created : created.element;
-  }
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
