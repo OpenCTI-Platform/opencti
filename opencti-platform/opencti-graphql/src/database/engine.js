@@ -88,7 +88,7 @@ import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } 
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkedAndConvertedFilters, IDS_FILTER, TYPE_FILTER } from '../utils/filtering';
+import { checkedAndConvertedFilters, IDS_FILTER, isNotEmptyFilters, TYPE_FILTER } from '../utils/filtering';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1635,7 +1635,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, filterMode = 'and', search = null } = options;
-  let { filters = null } = options;
+  const { filters = null } = options;
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -1646,8 +1646,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
   // Add special keys to filters
+  const specialFiltersContent = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
-    const specialFiltersContent = [];
     if (ids.length > 0) {
       specialFiltersContent.push({ key: IDS_FILTER, values: ids });
     }
@@ -1658,18 +1658,22 @@ const elQueryBodyBuilder = async (context, user, options) => {
       specialFiltersContent.push({ key: dateAttribute || 'created_at', values: [endDate], operator: intervalInclude ? 'lte' : 'lt' });
     }
     if (types !== null && types.length > 0) {
-      specialFiltersContent.push({ key: TYPE_FILTER, values: types });
+      specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
-    filters = {
+  }
+  const completeFilters = specialFiltersContent.length > 0
+    ? {
       mode: 'and',
       filters: specialFiltersContent,
-      filterGroups: filters,
-    };
-  }
+      filterGroups: isNotEmptyFilters(filters) ? [filters] : [],
+    }
+    : filters;
   // Handle filters
-  const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, filters);
-  if (filtersSubQuery) {
-    mustFilters.push(filtersSubQuery);
+  if (isNotEmptyFilters(completeFilters)) {
+    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, completeFilters);
+    if (filtersSubQuery) {
+      mustFilters.push(filtersSubQuery);
+    }
   }
   // Handle search
   if (search !== null && search.length > 0) {
