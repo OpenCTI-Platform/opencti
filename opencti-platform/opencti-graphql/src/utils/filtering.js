@@ -676,10 +676,43 @@ export const extractFilterIds = (filters, key = null) => {
   return uniq(ids);
 };
 
-export const checkedAndConvertedFilters = (filters, entityTypes) => {
-  if (filters?.filters && entityTypes.length > 0) { // TODO replace by filters && XX
+const convertFilterKeys = (inputFilters) => {
+  if (isNotEmptyFilters(inputFilters)) {
+    const { filters = [], filterGroups = [] } = inputFilters;
+    const newFiltersContent = [];
+    const newFilterGroups = [];
+    if (filterGroups.length > 0) {
+      for (let i = 0; i < filterGroups.length; i += 1) {
+        const group = filterGroups[i];
+        const convertedGroup = convertFilterKeys(group);
+        newFilterGroups.push(convertedGroup);
+      }
+    }
+    filters.forEach((f) => {
+      const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
+      const databaseNames = filterKeys.map((key) => schemaRelationsRefDefinition.getDatabaseName(key)).filter((n) => n);
+      console.log('filterKeys', filterKeys);
+      console.log('databaseNames', databaseNames);
+      if (databaseNames.length > 0) {
+        const newKeys = databaseNames.map((name) => buildRefRelationKey(name));
+        newFiltersContent.push({ ...f, key: newKeys });
+      } else {
+        newFiltersContent.push(f);
+      }
+    });
+    return {
+      mode: inputFilters.mode,
+      filters: newFiltersContent,
+      filterGroups: newFilterGroups,
+    };
+  }
+  return inputFilters;
+};
+
+export const checkedAndConvertedFilters = (filters, entityTypes = []) => {
+  // 01. check filters keys correspond to the entity types
+  if (isNotEmptyFilters(filters) && entityTypes.length > 0) {
     const keys = extractFilterKeys(filters);
-    // check filters keys correspond to the entity types
     // correct keys are keys in AT LEAST one of the entity types schema definition
     if (keys.length > 0) {
       let incorrectKeys = keys;
@@ -699,28 +732,9 @@ export const checkedAndConvertedFilters = (filters, entityTypes) => {
         throw Error(`incorrect filter keys: ${incorrectKeys}`); // TODO remove filter keys that are not correct when dev finished
       }
     }
-    const newFilters = [];
-    // translate the filter keys on relation refs
-    filters.filters.forEach((f) => {
-      const key = Array.isArray(f.key) ? f.key[0] : f.key;
-      console.log('entityTypes', entityTypes);
-      const databaseName = schemaRelationsRefDefinition.getDatabaseName(key);
-      console.log('key', key);
-      console.log('databaseName', databaseName);
-      if (databaseName) {
-        const newKey = buildRefRelationKey(databaseName);
-        newFilters.push({ ...f, key: newKey });
-      } else {
-        newFilters.push(f);
-      }
-    });
-    return {
-      mode: filters.mode,
-      filters: newFilters,
-      filterGroups: filters.filterGroups,
-    };
   }
-  return undefined;
+  // 02. translate the filter keys on relation refs and return the converted filters
+  return convertFilterKeys(filters);
 };
 
 export const isNotEmptyFilters = (filters) => {
