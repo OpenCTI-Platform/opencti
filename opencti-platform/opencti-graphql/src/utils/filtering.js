@@ -722,3 +722,7 @@ export const checkedAndConvertedFilters = (filters, entityTypes) => {
   }
   return undefined;
 };
+
+export const isNotEmptyFilters = (filters) => {
+  return filters && ((filters.filters && filters.filters.length > 0) || (filters.filterGroups && filters.filterGroups.length > 0));
+};
