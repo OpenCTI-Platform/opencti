@@ -42,7 +42,6 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
     $confidences: [Int]
     $search: String
     $filters: FilterGroup
-    $filterMode: FilterMode
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -64,7 +63,6 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
     ) {
       label
       value

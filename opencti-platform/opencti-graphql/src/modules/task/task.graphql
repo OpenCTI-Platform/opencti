@@ -47,7 +47,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -61,7 +60,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -84,7 +82,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -102,7 +99,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -113,7 +109,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -172,7 +167,6 @@ type Query {
     orderBy: TasksOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): TaskConnection @auth

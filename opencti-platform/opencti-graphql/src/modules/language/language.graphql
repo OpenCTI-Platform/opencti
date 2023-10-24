@@ -48,7 +48,6 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -62,7 +61,6 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -142,7 +139,6 @@ type Query {
         orderBy: LanguagesOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): LanguageConnection @auth(for: [KNOWLEDGE])
 }

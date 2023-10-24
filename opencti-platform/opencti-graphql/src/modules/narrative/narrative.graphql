@@ -48,7 +48,6 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -62,7 +61,6 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -149,7 +146,6 @@ type Query {
         orderBy: NarrativesOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): NarrativeConnection @auth(for: [KNOWLEDGE])
 }

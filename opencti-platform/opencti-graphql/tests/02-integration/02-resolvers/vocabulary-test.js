@@ -10,7 +10,6 @@ const LIST_QUERY = gql`
     $orderBy: VocabularyOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     vocabularies(
@@ -20,7 +19,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

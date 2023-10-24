@@ -35,7 +35,6 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
     $order: String
     $types: [String]
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     stixCoreObjectsDistribution(
@@ -51,7 +50,6 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
       order: $order
       types: $types
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       label

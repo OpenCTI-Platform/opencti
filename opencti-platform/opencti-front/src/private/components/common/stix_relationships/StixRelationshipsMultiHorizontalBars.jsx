@@ -44,7 +44,6 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
     $confidences: [Int]
     $search: String
     $filters: FilterGroup
-    $filterMode: FilterMode
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
     $subDistributionField: String!
@@ -65,7 +64,6 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
     $subDistributionConfidences: [Int]
     $subDistributionSearch: String
     $subDistributionFilters: FilterGroup
-    $subDistributionFilterMode: FilterMode
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -87,7 +85,6 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
     ) {
@@ -120,7 +117,6 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
             confidences: $subDistributionConfidences
             search: $subDistributionSearch
             filters: $subDistributionFilters
-            filterMode: $subDistributionFilterMode
           ) {
             label
             value
@@ -414,7 +410,6 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
     $confidences: [Int]
     $search: String
     $filters: FilterGroup
-    $filterMode: FilterMode
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
     $subDistributionRelationshipType: [String]
@@ -428,7 +423,6 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
     $subDistributionOrder: String
     $subDistributionTypes: [String]
     $subDistributionFilters: FilterGroup
-    $subDistributionFilterMode: FilterMode
     $subDistributionSearch: String
   ) {
     stixRelationshipsDistribution(
@@ -451,7 +445,6 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
     ) {
@@ -477,7 +470,6 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
             order: $subDistributionOrder
             types: $subDistributionTypes
             filters: $subDistributionFilters
-            filterMode: $subDistributionFilterMode
             search: $subDistributionSearch
           ) {
             label

@@ -39,7 +39,6 @@ type Query {
         orderBy: IngestionRssOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
     ): IngestionRssConnection @auth(for: [SETTINGS])

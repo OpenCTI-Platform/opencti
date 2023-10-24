@@ -48,7 +48,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -62,7 +61,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
   revoked: Boolean!
@@ -103,7 +100,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -114,7 +110,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -174,7 +169,6 @@ type Query {
     orderBy: CasesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CaseConnection @auth(for: [KNOWLEDGE])

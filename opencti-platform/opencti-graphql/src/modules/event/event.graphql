@@ -48,7 +48,6 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -62,7 +61,6 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -151,7 +148,6 @@ type Query {
         orderBy: EventsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): EventConnection @auth(for: [KNOWLEDGE])
 }

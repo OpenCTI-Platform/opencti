@@ -9,7 +9,6 @@ const LIST_QUERY = gql`
     $orderBy: DataSourcesOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     dataSources(
@@ -18,7 +17,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

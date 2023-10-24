@@ -9,7 +9,6 @@ const LIST_QUERY = gql`
         $orderBy: IndicatorsOrdering
         $orderMode: OrderingMode
         $filters: FilterGroup
-        $filterMode: FilterMode
         $search: String
     ) {
         indicators(
@@ -18,7 +17,6 @@ const LIST_QUERY = gql`
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
-            filterMode: $filterMode
             search: $search
         ) {
             edges {

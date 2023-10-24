@@ -90,8 +90,8 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
-  const filteringArgs = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
+  const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
+  const filteringArgs = { search, orderBy, orderMode, filters, relationship_type, elementId };
   const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
   let newArgsFiltersFilters = filteringArgs.filters?.filters ?? [];

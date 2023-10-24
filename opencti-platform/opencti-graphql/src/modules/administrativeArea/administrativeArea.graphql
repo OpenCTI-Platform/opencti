@@ -47,7 +47,6 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -61,7 +60,6 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -84,7 +82,6 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -149,7 +146,6 @@ type Query {
         orderBy: AdministrativeAreasOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])
 }

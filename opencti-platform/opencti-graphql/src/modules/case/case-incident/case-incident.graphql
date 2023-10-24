@@ -48,7 +48,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -62,7 +61,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
   revoked: Boolean!
@@ -103,7 +100,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -114,7 +110,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -181,7 +176,6 @@ type Query {
     orderBy: CaseIncidentsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CaseIncidentConnection @auth(for: [KNOWLEDGE])

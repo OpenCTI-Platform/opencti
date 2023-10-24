@@ -10,7 +10,6 @@ const LIST_QUERY = gql`
     $orderBy: IndividualsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     individuals(
@@ -19,7 +18,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

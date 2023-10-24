@@ -47,8 +47,8 @@ const auditsNumberNumberQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $onlyInferred: Boolean
-    $filters: FilterGroup
-    $filterMode: FilterMode
+    $
+    filters: FilterGroup
     $search: String
   ) {
     auditsNumber(
@@ -57,7 +57,6 @@ const auditsNumberNumberQuery = graphql`
       endDate: $endDate
       onlyInferred: $onlyInferred
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       total

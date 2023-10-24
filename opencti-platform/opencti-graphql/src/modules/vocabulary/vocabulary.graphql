@@ -114,7 +114,6 @@ type Query {
     orderBy: VocabularyOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): VocabularyConnection @auth(for: [KNOWLEDGE])
 }

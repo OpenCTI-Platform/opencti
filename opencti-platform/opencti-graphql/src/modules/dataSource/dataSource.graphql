@@ -49,7 +49,6 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -63,7 +62,6 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -86,7 +84,6 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # Stix Domain Object
     revoked: Boolean!
@@ -147,7 +144,6 @@ type Query {
         orderBy: DataSourcesOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): DataSourceConnection @auth(for: [KNOWLEDGE])
 }

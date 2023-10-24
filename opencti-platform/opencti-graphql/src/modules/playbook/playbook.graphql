@@ -73,7 +73,6 @@ type Query {
         orderBy: PlaybooksOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): PlaybookConnection @auth(for: [SETTINGS_SETACCESSES])
     playbookComponents: [PlaybookComponent]! @auth(for: [SETTINGS_SETACCESSES])
