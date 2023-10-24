@@ -3,6 +3,7 @@
 When you click on "Techniques" in the left-side bar, you access all the "Techniques" tabs, visible on the top bar on the left. By default, the user directly access the "Attack pattern" tab, but can navigate to the other tabs as well.
 
 From the `Techniques` section, users can access the following tabs:
+
 - `Attack pattern`: attacks pattern used by the threat actors to perform their attacks. By default, OpenCTI is provisionned with attack patterns from MITRE ATT&CK matrices (for CTI) and DISARM matrix (for FIMI).
 - `Narratives`: In OpenCTI, narratives used by threat actors can be represented and linked to other Objects. Narratives are mainly used in the context of disinformation campaigns where it is important to trace which narratives have been and are still used by threat actors.
 - `Courses of action`: A Course of Action is an action taken either to prevent an attack or to respond to an attack that is in progress. It may describe technical, automatable responses (applying patches, reconfiguring firewalls) but can also describe higher level actions like employee training or policy changes. For example, a course of action to mitigate a vulnerability could describe applying the patch that fixes it.
@@ -26,6 +27,7 @@ When clicking on the Attack pattern tab at the top left, you access the list of 
 When clicking on an Attack pattern, you land on its Overview tab. For an Attack pattern, the following tabs are accessible:
 
 - Overview: Overview of Attack pattern is a bit different as the usual described [here](overview.md). The "Details" box is more structured and contains information about:
+
    - parent or subtechniques (as in the MITRE ATT&CK matrices), 
    - related kill chain phases
    - Platform on which the Attack pattern is usable,
