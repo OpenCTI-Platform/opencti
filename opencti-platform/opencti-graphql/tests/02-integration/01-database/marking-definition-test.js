@@ -72,20 +72,20 @@ describe('Marking Definition', () => {
   });
   describe('Clean Markings', async () => {
     it('Case add only one marking => output one marking added', async () => {
-      const result = await cleanMarkings(testContext, [clearPAPMarking.id]);
+      const result = await cleanMarkings(testContext, [clearPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id]);
     });
     it('Case add 2 markings same type AND order different => output marking with higher rank added', async () => {
       // Case input 2 markings same type AND order different: output marking with higher rank added
-      const result = await cleanMarkings(testContext, [clearPAPMarking.id, redPAPMarking.id]);
+      const result = await cleanMarkings(testContext, [clearPAPMarking, redPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id]);
     });
     it('Case add 2 markings different type => output both markings added', async () => {
-      const result = await cleanMarkings(testContext, [clearPAPMarking.id, statementMarking1.id]);
+      const result = await cleanMarkings(testContext, [clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id, statementMarking1.id]);
     });
     it('Case add 2 markings same type AND order different AND another type => output marking with higher rank added AND the other type', async () => {
-      const result = await cleanMarkings(testContext, [redPAPMarking.id, clearPAPMarking.id, statementMarking1.id]);
+      const result = await cleanMarkings(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id, statementMarking1.id]);
     });
   });
@@ -100,32 +100,36 @@ describe('Marking Definition', () => {
 
       it('Case add 1 marking, current no marking => add 1 marking', async () => {
         // no markings -> Add PAP 01 => ADD PAP 01
-        const result = await handleMarkingOperations(testContext, [], [clearPAPMarking.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual({ operation: 'add', refs: [clearPAPMarking.id] });
+        const result = await handleMarkingOperations(testContext, [], [clearPAPMarking], UPDATE_OPERATION_ADD);
+        expect(result.operation).toEqual('add');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([clearPAPMarking.id]);
       });
 
       it('Case add 1 marking, current 1 has same type AND lower order => replace 1 marking', async () => {
         // PAP 01 -> Add PAP 04 => REPLACE PAP 04
-        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [redPAPMarking.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual({ operation: 'replace', refs: [redPAPMarking.id] });
+        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [redPAPMarking], UPDATE_OPERATION_ADD);
+        expect(result.operation).toEqual('replace');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([redPAPMarking.id]);
       });
 
       it('Case add 1 marking, current 1 has same type AND same order => add marking', async () => {
         // statement1 00 -> Add statement2 00 => add statement2 00
-        const result = await handleMarkingOperations(testContext, [statementMarking1], [statementMarking2.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual({ operation: 'add', refs: [statementMarking2.id] });
+        const result = await handleMarkingOperations(testContext, [statementMarking1], [statementMarking2], UPDATE_OPERATION_ADD);
+        expect(result.operation).toEqual('add');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([statementMarking2.id]);
       });
 
       it('Case add 1 marking, current 1 has same type AND higher order => do nothing', async () => {
         // PAP 04 -> Add PAP 01 => Do nothing
-        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_ADD);
+        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking], UPDATE_OPERATION_ADD);
         expect(result).toEqual({ operation: 'add', refs: [] });
       });
 
       it('Case add 2 markings, current 1 has same type AND higher order + 1 different type => only add marking not in common', async () => {
         // PAP 04 -> Add PAP 01 => Add marking not in common only
-        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id, statementMarking1.id], UPDATE_OPERATION_ADD);
-        expect(result).toEqual({ operation: 'add', refs: [statementMarking1.id] });
+        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking, statementMarking1], UPDATE_OPERATION_ADD);
+        expect(result.operation).toEqual('add');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([statementMarking1.id]);
       });
     });
 
@@ -138,32 +142,37 @@ describe('Marking Definition', () => {
 
       it('Case add 1 marking, current 1 marking => output replace 1 marking', async () => {
       // PAP 04 -> Add PAP 01 => REPLACE PAP 01
-        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_REPLACE);
-        expect(result).toEqual({ operation: 'replace', refs: [clearPAPMarking.id] });
+        const result = await handleMarkingOperations(testContext, [redPAPMarking], [clearPAPMarking], UPDATE_OPERATION_REPLACE);
+        expect(result.operation).toEqual('replace');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([clearPAPMarking.id]);
       });
 
       it('Case add 1 marking, current 2 markings => output replace with 1 marking', async () => {
         // PAP 01 + statement1 00 -> Add PAP 04 => REPLACE PAP 04
-        const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [redPAPMarking.id], UPDATE_OPERATION_REPLACE);
-        expect(result).toEqual({ operation: 'replace', refs: [redPAPMarking.id] });
+        const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [redPAPMarking], UPDATE_OPERATION_REPLACE);
+        expect(result.operation).toEqual('replace');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([redPAPMarking.id]);
       });
 
       it('Case add 2 markings, current 1 marking => output replace by 2 markings', async () => {
         // PAP 01 -> Add statement1 00 + statement2 00 => ADD statement1 00 + statement2 00
-        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [statementMarking1.id, statementMarking2.id], UPDATE_OPERATION_REPLACE);
-        expect(result).toEqual({ operation: 'replace', refs: [statementMarking1.id, statementMarking2.id] });
+        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [statementMarking1, statementMarking2], UPDATE_OPERATION_REPLACE);
+        expect(result.operation).toEqual('replace');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([statementMarking1.id, statementMarking2.id]);
       });
     });
 
     describe('Case update operation REMOVE', () => {
       it('Case remove 1 marking', async () => {
-        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [clearPAPMarking.id], UPDATE_OPERATION_REMOVE);
-        expect(result).toEqual({ operation: 'remove', refs: [clearPAPMarking.id] });
+        const result = await handleMarkingOperations(testContext, [clearPAPMarking], [clearPAPMarking], UPDATE_OPERATION_REMOVE);
+        expect(result.operation).toEqual('remove');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([clearPAPMarking.id]);
       });
 
       it('Case remove for all markings', async () => {
-        const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [clearPAPMarking.id, statementMarking2.id], UPDATE_OPERATION_REMOVE);
-        expect(result).toEqual({ operation: 'remove', refs: [clearPAPMarking.id, statementMarking2.id] });
+        const result = await handleMarkingOperations(testContext, [clearPAPMarking, statementMarking1], [clearPAPMarking, statementMarking2], UPDATE_OPERATION_REMOVE);
+        expect(result.operation).toEqual('remove');
+        expect(result.refs.map((r) => r.internal_id)).toEqual([clearPAPMarking.id, statementMarking2.id]);
       });
     });
   });

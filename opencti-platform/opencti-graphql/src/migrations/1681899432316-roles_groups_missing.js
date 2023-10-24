@@ -5,7 +5,7 @@ import { groupAddRelation } from '../domain/group';
 import { listAllEntities, listAllRelations, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import { RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
-import { storeLoadByIdWithRefs } from '../database/middleware';
+import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { addGroup } from '../domain/grant';
 import { elDeleteElements } from '../database/engine';
 
@@ -49,7 +49,7 @@ export const up = async (next) => {
         await userAddRelation(context, context.user, userId, groupRelationInput);
       }
       // Delete the old relation
-      await elDeleteElements(context, context.user, [element], storeLoadByIdWithRefs);
+      await elDeleteElements(context, context.user, [element], storeLoadByIdsWithRefs);
     }
   }
   logApp.info(`[MIGRATION] Roles missing groups done in ${new Date() - start} ms`);

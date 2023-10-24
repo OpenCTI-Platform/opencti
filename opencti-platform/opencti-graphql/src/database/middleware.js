@@ -114,7 +114,6 @@ import {
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -223,7 +222,8 @@ import {
   isDateAttribute,
   isDictionaryAttribute,
   isMultipleAttribute,
-  isNumericAttribute, isObjectAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
   schemaAttributesDefinition
 } from '../schema/schema-attributes';
 import {
@@ -240,7 +240,7 @@ import { generateCreateMessage, generateUpdateMessage } from './generate-message
 import { confidence } from '../schema/attribute-definition';
 
 // region global variables
-export const MAX_BATCH_SIZE = 300;
+const MAX_BATCH_SIZE = 300;
 // endregion
 
 // region Loader common
@@ -476,7 +476,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
         logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
         // Auto deletion of the invalid relation
-        await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
+        await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
         const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
         const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
@@ -1275,7 +1275,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdWithRefs);
+  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdsWithRefs);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1788,7 +1788,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
 };
-export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
+
+export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   // Region - Pre-Check
@@ -1797,15 +1798,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
-  // Load the element to update
-  const initialPromise = storeLoadByIdWithRefs(context, user, id, { type });
-  const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
-  const [initial, references] = await Promise.all([initialPromise, referencesPromises]);
-  if (!initial) {
-    throw FunctionalError('Cant find element to update', { id, type });
-  }
+  const references = opts.references ? await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : [];
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
-    throw FunctionalError('Cant find element references for commit', { id, references: opts.references });
+    throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -1854,11 +1849,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
       const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
-      const differentEntities = R.filter((e) => e.internal_id !== initial.id, existingEntities);
+      const differentEntities = R.filter((e) => e.internal_id !== initial.internal_id, existingEntities);
       if (differentEntities.length > 0) {
         throw FunctionalError('This update will produce a duplicate', {
-          id: initial.id,
-          type,
+          id: initial.internal_id,
+          type: initial.entity_type,
           existingIds: existingEntities.map((e) => e.id),
         });
       }
@@ -1893,7 +1888,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     }
     if (isStixCyberObservableHashedObservable(initial.entity_type)) {
       existingByHashedPromise = listEntitiesByHashes(context, user, initial.entity_type, updated.hashes)
-        .then((entities) => entities.filter((e) => e.id !== id));
+        .then((entities) => entities.filter((e) => e.id !== initial.internal_id));
     }
     const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
     if (existingEntity) {
@@ -1904,7 +1899,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     // If already exist entities
     if (existingEntities.length > 0) {
       // If stix observable, we can merge. If not throw an error.
-      if (isStixCyberObservable(type)) {
+      if (isStixCyberObservable(initial.entity_type)) {
         // There is a potential merge, in this mode we doest not support multi update
         const noneStandardKeys = Object.keys(elementsByKey).filter((k) => !isFieldContributingToStandardId(initial, [k]));
         const haveExtraKeys = noneStandardKeys.length > 0;
@@ -1922,7 +1917,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       // noinspection ExceptionCaughtLocallyJS
       throw FunctionalError('This update will produce a duplicate', {
         id: initial.id,
-        type,
+        type: initial.entity_type,
         existingIds: existingEntities.map((e) => e.id),
       });
     }
@@ -1934,7 +1929,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       const observableSyntaxResult = checkObservableSyntax(updatedInstance.entity_type, updatedInstance);
       if (observableSyntaxResult !== true) {
         const reason = `Observable of type ${updatedInstance.entity_type} is not correctly formatted.`;
-        throw FunctionalError(reason, { id, type });
+        throw FunctionalError(reason, { id: initial.internal_id, type: initial.entity_type });
       }
     }
     if (impactedInputs.length > 0) {
@@ -1943,7 +1938,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     }
     // endregion
     // region metas
-    const streamOpts = { publishStreamEvent: false, locks: participantIds };
+    const relationsToCreate = [];
+    const relationsToDelete = [];
+    const buildInstanceRelTo = (to, relType) => R.head(buildInnerRelation(initial, to, relType));
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
       const key = schemaRelationsRefDefinition.convertStixNameToInputName(updatedInstance.entity_type, metaKey) || metaKey;
@@ -1953,25 +1950,21 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       // We dont care about the operation here, the only thing we can do is replace
       if (!relDef.multiple) {
         const currentValue = updatedInstance[key];
-        const { value: refIds } = meta[metaIndex];
-        const targetCreated = R.head(refIds);
+        const { value: targetsCreated } = meta[metaIndex];
+        const targetCreated = R.head(targetsCreated);
         // If asking for a real change
-        if (currentValue?.standard_id !== targetCreated && currentValue?.id !== targetCreated) {
+        if (currentValue?.standard_id !== targetCreated?.internal_id && currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
             const currentRels = await listAllRelations(context, user, relType, { fromId: initial.id });
-            // eslint-disable-next-line no-use-before-define
-            await deleteElements(context, user, currentRels, streamOpts);
+            relationsToDelete.push(...currentRels);
           }
           // Create the new one
           if (isNotEmptyField(targetCreated)) {
-            const inputRel = { fromId: id, toId: targetCreated, relationship_type: relType };
-            // eslint-disable-next-line no-use-before-define
-            await createRelationRaw(context, user, inputRel, streamOpts);
-            const element = await internalLoadById(context, user, targetCreated);
+            relationsToCreate.push(buildInstanceRelTo(targetCreated, relType));
             const previous = currentValue ? [currentValue] : currentValue;
-            updatedInputs.push({ key, value: [element], previous });
-            updatedInstance[key] = element;
+            updatedInputs.push({ key, value: [targetCreated], previous });
+            updatedInstance[key] = targetCreated;
             updatedInstance[relType] = updatedInstance[key].internal_id;
           } else if (currentValue) {
             // Just replace by nothing
@@ -1992,72 +1985,54 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await listAllRelations(context, user, relType, { fromId: id });
+          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
           const currentRelsToIds = currentRels.map((n) => n.toId);
-          const newTargets = await internalFindByIds(context, user, refs);
-          const newTargetsIds = newTargets.map((n) => n.id);
+          const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
             if (currentRels.length > 0) {
-              // eslint-disable-next-line no-use-before-define
-              await deleteElements(context, user, currentRels, streamOpts);
+              relationsToDelete.push(...currentRels);
             }
             // 02. Create the new relations
-            if (newTargets.length > 0) {
-              for (let delIndex = 0; delIndex < refs.length; delIndex += 1) {
-                const ref = refs[delIndex];
-                const inputRel = { fromId: id, toId: ref, relationship_type: relType };
-                // eslint-disable-next-line no-use-before-define
-                await createRelationRaw(context, user, inputRel, streamOpts);
-              }
+            if (refs.length > 0) {
+              const newRelations = refs.map((to) => buildInstanceRelTo(to, relType));
+              relationsToCreate.push(...newRelations);
             }
-            updatedInputs.push({ key, value: newTargets, previous: updatedInstance[key] });
-            updatedInstance[key] = newTargets;
+            updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
+            updatedInstance[key] = refs;
             updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
           const currentIds = (updatedInstance[key] || []).map((o) => [o.id, o.standard_id]).flat();
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r));
+          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
-            const newTargets = await internalFindByIds(context, user, refsToCreate);
-            for (let createIndex = 0; createIndex < refsToCreate.length; createIndex += 1) {
-              const refToCreate = refsToCreate[createIndex];
-              const inputRel = { fromId: id, toId: refToCreate, relationship_type: relType };
-              // eslint-disable-next-line no-use-before-define
-              await createRelationRaw(context, user, inputRel, streamOpts);
-            }
-            updatedInputs.push({ key, value: newTargets, operation });
-            updatedInstance[key] = [...(updatedInstance[key] || []), ...newTargets];
+            const newRelations = refsToCreate.map((to) => buildInstanceRelTo(to, relType));
+            relationsToCreate.push(...newRelations);
+            updatedInputs.push({ key, value: refsToCreate, operation });
+            updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
-          const targets = await internalFindByIds(context, user, refs);
-          const targetIds = targets.map((t) => t.internal_id);
-          const currentRels = await listAllRelations(context, user, relType, { fromId: id });
+          const targetIds = refs.map((t) => t.internal_id);
+          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId));
           if (relsToDelete.length > 0) {
-            // eslint-disable-next-line no-use-before-define
-            await deleteElements(context, user, relsToDelete, streamOpts);
-            updatedInputs.push({ key, value: targets, operation });
+            relationsToDelete.push(...relsToDelete);
+            updatedInputs.push({ key, value: refs, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
             updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
       }
     }
-    // endregion
-    // Only push event in stream if modifications really happens
-    if (updatedInputs.length > 0) {
-      const message = generateUpdateMessage(updatedInstance.entity_type, updatedInputs);
-      const isContainCommitReferences = opts.references && opts.references.length > 0;
-      const commit = isContainCommitReferences ? {
-        message: opts.commitMessage,
-        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
-      } : undefined;
-      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
-      return { element: updatedInstance, event, isCreation: false };
+    if (relationsToDelete.length > 0) {
+      await elDeleteElements(context, user, relationsToDelete);
     }
+    if (relationsToCreate.length > 0) {
+      await elIndexElements(context, user, initial.entity_type, relationsToCreate);
+    }
+    // endregion
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
       const args = {
@@ -2076,6 +2051,17 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
       }
     }
+    // Only push event in stream if modifications really happens
+    if (updatedInputs.length > 0) {
+      const message = generateUpdateMessage(updatedInstance.entity_type, updatedInputs);
+      const isContainCommitReferences = opts.references && opts.references.length > 0;
+      const commit = isContainCommitReferences ? {
+        message: opts.commitMessage,
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+      } : undefined;
+      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
+      return { element: updatedInstance, event, isCreation: false };
+    }
     // Return updated element after waiting for it.
     return { element: updatedInstance, event: null, isCreation: false };
   } catch (err) {
@@ -2086,6 +2072,25 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   } finally {
     if (lock) await lock.unlock();
   }
+};
+export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
+  const initial = await storeLoadByIdWithRefs(context, user, id, { type });
+  if (!initial) {
+    throw FunctionalError('Cant find element to update', { id, type });
+  }
+  const updates = Array.isArray(inputs) ? inputs : [inputs];
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
+  const meta = updates.filter((e) => metaKeys.includes(e.key));
+  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
+  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
+  const revolvedInputs = inputs.map((input) => {
+    if (metaKeys.includes(input.key)) {
+      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
+      return { ...input, value: resolvedValues };
+    }
+    return input;
+  });
+  return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
@@ -2555,24 +2560,23 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
-        const targetData = (patchInputData ?? []).map((i) => i.internal_id);
+        const targetData = patchInputData ?? [];
         // If expected data is different from current data
         if (R.symmetricDifference(currentData, targetData).length > 0) {
-          const diffInstanceIds = targetData.filter((id) => !currentData.includes(id));
+          const diffTargets = targetData.filter((target) => !currentData.includes(target.internal_id));
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: targetData, operation: UPDATE_OPERATION_REPLACE });
-          } else if (diffInstanceIds.length > 0) {
-            inputs.push({ key: inputField, value: diffInstanceIds, operation: UPDATE_OPERATION_ADD });
+          } else if (diffTargets.length > 0) {
+            inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
         }
       } else {
         const currentData = element[relDef.databaseName];
-        const targetData = patchInputData?.internal_id;
         const updatable = isUpsertSynchro || isEmptyField(currentData);
         // If expected data is different from current data
         // And data can be updated (complete a null value or forced through synchro upsert option
-        if (!R.equals(currentData, targetData) && updatable) {
-          inputs.push({ key: inputField, value: [targetData] });
+        if (!R.equals(currentData, patchInputData) && updatable) {
+          inputs.push({ key: inputField, value: [patchInputData] });
         }
       }
     }
@@ -2581,7 +2585,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    const update = await updateAttribute(context, user, element.internal_id, element.entity_type, inputs, updateOpts);
+    const update = await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
     await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
     return update;
   }
@@ -3139,7 +3143,8 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
-        return upsertElement(context, user, R.head(filteredEntities), type, resolvedInput, upsertEntityOpts);
+        const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id);
+        return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
@@ -3211,20 +3216,6 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
 export const createEntity = async (context, user, input, type, opts = {}) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
-  if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
-    const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
-    const firstSequence = objectSequences.shift();
-    const subObjectsEntity = R.assoc(INPUT_OBJECTS, firstSequence, input);
-    const created = await createEntityRaw(context, user, subObjectsEntity, type, opts);
-    // For each subsequences of objects
-    // We need to produce a batch upsert of object that will be upserted.
-    for (let index = 0; index < objectSequences.length; index += 1) {
-      const objectSequence = objectSequences[index];
-      const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
-      await createEntityRaw(context, user, upsertInput, type, opts);
-    }
-    return isCompleteResult ? created : created.element;
-  }
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
@@ -3307,7 +3298,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       } : undefined;
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
+      const deletePromise = elDeleteElements(context, user, [element]);
       const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
       event = updateEvent;
       element.from = instance; // dynamically update the from to have an up to date relation
@@ -3317,7 +3308,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const exportDeletePromise = deleteAllFiles(context, user, `export/${element.entity_type}/${element.internal_id}/`);
       await Promise.all([importDeletePromise, exportDeletePromise]);
       // Delete all linked elements
-      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
+      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdsWithRefs);
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, dependencyDeletions, opts);
     }
@@ -3333,12 +3324,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // - TRANSACTION END
   return { element, event };
-};
-const deleteElements = async (context, user, elements, opts = {}) => {
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    await deleteElementById(context, user, element.internal_id, element.entity_type, opts);
-  }
 };
 export const deleteElementById = async (context, user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {
