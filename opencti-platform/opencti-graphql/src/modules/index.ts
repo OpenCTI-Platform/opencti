@@ -42,6 +42,7 @@ import './case/feedback/feedback';
 import './entitySetting/entitySetting';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
+import './managerConfiguration/managerConfiguration';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
 import './playbook/playbook';

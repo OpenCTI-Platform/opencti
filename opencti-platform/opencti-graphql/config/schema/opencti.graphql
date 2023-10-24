@@ -11334,6 +11334,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Feedback
   | CaseTemplate
   | EntitySetting
+  | ManagerConfiguration
   | Creator
   | Group
   | Workspace
@@ -11415,6 +11416,7 @@ union StixObjectOrStixRelationship =
   | CaseTemplate
   | Task
   | EntitySetting
+  | ManagerConfiguration
   | Workspace
   | CsvMapper
 union StixCoreObjectOrStixCoreRelationship =
@@ -11489,6 +11491,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | CaseTemplate
   | Task
   | EntitySetting
+  | ManagerConfiguration
   | Workspace
 
 enum StixRelationshipsOrdering {
