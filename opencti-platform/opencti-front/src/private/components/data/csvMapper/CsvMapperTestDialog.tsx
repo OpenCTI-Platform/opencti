@@ -19,10 +19,17 @@ const csvMapperTestQuery = graphql`
   }
 `;
 
+type FixThisAny = any;
 interface CsvMapperTestDialogProps {
   open: boolean;
   onClose: () => void;
   configuration: string;
+}
+
+interface CsvMapperResult {
+  value: string;
+  nbRelationships: number;
+  nbEntities: number;
 }
 
 const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
@@ -33,7 +40,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   const { t } = useFormatter();
 
   const [value, setValue] = useState<string>('');
-  const [result, setResult] = useState<string>('');
+  const [result, setResult] = useState<CsvMapperResult | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
   const onChange = async (field: string, v: string | File | undefined) => {
@@ -43,7 +50,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         setValue(fileValue);
       } else {
         setValue('');
-        setResult('');
+        setResult(undefined);
       }
     }
   };
@@ -58,14 +65,21 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       .then((data) => {
         const resultTest = (data as CsvMapperTestDialogQuery$data)
           .csvMapperTest;
-        setResult(JSON.stringify(resultTest, null, '  '));
+        setResult({
+          value: JSON.stringify(resultTest, null, '  '),
+          nbEntities: resultTest.filter((obj: FixThisAny) => !obj.relationship_type).length,
+          nbRelationships: resultTest.filter((obj: FixThisAny) => !!obj.relationship_type).length
+        })
         setLoading(false);
+      }).catch(() => {
+        setLoading(false);
+        return false;
       });
   };
 
   const handleClose = () => {
     setValue('');
-    setResult('');
+    setResult(undefined);
     onClose();
   };
 
@@ -117,9 +131,21 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             </div>
           )}
         </div>
+          { result &&
+              <div style={{
+                  paddingTop: 8,
+                  fontSize: '1rem',
+                  gap: 8,
+                  justifyContent: 'center',
+                  display: 'flex'}}>
+                  <span>Objets trouvés : </span>
+                  <span><span style={{fontWeight: 'bold'}}>{result.nbEntities} </span> {t('Entities')}</span>
+                  <span><span style={{fontWeight: 'bold'}}>{result.nbRelationships}</span> {t('Relationships')}</span>
+              </div>
+          }
         <div style={{ marginTop: 20 }}>
           <CodeBlock
-            code={result || t('You will find here the result in JSON format')}
+            code={result?.value || t('You will find here the result in JSON format')}
             language={'json'}
           />
         </div>
