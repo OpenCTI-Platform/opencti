@@ -114,7 +114,7 @@ export const relatedContainers = async (context, user, containerId, args) => {
   return findAll(context, user, queryArgs);
 };
 
-export const containersObjectsOfObject = async (context, user, { id, types, filters = [], search = null }) => {
+export const containersObjectsOfObject = async (context, user, { id, types, filters = null, search = null }) => {
   const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), id);
   const containers = await findAll(context, user, { types: [ENTITY_TYPE_CONTAINER], first: 1000, search, filters: queryFilters, connectionFormat: false });
   const objectIds = R.uniq(containers.map((n) => n[buildRefRelationKey(RELATION_OBJECT)]).flat());
