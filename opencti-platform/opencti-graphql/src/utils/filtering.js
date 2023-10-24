@@ -170,7 +170,7 @@ export const convertFiltersToQueryOptions = async (context, user, filters, opts 
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: queryFilters };
 };
 
-const testRelationFromFilter = (stix, extractedIds, operator) => {
+export const testRelationFromFilter = (stix, extractedIds, operator) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const idFromFound = extractedIds.includes(stix.source_ref);
     // If source is available but must not be
@@ -197,7 +197,7 @@ const testRelationFromFilter = (stix, extractedIds, operator) => {
   return true;
 };
 
-const testRelationToFilter = (stix, extractedIds, operator) => {
+export const testRelationToFilter = (stix, extractedIds, operator) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const idToFound = extractedIds.includes(stix.target_ref);
     // If target is available but must not be
@@ -224,7 +224,7 @@ const testRelationToFilter = (stix, extractedIds, operator) => {
   return true;
 };
 
-const testRefsFilter = (stix, extractedIds, operator) => {
+export const testRefsFilter = (stix, extractedIds, operator) => {
   const refs = stixRefsExtractor(stix, generateStandardId);
   const isRefFound = extractedIds.some((r) => refs.includes(r));
   // If ref is available but must not be
@@ -252,7 +252,7 @@ const testObjectContainsFilter = (stix, extractedIds, operator) => {
   return true;
 };
 
-const isMatchNumeric = (values, operator, instanceValue) => {
+export const isMatchNumeric = (values, operator, instanceValue) => {
   const { id } = values.at(0) ?? {};
   const numeric = parseInt(id, 10);
   let found;
