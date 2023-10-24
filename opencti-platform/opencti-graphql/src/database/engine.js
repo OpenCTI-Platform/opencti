@@ -9,6 +9,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -2170,24 +2171,28 @@ export const elDeleteElements = async (context, user, elements, loadByIdsWithRef
     const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_FROM);
     const cleanKey = `${r.entity_type}|${r._index}`;
     if (isFromCleanup) {
-      if (!elementsImpact[r.fromId]) {
+      if (isEmptyField(elementsImpact[r.fromId])) {
         elementsImpact[r.fromId] = { [cleanKey]: [r.toId] };
       } else {
         const current = elementsImpact[r.fromId];
-        if (!current[cleanKey].includes(r.toId)) {
+        if (current[cleanKey] && !current[cleanKey].includes(r.toId)) {
           elementsImpact[r.fromId][cleanKey].push(r.toId);
+        } else {
+          elementsImpact[r.fromId][cleanKey] = [r.toId];
         }
       }
     }
     const toWillNotBeRemoved = !relationsToRemoveMap.has(r.toId) && !toBeRemovedIds.includes(r.toId);
     const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_TO);
     if (isToCleanup) {
-      if (!elementsImpact[r.toId]) {
+      if (isEmptyField(elementsImpact[r.toId])) {
         elementsImpact[r.toId] = { [cleanKey]: [r.fromId] };
       } else {
         const current = elementsImpact[r.toId];
-        if (!current[cleanKey].includes(r.fromId)) {
+        if (current[cleanKey] && !current[cleanKey].includes(r.fromId)) {
           elementsImpact[r.toId][cleanKey].push(r.fromId);
+        } else {
+          elementsImpact[r.toId][cleanKey] = [r.fromId];
         }
       }
     }
