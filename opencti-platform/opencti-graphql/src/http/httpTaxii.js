@@ -57,8 +57,7 @@ const extractUserAndCollection = async (context, req, res, id) => {
     throw ForbiddenAccess();
   }
   if (findCollection.taxii_public) {
-    const collection = restBuildCollection(findCollection);
-    return { user: SYSTEM_USER, collection };
+    return { user: SYSTEM_USER, collection: findCollection };
   }
   const authUser = await extractUserFromRequest(context, req, res);
   const userCollection = await getCollectionById(context, authUser, id);
