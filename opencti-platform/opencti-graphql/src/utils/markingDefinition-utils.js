@@ -21,7 +21,7 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
   // Get all marking definitions
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Get object entries from markings Map, convert into array without duplicate values
-  const markingsAdded = refs.filter((r) => markingsMap.get(r)).map((r) => markingsMap.get(r));
+  const markingsAdded = refs.filter((r) => markingsMap.has(r.internal_id)).map((r) => markingsMap.get(r.internal_id));
   // const markingsAdded = markingsMap.values().filter((m) => refs.includes(m.id));
   // If multiple markings is added, filter and keep the highest rank
   const markingsAddedCleaned = await cleanMarkings(context, markingsAdded);
@@ -33,7 +33,7 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
     if (markingsInCommon.length === 0) {
       // If markings in input is thoroughly different from current
       operationUpdated.operation = UPDATE_OPERATION_ADD;
-      operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+      operationUpdated.refs = markingsAddedCleaned;
       return operationUpdated;
     }
 
@@ -50,13 +50,13 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
       // If some of the added item has a higher rank than before, replace
       if (markingsAddedHasHigherOrder) {
         operationUpdated.operation = UPDATE_OPERATION_REPLACE;
-        operationUpdated.refs = markingsToKeep.map((m) => m.id);
+        operationUpdated.refs = markingsToKeep;
         return operationUpdated;
       }
       if (markingsNotInCommon.length !== 0) {
         // Add all markings to keep not in common with current if there is no highest order
         operationUpdated.operation = UPDATE_OPERATION_ADD;
-        operationUpdated.refs = markingsNotInCommon.map((m) => m.id);
+        operationUpdated.refs = markingsNotInCommon;
         return operationUpdated;
       }
       operationUpdated.refs = [];
@@ -64,14 +64,14 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
     }
     // THIS IS A ADD
     operationUpdated.operation = UPDATE_OPERATION_ADD;
-    operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+    operationUpdated.refs = markingsAddedCleaned;
     return operationUpdated;
   }
 
   // If replace operation, replace all
   if (operation === UPDATE_OPERATION_REPLACE) {
     operationUpdated.operation = UPDATE_OPERATION_REPLACE;
-    operationUpdated.refs = markingsAddedCleaned.map((m) => m.id);
+    operationUpdated.refs = markingsAddedCleaned;
     return operationUpdated;
   }
 

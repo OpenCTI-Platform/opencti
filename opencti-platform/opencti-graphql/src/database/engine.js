@@ -1085,7 +1085,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
+  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1163,6 +1163,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const hit = data.hits.hits[j];
       const element = elDataConverter(hit, withoutRels);
       hits[element.internal_id] = element;
+      if (mapWithAllIds) {
+        if (element.standard_id) hits[element.standard_id] = element;
+        (element.x_opencti_stix_ids ?? []).forEach((id) => { hits[id] = element; });
+      }
     }
   }
   return toMap ? hits : Object.values(hits);
@@ -2283,18 +2287,22 @@ const prepareRelation = (thing) => {
 const prepareEntity = (thing) => {
   return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
 };
+const prepareIndexingElement = async (thing) => {
+  if (thing.base_type === BASE_TYPE_RELATION) {
+    const relation = prepareRelation(thing);
+    return prepareElementForIndexing(relation);
+  }
+  const entity = prepareEntity(thing);
+  return prepareElementForIndexing(entity);
+};
 const prepareIndexing = async (elements) => {
-  return Promise.all(
-    R.map(async (element) => {
-      // Ensure empty list are not indexed
-      const thing = prepareElementForIndexing(element);
-      // For relation, index a list of connections.
-      if (thing.base_type === BASE_TYPE_RELATION) {
-        return prepareRelation(thing);
-      }
-      return prepareEntity(thing);
-    }, elements)
-  );
+  const preparedElements = [];
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const prepared = await prepareIndexingElement(element);
+    preparedElements.push(prepared);
+  }
+  return preparedElements;
 };
 export const elIndexElements = async (context, user, message, elements) => {
   const elIndexElementsFn = async () => {

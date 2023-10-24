@@ -39,6 +39,24 @@ const containerResolvers = {
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },
+  // TODO Reactivate after official release of graphQL 17
+  // StixObjectOrStixRelationshipRefConnection: {
+  //   edges: async function* generateEdges(connection) {
+  //     const t0 = new Date().getTime();
+  //     const elements = connection.edges;
+  //     // eslint-disable-next-line no-restricted-syntax
+  //     for (const [idx, item] of elements.entries()) {
+  //       // Check every Nth item (e.g. 20th) if the elapsed time is larger than 50 ms.
+  //       // If so, break and divide work into chunks using setImmediate
+  //       if (idx % 20 === 0 && idx > 0 && new Date().getTime() - t0 > 50) { // 20 MS of locking
+  //         await new Promise((resolve) => {
+  //           setImmediate(resolve);
+  //         });
+  //       }
+  //       yield item;
+  //     }
+  //   }
+  // },
   ContainersFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
