@@ -673,17 +673,6 @@ enum StatusOrdering {
   order
 }
 
-enum StatusFilter {
-  type
-}
-
-input StatusesFiltering {
-  key: [StatusFilter!]!
-  values: [String!]
-  operator: String
-  filterMode: FilterMode
-}
-
 type Status {
   id: ID!
   template_id: String!
@@ -776,22 +765,6 @@ input SynchronizerFetchInput {
 enum WorksOrdering {
   status
   timestamp
-}
-
-enum WorksFilter {
-  status
-  connector_id
-  completed_number
-  completed_time
-  received_time
-  processed_time
-}
-
-input WorksFiltering {
-  key: [WorksFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type WorkMessage {
@@ -1221,17 +1194,6 @@ enum GroupsOrdering {
   auto_new_marking
   created_at
   updated_at
-}
-
-enum GroupsFilter {
-  user_id
-}
-
-input GroupsFiltering {
-  key: [GroupsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type GroupConnection {
@@ -2173,34 +2135,6 @@ enum AttackPatternsOrdering {
   x_opencti_workflow_id
 }
 
-enum AttackPatternsFilter {
-  name
-  aliases
-  created
-  modified
-  created_at
-  updated_at
-  x_mitre_id
-  killChainPhase
-  createdBy
-  markedBy
-  objectAssignee
-  objectLabel
-  mitigatedBy
-  revoked
-  source_reliability
-  x_opencti_workflow_id
-  creator
-  targets
-}
-
-input AttackPatternsFiltering {
-  key: [AttackPatternsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 type AttackPatternConnection {
   pageInfo: PageInfo!
   edges: [AttackPatternEdge!]!
@@ -2937,31 +2871,6 @@ enum CoursesOfActionOrdering {
   x_opencti_workflow_id
   objectMarking
   x_mitre_id
-}
-
-enum CoursesOfActionFilter {
-  name
-  aliases
-  created
-  modified
-  created_at
-  createdBy
-  markedBy
-  objectAssignee
-  objectLabel
-  mitigatedBy
-  x_opencti_workflow_id
-  x_mitre_id
-  source_reliability
-  creator
-  revoked
-}
-
-input CoursesOfActionFiltering {
-  key: [CoursesOfActionFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type CourseOfActionConnection {
@@ -6918,40 +6827,6 @@ enum StixCoreRelationshipsOrdering {
   creator
 }
 
-enum StixCoreRelationshipsFilter {
-  created
-  modified
-  created_at
-  confidence
-  createdBy
-  creator
-  markedBy
-  objectLabel
-  killChainPhase
-  fromName
-  toName
-  toCreatedAt
-  toPatternType
-  toMainObservableType
-  x_opencti_workflow_id
-  revoked
-  relationship_type
-  elementWithTargetTypes
-  fromTypes
-  toTypes
-  entity_type
-  fromId
-  toId
-  elementId
-}
-
-input StixCoreRelationshipsFiltering {
-  key: [StixCoreRelationshipsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 type StixCoreRelationshipConnection {
   pageInfo: PageInfo!
   edges: [StixCoreRelationshipEdge!]!
@@ -10597,18 +10472,6 @@ enum IngestionRssOrdering {
   uri
 }
 
-enum IngestionRssFilter {
-  name
-  creator
-}
-
-input IngestionRssFiltering {
-  key: [IngestionRssFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 type IngestionRssConnection {
   pageInfo: PageInfo!
   edges: [IngestionRssEdge!]!
@@ -10672,18 +10535,6 @@ enum IngestionTaxiiOrdering {
   updated_at
   uri
   version
-}
-
-enum IngestionTaxiiFilter {
-  name
-  creator
-}
-
-input IngestionTaxiiFiltering {
-  key: [IngestionTaxiiFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
 }
 
 type IngestionTaxiiConnection {

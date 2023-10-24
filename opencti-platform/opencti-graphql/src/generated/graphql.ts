@@ -831,34 +831,6 @@ export type AttackPatternEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef']['input'];
 };
 
-export enum AttackPatternsFilter {
-  Aliases = 'aliases',
-  Created = 'created',
-  CreatedBy = 'createdBy',
-  CreatedAt = 'created_at',
-  Creator = 'creator',
-  KillChainPhase = 'killChainPhase',
-  MarkedBy = 'markedBy',
-  MitigatedBy = 'mitigatedBy',
-  Modified = 'modified',
-  Name = 'name',
-  ObjectAssignee = 'objectAssignee',
-  ObjectLabel = 'objectLabel',
-  Revoked = 'revoked',
-  SourceReliability = 'source_reliability',
-  Targets = 'targets',
-  UpdatedAt = 'updated_at',
-  XMitreId = 'x_mitre_id',
-  XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export type AttackPatternsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<AttackPatternsFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum AttackPatternsOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
@@ -4265,31 +4237,6 @@ export type CourseOfActionEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef']['input'];
 };
 
-export enum CoursesOfActionFilter {
-  Aliases = 'aliases',
-  Created = 'created',
-  CreatedBy = 'createdBy',
-  CreatedAt = 'created_at',
-  Creator = 'creator',
-  MarkedBy = 'markedBy',
-  MitigatedBy = 'mitigatedBy',
-  Modified = 'modified',
-  Name = 'name',
-  ObjectAssignee = 'objectAssignee',
-  ObjectLabel = 'objectLabel',
-  Revoked = 'revoked',
-  SourceReliability = 'source_reliability',
-  XMitreId = 'x_mitre_id',
-  XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export type CoursesOfActionFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<CoursesOfActionFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum CoursesOfActionOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
@@ -7579,17 +7526,6 @@ export enum GroupingsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
-export enum GroupsFilter {
-  UserId = 'user_id'
-}
-
-export type GroupsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<GroupsFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum GroupsOrdering {
   AutoNewMarking = 'auto_new_marking',
   CreatedAt = 'created_at',
@@ -9860,18 +9796,6 @@ export type IngestionRssEdge = {
   node: IngestionRss;
 };
 
-export enum IngestionRssFilter {
-  Creator = 'creator',
-  Name = 'name'
-}
-
-export type IngestionRssFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<IngestionRssFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum IngestionRssOrdering {
   CreatedAt = 'created_at',
   Name = 'name',
@@ -9923,18 +9847,6 @@ export type IngestionTaxiiEdge = {
   __typename?: 'IngestionTaxiiEdge';
   cursor: Scalars['String']['output'];
   node: IngestionTaxii;
-};
-
-export enum IngestionTaxiiFilter {
-  Creator = 'creator',
-  Name = 'name'
-}
-
-export type IngestionTaxiiFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<IngestionTaxiiFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export enum IngestionTaxiiOrdering {
@@ -21312,10 +21224,6 @@ export type StatusEdge = {
   node: Status;
 };
 
-export enum StatusFilter {
-  Type = 'type'
-}
-
 export enum StatusOrdering {
   Order = 'order',
   Type = 'type'
@@ -21350,13 +21258,6 @@ export type StatusTemplateEdge = {
 export enum StatusTemplateOrdering {
   Name = 'name'
 }
-
-export type StatusesFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<StatusFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<Scalars['String']['input']>>;
-};
 
 export type StixCoreObject = {
   cases?: Maybe<CaseConnection>;
@@ -21882,40 +21783,6 @@ export type StixCoreRelationshipsDistributionParameters = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-export enum StixCoreRelationshipsFilter {
-  Confidence = 'confidence',
-  Created = 'created',
-  CreatedBy = 'createdBy',
-  CreatedAt = 'created_at',
-  Creator = 'creator',
-  ElementId = 'elementId',
-  ElementWithTargetTypes = 'elementWithTargetTypes',
-  EntityType = 'entity_type',
-  FromId = 'fromId',
-  FromName = 'fromName',
-  FromTypes = 'fromTypes',
-  KillChainPhase = 'killChainPhase',
-  MarkedBy = 'markedBy',
-  Modified = 'modified',
-  ObjectLabel = 'objectLabel',
-  RelationshipType = 'relationship_type',
-  Revoked = 'revoked',
-  ToCreatedAt = 'toCreatedAt',
-  ToId = 'toId',
-  ToMainObservableType = 'toMainObservableType',
-  ToName = 'toName',
-  ToPatternType = 'toPatternType',
-  ToTypes = 'toTypes',
-  XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export type StixCoreRelationshipsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<StixCoreRelationshipsFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export enum StixCoreRelationshipsOrdering {
@@ -27226,22 +27093,6 @@ export type WorkTracking = {
   import_processed_number?: Maybe<Scalars['Int']['output']>;
 };
 
-export enum WorksFilter {
-  CompletedNumber = 'completed_number',
-  CompletedTime = 'completed_time',
-  ConnectorId = 'connector_id',
-  ProcessedTime = 'processed_time',
-  ReceivedTime = 'received_time',
-  Status = 'status'
-}
-
-export type WorksFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<WorksFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
 export enum WorksOrdering {
   Status = 'status',
   Timestamp = 'timestamp'
@@ -27673,8 +27524,6 @@ export type ResolversTypes = ResolversObject<{
   AttackPatternConnection: ResolverTypeWrapper<Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversTypes['AttackPatternEdge']> }>;
   AttackPatternEdge: ResolverTypeWrapper<Omit<AttackPatternEdge, 'node'> & { node: ResolversTypes['AttackPattern'] }>;
   AttackPatternEditMutations: ResolverTypeWrapper<Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['AttackPattern']>, contextPatch?: Maybe<ResolversTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversTypes['AttackPattern']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['AttackPattern']> }>;
-  AttackPatternsFilter: AttackPatternsFilter;
-  AttackPatternsFiltering: AttackPatternsFiltering;
   AttackPatternsOrdering: AttackPatternsOrdering;
   Attribute: ResolverTypeWrapper<Attribute>;
   AttributeBasedOn: ResolverTypeWrapper<AttributeBasedOn>;
@@ -27781,8 +27630,6 @@ export type ResolversTypes = ResolversObject<{
   CourseOfActionConnection: ResolverTypeWrapper<Omit<CourseOfActionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CourseOfActionEdge']>>> }>;
   CourseOfActionEdge: ResolverTypeWrapper<Omit<CourseOfActionEdge, 'node'> & { node: ResolversTypes['CourseOfAction'] }>;
   CourseOfActionEditMutations: ResolverTypeWrapper<Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['CourseOfAction']> }>;
-  CoursesOfActionFilter: CoursesOfActionFilter;
-  CoursesOfActionFiltering: CoursesOfActionFiltering;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
   Creator: ResolverTypeWrapper<Creator>;
   CreatorConnection: ResolverTypeWrapper<CreatorConnection>;
@@ -27896,8 +27743,6 @@ export type ResolversTypes = ResolversObject<{
   GroupingConnection: ResolverTypeWrapper<Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupingEdge']>>> }>;
   GroupingEdge: ResolverTypeWrapper<Omit<GroupingEdge, 'node'> & { node: ResolversTypes['Grouping'] }>;
   GroupingsOrdering: GroupingsOrdering;
-  GroupsFilter: GroupsFilter;
-  GroupsFiltering: GroupsFiltering;
   GroupsOrdering: GroupsOrdering;
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
@@ -27950,15 +27795,11 @@ export type ResolversTypes = ResolversObject<{
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: ResolverTypeWrapper<Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionRssEdge']> }>;
   IngestionRssEdge: ResolverTypeWrapper<Omit<IngestionRssEdge, 'node'> & { node: ResolversTypes['IngestionRss'] }>;
-  IngestionRssFilter: IngestionRssFilter;
-  IngestionRssFiltering: IngestionRssFiltering;
   IngestionRssOrdering: IngestionRssOrdering;
   IngestionTaxii: ResolverTypeWrapper<BasicStoreEntityIngestionTaxii>;
   IngestionTaxiiAddInput: IngestionTaxiiAddInput;
   IngestionTaxiiConnection: ResolverTypeWrapper<Omit<IngestionTaxiiConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionTaxiiEdge']> }>;
   IngestionTaxiiEdge: ResolverTypeWrapper<Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversTypes['IngestionTaxii'] }>;
-  IngestionTaxiiFilter: IngestionTaxiiFilter;
-  IngestionTaxiiFiltering: IngestionTaxiiFiltering;
   IngestionTaxiiOrdering: IngestionTaxiiOrdering;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   InternalObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['InternalObject']>;
@@ -28191,14 +28032,12 @@ export type ResolversTypes = ResolversObject<{
   StatusAddInput: StatusAddInput;
   StatusConnection: ResolverTypeWrapper<StatusConnection>;
   StatusEdge: ResolverTypeWrapper<StatusEdge>;
-  StatusFilter: StatusFilter;
   StatusOrdering: StatusOrdering;
   StatusTemplate: ResolverTypeWrapper<StatusTemplate>;
   StatusTemplateAddInput: StatusTemplateAddInput;
   StatusTemplateConnection: ResolverTypeWrapper<StatusTemplateConnection>;
   StatusTemplateEdge: ResolverTypeWrapper<StatusTemplateEdge>;
   StatusTemplateOrdering: StatusTemplateOrdering;
-  StatusesFiltering: StatusesFiltering;
   StixCoreObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCoreObject']>;
   StixCoreObjectConnection: ResolverTypeWrapper<Omit<StixCoreObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixCoreObjectEdge']>>> }>;
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
@@ -28214,8 +28053,6 @@ export type ResolversTypes = ResolversObject<{
   StixCoreRelationshipEdge: ResolverTypeWrapper<Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversTypes['StixCoreRelationship'] }>;
   StixCoreRelationshipEditMutations: ResolverTypeWrapper<Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreRelationship']>, relationsAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreRelationship']> }>;
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
-  StixCoreRelationshipsFilter: StixCoreRelationshipsFilter;
-  StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
   StixCoreRelationshipsOrdering: StixCoreRelationshipsOrdering;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
   StixCyberObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCyberObservable']>;
@@ -28392,8 +28229,6 @@ export type ResolversTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: ResolverTypeWrapper<WorkMessage>;
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
-  WorksFilter: WorksFilter;
-  WorksFiltering: WorksFiltering;
   WorksOrdering: WorksOrdering;
   Workspace: ResolverTypeWrapper<BasicStoreEntityWorkspace>;
   WorkspaceAddInput: WorkspaceAddInput;
@@ -28426,7 +28261,6 @@ export type ResolversParentTypes = ResolversObject<{
   AttackPatternConnection: Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversParentTypes['AttackPatternEdge']> };
   AttackPatternEdge: Omit<AttackPatternEdge, 'node'> & { node: ResolversParentTypes['AttackPattern'] };
   AttackPatternEditMutations: Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['AttackPattern']>, contextPatch?: Maybe<ResolversParentTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversParentTypes['AttackPattern']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['AttackPattern']> };
-  AttackPatternsFiltering: AttackPatternsFiltering;
   Attribute: Attribute;
   AttributeBasedOn: AttributeBasedOn;
   AttributeBasedOnInput: AttributeBasedOnInput;
@@ -28514,7 +28348,6 @@ export type ResolversParentTypes = ResolversObject<{
   CourseOfActionConnection: Omit<CourseOfActionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CourseOfActionEdge']>>> };
   CourseOfActionEdge: Omit<CourseOfActionEdge, 'node'> & { node: ResolversParentTypes['CourseOfAction'] };
   CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
-  CoursesOfActionFiltering: CoursesOfActionFiltering;
   Creator: Creator;
   CreatorConnection: CreatorConnection;
   CreatorEdge: CreatorEdge;
@@ -28613,7 +28446,6 @@ export type ResolversParentTypes = ResolversObject<{
   GroupingAddInput: GroupingAddInput;
   GroupingConnection: Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupingEdge']>>> };
   GroupingEdge: Omit<GroupingEdge, 'node'> & { node: ResolversParentTypes['Grouping'] };
-  GroupsFiltering: GroupsFiltering;
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
@@ -28659,12 +28491,10 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionRssEdge']> };
   IngestionRssEdge: Omit<IngestionRssEdge, 'node'> & { node: ResolversParentTypes['IngestionRss'] };
-  IngestionRssFiltering: IngestionRssFiltering;
   IngestionTaxii: BasicStoreEntityIngestionTaxii;
   IngestionTaxiiAddInput: IngestionTaxiiAddInput;
   IngestionTaxiiConnection: Omit<IngestionTaxiiConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionTaxiiEdge']> };
   IngestionTaxiiEdge: Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversParentTypes['IngestionTaxii'] };
-  IngestionTaxiiFiltering: IngestionTaxiiFiltering;
   Int: Scalars['Int']['output'];
   InternalObject: ResolversInterfaceTypes<ResolversParentTypes>['InternalObject'];
   InternalRelationship: InternalRelationship;
@@ -28873,7 +28703,6 @@ export type ResolversParentTypes = ResolversObject<{
   StatusTemplateAddInput: StatusTemplateAddInput;
   StatusTemplateConnection: StatusTemplateConnection;
   StatusTemplateEdge: StatusTemplateEdge;
-  StatusesFiltering: StatusesFiltering;
   StixCoreObject: ResolversInterfaceTypes<ResolversParentTypes>['StixCoreObject'];
   StixCoreObjectConnection: Omit<StixCoreObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixCoreObjectEdge']>>> };
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
@@ -28888,7 +28717,6 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreRelationshipEdge: Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixCoreRelationship'] };
   StixCoreRelationshipEditMutations: Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']> };
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
-  StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
   StixCyberObservable: ResolversInterfaceTypes<ResolversParentTypes>['StixCyberObservable'];
   StixCyberObservableConnection: Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCyberObservableEdge']> };
@@ -29036,7 +28864,6 @@ export type ResolversParentTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: WorkMessage;
   WorkTracking: WorkTracking;
-  WorksFiltering: WorksFiltering;
   Workspace: BasicStoreEntityWorkspace;
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: Omit<WorkspaceConnection, 'edges'> & { edges: Array<ResolversParentTypes['WorkspaceEdge']> };
