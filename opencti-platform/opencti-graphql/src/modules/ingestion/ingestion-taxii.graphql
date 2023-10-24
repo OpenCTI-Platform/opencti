@@ -55,7 +55,6 @@ type Query {
         orderBy: IngestionTaxiiOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
     ): IngestionTaxiiConnection @auth(for: [SETTINGS])

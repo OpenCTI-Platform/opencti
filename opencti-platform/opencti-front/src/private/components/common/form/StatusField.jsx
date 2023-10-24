@@ -19,7 +19,6 @@ export const statusFieldStatusesSearchQuery = graphql`
     $orderBy: StatusOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     statuses(
@@ -27,7 +26,6 @@ export const statusFieldStatusesSearchQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

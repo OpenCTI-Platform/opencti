@@ -296,14 +296,12 @@ input AuditsTimeSeriesParameters {
   field: String!
   types: [String]
   filters: FilterGroup
-  filterMode: FilterMode
   search: String
 }
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
   filters: FilterGroup
-  filterMode: FilterMode
   search: String
   relationship_type: [String]
   elementId: [String]
@@ -322,7 +320,6 @@ input StixRelationshipsTimeSeriesParameters {
   confidences: [Int]
   search: String
   filters: FilterGroup
-  filterMode: FilterMode
   dynamicFrom: FilterGroup
   dynamicTo: FilterGroup
 }
@@ -340,7 +337,6 @@ input StixCoreRelationshipsTimeSeriesParameters {
   confidences: [Int]
   search: String
   filters: FilterGroup
-  filterMode: FilterMode
   dynamicFrom: FilterGroup
   dynamicTo: FilterGroup
 }
@@ -358,7 +354,6 @@ input StixCoreObjectsDistributionParameters {
   toTypes: [String]
   types: [String]
   filters: FilterGroup
-  filterMode: FilterMode
   search: String
 }
 input StixCoreRelationshipsDistributionParameters {
@@ -375,7 +370,6 @@ input StixCoreRelationshipsDistributionParameters {
   confidences: [Int]
   search: String
   filters: FilterGroup
-  filterMode: FilterMode
 }
 type Number {
   total: Int!
@@ -384,7 +378,6 @@ type Number {
 input StixCoreObjectsNumberParameters {
   types: [String]
   filters: FilterGroup
-  filterMode: FilterMode
   search: String
   relationship_type: [String]
   elementId: [String]
@@ -1950,7 +1943,6 @@ interface StixCoreObject {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -1964,7 +1956,6 @@ interface StixCoreObject {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -1987,7 +1978,6 @@ interface StixCoreObject {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Technical
   creators: [Creator!]
@@ -2101,7 +2091,6 @@ interface StixDomainObject {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2115,7 +2104,6 @@ interface StixDomainObject {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2138,7 +2126,6 @@ interface StixDomainObject {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2253,7 +2240,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2267,7 +2253,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2290,7 +2275,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2424,7 +2408,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2438,7 +2421,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2461,7 +2443,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2587,7 +2568,6 @@ interface Container {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2601,7 +2581,6 @@ interface Container {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2624,7 +2603,6 @@ interface Container {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2642,7 +2620,6 @@ interface Container {
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -2653,7 +2630,6 @@ interface Container {
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -2735,7 +2711,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2749,7 +2724,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2772,7 +2746,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2790,7 +2763,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -2801,7 +2773,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -2940,7 +2911,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -2954,7 +2924,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -2977,7 +2946,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -2995,7 +2963,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -3006,7 +2973,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -3121,7 +3087,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -3135,7 +3100,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -3158,7 +3122,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -3176,7 +3139,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -3187,7 +3149,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -3321,7 +3282,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -3335,7 +3295,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -3358,7 +3317,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -3376,7 +3334,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     all: Boolean
@@ -3387,7 +3344,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     types: [String]
     viaTypes: [String]
@@ -3511,7 +3467,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -3525,7 +3480,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -3548,7 +3502,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -3672,7 +3625,6 @@ interface Identity {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -3686,7 +3638,6 @@ interface Identity {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -3709,7 +3660,6 @@ interface Identity {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -3831,7 +3781,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -3845,7 +3794,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -3868,7 +3816,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -3999,7 +3946,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4013,7 +3959,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4036,7 +3981,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -4163,7 +4107,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4177,7 +4120,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4200,7 +4142,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -4340,7 +4281,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4354,7 +4294,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4377,7 +4316,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -4521,7 +4459,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4535,7 +4472,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4558,7 +4494,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -4682,7 +4617,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4696,7 +4630,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4719,7 +4652,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -4848,7 +4780,6 @@ interface Location {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -4862,7 +4793,6 @@ interface Location {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -4885,7 +4815,6 @@ interface Location {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5007,7 +4936,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5021,7 +4949,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5044,7 +4971,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5174,7 +5100,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5188,7 +5113,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5211,7 +5135,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5334,7 +5257,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5348,7 +5270,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5371,7 +5292,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5494,7 +5414,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5508,7 +5427,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5531,7 +5449,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5662,7 +5579,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5676,7 +5592,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5699,7 +5614,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5835,7 +5749,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5849,7 +5762,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -5872,7 +5784,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -5972,7 +5883,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -5986,7 +5896,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6009,7 +5918,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -6149,7 +6057,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6163,7 +6070,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6186,7 +6092,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -6312,7 +6217,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6326,7 +6230,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6349,7 +6252,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -6486,7 +6388,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6500,7 +6401,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6523,7 +6423,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -6654,7 +6553,6 @@ interface StixCyberObservable {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6668,7 +6566,6 @@ interface StixCyberObservable {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6691,7 +6588,6 @@ interface StixCyberObservable {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -6758,7 +6654,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6772,7 +6667,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6795,7 +6689,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -6872,7 +6765,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -6886,7 +6778,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -6909,7 +6800,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -6990,7 +6880,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7004,7 +6893,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7027,7 +6915,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   observable_value: String!
@@ -7100,7 +6987,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7114,7 +7000,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7137,7 +7022,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7212,7 +7096,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7226,7 +7109,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7249,7 +7131,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7334,7 +7215,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7348,7 +7228,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7371,7 +7250,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7464,7 +7342,6 @@ interface HashedObservable {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7478,7 +7355,6 @@ interface HashedObservable {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7501,7 +7377,6 @@ interface HashedObservable {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7570,7 +7445,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7584,7 +7458,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7607,7 +7480,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7693,7 +7565,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7707,7 +7578,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7730,7 +7600,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7825,7 +7694,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -7839,7 +7707,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -7862,7 +7729,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -7992,7 +7858,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8006,7 +7871,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8029,7 +7893,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8105,7 +7968,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8119,7 +7981,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8142,7 +8003,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8216,7 +8076,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8230,7 +8089,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8253,7 +8111,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8326,7 +8183,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8340,7 +8196,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8363,7 +8218,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8436,7 +8290,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8450,7 +8303,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8473,7 +8325,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8565,7 +8416,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8579,7 +8429,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8602,7 +8451,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8721,7 +8569,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8735,7 +8582,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8758,7 +8604,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8850,7 +8695,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8864,7 +8708,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8887,7 +8730,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -8960,7 +8802,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -8974,7 +8815,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -8997,7 +8837,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9097,7 +8936,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9111,7 +8949,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9134,7 +8971,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9211,7 +9047,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9225,7 +9060,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9248,7 +9082,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9325,7 +9158,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9339,7 +9171,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9362,7 +9193,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9435,7 +9265,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9449,7 +9278,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9472,7 +9300,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9545,7 +9372,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9559,7 +9385,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9582,7 +9407,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9655,7 +9479,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9669,7 +9492,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9692,7 +9514,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9765,7 +9586,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9779,7 +9599,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9802,7 +9621,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9875,7 +9693,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -9889,7 +9706,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -9913,7 +9729,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -9990,7 +9805,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -10004,7 +9818,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -10027,7 +9840,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -10100,7 +9912,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -10114,7 +9925,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -10137,7 +9947,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -10216,7 +10025,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -10230,7 +10038,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -10253,7 +10060,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
@@ -10753,7 +10559,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
   # Technical
@@ -11009,7 +10814,6 @@ type Query {
     orderBy: LogsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE])
   audits(
@@ -11019,7 +10823,6 @@ type Query {
     orderBy: LogsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [SETTINGS])
   auditsNumber(
@@ -11028,7 +10831,6 @@ type Query {
     endDate: DateTime
     onlyInferred: Boolean
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   auditsTimeSeries(
@@ -11039,7 +10841,6 @@ type Query {
     interval: String!
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [SETTINGS, VIRTUAL_ORGANIZATION_ADMIN])
   auditsDistribution(
@@ -11052,7 +10853,6 @@ type Query {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [SETTINGS])
   auditsMultiTimeSeries(
@@ -11103,7 +10903,6 @@ type Query {
     orderBy: UsersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
@@ -11124,7 +10923,6 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): WorkConnection @auth(for: [MODULES])
   runtimeAttributes(
     first: Int
@@ -11178,7 +10976,6 @@ type Query {
     orderBy: StatusOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): StatusConnection @auth
   backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
@@ -11189,7 +10986,6 @@ type Query {
     orderMode: OrderingMode
     includeAuthorities: Boolean
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
@@ -11215,7 +11011,6 @@ type Query {
     orderBy: StixMetaObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): StixMetaObjectConnection @auth(for: [KNOWLEDGE])
   markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
@@ -11225,7 +11020,6 @@ type Query {
     orderBy: MarkingDefinitionsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
@@ -11236,7 +11030,6 @@ type Query {
     orderBy: LabelsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): LabelConnection @auth(for: [KNOWLEDGE])
   externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
@@ -11246,7 +11039,6 @@ type Query {
     orderBy: ExternalReferencesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
   killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE])
@@ -11256,7 +11048,6 @@ type Query {
     orderBy: KillChainPhasesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
 
@@ -11271,7 +11062,6 @@ type Query {
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     relationship_type: [String]
     elementId: [String]
@@ -11284,7 +11074,6 @@ type Query {
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
@@ -11297,7 +11086,6 @@ type Query {
     onlyInferred: Boolean
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     relationship_type: [String]
     elementId: [String]
@@ -11316,7 +11104,6 @@ type Query {
     endDate: DateTime
     onlyInferred: Boolean
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     relationship_type: [String]
     elementId: [String]
@@ -11341,7 +11128,6 @@ type Query {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiDistribution(
@@ -11366,7 +11152,6 @@ type Query {
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     relationship_type: [String]
     elementId: String
@@ -11383,7 +11168,6 @@ type Query {
     types: [String]
     onlyInferred: Boolean
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsNumber(
@@ -11391,7 +11175,6 @@ type Query {
     endDate: DateTime
     onlyInferred: Boolean
     filters: FilterGroup
-    filterMode: FilterMode
     search: String): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsDistribution(
     objectId: [String]
@@ -11405,7 +11188,6 @@ type Query {
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
@@ -11415,7 +11197,6 @@ type Query {
     orderBy: AttackPatternsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): AttackPatternConnection @auth(for: [KNOWLEDGE])
@@ -11426,7 +11207,6 @@ type Query {
     orderBy: CampaignsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CampaignConnection @auth(for: [KNOWLEDGE])
@@ -11447,7 +11227,6 @@ type Query {
     orderBy: ContainersOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ContainerConnection @auth(for: [KNOWLEDGE])
@@ -11455,7 +11234,6 @@ type Query {
     id: String!
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
@@ -11465,7 +11243,6 @@ type Query {
     orderBy: NotesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): NoteConnection @auth(for: [KNOWLEDGE])
@@ -11496,7 +11273,6 @@ type Query {
     orderBy: ObservedDatasOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ObservedDataConnection @auth(for: [KNOWLEDGE])
@@ -11527,7 +11303,6 @@ type Query {
     orderBy: OpinionsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): OpinionConnection @auth(for: [KNOWLEDGE])
@@ -11559,7 +11334,6 @@ type Query {
     orderBy: ReportsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ReportConnection @auth(for: [KNOWLEDGE])
@@ -11573,7 +11347,6 @@ type Query {
     endDate: DateTime!
     interval: String!
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   reportsNumber(
@@ -11582,7 +11355,6 @@ type Query {
     authorId: String
     endDate: DateTime
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   reportsDistribution(
@@ -11596,7 +11368,6 @@ type Query {
     endDate: DateTime
     dateAttribute: String
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
@@ -11608,7 +11379,6 @@ type Query {
     orderBy: CoursesOfActionOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CourseOfActionConnection @auth(for: [KNOWLEDGE])
@@ -11622,7 +11392,6 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     toStix: Boolean
   ): IdentityConnection @auth(for: [KNOWLEDGE])
   individual(id: String!): Individual @auth(for: [KNOWLEDGE])
@@ -11632,7 +11401,6 @@ type Query {
     orderBy: IndividualsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): IndividualConnection @auth(for: [KNOWLEDGE])
@@ -11643,7 +11411,6 @@ type Query {
     orderBy: SectorsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): SectorConnection @auth(for: [KNOWLEDGE])
@@ -11654,7 +11421,6 @@ type Query {
     orderBy: SystemsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): SystemConnection @auth(for: [KNOWLEDGE])
@@ -11665,7 +11431,6 @@ type Query {
     orderBy: IndicatorsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
   indicatorsTimeSeries(
@@ -11676,7 +11441,6 @@ type Query {
     endDate: DateTime!
     interval: String!
     filters: FilterGroup
-    filterMode: FilterMode
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   indicatorsDistribution(
@@ -11696,7 +11460,6 @@ type Query {
     orderBy: InfrastructuresOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): InfrastructureConnection @auth(for: [KNOWLEDGE])
   intrusionSet(id: String): IntrusionSet @auth(for: [KNOWLEDGE])
@@ -11706,7 +11469,6 @@ type Query {
     orderBy: IntrusionSetsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
@@ -11720,7 +11482,6 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     toStix: Boolean
   ): LocationConnection @auth(for: [KNOWLEDGE])
   city(id: String): City @auth(for: [KNOWLEDGE])
@@ -11730,7 +11491,6 @@ type Query {
     orderBy: CitiesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CityConnection @auth(for: [KNOWLEDGE])
@@ -11741,7 +11501,6 @@ type Query {
     orderBy: CountriesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): CountryConnection @auth(for: [KNOWLEDGE])
@@ -11752,7 +11511,6 @@ type Query {
     orderBy: RegionsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): RegionConnection @auth(for: [KNOWLEDGE])
@@ -11763,7 +11521,6 @@ type Query {
     orderBy: PositionsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): PositionConnection @auth(for: [KNOWLEDGE])
@@ -11774,7 +11531,6 @@ type Query {
     orderBy: MalwaresOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): MalwareConnection @auth(for: [KNOWLEDGE])
@@ -11785,7 +11541,6 @@ type Query {
     orderBy: ThreatActorsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ThreatActorConnection @auth(for: [KNOWLEDGE])
@@ -11796,7 +11551,6 @@ type Query {
     orderBy: ThreatActorsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ThreatActorGroupConnection @auth(for: [KNOWLEDGE])
@@ -11807,7 +11561,6 @@ type Query {
     orderBy: ToolsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ToolConnection @auth(for: [KNOWLEDGE])
@@ -11818,7 +11571,6 @@ type Query {
     orderBy: VulnerabilitiesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
@@ -11829,7 +11581,6 @@ type Query {
     orderBy: IncidentsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): IncidentConnection @auth(for: [KNOWLEDGE])
@@ -11853,7 +11604,6 @@ type Query {
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
@@ -11863,13 +11613,11 @@ type Query {
     authorId: String
     endDate: DateTime
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesTimeSeries(
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(
@@ -11878,7 +11626,6 @@ type Query {
     dateAttribute: String
     operation: String!
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
@@ -11911,7 +11658,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     stix: Boolean
@@ -11935,7 +11681,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -11968,7 +11713,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     aggregateOnConnections: Boolean
@@ -11990,7 +11734,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
@@ -12027,7 +11770,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     stix: Boolean
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsTimeSeries(
@@ -12049,7 +11791,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -12082,7 +11823,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     aggregateOnConnections: Boolean
@@ -12104,7 +11844,6 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
@@ -12129,7 +11868,6 @@ type Query {
     lastSeenStop: DateTime
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     toStix: Boolean
   ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingRelationshipsTimeSeries(
@@ -12145,7 +11883,6 @@ type Query {
     toTypes: [String]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsDistribution(
     elementId: String
@@ -12162,7 +11899,6 @@ type Query {
     toTypes: [String]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsNumber(
     elementId: String
@@ -12172,8 +11908,7 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     search: String
-    filters: FilterGroup
-    filterMode: FilterMode): Number @auth(for: [KNOWLEDGE, EXPLORE])
+    filters: FilterGroup): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX REF RELATIONSHIPS
 
@@ -12195,7 +11930,6 @@ type Query {
     stopTimeStop: DateTime
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     toStix: Boolean
   ): StixRefRelationshipConnection @auth(for: [KNOWLEDGE])
   stixNestedRefRelationships(
@@ -12215,7 +11949,6 @@ type Query {
     stopTimeStop: DateTime
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
     toStix: Boolean
   ): StixRefRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSchemaRefRelationships(
@@ -12809,7 +12542,6 @@ type Mutation {
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
@@ -12829,7 +12561,6 @@ type Mutation {
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
@@ -12944,7 +12675,6 @@ type Mutation {
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     relationship_type: [String]
     elementId: String
     selectedIds: [String]
@@ -12975,7 +12705,6 @@ type Mutation {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!

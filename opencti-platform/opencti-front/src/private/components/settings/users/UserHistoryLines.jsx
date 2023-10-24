@@ -76,7 +76,6 @@ export const userHistoryLinesQuery = graphql`
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     ...UserHistoryLines_data
@@ -93,7 +92,6 @@ const UserHistoryLines = createRefetchContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-          filterMode: $filterMode
           search: $search
         ) {
           edges {

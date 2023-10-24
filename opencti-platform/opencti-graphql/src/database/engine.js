@@ -1632,7 +1632,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
-  const { types = null, filterMode = 'and', search = null } = options;
+  const { types = null, search = null } = options;
   const { filters = null } = options;
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
@@ -1718,14 +1718,10 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   // Build query
   const querySize = first || 10;
-  let mustFiltersWithOperator = mustFilters;
-  if (filterMode === 'or') {
-    mustFiltersWithOperator = [{ bool: { should: mustFilters, minimum_should_match: 1 } }];
-  }
   const body = {
     query: {
       bool: {
-        must: [...accessMust, ...mustFiltersWithOperator],
+        must: [...accessMust, ...mustFilters],
         must_not: accessMustNot,
       },
     },

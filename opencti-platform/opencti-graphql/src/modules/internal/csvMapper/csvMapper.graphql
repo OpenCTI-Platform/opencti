@@ -95,7 +95,6 @@ type Query {
     orderBy: CsvMapperOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): CsvMapperConnection @auth
   csvMapperTest(

@@ -20,7 +20,6 @@ type Workspace implements InternalObject & BasicObject {
         orderBy: StixObjectOrStixRelationshipsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
         types: [String]
         all: Boolean
@@ -54,7 +53,6 @@ type Query {
         orderBy: WorkspacesOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
     ): WorkspaceConnection @auth(for: [EXPLORE])

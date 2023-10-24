@@ -91,7 +91,6 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     ...StixCoreObjectHistoryLines_data
@@ -108,7 +107,6 @@ const StixCoreObjectHistoryLines = createRefetchContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-          filterMode: $filterMode
           search: $search
         ) {
           edges {

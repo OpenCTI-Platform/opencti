@@ -172,8 +172,8 @@ const convertFiltersToQueryOptionsContent = (adaptedFilters, field = 'updated_at
   }
   for (let index = 0; index < filters.length; index += 1) {
     // eslint-disable-next-line prefer-const
-    let { key, operator, values, filterMode } = filters[index];
-    queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
+    let { key, operator, values, mode } = filters[index];
+    queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, mode });
   }
   if (after) {
     queryFilters.push({ key: field, values: [after], operator: 'gte' });

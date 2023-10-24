@@ -50,7 +50,6 @@ const auditsRadarDistributionQuery = graphql`
     $order: String
     $types: [String]
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
   ) {
     auditsDistribution(
@@ -63,7 +62,6 @@ const auditsRadarDistributionQuery = graphql`
       order: $order
       types: $types
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       label

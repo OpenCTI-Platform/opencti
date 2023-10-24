@@ -49,7 +49,6 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -63,7 +62,6 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -86,7 +84,6 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # Stix Domain Object
     revoked: Boolean!
@@ -147,7 +144,6 @@ type Query {
         orderBy: DataComponentsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): DataComponentConnection @auth(for: [KNOWLEDGE])
 }

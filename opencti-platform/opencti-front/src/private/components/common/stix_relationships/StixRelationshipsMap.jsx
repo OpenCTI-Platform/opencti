@@ -39,7 +39,6 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
     $confidences: [Int]
     $search: String
     $filters: FilterGroup
-    $filterMode: FilterMode
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
   ) {
@@ -63,7 +62,6 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
     ) {

@@ -48,7 +48,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -62,7 +61,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         order: String
         types: [String]
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -85,7 +83,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         confidences: [Int]
         search: String
         filters: FilterGroup
-        filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -103,7 +100,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         orderBy: StixObjectOrStixRelationshipsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
         types: [String]
         all: Boolean
@@ -114,7 +110,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         orderBy: ContainersOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
         types: [String]
         viaTypes: [String]
@@ -172,7 +167,6 @@ type Query {
         orderBy: GroupingsOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
         toStix: Boolean
     ): GroupingConnection @auth(for: [KNOWLEDGE])
@@ -186,7 +180,6 @@ type Query {
         endDate: DateTime!
         interval: String!
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsNumber(
@@ -195,7 +188,6 @@ type Query {
         authorId: String
         endDate: DateTime
         filters: FilterGroup
-        filterMode: FilterMode
     ): Number @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsDistribution(
         objectId: String
@@ -208,7 +200,6 @@ type Query {
         endDate: DateTime
         dateAttribute: String
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean

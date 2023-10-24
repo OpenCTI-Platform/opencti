@@ -71,7 +71,6 @@ type Query {
     orderBy: EntitySettingsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): EntitySettingConnection @auth
 }

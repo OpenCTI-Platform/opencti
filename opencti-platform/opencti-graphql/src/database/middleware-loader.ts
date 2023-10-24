@@ -19,7 +19,7 @@ import type {
   StoreProxyRelation
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
+import type { InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, checkedAndConvertedFilters, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
@@ -29,7 +29,6 @@ const MAX_SEARCH_SIZE = 5000;
 export interface Filter {
   key: any;
   operator?: string | null;
-  filterMode?: InputMaybe<FilterMode>;
   values?: any;
   nested?: Array<{
     key: string;
@@ -55,7 +54,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
   orderBy?: any,
   orderMode?: InputMaybe<OrderingMode>;
   filters?: FilterGroup | null;
-  filterMode?: FilterMode | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
   types?: string[]
 }

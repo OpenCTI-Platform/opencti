@@ -58,7 +58,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -72,7 +71,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     order: String
     types: [String]
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -95,7 +93,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     confidences: [Int]
     search: String
     filters: FilterGroup
-    filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -213,7 +210,6 @@ type Query {
     orderBy: ThreatActorsIndividualOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    filterMode: FilterMode
     search: String
     toStix: Boolean
   ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE])

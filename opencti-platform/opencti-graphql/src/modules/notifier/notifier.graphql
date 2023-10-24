@@ -59,7 +59,6 @@ type Query {
         orderBy: NotifierOrdering
         orderMode: OrderingMode
         filters: FilterGroup
-        filterMode: FilterMode
         search: String
     ): NotifierConnection @auth(for: [SETTINGS])
 }

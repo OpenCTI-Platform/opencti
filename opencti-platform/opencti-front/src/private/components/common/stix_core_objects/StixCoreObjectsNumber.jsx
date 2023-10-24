@@ -31,7 +31,6 @@ const stixCoreObjectsNumberNumberQuery = graphql`
     $endDate: DateTime
     $onlyInferred: Boolean
     $filters: FilterGroup
-    $filterMode: FilterMode
     $search: String
     $relationship_type: [String]
     $elementId: [String]
@@ -42,7 +41,6 @@ const stixCoreObjectsNumberNumberQuery = graphql`
       endDate: $endDate
       onlyInferred: $onlyInferred
       filters: $filters
-      filterMode: $filterMode
       search: $search
       relationship_type: $relationship_type
       elementId: $elementId

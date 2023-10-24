@@ -21,7 +21,6 @@ const LIST_QUERY = gql`
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $filterMode: FilterMode
     $includeAuthorities: Boolean
     $search: String
   ) {
@@ -31,7 +30,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       includeAuthorities: $includeAuthorities
       search: $search
     ) {
