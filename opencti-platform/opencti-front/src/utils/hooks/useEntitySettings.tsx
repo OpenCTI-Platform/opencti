@@ -73,6 +73,12 @@ export const useYupSchemaBuilder = (
   isCreation: boolean,
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
+  // simplest case: we're in update mode, so we do not need all mandatory fields
+  if (!isCreation) {
+    return Yup.object().shape(existingShape);
+  }
+
+  // we're in creation mode, let's find if all mandatory fields are set
   const { t } = useFormatter();
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
@@ -80,10 +86,11 @@ export const useYupSchemaBuilder = (
   }
   const mandatoryAttributes = [...entitySettings.mandatoryAttributes];
   // In creation, if enforce_reference is activated, externalReferences is required
-  if (isCreation && entitySettings.enforce_reference === true) {
+  if (entitySettings.enforce_reference === true) {
     mandatoryAttributes.push('externalReferences');
   }
   const existingKeys = Object.keys(existingShape);
+
   const newShape: ObjectShape = Object.fromEntries(
     mandatoryAttributes
       .filter((attr) => !(exclusions ?? []).includes(attr))
