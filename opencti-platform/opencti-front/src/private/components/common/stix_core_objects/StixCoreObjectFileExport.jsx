@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { map, props } from 'ramda';
+import { map } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -13,6 +13,7 @@ import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -88,6 +89,8 @@ const StixCoreObjectFileExportComponent = ({
     setOpen(true);
   };
 
+  const navigate = useNavigate();
+
   const data = usePreloadedQuery(
     stixCoreObjectFileExportQuery,
     queryRef,
@@ -149,8 +152,8 @@ const StixCoreObjectFileExportComponent = ({
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
                 variables={{ first: 200 }}
-                render={(mark) => {
-                  if (mark.props && mark.props.markingDefinitions) {
+                render={({ props }) => {
+                  if (props && props.markingDefinitions) {
                     return (
                       <DialogContent>
                         <Field
@@ -216,7 +219,11 @@ const StixCoreObjectFileExportComponent = ({
                 <Button onClick={handleReset} disabled={isSubmitting}>Cancel</Button>
                 <Button
                   color="secondary"
-                  onClick={submitForm}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    submitForm();
+                    navigate(`/dashboard/analyses/reports/${id}/content`);
+                  }}
                   disabled={isSubmitting}
                 >
                   {t('Create')}
@@ -234,10 +241,10 @@ const StixCoreObjectFileExport = (
   { id },
 ) => {
   const queryRef = useQueryLoading(stixCoreObjectFileExportQuery, { id });
-  console.log('queryRef', queryRef);
+
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <StixCoreObjectFileExportComponent {...props} id={id} queryRef={queryRef}/>
+      <StixCoreObjectFileExportComponent id={id} queryRef={queryRef}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement}/>

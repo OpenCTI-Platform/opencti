@@ -543,6 +543,8 @@ StixDomainObjectContentFiles.propTypes = {
   t: PropTypes.func,
   files: PropTypes.array,
   currentFileId: PropTypes.string,
+  /*  currentExportId: PropTypes.string,
+    currentExportUrl: PropTypes.string, */
   handleSelectFile: PropTypes.func,
   onFileChange: PropTypes.func,
 };

@@ -16,6 +16,7 @@ import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
+import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, {
   stixDomainObjectContentFilesUploadStixDomainObjectMutation,
@@ -33,6 +34,7 @@ import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -106,6 +108,8 @@ const styles = () => ({
   },
 });
 
+const interval$ = interval(FIVE_SECONDS);
+
 const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
   mutation StixDomainObjectContentUploadExternalReferenceMutation(
     $id: ID!
@@ -153,6 +157,19 @@ const getFiles = (stixDomainObject) => {
   return result;
 };
 
+const getExportFiles = (stixDomainObject) => {
+  const exportFiles = stixDomainObject.exportFiles?.edges?.filter((n) => !!n?.node)
+    .map((n) => n.node) ?? [];
+  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
+    ?.map((n) => n?.node?.exportFiles?.edges).flat().filter((n) => !!n?.node)
+    .map((n) => n.node)
+    .filter((n) => n.metaData && isEmptyField(n.metaData.external_reference_id)) ?? [];
+  const result = sortByLastModified([...exportFiles, ...externalReferencesFiles].filter(() => {
+    return ['application/pdf'];
+  }));
+  return result;
+};
+
 class StixDomainObjectContentComponent extends Component {
   constructor(props) {
     super(props);
@@ -162,8 +179,14 @@ class StixDomainObjectContentComponent extends Component {
       `view-stix-domain-object-content-${props.stixDomainObject.id}`,
     );
     const files = getFiles(props.stixDomainObject);
+    const exportFiles = getExportFiles(props.stixDomainObject);
+
+    const currentExportId = exportFiles[0].id;
+    console.log('currentExportId', currentExportId);
+
     this.state = {
       currentFileId: R.propOr(R.head(files)?.id, 'currentFileId', params),
+      currentExportId,
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
@@ -196,12 +219,15 @@ class StixDomainObjectContentComponent extends Component {
         R.filter((n) => n.id === currentFileId, files),
       );
       const currentFileType = currentFile && currentFile.metaData.mimetype;
+
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
       }
+
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
+
       return Axios.get(url).then((res) => {
         const content = res.data;
         return this.setState({
@@ -218,10 +244,15 @@ class StixDomainObjectContentComponent extends Component {
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.loadFileContent();
+
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetch();
+    });
   }
 
   componentWillUnmount() {
     this.subscriptionToggle.unsubscribe();
+    this.subscription.unsubscribe();
   }
 
   handleSelectFile(fileId) {
@@ -387,6 +418,7 @@ class StixDomainObjectContentComponent extends Component {
 
     const {
       currentFileId,
+      currentExportId,
       totalPdfPageNumber,
       isLoading,
       currentContent,
@@ -394,21 +426,35 @@ class StixDomainObjectContentComponent extends Component {
       navOpen,
       changed,
     } = this.state;
+
     const files = getFiles(stixDomainObject);
+
+    const exportFiles = getExportFiles(stixDomainObject);
+    console.log('exportFiles', exportFiles);
+
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
+
+    const currentExportUrl = currentExportId
+        && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
+    console.log('currentExportUrl', currentExportUrl);
+
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 190;
+
+    console.log('stixDomainObject export.edges', stixDomainObject.exportFiles.edges);
 
     return (
       <div className={classes.container}>
         <StixDomainObjectContentFiles
           stixDomainObjectId={stixDomainObject.id}
           files={files}
+          currentExportUrl={currentExportUrl}
+          currentExportId={currentExportId}
           handleSelectFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
@@ -667,6 +713,7 @@ const StixDomainObjectContent = createRefetchContainer(
                   }
                 }
               }
+              
             }
           }
         }
