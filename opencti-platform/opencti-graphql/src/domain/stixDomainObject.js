@@ -28,6 +28,7 @@ import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
 import { usersSessionRefresh } from './user';
+import { addFilter } from '../utils/filtering';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -37,13 +38,10 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  let filters = args.filters ?? [];
+  let filters = args.filters ?? null;
   if (isNotEmptyField(args.elementId) && isNotEmptyField(args.relationship_type)) {
     const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-    filters = [
-      ...filters,
-      { key: relationshipFilterKeys, values: [args.elementId] },
-    ];
+    filters = addFilter(filters, relationshipFilterKeys, args.elementId);
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
@@ -68,7 +66,7 @@ export const stixDomainObjectsTimeSeries = (context, user, args) => {
 
 export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, types, { ...args, filters });
 };
 
@@ -79,7 +77,7 @@ export const stixDomainObjectsNumber = (context, user, args) => ({
 
 export const stixDomainObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
   return distributionEntities(context, user, types, { ...args, filters });
 };
 
