@@ -14,7 +14,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
@@ -150,7 +149,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
               />
             );
           }
-          return <Loader variant={LoaderVariant.inElement} />;
+          return <div />;
         }}
       />
     </>

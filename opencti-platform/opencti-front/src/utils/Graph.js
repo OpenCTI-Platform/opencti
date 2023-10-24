@@ -408,7 +408,10 @@ export const defaultValue = (n, tooltip = false) => {
       || n.result_name
       || (n.content && truncate(n.content, 30))
       || (n.hashes
-        && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256'] || n.hashes['SHA-512']))
+        && (n.hashes.MD5
+          || n.hashes['SHA-1']
+          || n.hashes['SHA-256']
+          || n.hashes['SHA-512']))
       || (n.source_ref_name
         && n.target_ref_name
         && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
@@ -438,7 +441,11 @@ export const defaultValue = (n, tooltip = false) => {
     || n.phase_name
     || n.result_name
     || (n.content && truncate(n.content, 30))
-    || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256'] || n.hashes['SHA-512']))
+    || (n.hashes
+      && (n.hashes.MD5
+        || n.hashes['SHA-1']
+        || n.hashes['SHA-256']
+        || n.hashes['SHA-512']))
     || (n.source_ref_name
       && n.target_ref_name
       && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
@@ -632,7 +639,7 @@ export const buildCorrelationData = (
   }, originalObjects);
   const filteredObjects = applyNodeFilters(
     R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
-    [...filterAdjust.stixCoreObjectsTypes, ...['Report', 'reported-in']],
+    filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
     [],
@@ -676,9 +683,11 @@ export const buildCorrelationData = (
         };
       }),
       R.uniqBy(R.prop('id')),
-      R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+      R.map((n) => (n.defaultDate
+        ? { ...n }
+        : { ...n, defaultDate: jsDate(defaultDate(n)) })),
     )(thisReportLinkNodes),
-    [...filterAdjust.stixCoreObjectsTypes, ...['Report', 'reported-in']],
+    filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
     [],
@@ -826,7 +835,9 @@ export const buildCaseCorrelationData = (
         };
       }),
       R.uniqBy(R.prop('id')),
-      R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+      R.map((n) => (n.defaultDate
+        ? { ...n }
+        : { ...n, defaultDate: jsDate(defaultDate(n)) })),
     )(thisCaseLinkNodes),
     [...filterAdjust.stixCoreObjectsTypes, ...['Case', 'cased-in']],
     filterAdjust.markedBy,
@@ -1062,7 +1073,10 @@ export const buildGraphData = (objects, graphData, t) => {
       if (n.numberOfConnectedElement !== undefined) {
         // The diff between all connections less the ones displayed in the graph.
         numberOfConnectedElement = n.numberOfConnectedElement - (nodesLinksCounter.get(n.id) ?? 0);
-      } else if (!n.parent_types.includes('Stix-Meta-Object') && !n.parent_types.includes('Identity')) {
+      } else if (
+        !n.parent_types.includes('Stix-Meta-Object')
+        && !n.parent_types.includes('Identity')
+      ) {
         // Keep undefined for Meta and Identity objects to display a '?' while the query
         // to fetch real count is loading.
         numberOfConnectedElement = 0;
@@ -1078,9 +1092,11 @@ export const buildGraphData = (objects, graphData, t) => {
           ] || graphLevel.Unknown,
         name: `${
           n.relationship_type
-            ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
-              'Created the',
-            )} ${dateFormat(n.created)}\n${t('Start time')} ${
+            ? `<strong>${t(
+              `relationship_${n.relationship_type}`,
+            )}</strong>\n${t('Created the')} ${dateFormat(n.created)}\n${t(
+              'Start time',
+            )} ${
               isNone(n.start_time || n.first_seen)
                 ? '-'
                 : dateFormat(n.start_time || n.first_seen)
@@ -1121,7 +1137,8 @@ export const buildGraphData = (objects, graphData, t) => {
         isObservable: !!n.observable_value,
         numberOfConnectedElement,
         isNestedInferred:
-          (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
+          (n.types?.includes('inferred') && !n.types.includes('manual'))
+          || false,
         markedBy:
           !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
             ? R.map(
@@ -1153,13 +1170,7 @@ export const buildGraphData = (objects, graphData, t) => {
 
 export const nodePaint = (
   colors,
-  {
-    label,
-    img,
-    x,
-    y,
-    numberOfConnectedElement,
-  },
+  { label, img, x, y, numberOfConnectedElement },
   color,
   ctx,
   selected = false,
@@ -1201,9 +1212,7 @@ export const nodePaint = (
     let numberLabel = '?';
     if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
     if (numberLabel !== '?') {
-      numberLabel = numberOfConnectedElement > 99
-        ? '99+'
-        : `${numberLabel}+`;
+      numberLabel = numberOfConnectedElement > 99 ? '99+' : `${numberLabel}+`;
     }
     ctx.font = '1.5px IBM Plex Sans';
     ctx.fillText(numberLabel, x + 4, y - 2.9);

@@ -12,10 +12,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import DataComponentEditionContainer, { dataComponentEditionQuery } from './DataComponentEditionContainer';
+import DataComponentEditionContainer, {
+  dataComponentEditionQuery,
+} from './DataComponentEditionContainer';
 import Transition from '../../../../components/Transition';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -117,9 +118,7 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <DataComponentEditionContainer
             queryRef={queryRef}
             handleClose={handleCloseEdit}

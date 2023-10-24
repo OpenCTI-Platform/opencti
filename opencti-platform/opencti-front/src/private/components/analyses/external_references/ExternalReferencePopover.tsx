@@ -15,7 +15,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
@@ -54,7 +53,9 @@ interface ExternalReferencePopoverProps {
   isExternalReferenceAttachment?: boolean;
 }
 
-const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
+const ExternalReferencePopover: FunctionComponent<
+ExternalReferencePopoverProps
+> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const navigate = useNavigate();
@@ -152,7 +153,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
               />
             );
           }
-          return <Loader variant={LoaderVariant.inElement} />;
+          return <div />;
         }}
       />
       <Dialog

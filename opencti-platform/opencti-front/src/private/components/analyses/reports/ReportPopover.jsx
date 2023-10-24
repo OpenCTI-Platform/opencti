@@ -7,7 +7,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -74,7 +73,7 @@ const ReportPopover = ({ id }) => {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <div />;
         }}
       />
     </div>

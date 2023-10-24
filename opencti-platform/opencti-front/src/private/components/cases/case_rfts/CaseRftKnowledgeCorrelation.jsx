@@ -235,49 +235,6 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.caseData.objects.edges);
-    const stixCoreObjectsTypes = R.pipe(
-      R.map((n) => n.node.entity_type),
-      R.filter((n) => n && n.length > 0),
-      R.uniq,
-    )(props.caseData.objects.edges);
-    const markedBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.caseData.objects.edges),
-        R.pipe(
-          R.filter((m) => m.node.cases),
-          R.map((m) => m.node.cases.edges),
-          R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
-          R.flatten,
-          R.map((m) => m.node.id),
-        )(props.caseData.objects.edges),
-      ),
-    );
-    const createdBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.createdBy),
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m.id),
-          R.map((n) => n.id),
-        )(props.caseData.objects.edges),
-        R.pipe(
-          R.filter((m) => m && m.node.cases),
-          R.map((m) => m.node.cases.edges),
-          R.flatten,
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m && m.id),
-          R.map((n) => n.id),
-        )(props.caseData.objects.edges),
-      ),
-    );
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -307,18 +264,18 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
-      stixCoreObjectsTypes,
-      markedBy,
-      createdBy,
+      stixCoreObjectsTypes: [],
+      markedBy: [],
+      createdBy: [],
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
     const filterAdjust = {
-      markedBy,
-      createdBy,
-      stixCoreObjectsTypes,
+      stixCoreObjectsTypes: [],
+      markedBy: [],
+      createdBy: [],
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
@@ -885,6 +842,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
       sortByLabel,
       R.map((n) => n.node.entity_type),
       R.filter((n) => n && n.length > 0),
+      R.concat(['Report', 'reported-in']),
       R.uniq,
     )(caseData.objects.edges);
     const markedBy = R.uniqBy(

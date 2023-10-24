@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
-import Loader from '../../../components/Loader';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
@@ -138,7 +137,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <div />;
         }}
       />
     </div>

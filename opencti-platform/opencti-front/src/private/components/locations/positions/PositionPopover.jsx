@@ -17,7 +17,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { positionEditionQuery } from './PositionEdition';
 import PositionEditionContainer from './PositionEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
@@ -153,7 +152,7 @@ class PositionPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
       </>
@@ -167,7 +166,4 @@ PositionPopover.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(PositionPopover);
+export default compose(inject18n, withRouter)(PositionPopover);

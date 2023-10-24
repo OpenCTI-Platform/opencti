@@ -18,7 +18,9 @@ interface ExternalReferenceEditionProps {
   externalReferenceId: string;
 }
 
-const ExternalReferenceEdition: FunctionComponent<ExternalReferenceEditionProps> = ({ externalReferenceId }) => {
+const ExternalReferenceEdition: FunctionComponent<
+ExternalReferenceEditionProps
+> = ({ externalReferenceId }) => {
   const handleClose = () => {
     commitMutation({
       mutation: externalReferenceEditionOverviewFocus,

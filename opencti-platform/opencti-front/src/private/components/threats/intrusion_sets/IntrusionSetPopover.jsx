@@ -18,7 +18,6 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { intrusionSetEditionQuery } from './IntrusionSetEdition';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
@@ -160,7 +159,7 @@ class IntrusionSetPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
       </div>

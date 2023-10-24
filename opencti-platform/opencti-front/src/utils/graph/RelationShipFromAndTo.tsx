@@ -5,7 +5,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../components/i18n';
 import useQueryLoading from '../hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../components/Loader';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../String';
 import { defaultValue } from '../Graph';
@@ -174,14 +173,14 @@ Omit<RelationShipFromAndToProps, 'queryRef'>
     { id },
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<div />}>
       <RelationShipFromAndToComponent
         queryRef={queryRef}
         direction={direction}
       />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <div />
   );
 };
 

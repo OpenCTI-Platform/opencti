@@ -17,7 +17,6 @@ import { opinionEditionQuery } from './OpinionEdition';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OpinionEditionContainer from './OpinionEditionContainer';
-import Loader from '../../../../components/Loader';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -115,7 +114,7 @@ const OpinionPopover = (data) => {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <div />;
         }}
       />
     </>

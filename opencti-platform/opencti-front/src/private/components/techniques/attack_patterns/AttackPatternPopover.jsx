@@ -18,7 +18,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { attackPatternEditionQuery } from './AttackPatternEdition';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
@@ -160,7 +159,7 @@ class AttackPatternPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
       </div>

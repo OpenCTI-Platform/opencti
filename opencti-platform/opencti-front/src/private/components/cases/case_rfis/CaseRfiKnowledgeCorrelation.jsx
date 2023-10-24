@@ -11,7 +11,11 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   buildCaseCorrelationData,
@@ -353,7 +357,10 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     );
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.state.graphData.nodes),
+      R.map(
+        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
+        this.state.graphData.nodes,
+      ),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -835,6 +842,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       sortByLabel,
       R.map((n) => n.node.entity_type),
       R.filter((n) => n && n.length > 0),
+      R.concat(['Report', 'reported-in']),
       R.uniq,
     )(caseData.objects.edges);
     const markedBy = R.uniqBy(
