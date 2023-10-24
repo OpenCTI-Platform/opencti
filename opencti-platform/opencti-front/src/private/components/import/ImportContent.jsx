@@ -41,7 +41,7 @@ import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
-import {ManageImportConnectorMessage} from "@components/import/ManageImportConnectorMessage";
+import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -179,11 +179,11 @@ const initState = {
   sortBy: 'name',
   orderAsc: true,
   selectedConnector: null,
-}
+};
 class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = {...initState};
+    this.state = { ...initState };
   }
 
   componentDidMount() {
@@ -201,7 +201,7 @@ class ImportContentComponent extends Component {
   }
 
   handleCloseImport() {
-    this.setState({...initState});
+    this.setState({ ...initState });
   }
 
   handleOpenValidate(file) {
@@ -303,7 +303,8 @@ class ImportContentComponent extends Component {
     const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations)); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
 
-    const handleSelectConnector = (_, value) => {this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
+    const handleSelectConnector = (_, value) => {
+      this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
 
     return (
@@ -559,7 +560,7 @@ class ImportContentComponent extends Component {
                           );
                         })}
                       </Field>
-                        : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
+                      : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
                   </DialogContent>
                   <DialogActions>

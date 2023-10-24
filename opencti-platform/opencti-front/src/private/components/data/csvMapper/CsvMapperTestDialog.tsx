@@ -14,12 +14,11 @@ import { fetchQuery } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
-  query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
-    csvMapperTest(configuration: $configuration, content: $content)
-  }
+    query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
+        csvMapperTest(configuration: $configuration, content: $content)
+    }
 `;
 
-type FixThisAny = any;
 interface CsvMapperTestDialogProps {
   open: boolean;
   onClose: () => void;
@@ -67,9 +66,9 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           .csvMapperTest;
         setResult({
           value: JSON.stringify(resultTest, null, '  '),
-          nbEntities: resultTest.filter((obj: FixThisAny) => !obj.relationship_type).length,
-          nbRelationships: resultTest.filter((obj: FixThisAny) => !!obj.relationship_type).length
-        })
+          nbEntities: resultTest.filter((obj) => !obj.relationship_type).length,
+          nbRelationships: resultTest.filter((obj) => !!obj.relationship_type).length,
+        });
         setLoading(false);
       }).catch(() => {
         setLoading(false);
@@ -127,22 +126,23 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           </Button>
           {loading && (
             <div style={{ marginLeft: 10 }}>
-              <Loader variant={LoaderVariant.inElement} />
+              <Loader variant={LoaderVariant.inElement}/>
             </div>
           )}
         </div>
-          { result &&
-              <div style={{
-                  paddingTop: 8,
-                  fontSize: '1rem',
-                  gap: 8,
-                  justifyContent: 'center',
-                  display: 'flex'}}>
-                  <span>Objets trouvés : </span>
-                  <span><span style={{fontWeight: 'bold'}}>{result.nbEntities} </span> {t('Entities')}</span>
-                  <span><span style={{fontWeight: 'bold'}}>{result.nbRelationships}</span> {t('Relationships')}</span>
-              </div>
-          }
+        {result
+          && <div style={{
+            paddingTop: 8,
+            fontSize: '1rem',
+            gap: 8,
+            justifyContent: 'center',
+            display: 'flex',
+          }}>
+            <span>{t('Objects found')} : </span>
+            <span><span style={{ fontWeight: 'bold' }}>{result.nbEntities} </span> {t('Entities')}</span>
+            <span><span style={{ fontWeight: 'bold' }}>{result.nbRelationships}</span> {t('Relationships')}</span>
+          </div>
+        }
         <div style={{ marginTop: 20 }}>
           <CodeBlock
             code={result?.value || t('You will find here the result in JSON format')}
