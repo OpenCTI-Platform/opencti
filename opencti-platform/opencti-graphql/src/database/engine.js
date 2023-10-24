@@ -1599,14 +1599,12 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
   throw UnsupportedError('[FILTER] invalid filter', validFilter);
 };
 
-const buildSubQueryForFilterGroup = async (context, user, filterGroup) => {
-  const { mode = 'and' } = filterGroup;
-  const filters = filterGroup.filters ?? filterGroup; // TODO remove support both filterGroup and filters as entry
-  const subFilterGroups = filterGroup.filterGroups ?? [];
+const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
+  const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localMustFilters = [];
   // Handle filterGroups
-  for (let index = 0; index < subFilterGroups.length; index += 1) {
-    const group = subFilterGroups[index];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
     const subQuery = await buildSubQueryForFilterGroup(context, user, group);
     localMustFilters.push(subQuery);
   }
