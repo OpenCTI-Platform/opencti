@@ -3,11 +3,10 @@ import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import Drawer from '@components/common/drawer/Drawer';
 import InvestigationAddStixCoreObjectsLines
 , {
   investigationAddStixCoreObjectsLinesQuery,
-} from '@components/workspaces/investigations/InvestigationAddStixCoreObjectsLines';
+} from './InvestigationAddStixCoreObjectsLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
@@ -15,6 +14,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { convertFilters } from '../../../../utils/ListParameters';
+import Drawer from '../../common/drawer/Drawer';
 
 const InvestigationAddStixCoreObjects = (props) => {
   const {
@@ -27,6 +27,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     openDrawer,
     handleClose,
     mapping,
+    workspaceStixCoreObjects,
   } = props;
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -192,6 +193,7 @@ const InvestigationAddStixCoreObjects = (props) => {
                     onDelete={onDelete}
                     mapping={mapping}
                     setNumberOfElements={setNumberOfElements}
+                    workspaceStixCoreObjects={workspaceStixCoreObjects}
                   />
                 )}
               />

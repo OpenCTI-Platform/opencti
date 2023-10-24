@@ -51,6 +51,7 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
+import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { parseDomain } from '../../../../utils/Graph';
@@ -64,7 +65,6 @@ import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomain
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
-import InvestigationAddStixCoreObjects from "@components/workspaces/investigations/InvestigationAddStixCoreObjects";
 
 const styles = () => ({
   bottomNav: {

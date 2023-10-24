@@ -8,12 +8,12 @@ import { ConnectionHandler } from 'relay-runtime';
 import {
   InvestigationAddStixCoreObjecstLineDummy,
   InvestigationAddStixCoreObjectsLine,
-} from '@components/workspaces/investigations/InvestigationAddStixCoreObjectsLine';
+} from './InvestigationAddStixCoreObjectsLine';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {setNumberOfElements} from "../../../../utils/Number";
-import {insertNode} from "../../../../utils/store";
+import { setNumberOfElements } from '../../../../utils/Number';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   investigation: {

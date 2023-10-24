@@ -42,8 +42,8 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import {
-  investigationAddStixCoreObjectsLinesRelationsDeleteMutation
-} from "@components/workspaces/investigations/InvestigationAddStixCoreObjectsLines";
+  investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+} from './InvestigationAddStixCoreObjectsLines';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
