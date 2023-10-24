@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { useState, FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MoreVertOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
@@ -15,16 +15,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { BackendFilters } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
 import { CaseTemplateTasksLinesPaginationQuery } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
-import CaseTemplateTasksLines, {
-  tasksLinesQuery,
-} from './CaseTemplateTasksLines';
+import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
 import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
 import { useFormatter } from '../../../../components/i18n';
@@ -177,8 +174,8 @@ const CaseTemplateTasks = () => {
     caseTemplateQuery,
     { id: caseTemplateId },
   );
-  const taskFilters: BackendFilters = [
-    { key: 'taskContains', values: [caseTemplateId] },
+  const taskFilters = [
+    { key: 'taskContains', values: [caseTemplateId], operator: 'eq', mode: 'or' },
   ];
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
     'view-case-template-tasks',

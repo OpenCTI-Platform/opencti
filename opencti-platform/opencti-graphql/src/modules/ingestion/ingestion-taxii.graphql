@@ -37,16 +37,6 @@ enum IngestionTaxiiOrdering {
     uri
     version
 }
-enum IngestionTaxiiFilter {
-    name
-    creator
-}
-input IngestionTaxiiFiltering {
-    key: [IngestionTaxiiFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 type IngestionTaxiiConnection {
     pageInfo: PageInfo!
     edges: [IngestionTaxiiEdge!]!

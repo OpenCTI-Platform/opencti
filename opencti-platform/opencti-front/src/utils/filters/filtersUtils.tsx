@@ -18,13 +18,6 @@ export type Filter = {
   mode: string;
 };
 
-export type BackendFilters = { // TODO to be removed
-  key: string | string[];
-  values: string[];
-  operator?: string;
-  filterMode?: string;
-}[];
-
 export const initialFilterGroup = {
   mode: 'and',
   filters: [],

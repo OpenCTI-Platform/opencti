@@ -113,13 +113,11 @@ const userAuditsTimeSeriesQuery = graphql`
     $endDate: DateTime!
     $interval: String!
     $filters: FilterGroup
-    $filterMode: FilterMode
   ) {
     auditsTimeSeries(
       types: $types
       field: $field
       filters: $filters
-      filterMode: $filterMode
       operation: $operation
       startDate: $startDate
       endDate: $endDate
@@ -573,7 +571,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={user.id} filter="user_ids" />
+        <Triggers recipientId={user.id} filterKey="user_ids" />
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}
@@ -607,14 +605,18 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   startDate,
                   endDate,
                   interval: 'month',
-                  filters: [
-                    {
-                      key: 'members_user',
-                      values: [user.id],
-                      operator: 'eq',
-                      filterMode: 'or',
-                    },
-                  ],
+                  filters: {
+                    mode: 'and',
+                    filters: [
+                      {
+                        key: 'members_user',
+                        values: [user.id],
+                        operator: 'eq',
+                        mode: 'or',
+                      },
+                    ],
+                    filterGroups: [],
+                  },
                 }}
                 render={({
                   props,

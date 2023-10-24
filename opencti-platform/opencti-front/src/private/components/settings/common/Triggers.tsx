@@ -39,11 +39,11 @@ const useStyles = makeStyles(() => ({
 
 interface TriggersProps {
   recipientId: string;
-  filter: FilterGroup;
+  filterKey: string;
 }
 const Triggers: FunctionComponent<TriggersProps> = ({
   recipientId,
-  filter,
+  filterKey,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -75,7 +75,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     includeAuthorities: true,
     filters: {
       mode: 'and',
-      filters: [{ key: [filter], values: [recipientId] }],
+      filters: [{ key: [filterKey], values: [recipientId] }],
       filterGroups: [],
     },
   };
