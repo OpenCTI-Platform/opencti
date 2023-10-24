@@ -476,7 +476,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
         logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
         // Auto deletion of the invalid relation
-        await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
+        await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
         const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
         const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
@@ -1275,7 +1275,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdWithRefs);
+  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdsWithRefs);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1941,7 +1941,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     const relationsToCreate = [];
     const relationsToDelete = [];
     const buildInstanceRelTo = (to, relType) => R.head(buildInnerRelation(initial, to, relType));
-    const streamOpts = { publishStreamEvent: false, locks: participantIds };
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
       const key = schemaRelationsRefDefinition.convertStixNameToInputName(updatedInstance.entity_type, metaKey) || metaKey;
@@ -2028,7 +2027,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       }
     }
     if (relationsToDelete.length > 0) {
-      await deleteElements(context, user, relationsToDelete, streamOpts);
+      await elDeleteElements(context, user, relationsToDelete);
     }
     if (relationsToCreate.length > 0) {
       await elIndexElements(context, user, initial.entity_type, relationsToCreate);
@@ -3299,7 +3298,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       } : undefined;
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
+      const deletePromise = elDeleteElements(context, user, [element]);
       const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
       event = updateEvent;
       element.from = instance; // dynamically update the from to have an up to date relation
@@ -3309,7 +3308,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const exportDeletePromise = deleteAllFiles(context, user, `export/${element.entity_type}/${element.internal_id}/`);
       await Promise.all([importDeletePromise, exportDeletePromise]);
       // Delete all linked elements
-      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
+      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdsWithRefs);
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, dependencyDeletions, opts);
     }
@@ -3325,12 +3324,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // - TRANSACTION END
   return { element, event };
-};
-const deleteElements = async (context, user, elements, opts = {}) => {
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
-    await deleteElementById(context, user, element.internal_id, element.entity_type, opts);
-  }
 };
 export const deleteElementById = async (context, user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {

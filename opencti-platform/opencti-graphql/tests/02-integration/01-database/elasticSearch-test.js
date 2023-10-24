@@ -7,7 +7,6 @@ import { ES_INDEX_PREFIX, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_INDEX_I
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
-import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
@@ -66,7 +65,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughStix = await elLoadById(testContext, ADMIN_USER, standardId, opts);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
-    await elDeleteElements(testContext, ADMIN_USER, [dataThroughStix], storeLoadByIdWithRefs);
+    await elDeleteElements(testContext, ADMIN_USER, [dataThroughStix]);
     const removedInternal = await elLoadById(testContext, ADMIN_USER, internalId, opts);
     expect(removedInternal).toBeUndefined();
   });

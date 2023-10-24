@@ -5,7 +5,6 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  storeLoadByIdWithRefs
 } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_PART_OF } from '../../src/schema/stixCoreRelationship';
@@ -46,7 +45,7 @@ describe('Report refs identity rule', () => {
       // 5. Remove a part of relation
       // Delete all reports
       const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
-      await elDeleteElements(testContext, SYSTEM_USER, reports, storeLoadByIdWithRefs);
+      await elDeleteElements(testContext, SYSTEM_USER, reports);
 
       // Check that no inferences exists
       const beforeActivationRelations = await getInferences(RELATION_OBJECT);
@@ -177,7 +176,7 @@ describe('Report refs identity rule', () => {
       const afterDisableRelations = await getInferences(RELATION_OBJECT);
       expect(afterDisableRelations.length).toBe(0);
       // Delete all creation
-      await elDeleteElements(testContext, SYSTEM_USER, createdElements, storeLoadByIdWithRefs);
+      await elDeleteElements(testContext, SYSTEM_USER, createdElements);
     },
     FIVE_MINUTES
   );
