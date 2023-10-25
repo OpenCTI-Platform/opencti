@@ -2559,12 +2559,12 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
-        const targetData = patchInputData ?? [];
+        const targetData = (patchInputData ?? []).map((n) => n.internal_id);
         // If expected data is different from current data
         if (R.symmetricDifference(currentData, targetData).length > 0) {
-          const diffTargets = targetData.filter((target) => !currentData.includes(target.internal_id));
+          const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
           if (isUpsertSynchro) {
-            inputs.push({ key: inputField, value: targetData, operation: UPDATE_OPERATION_REPLACE });
+            inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
           } else if (diffTargets.length > 0) {
             inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
