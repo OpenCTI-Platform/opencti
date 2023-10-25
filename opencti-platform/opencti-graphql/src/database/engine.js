@@ -1173,7 +1173,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const orderKey = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       body.sort = [{ [orderKey]: (opts.orderMode ?? 'asc') }];
     } else {
-      body.sort = [{ [`${ID_INTERNAL}.keyword`]: 'asc' }];
+      body.sort = [{ created_at: 'asc' }];
     }
     let searchAfter;
     let hasNextPage = true;
