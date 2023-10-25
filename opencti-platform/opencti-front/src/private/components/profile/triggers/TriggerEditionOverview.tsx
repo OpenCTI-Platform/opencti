@@ -17,8 +17,9 @@ import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
+  constructHandleAddFilter, constructHandleRemoveFilter,
   Filter,
-  FilterGroup,
+  FilterGroup, filtersAfterSwitchLocalMode,
   findFilterFromKey, findFilterIndexFromKey,
   initialFilterGroup,
   isUniqFilter,
@@ -102,43 +103,8 @@ TriggerEditionOverviewProps
     id: string,
     op = 'eq',
   ) => {
-    if (filters && findFilterFromKey(filters.filters, k, op)) {
-      const filter = findFilterFromKey(filters.filters, k, op);
-      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
-      const newFilterElement = {
-        key: k,
-        values: newValues,
-        operator: op,
-        mode: 'or',
-      };
-      const newBaseFilters = {
-        ...filters,
-        filters: [
-          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
-          newFilterElement, // add new filter
-        ],
-      };
-      commitFieldPatch({
-        variables: {
-          id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
-        },
-      });
-    } else {
-      const newFilterElement = {
-        key: k,
-        values: [id],
-        operator: op ?? 'eq',
-        mode: 'or',
-      };
-      const newBaseFilters = filters ? {
-        ...filters,
-        filters: [...filters.filters, newFilterElement], // add new filter
-      } : {
-        mode: 'and',
-        filterGroups: [],
-        filters: [newFilterElement],
-      };
+    const newBaseFilters = constructHandleAddFilter(filters, k, id, op);
+    if (newBaseFilters) {
       commitFieldPatch({
         variables: {
           id: trigger.id,
@@ -148,11 +114,7 @@ TriggerEditionOverviewProps
     }
   };
   const handleRemoveFilter = (k: string, op = 'eq') => {
-    const newBaseFilters = {
-      ...filters,
-      filters: filters.filters
-        .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
-    };
+    const newBaseFilters = constructHandleRemoveFilter(filters, k, op);
     commitFieldPatch({
       variables: {
         id: trigger.id,
@@ -162,27 +124,15 @@ TriggerEditionOverviewProps
   };
 
   const handleSwitchLocalMode = (localFilter: Filter) => {
-    let newBaseFilters: FilterGroup = initialFilterGroup;
-    if (filters) {
-      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
-      if (filterIndex !== null) {
-        const newFiltersContent = [...filters.filters];
-        newFiltersContent[filterIndex] = {
-          ...localFilter,
-          mode: localFilter.mode === 'and' ? 'or' : 'and',
-        };
-        newBaseFilters = {
-          ...filters,
-          filters: newFiltersContent,
-        };
-      }
+    const newBaseFilters = filtersAfterSwitchLocalMode(filters, localFilter);
+    if (newBaseFilters) {
+      commitFieldPatch({
+        variables: {
+          id: trigger.id,
+          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+        },
+      });
     }
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
-      },
-    });
   };
 
   const handleSwitchGlobalMode = () => {

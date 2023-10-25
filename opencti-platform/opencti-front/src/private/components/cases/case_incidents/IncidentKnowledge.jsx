@@ -7,16 +7,20 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import IncidentKnowledgeGraph, { incidentKnowledgeGraphQuery, } from './IncidentKnowledgeGraph';
-import IncidentKnowledgeCorrelation, { incidentKnowledgeCorrelationQuery, } from './IncidentKnowledgeCorrelation';
+import IncidentKnowledgeGraph, { incidentKnowledgeGraphQuery } from './IncidentKnowledgeGraph';
+import IncidentKnowledgeCorrelation, { incidentKnowledgeCorrelationQuery } from './IncidentKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import CaseIncidentPopover from './CaseIncidentPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters, } from '../../../../utils/ListParameters';
-import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery, } from './IncidentKnowledgeTimeLine';
-import { findFilterFromKey, initialFilterGroup, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery } from './IncidentKnowledgeTimeLine';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery, } from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -178,62 +182,17 @@ class IncidentKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const foundFilter = this.state.timeLineFilters ? findFilterFromKey(this.state.timeLineFilters, key, op) : undefined;
-    if (
-      foundFilter
-      && foundFilter.values.length > 0
-    ) {
-      const values = isUniqFilter(key) ? [id] : R.uniq([...foundFilter.values, id]);
-      const newFilterElement = {
-        key,
-        values,
-        operator: op,
-        mode: 'or',
-      };
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            filters: [
-              ...this.state.timeLineFilters.filters.filter((f) => f.key !== key || f.operator !== op),
-              newFilterElement,
-            ],
-          },
-        },
-        () => this.saveView(),
-      );
-    } else {
-      const newFilterElement = {
-        key,
-        values: [id],
-        operator: op,
-        mode: 'or',
-      };
-      const newFilters = this.state.timeLineFilters
-        ? {
-          ...this.state.timeLineFilters,
-          filters: [...this.state.timeLineFilters.filters, newFilterElement],
-        }
-        : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
-        };
-      this.setState(
-        {
-          timeLineFilters: newFilters,
-        },
-        () => this.saveView(),
-      );
-    }
+    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    this.setState(
+      {
+        timeLineFilters: newFilters,
+      },
+      () => this.saveView(),
+    );
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = {
-      ...this.state.timeLineFilters,
-      filters: this.state.timeLineFilters.filters
-        .filter((f) => f.key !== key || f.operator !== op),
-    };
+    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
     this.setState(
       { timeLineFilters: newFilters },
       () => this.saveView(),

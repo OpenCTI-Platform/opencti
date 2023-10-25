@@ -108,12 +108,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         && (event as unknown as MouseEvent).altKey
         && event.type === 'click'
       ) {
-        defaultHandleAddFilter(filterKey, value.value, 'not_eq', event);
+        console.log('value.value', value.value);
+        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'not_nil' : 'not_eq', event);
       } else {
         const group = !onlyGroupOrganization.includes(filterKey)
           ? value.group
           : undefined;
-        defaultHandleAddFilter(filterKey, value.value, group, event);
+        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'nil' : group, event);
       }
     }
   };

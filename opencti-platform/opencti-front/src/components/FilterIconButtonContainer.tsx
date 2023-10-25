@@ -114,8 +114,8 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
         .map((currentFilter) => {
           const filterKey = currentFilter.key;
           const filterValues = currentFilter.values;
-          const negative = currentFilter.operator === 'not_eq';
-          const operatorDisplay = currentFilter.operator !== 'eq' && currentFilter.operator !== 'not_eq';
+          const negative = currentFilter.operator === 'not_eq' || currentFilter.operator === 'not_nil';
+          const operatorDisplay = !['eq', 'not_eq', 'nil', 'not_nil'].includes(currentFilter.operator);
           const keyLabel = operatorDisplay
             ? truncate(t(`filter_${filterKey}_${currentFilter.operator}`), 20)
             : truncate(t(`filter_${filterKey}`), 20);

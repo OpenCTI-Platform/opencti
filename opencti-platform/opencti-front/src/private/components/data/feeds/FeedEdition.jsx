@@ -25,15 +25,17 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
-import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery
+} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes';
 import {
-  findFilterFromKey,
-  findFilterIndexFromKey,
-  initialFilterGroup,
-  isUniqFilter
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -264,67 +266,14 @@ const FeedEditionContainer = (props) => {
   };
 
   const handleAddFilter = (k, id, op = 'eq') => {
-    if (filters && findFilterFromKey(filters.filters, k, op)) {
-      const filter = findFilterFromKey(filters.filters, k, op);
-      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
-      const newFilterElement = {
-        key: k,
-        values: newValues,
-        operator: op,
-        mode: 'or',
-      };
-      const newBaseFilters = {
-        ...filters,
-        filters: [
-          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
-          newFilterElement, // add new filter
-        ],
-      };
-      setFilters(newBaseFilters);
-    } else {
-      const newFilterElement = {
-        key: k,
-        values: [id],
-        operator: op ?? 'eq',
-        mode: 'or',
-      };
-      const newBaseFilters = filters ? {
-        ...filters,
-        filters: [...filters.filters, newFilterElement], // add new filter
-      } : {
-        mode: 'and',
-        filterGroups: [],
-        filters: [newFilterElement],
-      };
-      setFilters(newBaseFilters);
-    }
+    setFilters(constructHandleAddFilter(filters, k, id, op));
   };
   const handleRemoveFilter = (k, op = 'eq') => {
-    if (filters) {
-      const newBaseFilters = {
-        ...filters,
-        filters: filters.filters
-          .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
-      };
-      setFilters(newBaseFilters);
-    }
+    setFilters(constructHandleRemoveFilter(filters, k, op));
   };
 
   const handleSwitchLocalMode = (localFilter) => {
-    if (filters) {
-      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
-      if (filterIndex !== null) {
-        const newFiltersContent = [...filters.filters];
-        newFiltersContent[filterIndex] = {
-          ...localFilter,
-          mode: localFilter.mode === 'and' ? 'or' : 'and',
-        };
-        setFilters({
-          ...filters,
-          filters: newFiltersContent,
-        });
-      }
-    }
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
   };
 
   const handleSwitchGlobalMode = () => {

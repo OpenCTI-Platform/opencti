@@ -7036,7 +7036,7 @@ export type Filter = {
   key: Array<Scalars['String']['input']>;
   mode?: InputMaybe<FilterMode>;
   operator?: InputMaybe<FilterOperator>;
-  values: Array<InputMaybe<Scalars['String']['input']>>;
+  values: Array<Scalars['String']['input']>;
 };
 
 export type FilterGroup = {
@@ -7057,7 +7057,9 @@ export enum FilterOperator {
   Lt = 'lt',
   Lte = 'lte',
   Match = 'match',
+  Nil = 'nil',
   NotEq = 'not_eq',
+  NotNil = 'not_nil',
   Script = 'script',
   Wildcard = 'wildcard'
 }

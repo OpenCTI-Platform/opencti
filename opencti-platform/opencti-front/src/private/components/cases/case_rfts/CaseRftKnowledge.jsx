@@ -10,7 +10,11 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import { findFilterFromKey, initialFilterGroup, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
 import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
@@ -177,62 +181,17 @@ class CaseRftKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const foundFilter = this.state.timeLineFilters ? findFilterFromKey(this.state.timeLineFilters, key, op) : undefined;
-    if (
-      foundFilter
-      && foundFilter.values.length > 0
-    ) {
-      const values = isUniqFilter(key) ? [id] : R.uniq([...foundFilter.values, id]);
-      const newFilterElement = {
-        key,
-        values,
-        operator: op,
-        mode: 'or',
-      };
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            filters: [
-              ...this.state.timeLineFilters.filters.filter((f) => f.key !== key || f.operator !== op),
-              newFilterElement,
-            ],
-          },
-        },
-        () => this.saveView(),
-      );
-    } else {
-      const newFilterElement = {
-        key,
-        values: [id],
-        operator: op,
-        mode: 'or',
-      };
-      const newFilters = this.state.timeLineFilters
-        ? {
-          ...this.state.timeLineFilters,
-          filters: [...this.state.timeLineFilters.filters, newFilterElement],
-        }
-        : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
-        };
-      this.setState(
-        {
-          timeLineFilters: newFilters,
-        },
-        () => this.saveView(),
-      );
-    }
+    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    this.setState(
+      {
+        timeLineFilters: newFilters,
+      },
+      () => this.saveView(),
+    );
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = {
-      ...this.state.timeLineFilters,
-      filters: this.state.timeLineFilters.filters
-        .filter((f) => f.key !== key || f.operator !== op),
-    };
+    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
     this.setState(
       { timeLineFilters: newFilters },
       () => this.saveView(),

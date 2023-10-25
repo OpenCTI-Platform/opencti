@@ -92,6 +92,8 @@ enum FilterOperator {
   wildcard
   script
   match
+  nil
+  not_nil
 }
 
 input FilterGroup {
@@ -102,7 +104,7 @@ input FilterGroup {
 
 input Filter {
   key: [String!]!
-  values: [String]!
+  values: [String!]!
   operator: FilterOperator
   mode: FilterMode
 }

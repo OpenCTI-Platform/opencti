@@ -25,9 +25,11 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import {
   addFilter,
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
   findFilterFromKey,
-  findFilterIndexFromKey, initialFilterGroup,
-  isUniqFilter,
+  initialFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
@@ -414,64 +416,14 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
       event.stopPropagation();
       event.preventDefault();
     }
-    const filter = filters ? findFilterFromKey(filters, key, op) : undefined;
-    if (filter && filter.values.length > 0) {
-      const values = isUniqFilter(key) ? [id] : R.uniq([...filter.values, id]);
-      const newFilterElement = {
-        key,
-        values,
-        operator: op,
-        mode: 'or',
-      };
-      setFilters({
-        ...filters,
-        filters: [
-          filters.filtesr.filter((f) => f.key !== key || f.operator !== op),
-          newFilterElement,
-        ],
-      });
-    } else {
-      const newFilterElement = {
-        key,
-        values: [id],
-        operator: op,
-        mode: 'or',
-      };
-      const newFilters = filters
-        ? {
-          ...filters,
-          filters: [...filters.filters, newFilterElement],
-        }
-        : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
-        };
-      setFilters(newFilters);
-    }
+    setFilters(constructHandleAddFilter(filters, key, id, op));
   };
   const handleRemoveFilter = (key, op = 'eq') => {
-    setFilters({
-      ...filters,
-      filters: filters.filters.filter((f) => f.key !== key || f.operator !== op),
-    });
+    setFilters(constructHandleRemoveFilter(filters, key, op));
   };
 
   const handleSwitchLocalMode = (localFilter) => {
-    if (filters) {
-      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
-      if (filterIndex !== null) {
-        const newFiltersContent = [...filters.filters];
-        newFiltersContent[filterIndex] = {
-          ...localFilter,
-          mode: localFilter.mode === 'and' ? 'or' : 'and',
-        };
-        setFilters({
-          ...filters,
-          filters: newFiltersContent,
-        });
-      }
-    }
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
   };
 
   const handleSwitchGlobalMode = () => {

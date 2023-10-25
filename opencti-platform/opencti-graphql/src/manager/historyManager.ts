@@ -192,7 +192,7 @@ const initHistoryManager = () => {
         orderMode: OrderingMode.Desc,
         filters: {
           mode: 'and',
-          filters: [{ key: ['event_access'], values: [null] }],
+          filters: [{ key: ['event_access'], values: [], operator: 'nil' }],
           filterGroups: [],
         },
       }, true);

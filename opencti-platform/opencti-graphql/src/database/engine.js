@@ -1510,72 +1510,79 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
     };
     return { nested: nestedQuery };
   }
-  // 03. Handle values according to the operator
-  for (let i = 0; i < values.length; i += 1) {
-    if (values[i] === null) {
-      if (validKeys.length > 1) {
-        throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
-      }
-      if (operator === 'eq') {
-        valuesFiltering.push({
-          bool: {
-            must_not: {
-              exists: {
-                field: R.head(validKeys)
-              }
+  // 03. Handle nil and not_nil operators
+  if (operator === 'nil') {
+    if (validKeys.length > 1) {
+      throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+    } else {
+      valuesFiltering.push({
+        bool: {
+          must_not: {
+            exists: {
+              field: R.head(validKeys)
             }
           }
-        });
-      } else if (operator === 'not_eq') {
-        valuesFiltering.push({ exists: { field: R.head(validKeys) } });
-      }
-    } else if (values[i] === 'EXISTS') {
-      if (validKeys.length > 1) {
-        throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
-      }
-      valuesFiltering.push({ exists: { field: R.head(validKeys) } });
-    } else if (operator === 'eq') {
-      valuesFiltering.push({
-        multi_match: {
-          fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
-          query: values[i].toString(),
-        },
+        }
       });
-    } else if (operator === 'not_eq') {
-      noValuesFiltering.push({
-        multi_match: {
-          fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
-          query: values[i].toString(),
-        },
-      });
-    } else if (operator === 'match') {
-      valuesFiltering.push({
-        multi_match: {
-          fields: validKeys,
-          query: values[i].toString(),
-        },
-      });
-    } else if (operator === 'wildcard') {
-      valuesFiltering.push({
-        query_string: {
-          query: `"${values[i].toString()}"`,
-          fields: validKeys,
-        },
-      });
-    } else if (operator === 'script') {
-      valuesFiltering.push({
-        script: {
-          script: values[i].toString()
-        },
-      });
+    }
+  } else if (operator === 'not_nil') {
+    if (validKeys.length > 1) {
+      throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
     } else {
-      if (validKeys.length > 1) {
-        throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
-      }
-      valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
+      valuesFiltering.push({ exists: { field: R.head(validKeys) } });
     }
   }
-  // 04. Push the values
+  // 04. Handle values according to the operator
+  if (operator !== 'nils' && operator !== 'not_nils') {
+    for (let i = 0; i < values.length; i += 1) {
+      if (values[i] === 'EXISTS') {
+        if (validKeys.length > 1) {
+          throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+        }
+        valuesFiltering.push({ exists: { field: R.head(validKeys) } });
+      } else if (operator === 'eq') {
+        valuesFiltering.push({
+          multi_match: {
+            fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
+            query: values[i].toString(),
+          },
+        });
+      } else if (operator === 'not_eq') {
+        noValuesFiltering.push({
+          multi_match: {
+            fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
+            query: values[i].toString(),
+          },
+        });
+      } else if (operator === 'match') {
+        valuesFiltering.push({
+          multi_match: {
+            fields: validKeys,
+            query: values[i].toString(),
+          },
+        });
+      } else if (operator === 'wildcard') {
+        valuesFiltering.push({
+          query_string: {
+            query: `"${values[i].toString()}"`,
+            fields: validKeys,
+          },
+        });
+      } else if (operator === 'script') {
+        valuesFiltering.push({
+          script: {
+            script: values[i].toString()
+          },
+        });
+      } else {
+        if (validKeys.length > 1) {
+          throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+        }
+        valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
+      }
+    }
+  }
+  // 05. Push the values
   if (valuesFiltering.length > 0) {
     return {
       bool: {
@@ -1611,7 +1618,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
-    const isValidFilter = filter?.values?.length > 0 || filter?.nested?.length > 0;
+    const isValidFilter = filter?.values || filter?.nested?.length > 0;
     if (isValidFilter) {
       const localMustFilter = await buildLocalMustFilter(context, user, filter);
       localMustFilters.push(localMustFilter);
