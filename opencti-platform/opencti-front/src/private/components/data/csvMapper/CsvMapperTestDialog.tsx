@@ -10,7 +10,7 @@ import CodeBlock from '@components/common/CodeBlock';
 import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery, handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
@@ -29,6 +29,13 @@ interface CsvMapperResult {
   value: string;
   nbRelationships: number;
   nbEntities: number;
+}
+
+interface ResultCSVMapper {
+  id: string;
+  spec_version: string;
+  type: string;
+  [key: string]: string | string[] | object
 }
 
 const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
@@ -66,13 +73,13 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           .csvMapperTest;
         setResult({
           value: JSON.stringify(resultTest, null, '  '),
-          nbEntities: resultTest.filter((obj) => !obj.relationship_type).length,
-          nbRelationships: resultTest.filter((obj) => !!obj.relationship_type).length,
+          nbEntities: resultTest.filter((obj: ResultCSVMapper) => !obj.relationship_type).length,
+          nbRelationships: resultTest.filter((obj: ResultCSVMapper) => !!obj.relationship_type).length,
         });
         setLoading(false);
-      }).catch(() => {
+      }).catch((error) => {
+        handleError(error);
         setLoading(false);
-        return false;
       });
   };
 
