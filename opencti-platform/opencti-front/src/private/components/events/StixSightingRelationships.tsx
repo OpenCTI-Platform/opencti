@@ -109,8 +109,8 @@ const StixSightingRelationships = () => {
       ...renderFilters,
       entity_type: [
         {
-          id: 'Stix-Sighting-Relationship',
-          value: 'Stix-Sighting-Relationship',
+          id: 'stix-sighting-relationship',
+          value: 'stix-sighting-relationship',
         },
       ],
     };
@@ -179,7 +179,7 @@ const StixSightingRelationships = () => {
           search={searchTerm}
           filters={renderFilters}
           handleClearSelectedElements={handleClearSelectedElements}
-          type="Stix-Sighting-Relationship"
+          type="stix-sighting-relationship"
         />
       </>
     );
