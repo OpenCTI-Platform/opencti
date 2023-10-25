@@ -208,6 +208,7 @@ const RootAdministrativeArea = () => {
             'regions',
             'countries',
             'cities',
+            'threats',
             'threat_actors',
             'intrusion_sets',
             'campaigns',
