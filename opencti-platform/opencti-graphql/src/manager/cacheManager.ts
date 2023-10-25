@@ -42,6 +42,7 @@ import type {
 } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
@@ -158,6 +159,12 @@ const platformEntitySettings = (context: AuthContext) => {
   };
   return { values: null, fn: reloadEntitySettings };
 };
+const platformManagerConfigurations = (context: AuthContext) => {
+  const reloadManagerConfigurations = () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_MANAGER_CONFIGURATION], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadManagerConfigurations };
+};
 const platformStreams = (context: AuthContext) => {
   const reloadStreams = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
@@ -178,6 +185,7 @@ const initCacheManager = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
     writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, platformEntitySettings(context));
+    writeCacheForEntity(ENTITY_TYPE_MANAGER_CONFIGURATION, platformManagerConfigurations(context));
     writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, platformMarkings(context));
     writeCacheForEntity(ENTITY_TYPE_USER, platformUsers(context));
     writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
