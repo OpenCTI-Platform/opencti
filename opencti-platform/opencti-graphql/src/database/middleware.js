@@ -410,8 +410,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
   const refIndices = [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
-  const refArgs = { indices: refIndices, fromId: elementIds };
-  const refsRelations = await listAllRelations(context, user, relTypes, refArgs);
+  const refsRelations = await elFindByIds(context, user, elementIds, { type: relTypes, indices: refIndices, onRelationship: 'from' });
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
@@ -444,7 +443,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
 };
 const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
-  let fromToPromise = Promise.resolve();
+  let fromAndToPromise = Promise.resolve();
   const targetsToResolved = [];
   elements.forEach((e) => {
     const isRelation = e.base_type === BASE_TYPE_RELATION;
@@ -458,16 +457,16 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   if (targetsToResolved.length > 0) {
     const args = { toMap: true, connectionFormat: false };
     // Load with System user, access rights will be dynamically change after
-    fromToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
+    fromAndToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
   }
-  const [fromToMap, depsElementsMap] = await Promise.all([fromToPromise, depsPromise]);
+  const [fromAndToMap, depsElementsMap] = await Promise.all([fromAndToPromise, depsPromise]);
   const loadedElements = [];
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
     const isRelation = element.base_type === BASE_TYPE_RELATION;
     if (isRelation) {
-      const rawFrom = fromToMap[element.fromId];
-      const rawTo = fromToMap[element.toId];
+      const rawFrom = fromAndToMap[element.fromId];
+      const rawTo = fromAndToMap[element.toId];
       const deps = depsElementsMap.get(element.id);
       // Check relations consistency
       if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
