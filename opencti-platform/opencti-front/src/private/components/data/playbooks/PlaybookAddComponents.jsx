@@ -23,7 +23,7 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { findFilterFromKey, findFilterIndexFromKey, isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/SwitchField';
@@ -101,20 +101,78 @@ const PlaybookAddComponentsContent = ({
   const [componentId, setComponentId] = useState(
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
-  const handleAddFilter = (key, id, value) => {
-    if (filters[key] && filters[key].length > 0) {
-      setFilters({
+
+  const handleAddFilter = (k, id, op = 'eq') => {
+    if (filters && findFilterFromKey(filters.filters, k, op)) {
+      const filter = findFilterFromKey(filters.filters, k, op);
+      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+      const newFilterElement = {
+        key: k,
+        values: newValues,
+        operator: op,
+        mode: 'or',
+      };
+      const newBaseFilters = {
         ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-      });
+        filters: [
+          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+          newFilterElement, // add new filter
+        ],
+      };
+      setFilters(newBaseFilters);
     } else {
-      setFilters({ ...filters, [key]: [{ id, value }] });
+      const newFilterElement = {
+        key: k,
+        values: [id],
+        operator: op ?? 'eq',
+        mode: 'or',
+      };
+      const newBaseFilters = filters ? {
+        ...filters,
+        filters: [...filters.filters, newFilterElement], // add new filter
+      } : {
+        mode: 'and',
+        filterGroups: [],
+        filters: [newFilterElement],
+      };
+      setFilters(newBaseFilters);
     }
   };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
+  const handleRemoveFilter = (k, op = 'eq') => {
+    if (filters) {
+      const newBaseFilters = {
+        ...filters,
+        filters: filters.filters
+          .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+      };
+      setFilters(newBaseFilters);
+    }
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    if (filters) {
+      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+      if (filterIndex !== null) {
+        const newFiltersContent = [...filters.filters];
+        newFiltersContent[filterIndex] = {
+          ...localFilter,
+          mode: localFilter.mode === 'and' ? 'or' : 'and',
+        };
+        setFilters({
+          ...filters,
+          filters: newFiltersContent,
+        });
+      }
+    }
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
   const handleAddStep = () => {
     setActionsInputs(R.append({}, actionsInputs));
@@ -471,6 +529,8 @@ const PlaybookAddComponentsContent = ({
                         <FilterIconButton
                           filters={filters}
                           handleRemoveFilter={handleRemoveFilter}
+                          handleSwitchGlobalMode={handleSwitchGlobalMode}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
                           classNameNumber={2}
                           styleNumber={2}
                           redirection
