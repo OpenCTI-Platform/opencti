@@ -24,7 +24,7 @@ const WAIT_TIME_ACTION = 2000;
 const syncManagerInstance = (syncId) => {
   const MIN_QUEUE_SIZE = 100;
   const MAX_QUEUE_SIZE = 500;
-  const lDelay = 10;
+  const lDelay = 0;
   const hDelay = 1000;
   // Variables
   let connectionId = null;

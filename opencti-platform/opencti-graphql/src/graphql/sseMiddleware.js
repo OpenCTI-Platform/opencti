@@ -241,7 +241,7 @@ const createSseMiddleware = () => {
     let lastEventId = startId;
     const channel = {
       id: generateInternalId(),
-      delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 10, 10),
+      delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 0, 10),
       user: req.user,
       userId: req.userId,
       expirationTime: req.expirationTime,
@@ -338,7 +338,7 @@ const createSseMiddleware = () => {
           res.statusMessage = 'You cant access this resource';
           res.status(401).end();
         } else {
-          const { delay = 10 } = req.body;
+          const { delay = 0 } = req.body;
           client.setChannelDelay(delay);
           res.json({ message: 'ok' });
         }
@@ -686,7 +686,6 @@ const createSseMiddleware = () => {
           after: startIsoDate,
           before: recoverIsoDate
         });
-        queryOptions.first = 100;
         queryOptions.callback = queryCallback;
         await elList(context, user, queryIndices, queryOptions);
       }
