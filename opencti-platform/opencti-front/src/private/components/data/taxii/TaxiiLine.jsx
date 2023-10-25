@@ -76,6 +76,7 @@ class TaxiiLineLineComponent extends Component {
         button={true}
         component="a"
         href={`/taxii2/root/collections/${node.id}/objects`}
+        target={'_blank'} // open in new tab
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <DatabaseExportOutline />
