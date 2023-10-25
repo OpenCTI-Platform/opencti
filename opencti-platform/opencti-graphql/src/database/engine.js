@@ -706,6 +706,11 @@ const elCreateIndexTemplate = async (index) => {
             connections: {
               type: 'nested',
             },
+            context_data: {
+              properties: {
+                input: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+              },
+            }
           },
         },
       },
@@ -2057,23 +2062,6 @@ export const elBulk = async (args) => {
   });
 };
 /* istanbul ignore next */
-export const elReindex = async (indices) => {
-  return Promise.all(
-    indices.map((indexMap) => {
-      return engine.reindex({
-        timeout: '60m',
-        body: {
-          source: {
-            index: indexMap.source,
-          },
-          dest: {
-            index: indexMap.dest,
-          },
-        },
-      });
-    })
-  );
-};
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
