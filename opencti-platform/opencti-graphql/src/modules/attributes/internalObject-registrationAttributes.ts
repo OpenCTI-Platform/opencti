@@ -5,7 +5,6 @@ import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_FILE_INDEX_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_RETENTION_RULE,
@@ -161,9 +160,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'stream_public', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_live', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
-  ],
-  [ENTITY_TYPE_FILE_INDEX_STATUS]: [
-    { name: 'last_indexed_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

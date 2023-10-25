@@ -1,9 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
-import { createEntity, loadEntity, patchAttribute } from '../database/middleware';
 import { internalLoadById } from '../database/middleware-loader';
-import { ENTITY_TYPE_FILE_INDEX_STATUS } from '../schema/internalObject';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { elSearchFiles } from '../database/engine';
@@ -11,26 +8,6 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 
 export const searchIndexedFiles = async (context, user, args) => {
   return elSearchFiles(context, context.user, args);
-};
-
-const loadFileIndexStatus = async (context, user) => {
-  return loadEntity(context, user, [ENTITY_TYPE_FILE_INDEX_STATUS]);
-};
-
-export const getLastIndexedDate = async (context, user) => {
-  const fileIndexStatus = await loadFileIndexStatus(context, user);
-  return fileIndexStatus?.last_indexed_date ?? null;
-};
-
-export const saveFileIndexStatus = async (context, user) => {
-  const fileIndexStatus = await loadFileIndexStatus(context, user);
-  const statusUpdate = { last_indexed_date: new Date() };
-  if (!fileIndexStatus) {
-    const statusCreate = { internal_id: uuidv4(), ...statusUpdate };
-    await createEntity(context, user, statusCreate, ENTITY_TYPE_FILE_INDEX_STATUS);
-  } else {
-    await patchAttribute(context, user, fileIndexStatus.internal_id, ENTITY_TYPE_FILE_INDEX_STATUS, statusUpdate);
-  }
 };
 
 // region import / upload

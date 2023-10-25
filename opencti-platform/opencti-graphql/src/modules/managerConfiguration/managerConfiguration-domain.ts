@@ -1,7 +1,8 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { storeLoadById } from '../../database/middleware-loader';
-import { loadEntity, updateAttribute } from '../../database/middleware';
+import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../../database/middleware';
+import { getEntitiesListFromCache } from '../../database/cache';
 import { telemetry } from '../../config/tracing';
 import {
   type BasicStoreEntityManagerConfiguration,
@@ -39,4 +40,21 @@ export const managerConfigurationEditField = async (context: AuthContext, user: 
     context_data: { id, entity_type: element.manager_id, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
+};
+
+export const getManagerConfigurationFromCache = async (context: AuthContext, user: AuthUser, managerId: string): Promise<BasicStoreEntityManagerConfiguration | undefined> => {
+  const managerConfigurations = await getEntitiesListFromCache<BasicStoreEntityManagerConfiguration>(context, user, ENTITY_TYPE_MANAGER_CONFIGURATION);
+  return managerConfigurations.find((m) => m.manager_id === managerId);
+};
+
+export const saveManagerConfiguration = async (context: AuthContext, user: AuthUser, managerId: string, updateInput: { last_run_start_date: Date, last_run_end_date: Date }) => {
+  const managerConfiguration = await getManagerConfigurationFromCache(context, user, managerId);
+  if (!managerConfiguration) {
+    const managerConfigurationCreate = { manager_id: managerId, ...updateInput };
+    const createdManagerConfiguration = await createEntity(context, user, managerConfigurationCreate, ENTITY_TYPE_MANAGER_CONFIGURATION);
+    await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].ADDED_TOPIC, createdManagerConfiguration, user);
+  } else {
+    const updatedManagerConfiguration = await patchAttribute(context, user, managerConfiguration.internal_id, ENTITY_TYPE_MANAGER_CONFIGURATION, updateInput);
+    await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updatedManagerConfiguration, user);
+  }
 };
