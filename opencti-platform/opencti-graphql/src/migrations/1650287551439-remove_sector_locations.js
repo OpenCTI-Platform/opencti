@@ -14,7 +14,11 @@ export const up = async (next) => {
   const callback = (relations) => relations.map((relation) => {
     return deleteElementById(context, SYSTEM_USER, relation.id, ABSTRACT_STIX_CORE_RELATIONSHIP);
   });
-  const filters = [{ key: 'fromType', values: [ENTITY_TYPE_IDENTITY_SECTOR] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'fromType', values: [ENTITY_TYPE_IDENTITY_SECTOR] }],
+    filterGroups: [],
+  };
   const opts = { types: [RELATION_LOCATED_AT], filters, callback };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, opts);
   logApp.info(`[MIGRATION] Cleaning located-at relationships between Sectors and Locations done in ${new Date() - start} ms`);

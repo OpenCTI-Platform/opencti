@@ -12,7 +12,11 @@ export const up = async (next) => {
   logApp.info('[OPENCTI] Migration denormalized cleanup started');
   const mergedEvents = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
     indices: [READ_INDEX_HISTORY],
-    filters: [{ key: 'event_type', values: ['merge'] }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'event_type', values: ['merge'] }],
+      filterGroups: [],
+    },
     orderBy: 'created_at',
     orderMode: 'asc'
   });

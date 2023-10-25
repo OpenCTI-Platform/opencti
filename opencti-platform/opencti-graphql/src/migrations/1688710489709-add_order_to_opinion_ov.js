@@ -41,10 +41,14 @@ export const up = async (next) => {
     'entity_types',
     'aliases',
   ];
-  const filters = [{
-    key: VocabularyFilters,
-    values: [VocabularyCategory.OpinionOv]
-  }];
+  const filters = {
+    mode: 'and',
+    filters: [{
+      key: VocabularyFilters,
+      values: [VocabularyCategory.OpinionOv]
+    }],
+    filterGroups: [],
+  };
   const vocabularies = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {
     indices: [READ_INDEX_STIX_META_OBJECTS],
     connectionFormat: false,
