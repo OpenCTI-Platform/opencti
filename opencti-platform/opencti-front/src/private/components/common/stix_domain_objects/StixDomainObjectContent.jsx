@@ -181,12 +181,9 @@ class StixDomainObjectContentComponent extends Component {
     const files = getFiles(props.stixDomainObject);
     const exportFiles = getExportFiles(props.stixDomainObject);
 
-    const currentExportId = exportFiles[0].id;
-    console.log('currentExportId', currentExportId);
-
     this.state = {
       currentFileId: R.propOr(R.head(files)?.id, 'currentFileId', params),
-      currentExportId,
+      currentExportId: R.propOr(R.head(exportFiles)?.id, 'currentExportId', params),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
@@ -437,6 +434,7 @@ class StixDomainObjectContentComponent extends Component {
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
 
+    console.log('currentExportId', currentExportId);
     const currentExportUrl = currentExportId
         && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
     console.log('currentExportUrl', currentExportUrl);
@@ -455,6 +453,7 @@ class StixDomainObjectContentComponent extends Component {
           files={files}
           currentExportUrl={currentExportUrl}
           currentExportId={currentExportId}
+          exportFiles={stixDomainObject.exportFiles.edges}
           handleSelectFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}

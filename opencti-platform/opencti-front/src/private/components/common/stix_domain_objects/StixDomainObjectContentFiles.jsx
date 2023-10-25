@@ -207,6 +207,9 @@ class StixDomainObjectContentFiles extends Component {
       currentFileId,
       onFileChange,
       settingsMessagesBannerHeight,
+      exportFiles,
+      currentExportId,
+      // currentExportUrl,
     } = this.props;
     const { deleting, displayCreate } = this.state;
     const textFiles = files.filter((n) => n.metaData.mimetype === 'text/plain');
@@ -293,14 +296,14 @@ class StixDomainObjectContentFiles extends Component {
                         </ListSubheader>
                     }
                 >
-                    {pdfFiles.length > 0
-                      ? pdfFiles.map((file) => (
+                    {exportFiles.length > 0
+                      ? exportFiles.map((file) => (
                             <ListItem
                                 key={file.id}
                                 dense={true}
                                 button={true}
                                 divider={true}
-                                selected={file.id === currentFileId}
+                                selected={file.id === currentExportId}
                                 onClick={handleSelectFile.bind(this, file.id)}
                                 disabled={deleting === file.id}
                                 secondaryAction={
@@ -543,10 +546,11 @@ StixDomainObjectContentFiles.propTypes = {
   t: PropTypes.func,
   files: PropTypes.array,
   currentFileId: PropTypes.string,
-  /*  currentExportId: PropTypes.string,
-    currentExportUrl: PropTypes.string, */
   handleSelectFile: PropTypes.func,
   onFileChange: PropTypes.func,
+  currentExportId: PropTypes.string,
+  currentExportUrl: PropTypes.string,
+  exportFiles: PropTypes.array,
 };
 
 export default R.compose(
