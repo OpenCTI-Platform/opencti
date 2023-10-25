@@ -1426,8 +1426,8 @@ class OpenCTIStix2:
                 entity["hashes"][hash["algorithm"]] = hash["hash"]
 
         # Final
+        entity["x_opencti_id"] = entity["id"]
         if not no_custom_attributes:
-            entity["x_opencti_id"] = entity["id"]
             entity["x_opencti_type"] = original_entity_type
         entity["id"] = entity["standard_id"]
         entity["type"] = entity["entity_type"].lower()
@@ -1519,6 +1519,7 @@ class OpenCTIStix2:
             for key in entity_copy.keys():
                 if key.startswith("x_"):
                     del entity[key]
+            entity["x_opencti_id"] = entity_copy["x_opencti_id"]
         # ObjectMarkingRefs
         if (
             not no_custom_attributes
@@ -1728,6 +1729,8 @@ class OpenCTIStix2:
         result.append(entity)
 
         if mode == "simple":
+            if no_custom_attributes:
+                del entity["x_opencti_id"]
             return result
         elif mode == "full":
             uuids = [entity["id"]]
@@ -1842,7 +1845,8 @@ class OpenCTIStix2:
                         stix_sighting_relationship["entity_type"],
                         stix_sighting_relationship["id"],
                     )
-
+            if no_custom_attributes:
+                del entity["x_opencti_id"]
             # Export
             reader = {
                 "Attack-Pattern": self.opencti.attack_pattern.read,
