@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { useFormatter } from '../../components/i18n';
 
 export const FiltersVariant = {
@@ -255,4 +256,73 @@ export const cleanFilters = (filters: FilterGroup | undefined, availableFilterKe
     ...filters,
     filters: filters.filters.filter((f) => availableFilterKeys.includes(f.key)),
   };
+};
+
+export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: string, id: string | null, op = 'eq') => {
+  if (filters && findFilterFromKey(filters.filters, k, op)) {
+    const filter = findFilterFromKey(filters.filters, k, op);
+    let newValues: string[] = [];
+    if (id !== null) {
+      newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+    }
+    const newFilterElement = {
+      key: k,
+      values: newValues,
+      operator: op,
+      mode: 'or',
+    };
+    const newBaseFilters = {
+      ...filters,
+      filters: [
+        ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+        newFilterElement, // add new filter
+      ],
+    };
+    return newBaseFilters;
+  }
+  const newFilterElement = {
+    key: k,
+    values: id !== null ? [id] : [],
+    operator: op ?? 'eq',
+    mode: 'or',
+  };
+  const newBaseFilters = filters ? {
+    ...filters,
+    filters: [...filters.filters, newFilterElement], // add new filter
+  } : {
+    mode: 'and',
+    filterGroups: [],
+    filters: [newFilterElement],
+  };
+  return newBaseFilters;
+};
+
+export const constructHandleRemoveFilter = (filters: FilterGroup | undefined, k: string, op = 'eq') => {
+  if (filters) {
+    const newBaseFilters = {
+      ...filters,
+      filters: filters.filters
+        .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+    };
+    return newBaseFilters;
+  }
+  return undefined;
+};
+
+export const filtersAfterSwitchLocalMode = (filters: FilterGroup, localFilter: Filter) => {
+  if (filters) {
+    const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+    if (filterIndex !== null) {
+      const newFiltersContent = [...filters.filters];
+      newFiltersContent[filterIndex] = {
+        ...localFilter,
+        mode: localFilter.mode === 'and' ? 'or' : 'and',
+      };
+      return {
+        ...filters,
+        filters: newFiltersContent,
+      };
+    }
+  }
+  return undefined;
 };

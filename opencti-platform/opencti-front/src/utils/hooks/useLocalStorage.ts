@@ -339,18 +339,25 @@ export const usePaginationLocalStorage = <U>(
     handleAddFilter: (
       k: string,
       id: string,
-      op = 'eq',
+      defaultOp = 'eq',
       event?: SyntheticEvent,
     ) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
+      let op = defaultOp;
+      if (id === null && op === 'eq') { // handle clicking on 'no label' in entities list
+        op = 'nil';
+      }
       const filter = viewStorage.filters
         ? findFilterFromKey(viewStorage.filters.filters, k, op)
         : undefined;
       if (viewStorage.filters && filter) {
-        const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
+        let newValues: string[] = [];
+        if (id !== null) {
+          newValues = isUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
+        }
         const newFilterElement = {
           key: k,
           values: newValues,
@@ -371,7 +378,7 @@ export const usePaginationLocalStorage = <U>(
       } else {
         const newFilterElement = {
           key: k,
-          values: [id],
+          values: id !== null ? [id] : [],
           operator: op,
           mode: 'or',
         };

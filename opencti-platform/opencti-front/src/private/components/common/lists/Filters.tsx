@@ -1,12 +1,12 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
-import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  Filter,
   FilterGroup,
   FiltersVariant,
-  findFilterFromKey,
   initialFilterGroup,
-  isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
@@ -27,6 +27,8 @@ interface FiltersProps {
   handleAddFilter?: HandleAddFilter,
   handleRemoveFilter?: (key: string, id?: string) => void,
   handleSwitchFilter?: HandleAddFilter,
+  handleSwitchGlobalMode?: () => void;
+  handleSwitchLocalMode?: (filter: Filter) => void;
   searchContext?: { entityTypes: string[], elementId?: string[] };
   type?: string;
 }
@@ -52,7 +54,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [filters, setFilters] = useState<FilterGroup>(initialFilterGroup);
+  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
   const [inputValues, setInputValues] = useState([]);
   const [keyword, setKeyword] = useState('');
 
@@ -70,30 +72,10 @@ const Filters: FunctionComponent<FiltersProps> = ({
         event.stopPropagation();
         event.preventDefault();
       }
-      const filter = findFilterFromKey(filters.filters, key, operator);
-      const newValues = (isUniqFilter(key) || !filter) ? [id] : R.uniq([...filter?.values ?? [], id]);
-      const newFilterElement = {
-        key,
-        values: newValues,
-        operator,
-        mode: 'or',
-      };
-      const newBaseFilters = {
-        mode: filters.mode,
-        filterGroups: filters.filterGroups,
-        filters: filter
-          ? [...filters.filters.filter((f) => f.key !== key || f.operator !== operator), newFilterElement]
-          : [...filters.filters, newFilterElement],
-      };
-      setFilters(newBaseFilters);
+      setFilters(constructHandleAddFilter(filters, key, id, operator));
     });
   const defaultHandleRemoveFilter = handleRemoveFilter || ((key, operator = 'eq') => {
-    const newBaseFilters = {
-      mode: filters.mode,
-      filterGroups: filters.filterGroups,
-      filters: filters.filters.filter((f) => f.key !== key || f.operator !== operator),
-    };
-    setFilters(newBaseFilters);
+    setFilters(constructHandleRemoveFilter(filters, key, operator));
   });
   const handleSearch = () => {
     handleCloseFilters();

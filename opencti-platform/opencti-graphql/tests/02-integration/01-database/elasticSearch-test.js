@@ -438,7 +438,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = {
       mode: 'and',
-      filters: [{ key: 'x_opencti_color', operator: undefined, values: [null] }],
+      filters: [{ key: 'x_opencti_color', operator: 'nil', values: [] }],
       filterGroups: [],
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
@@ -500,7 +500,7 @@ describe('Elasticsearch pagination', () => {
       mode: 'and',
       filters: [
         { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
-        { key: 'color', operator: undefined, values: [null] },
+        { key: 'color', operator: 'nil', values: [] },
       ],
       filterGroups: [],
     };
@@ -593,8 +593,8 @@ describe('Elasticsearch pagination', () => {
         mode: 'and',
         filters: [{
           key: [buildRefRelationKey(RELATION_OBJECT_LABEL)],
-          operator: 'eq',
-          values: [null],
+          operator: 'nil',
+          values: [],
         }],
         filterGroups: [],
       }

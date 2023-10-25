@@ -14,7 +14,6 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
@@ -28,18 +27,23 @@ import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
   Filter,
   FilterGroup,
-  findFilterFromKey, findFilterIndexFromKey,
+  filtersAfterSwitchLocalMode,
   initialFilterGroup,
-  isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
-import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import {
+  TriggerEventType,
+  TriggerLiveCreationKnowledgeMutation,
+  TriggerLiveCreationKnowledgeMutation$data,
+} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -128,7 +132,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FilterGroup>(initialFilterGroup);
+  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
   const [instanceFilters, setInstanceFilters] = useState([]);
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
@@ -153,66 +157,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     setFilters(initialFilterGroup);
   };
   const handleAddFilter = (k: string, id: string, op = 'eq') => {
-    if (filters && findFilterFromKey(filters.filters, k, op)) {
-      const filter = findFilterFromKey(filters.filters, k, op);
-      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
-      const newFilterElement = {
-        key: k,
-        values: newValues,
-        operator: op,
-        mode: 'or',
-      };
-      const newBaseFilters = {
-        ...filters,
-        filters: [
-          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
-          newFilterElement, // add new filter
-        ],
-      };
-      setFilters(newBaseFilters);
-    } else {
-      const newFilterElement = {
-        key: k,
-        values: [id],
-        operator: op ?? 'eq',
-        mode: 'or',
-      };
-      const newBaseFilters = filters ? {
-        ...filters,
-        filters: [...filters.filters, newFilterElement], // add new filter
-      } : {
-        mode: 'and',
-        filterGroups: [],
-        filters: [newFilterElement],
-      };
-      setFilters(newBaseFilters);
-    }
+    setFilters(constructHandleAddFilter(filters, k, id, op));
   };
   const handleRemoveFilter = (k: string, op = 'eq') => {
-    if (filters) {
-      const newBaseFilters = {
-        ...filters,
-        filters: filters.filters
-          .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
-      };
-      setFilters(newBaseFilters);
-    }
+    setFilters(constructHandleRemoveFilter(filters, k, op));
   };
 
   const handleSwitchLocalMode = (localFilter: Filter) => {
     if (filters) {
-      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
-      if (filterIndex !== null) {
-        const newFiltersContent = [...filters.filters];
-        newFiltersContent[filterIndex] = {
-          ...localFilter,
-          mode: localFilter.mode === 'and' ? 'or' : 'and',
-        };
-        setFilters({
-          ...filters,
-          filters: newFiltersContent,
-        });
-      }
+      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
     }
   };
 
@@ -385,14 +338,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        classNameNumber={2}
-        redirection
-      />
+      {filters && <FilterIconButton
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          classNameNumber={2}
+          redirection
+      />}
     </React.Fragment>
   );
 
