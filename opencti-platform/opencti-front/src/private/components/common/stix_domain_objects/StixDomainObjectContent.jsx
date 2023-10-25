@@ -160,14 +160,14 @@ const getFiles = (stixDomainObject) => {
 const getExportFiles = (stixDomainObject) => {
   const exportFiles = stixDomainObject.exportFiles?.edges?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
+  /*  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
     ?.map((n) => n?.node?.exportFiles?.edges).flat().filter((n) => !!n?.node)
     .map((n) => n.node)
     .filter((n) => n.metaData && isEmptyField(n.metaData.external_reference_id)) ?? [];
   const result = sortByLastModified([...exportFiles, ...externalReferencesFiles].filter(() => {
     return ['application/pdf'];
-  }));
-  return result;
+  })); */
+  return exportFiles;
 };
 
 class StixDomainObjectContentComponent extends Component {
@@ -410,6 +410,16 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  extractIdFromUrl(currentExportId) {
+    const regex = /Report\/([a-f\d-]+)\//;
+    const match = currentExportId.match(regex);
+    if (match && match[1]) {
+      return match[1];
+    }
+    return null;
+  }
+
   render() {
     const { classes, stixDomainObject, t } = this.props;
 
@@ -438,6 +448,9 @@ class StixDomainObjectContentComponent extends Component {
     const currentExportUrl = currentExportId
         && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
     console.log('currentExportUrl', currentExportUrl);
+
+    const exportId = this.extractIdFromUrl(currentExportId);
+    console.log('exportId', exportId);
 
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;

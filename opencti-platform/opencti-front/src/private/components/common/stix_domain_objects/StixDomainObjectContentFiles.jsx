@@ -29,7 +29,7 @@ import { graphql } from 'react-relay';
 import Divider from '@mui/material/Divider';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import { FileLineDeleteMutation } from '../files/FileLine';
+import FileLine, { FileLineDeleteMutation } from '../files/FileLine';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import withHooksSettingsMessagesBannerHeight
@@ -208,7 +208,7 @@ class StixDomainObjectContentFiles extends Component {
       onFileChange,
       settingsMessagesBannerHeight,
       exportFiles,
-      currentExportId,
+      // currentExportId,
       // currentExportUrl,
     } = this.props;
     const { deleting, displayCreate } = this.state;
@@ -279,7 +279,7 @@ class StixDomainObjectContentFiles extends Component {
                       : this.renderNoFiles()}
                 </List>
                 <Divider/>
-                <List
+                 <List
                     style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
                     subheader={
                         <ListSubheader component="div">
@@ -296,33 +296,23 @@ class StixDomainObjectContentFiles extends Component {
                         </ListSubheader>
                     }
                 >
-                    {exportFiles.length > 0
-                      ? exportFiles.map((file) => (
-                            <ListItem
-                                key={file.id}
-                                dense={true}
-                                button={true}
-                                divider={true}
-                                selected={file.id === currentExportId}
-                                onClick={handleSelectFile.bind(this, file.id)}
-                                disabled={deleting === file.id}
-                                secondaryAction={
-                                    <IconButton onClick={this.submitDelete.bind(this, file.id)}>
-                                        <DeleteOutlined/>
-                                    </IconButton>
-                                }
-                            >
-                                <ListItemIcon>
-                                    <FileOutline color="primary"/>
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={file.name}
-                                    secondary={fld(R.propOr(moment(), 'lastModified', file))}
-                                />
-                            </ListItem>
-                      ))
-                      : this.renderNoFiles()}
-                </List>
+                {exportFiles?.length ? (
+                    <>
+                        {exportFiles.map((file) => {
+                          return (
+                            file?.node && (
+                                    <FileLine
+                                        key={file?.node.id}
+                                        file={file?.node}
+                                        dense={true}
+                                        disableImport={true}
+                                    />
+                            )
+                          );
+                        })}
+                    </>
+                ) : this.renderNoFiles()}
+                 </List>
                 <Divider/>
                 <List
                     style={{ marginBottom: 30 }}
