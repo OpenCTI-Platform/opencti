@@ -1737,11 +1737,12 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           // Specific input resolution for workflow
           if (filteredInput.key === X_WORKFLOW_ID) {
             // workflow_id is not a relation but message must contain the name and not the internal id
-            const workflowStatus = platformStatuses.find((p) => p.id === R.head(filteredInput.value));
+            const workflowId = R.head(filteredInput.value);
+            const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
             return {
               operation: filteredInput.operation,
               key: filteredInput.key,
-              value: [workflowStatus.name],
+              value: [workflowStatus ? workflowStatus.name : null],
               previous,
             };
           }
@@ -2542,8 +2543,10 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       const inputData = updatePatch[attributeKey];
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const canBeUpsert = applyUpdate && attribute.upsert; // If field can be upsert
-      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isNotEmptyField(inputData); // If the element current data is empty, we always expect to put the value
-      if (isFullSync || canBeUpsert || isCurrentlyEmpty) {
+      const isInputWithData = isNotEmptyField(inputData);
+      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
+      const isWorkflowReset = attribute.name === X_WORKFLOW_ID && !isInputWithData; // Reset of workflow is not allowed
+      if ((isFullSync || canBeUpsert || isCurrentlyEmpty) && !isWorkflowReset) {
         inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
       }
     }
