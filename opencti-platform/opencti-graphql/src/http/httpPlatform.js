@@ -124,7 +124,7 @@ const createApp = async (app) => {
   // -- Serv frontend static resources
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
 
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
+  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '15mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
 
   const sseMiddleware = createSseMiddleware();
