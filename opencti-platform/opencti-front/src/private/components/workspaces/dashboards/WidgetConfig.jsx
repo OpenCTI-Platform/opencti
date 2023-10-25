@@ -21,30 +21,30 @@ import Fab from '@mui/material/Fab';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import {
-    Add,
-    AddOutlined,
-    CancelOutlined,
-    FormatShapesOutlined,
-    LibraryBooksOutlined,
-    MapOutlined,
+  Add,
+  AddOutlined,
+  CancelOutlined,
+  FormatShapesOutlined,
+  LibraryBooksOutlined,
+  MapOutlined,
 } from '@mui/icons-material';
 import {
-    AlignHorizontalLeft,
-    ChartAreasplineVariant,
-    ChartBar,
-    ChartBubble,
-    ChartDonut,
-    ChartLine,
-    ChartTimeline,
-    ChartTree,
-    Counter,
-    DatabaseOutline,
-    FlaskOutline,
-    FormatListNumberedRtl,
-    InformationOutline,
-    Radar,
-    StarSettingsOutline,
-    ViewListOutline,
+  AlignHorizontalLeft,
+  ChartAreasplineVariant,
+  ChartBar,
+  ChartBubble,
+  ChartDonut,
+  ChartLine,
+  ChartTimeline,
+  ChartTree,
+  Counter,
+  DatabaseOutline,
+  FlaskOutline,
+  FormatListNumberedRtl,
+  InformationOutline,
+  Radar,
+  StarSettingsOutline,
+  ViewListOutline,
 } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -60,19 +60,19 @@ import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
 import Filters from '../../common/lists/Filters';
 import {
-    findFilterFromKey,
-    findFiltersFromKeys,
-    initialFilterGroup,
-    isUniqFilter
+  findFilterFromKey,
+  findFiltersFromKeys,
+  initialFilterGroup,
+  isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
-    stixCyberObservablesLinesAttributesQuery
+  stixCyberObservablesLinesAttributesQuery,
 } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import FilterIconButton from "../../../../components/FilterIconButton";
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -424,8 +424,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const getCurrentSelectedEntityTypes = (index) => {
     return R.uniq(
       findFiltersFromKeys(dataSelection[index].filters.filters, ['fromTypes', 'toTypes', 'entity_type'])
-      .map((f) => f.values)
-      .flat()
+        .map((f) => f.values)
+        .flat(),
     );
   };
   const handleSelectType = (selectedType) => {
@@ -538,7 +538,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       if (n === i) {
         const newFilters = {
           ...dataSelection[i].filters,
-            filters: dataSelection[i].filters.filters.filter((f) => f.key !== key || f.op !== op),
+          filters: dataSelection[i].filters.filters.filter((f) => f.key !== key || f.op !== op),
         };
         return {
           ...dataSelection[i],
@@ -550,114 +550,114 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     setDataSelection(newDataSelection);
   };
   const handleAddDataValidationDynamicFrom = (i, key, id, op = 'eq') => {
-      const newDataSelection = dataSelection.map((data, n) => {
-          if (n === i) {
-              const filter = findFilterFromKey(dataSelection[i].dynamicFrom.filters, key, op);
-              if (filter) {
-                  const newValues = isUniqFilter(key) ? [id] : R.uniq([...filter?.values ?? [], id]);
-                  const newFilterElement = {
-                      key,
-                      values: newValues,
-                      operator: op,
-                      mode: 'or',
-                  };
-                  const newBaseFilters = {
-                      ...dataSelection[i].dynamicFrom,
-                      filters: [
-                          ...dataSelection[i].dynamicFrom.filters.filter((f) => f.key !== key || f.operator !== op), // remove filter with k as key
-                          newFilterElement, // add new filter
-                      ],
-                  };
-                  return {
-                      ...dataSelection[i],
-                      dynamicFrom: newBaseFilters,
-                  };
-              }
-              const newFilterElement = {
-                  key,
-                  values: [id],
-                  operator: op,
-                  mode: 'or',
-              };
-              const newBaseFilters = dataSelection[i].dynamicFrom ? {
-                  ...dataSelection[i].dynamicFrom,
-                  filters: [...dataSelection[i].dynamicFrom.filters, newFilterElement], // add new filter
-              } : {
-                  mode: 'and',
-                  filterGroups: [],
-                  filters: [newFilterElement],
-              };
-              return {
-                  ...dataSelection[i],
-                  dynamicFrom: newBaseFilters,
-              };
-          }
-          return data;
-      });
-      setDataSelection(newDataSelection);
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        const filter = findFilterFromKey(dataSelection[i].dynamicFrom.filters, key, op);
+        if (filter) {
+          const newValues = isUniqFilter(key) ? [id] : R.uniq([...filter?.values ?? [], id]);
+          const newFilterElement = {
+            key,
+            values: newValues,
+            operator: op,
+            mode: 'or',
+          };
+          const newBaseFilters = {
+            ...dataSelection[i].dynamicFrom,
+            filters: [
+              ...dataSelection[i].dynamicFrom.filters.filter((f) => f.key !== key || f.operator !== op), // remove filter with k as key
+              newFilterElement, // add new filter
+            ],
+          };
+          return {
+            ...dataSelection[i],
+            dynamicFrom: newBaseFilters,
+          };
+        }
+        const newFilterElement = {
+          key,
+          values: [id],
+          operator: op,
+          mode: 'or',
+        };
+        const newBaseFilters = dataSelection[i].dynamicFrom ? {
+          ...dataSelection[i].dynamicFrom,
+          filters: [...dataSelection[i].dynamicFrom.filters, newFilterElement], // add new filter
+        } : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
+        return {
+          ...dataSelection[i],
+          dynamicFrom: newBaseFilters,
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
   };
   const handleRemoveDataSelectionDynamicFrom = (i, key, op = 'eq') => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
-          const newDynamicFrom = {
-              ...dataSelection[i].dynamicFrom,
-              filters: dataSelection[i].dynamicFrom.filters.filter((f) => f.key !== key || f.op !== op),
-          };
-          return {
-              ...dataSelection[i],
-              dynamicFrom: newDynamicFrom,
-          };
+        const newDynamicFrom = {
+          ...dataSelection[i].dynamicFrom,
+          filters: dataSelection[i].dynamicFrom.filters.filter((f) => f.key !== key || f.op !== op),
+        };
+        return {
+          ...dataSelection[i],
+          dynamicFrom: newDynamicFrom,
+        };
       }
       return data;
     });
     setDataSelection(newDataSelection);
   };
   const handleAddDataValidationDynamicTo = (i, key, id, op = 'eq') => {
-      const newDataSelection = dataSelection.map((data, n) => {
-          if (n === i) {
-              const filter = findFilterFromKey(dataSelection[i].dynamicTo.filters, key, op);
-              if (filter) {
-                  const newValues = isUniqFilter(key) ? [id] : R.uniq([...filter?.values ?? [], id]);
-                  const newFilterElement = {
-                      key,
-                      values: newValues,
-                      operator: op,
-                      mode: 'or',
-                  };
-                  const newBaseFilters = {
-                      ...dataSelection[i].dynamicTo,
-                      filters: [
-                          ...dataSelection[i].dynamicTo.filters.filter((f) => f.key !== key || f.operator !== op), // remove filter with k as key
-                          newFilterElement, // add new filter
-                      ],
-                  };
-                  return {
-                      ...dataSelection[i],
-                      dynamicTo: newBaseFilters,
-                  };
-              }
-              const newFilterElement = {
-                  key,
-                  values: [id],
-                  operator: op,
-                  mode: 'or',
-              };
-              const newBaseFilters = dataSelection[i].dynamicTo ? {
-                  ...dataSelection[i].dynamicTo,
-                  filters: [...dataSelection[i].dynamicTo.filters, newFilterElement], // add new filter
-              } : {
-                  mode: 'and',
-                  filterGroups: [],
-                  filters: [newFilterElement],
-              };
-              return {
-                  ...dataSelection[i],
-                  dynamicTo: newBaseFilters,
-              };
-          }
-          return data;
-      });
-      setDataSelection(newDataSelection);
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        const filter = findFilterFromKey(dataSelection[i].dynamicTo.filters, key, op);
+        if (filter) {
+          const newValues = isUniqFilter(key) ? [id] : R.uniq([...filter?.values ?? [], id]);
+          const newFilterElement = {
+            key,
+            values: newValues,
+            operator: op,
+            mode: 'or',
+          };
+          const newBaseFilters = {
+            ...dataSelection[i].dynamicTo,
+            filters: [
+              ...dataSelection[i].dynamicTo.filters.filter((f) => f.key !== key || f.operator !== op), // remove filter with k as key
+              newFilterElement, // add new filter
+            ],
+          };
+          return {
+            ...dataSelection[i],
+            dynamicTo: newBaseFilters,
+          };
+        }
+        const newFilterElement = {
+          key,
+          values: [id],
+          operator: op,
+          mode: 'or',
+        };
+        const newBaseFilters = dataSelection[i].dynamicTo ? {
+          ...dataSelection[i].dynamicTo,
+          filters: [...dataSelection[i].dynamicTo.filters, newFilterElement], // add new filter
+        } : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
+        return {
+          ...dataSelection[i],
+          dynamicTo: newBaseFilters,
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
   };
   const handleRemoveDataSelectionDynamicTo = (i, key, op = 'eq') => {
     const newDataSelection = dataSelection.map((data, n) => {
@@ -988,14 +988,14 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   handleRemoveFilter={(key, op) => handleRemoveDataSelectionDynamicFrom(i, key, op)}
                   classNameNumber={7}
                   styleNumber={2}
-                  chipColor={"warning"}
+                  chipColor={'warning'}
                 ></FilterIconButton>
                 <FilterIconButton
                   filters={dataSelection[i].dynamicTo}
                   handleRemoveFilter={(key, op) => handleRemoveDataSelectionDynamicTo(i, key, op)}
                   classNameNumber={7}
                   styleNumber={2}
-                  chipColor={"success"}
+                  chipColor={'success'}
                 ></FilterIconButton>
               </div>
             );
