@@ -67,7 +67,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
         if (!nestedFromRole) {
           nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
         }
-      } else if (key === 'toId') {
+      } else if (key === 'toId' || key === 'toSightingId') {
         nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
         nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
         nestedToRole = true;
