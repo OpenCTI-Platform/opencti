@@ -107,21 +107,8 @@ input Filter {
   mode: FilterMode
 }
 
-type ResolvedFilterGroup {
-    mode: FilterMode!
-    filters: [ResolvedFilter!]!
-    filterGroups: [ResolvedFilterGroup!]!
-}
-type ResolvedFilter {
-    key: [String!]!
-    values: [String]!
-    operator: String
-    mode: FilterMode
-    representatives: [FilterRepresentative]!
-}
-
-type FilterRepresentative {
-  id: String
+type RepresentativeWithId {
+  id: String!
   value: String
 }
 
@@ -11140,7 +11127,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): ResolvedFilterGroup @auth(for: [KNOWLEDGE])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId] @auth(for: [KNOWLEDGE])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 

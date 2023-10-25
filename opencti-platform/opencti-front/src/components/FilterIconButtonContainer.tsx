@@ -8,7 +8,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
-import { Filter } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
 import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 
@@ -65,7 +65,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FilterIconButtonContainerProps {
-  globalMode: string;
+  filters: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
@@ -79,7 +79,7 @@ interface FilterIconButtonContainerProps {
 }
 
 const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProps> = ({
-  globalMode,
+  filters,
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
@@ -93,7 +93,9 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
   const classes = useStyles();
 
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, filtersRepresentativesQueryRef);
-  const displayedFilters = filtersRepresentatives?.filters.map((f) => ({ ...f, key: f.key[0] })) ?? [];
+  const filtersRepresentativesMap = new Map((filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]));
+  const displayedFilters = filters.filters;
+  const globalMode = filters.mode;
   let classFilter = classes.filter1;
   let classOperator = classes.operator1;
   if (styleNumber === 2) {
@@ -122,7 +124,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
           const values = (tooltip: boolean) => (
             <>
               {filterValues.map((id) => {
-                const value = currentFilter.representatives.filter((n) => n?.id === id)[0]?.value;
+                const value = filtersRepresentativesMap.get(id);
                 const dissocCurrentFilter = {
                   key: currentFilter.key,
                   values: currentFilter.values,

@@ -29,6 +29,7 @@ const TaskFilterValue = ({ filters, queryRef }:
   const { t } = useFormatter();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, queryRef);
+  const filtersRepresentativesMap = new Map((filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]));
   const globalFilterMode = t(filters.mode.toUpperCase());
   return (
     <>
@@ -57,7 +58,7 @@ const TaskFilterValue = ({ filters, queryRef }:
                         <FilterIconButtonContent
                           filterKey={currentFilter.key}
                           id={o}
-                          filtersRepresentatives={filtersRepresentatives}
+                          value={filtersRepresentativesMap.get(o)}
                         ></FilterIconButtonContent>
                         {R.last(currentFilter.values) !== o
                           && (<code>{localFilterMode}</code>)

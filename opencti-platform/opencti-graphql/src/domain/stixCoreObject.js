@@ -25,7 +25,6 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   INPUT_EXTERNAL_REFS,
-  INPUT_LABELS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import {
@@ -523,35 +522,6 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // endregion
 
 // region filters representatives
-const filtersWithRepresentatives = (inputFilters, representativesMap) => {
-  const { filters = [], filterGroups = [] } = inputFilters;
-  const newFilters = [];
-  let newFilterGroups = [];
-  for (let i = 0; i < filters.length; i += 1) {
-    const filter = filters[i];
-    const representatives = [];
-    for (let j = 0; j < filter.values.length; j += 1) {
-      const id = filter.values[j];
-      if (id === null && filter.key.includes(INPUT_LABELS)) {
-        representatives.push({ id: null, value: 'No label' });
-      } else if (representativesMap.has(id)) {
-        representatives.push({ id, value: representativesMap.get(id) });
-      }
-    }
-    newFilters.push({
-      ...filter,
-      representatives,
-    });
-  }
-  if (filterGroups.length > 0) {
-    newFilterGroups = filtersWithRepresentatives(filterGroups, representativesMap);
-  }
-  return {
-    mode: inputFilters.mode,
-    filters: newFilters,
-    filterGroups: newFilterGroups,
-  };
-};
 
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
   // extract the ids from inputFilters
@@ -568,14 +538,13 @@ export const findFiltersRepresentatives = async (context, user, inputFilters) =>
       resolvedEntities[index] = newEntity;
     }
   }
-  // create the representative map
-  const representativesMap = new Map(
+  // create the representatives array
+  const filtersRepresentatives = R.flatten(
     resolvedEntities
       .filter((e) => e)
-      .map((e) => [e.id, extractEntityRepresentativeName(e)])
+      .map((e) => ({ id: e.id, value: extractEntityRepresentativeName(e) }))
   );
-  // return the filters with the representatives
-  return filtersWithRepresentatives(inputFilters, representativesMap);
+  return filtersRepresentatives;
 };
 
 // endregion

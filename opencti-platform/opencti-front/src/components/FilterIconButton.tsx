@@ -111,7 +111,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     {filtersRepresentativesQueryRef && (
       <React.Suspense fallback={<Loader />}>
         <FilterIconButtonContainer
-          globalMode={filters.mode}
           handleRemoveFilter={handleRemoveFilter}
           handleSwitchGlobalMode={handleSwitchGlobalMode}
           handleSwitchLocalMode={handleSwitchLocalMode}
@@ -119,6 +118,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
           chipColor={chipColor}
           disabledPossible={disabledPossible}
           redirection={redirection}
+          filters={filters}
           filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
         ></FilterIconButtonContainer>
       </React.Suspense>)

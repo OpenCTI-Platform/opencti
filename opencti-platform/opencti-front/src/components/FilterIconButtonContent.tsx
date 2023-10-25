@@ -10,17 +10,8 @@ export const filterIconButtonContentQuery = graphql`
         $filters: FilterGroup!
     ) {
         filtersRepresentatives(filters: $filters) {
-            mode
-            filters {
-                key
-                values
-                operator
-                mode
-                representatives {
-                    id
-                    value
-                }
-            }
+            id
+            value
         }
     }
 `;
