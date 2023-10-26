@@ -17,7 +17,6 @@ import {
   elLoadById,
   elSearchFiles,
   elUpdateFilesWithEntityRestrictions,
-  isAttachmentProcessorEnabled
 } from '../database/engine';
 import { getFileContent, rawFilesListing } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
@@ -196,7 +195,7 @@ const initFileIndexManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'FILE_INDEX_MANAGER',
-        enable: ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled() && isNotEmptyField(settings?.enterprise_edition),
+        enable: ENABLED_FILE_INDEX_MANAGER && isNotEmptyField(settings?.enterprise_edition),
         running,
       };
     },
