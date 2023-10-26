@@ -64,6 +64,7 @@ const retentionHandler = async () => {
     // Execution of retention rules
     if (retentionRules.length > 0) {
       for (let index = 0; index < retentionRules.length; index += 1) {
+        lock.signal.throwIfAborted();
         const retentionRule = retentionRules[index];
         await executeProcessing(context, retentionRule);
       }

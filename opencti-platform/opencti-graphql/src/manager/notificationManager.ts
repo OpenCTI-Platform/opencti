@@ -597,6 +597,7 @@ const initNotificationManager = () => {
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationLiveStreamHandler);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (live)');
@@ -620,6 +621,7 @@ const initNotificationManager = () => {
       lock = await lockResource([NOTIFICATION_DIGEST_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running notification manager (digest)');
       while (!shutdown) {
+        lock.signal.throwIfAborted();
         await handleDigestNotifications(context);
         await wait(CRON_SCHEDULE_TIME);
       }

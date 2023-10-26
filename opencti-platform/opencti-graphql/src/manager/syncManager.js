@@ -198,8 +198,9 @@ const initSyncManager = () => {
     }
     // endregion
   };
-  const processingLoop = async () => {
+  const processingLoop = async (lock) => {
     while (syncListening) {
+      lock.signal.throwIfAborted();
       await processStep();
       await wait(WAIT_TIME_ACTION);
     }
@@ -217,7 +218,7 @@ const initSyncManager = () => {
       logApp.debug('[OPENCTI-MODULE] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY], { retryCount: 0 });
       managerRunning = true;
-      await processingLoop();
+      await processingLoop(lock);
     } catch (e) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');

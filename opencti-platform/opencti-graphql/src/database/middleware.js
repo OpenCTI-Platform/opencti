@@ -1412,6 +1412,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
+    lock.signal.throwIfAborted();
     const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, mergeImpacts, opts);
@@ -1932,6 +1933,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         throw FunctionalError(reason, { id: initial.internal_id, type: initial.entity_type });
       }
     }
+    lock.signal.throwIfAborted();
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
       await elUpdateElement(updateAsInstance);
@@ -2856,6 +2858,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
     // Index the created element
+    lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
@@ -3204,6 +3207,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
     }
     // Index the created element
+    lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataEntity);
     // Push the input in the stream
     const createdElement = { ...resolvedInput, ...dataEntity.element };

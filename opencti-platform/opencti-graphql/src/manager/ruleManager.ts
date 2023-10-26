@@ -335,6 +335,7 @@ const initRuleManager = () => {
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, opts);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of rule manager processing');

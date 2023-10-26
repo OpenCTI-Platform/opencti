@@ -100,6 +100,7 @@ const connectorHandler = async () => {
     // Execute the cleaning
     const platformConnectors = await connectors(context, SYSTEM_USER);
     for (let index = 0; index < platformConnectors.length; index += 1) {
+      lock.signal.throwIfAborted();
       const platformConnector = platformConnectors[index];
       // Force close all needed works
       await closeOldWorks(context, platformConnector);

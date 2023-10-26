@@ -229,6 +229,7 @@ const initPublisherManager = () => {
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of publisher manager processing');

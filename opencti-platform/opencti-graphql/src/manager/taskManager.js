@@ -439,6 +439,7 @@ const taskHandler = async () => {
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
     if (processingElements.length > 0) {
+      lock.signal.throwIfAborted();
       const errors = await executeProcessing(context, user, jobToExecute);
       await appendTaskErrors(task, errors);
     }
