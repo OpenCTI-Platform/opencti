@@ -231,7 +231,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                 availableFilterKeys={availableFilterKeys}
                 handleAddFilter={defaultHandleAddFilter}
             />
-            {filters?.filters && filters.filters.length > 0
+            {filters
               && <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={helpers.handleRemoveFilter}

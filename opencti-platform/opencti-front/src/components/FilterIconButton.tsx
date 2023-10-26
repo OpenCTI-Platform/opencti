@@ -118,7 +118,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
           chipColor={chipColor}
           disabledPossible={disabledPossible}
           redirection={redirection}
-          filters={filters}
+          filters={displayedFilters}
           filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
         ></FilterIconButtonContainer>
       </React.Suspense>)
