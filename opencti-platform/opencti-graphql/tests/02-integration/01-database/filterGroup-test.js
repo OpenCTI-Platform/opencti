@@ -398,7 +398,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
-    // (marking = marking1) OR (report_types = internal-report AND published before 30/12/2021)
+    // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 20/09/2023)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
         first: 10,
@@ -408,8 +408,8 @@ describe('Complex filters combinations, behavior tested on reports', () => {
             {
               key: 'objectMarking',
               operator: 'eq',
-              values: [marking1Id],
-              mode: 'or',
+              values: [marking1Id, marking2Id],
+              mode: 'and',
             }
           ],
           filterGroups: [
@@ -576,6 +576,45 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    // --- 10. filter with 'nil' operator --- //
+    // test for 'nil': objectMarking is empty
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'objectMarking',
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
+    // test for 'not_nil': objectMarking is not empty
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'objectMarking',
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
