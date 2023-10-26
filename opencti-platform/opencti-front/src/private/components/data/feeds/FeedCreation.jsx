@@ -523,8 +523,8 @@ const FeedCreation = (props) => {
                       <FilterIconButton
                         filters={filters}
                         handleRemoveFilter={handleRemoveFilter}
-                          handleSwitchLocalMode={handleSwitchLocalMode}
-                          handleSwitchGlobalMode={handleSwitchGlobalMode}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        handleSwitchGlobalMode={handleSwitchGlobalMode}
                         classNameNumber={2}
                         styleNumber={2}
                         redirection

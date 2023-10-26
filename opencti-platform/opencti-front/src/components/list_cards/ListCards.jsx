@@ -148,13 +148,15 @@ class ListCards extends Component {
           >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
-          <FilterIconButton
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
-          />
+          {filters &&
+            <FilterIconButton
+              filters={filters}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              redirection
+            />
+          }
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>

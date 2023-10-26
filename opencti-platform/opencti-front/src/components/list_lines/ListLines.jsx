@@ -257,7 +257,7 @@ class ListLines extends Component {
               && !noFilters
               && <div style={{ height: 38 }}> &nbsp; </div>
             }
-            {filters?.filters && filters.filters.length > 0
+            {filters
               && <FilterIconButton
                 availableFilterKeys={availableFilterKeys}
                 filters={filters}
