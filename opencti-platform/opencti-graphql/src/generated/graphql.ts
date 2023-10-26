@@ -7219,7 +7219,9 @@ export type FeedMappingInput = {
 };
 
 export enum FeedOrdering {
-  Name = 'name'
+  FeedTypes = 'feed_types',
+  Name = 'name',
+  RollingTime = 'rolling_time'
 }
 
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -24521,7 +24523,9 @@ export type StreamCollectionFiltering = {
 
 export enum StreamCollectionOrdering {
   Description = 'description',
+  Id = 'id',
   Name = 'name',
+  StreamLive = 'stream_live',
   StreamPublic = 'stream_public'
 }
 
@@ -25456,6 +25460,7 @@ export type TaxiiCollectionFiltering = {
 
 export enum TaxiiCollectionOrdering {
   Description = 'description',
+  Id = 'id',
   Name = 'name'
 }
 
