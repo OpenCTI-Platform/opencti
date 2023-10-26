@@ -54,7 +54,6 @@ class RetentionLineComponent extends Component {
   render() {
     const { t, classes, node, dataColumns, paginationOptions, nsdt, n } = this.props;
     const filters = JSON.parse(node.filters);
-    const filterPairs = R.toPairs(filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -66,7 +65,7 @@ class RetentionLineComponent extends Component {
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              {filterPairs.length > 0 ? (
+              {filters ? (
                 <FilterIconButton
                   filters={filters}
                   dataColumns={dataColumns}

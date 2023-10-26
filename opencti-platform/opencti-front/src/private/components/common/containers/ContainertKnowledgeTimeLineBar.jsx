@@ -153,12 +153,12 @@ const ContentKnowledgeTimeLineBar = ({
               />
             </div>
             <div style={{ paddingTop: 3 }}>
-              <FilterIconButton
+              {timeLineFilters && <FilterIconButton
                 filters={timeLineFilters}
                 handleRemoveFilter={handleRemoveTimeLineFilter}
                 classNameNumber={1}
                 redirection
-              />
+              />}
             </div>
           </div>
         </div>

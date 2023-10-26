@@ -148,8 +148,8 @@ class ListCards extends Component {
           >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
-          {filters &&
-            <FilterIconButton
+          {filters
+            && <FilterIconButton
               filters={filters}
               handleRemoveFilter={handleRemoveFilter}
               handleSwitchGlobalMode={handleSwitchGlobalMode}
