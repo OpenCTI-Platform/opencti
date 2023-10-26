@@ -3151,15 +3151,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
       const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-      if (resolvedInput.update === true) {
-        // The new one is new reference, merge all found entities
-        // Target entity is existingByStandard by default or any other
-        const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
-        const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
-        hashMergeValidation([target, ...sources]);
-        await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
-        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
-      } if (existingByStandard) {
+      if (existingByStandard) {
         // Sometimes multiple entities can match
         // Looking for aliasA, aliasB, find in different entities for example
         // In this case, we try to find if one match the standard id
@@ -3191,6 +3183,19 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
         const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
         const inputAliases = { ...resolvedInput, [key]: filteredAliases };
         return upsertElement(context, user, existingByStandard, type, inputAliases, { ...opts, locks: participantIds });
+      }
+      if (resolvedInput.update === true) {
+        // The new one is new reference, merge all found entities
+        // Target entity is existingByStandard by default or any other
+        const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
+        const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
+        hashMergeValidation([target, ...sources]);
+        await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
+      }
+      if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
+        const target = R.head(filteredEntities);
+        return upsertElement(context, user, target, type, { x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] }, { ...opts, locks: participantIds });
       }
       // If not we dont know what to do, just throw an exception.
       throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });

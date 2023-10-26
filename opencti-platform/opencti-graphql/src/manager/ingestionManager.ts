@@ -229,7 +229,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
     await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_cursor: data.next.toString(),
+      current_state_cursor: data.next ? String(data.next) : undefined,
       added_after_start: utcDate(addedLast)
     });
   }
