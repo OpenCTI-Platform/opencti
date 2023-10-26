@@ -360,7 +360,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   // Config
   // TODO remove hardcoded format and replace newFilters by filters when front is migrated
   const newFilters = (Array.isArray(filters) || !filters) ? { mode: 'and', filters: [], filterGroups: [] } : filters;
-  const customFiltersContent = newFilters?.filters ?? [];
+  const customFiltersContent = newFilters.filters;
   // region element
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];

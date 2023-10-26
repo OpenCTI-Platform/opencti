@@ -114,7 +114,7 @@ const Entities = () => {
     };
 
     const toolBarFilters = (types && types.length > 0)
-      ? filtersWithEntityType(filters, types ?? [])
+      ? filtersWithEntityType(filters, types)
       : filtersWithEntityType(filters, 'Stix-Domain-Object');
     return (
       <>

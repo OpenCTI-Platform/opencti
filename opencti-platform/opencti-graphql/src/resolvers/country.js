@@ -1,15 +1,13 @@
-import { addCountry, findAll, findById, batchRegion } from '../domain/country';
+import { addCountry, batchRegion, findAll, findById } from '../domain/country';
 import {
-  stixDomainObjectEditContext,
-  stixDomainObjectCleanContext,
-  stixDomainObjectEditField,
   stixDomainObjectAddRelation,
-  stixDomainObjectDeleteRelation,
+  stixDomainObjectCleanContext,
   stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchLoader } from '../database/middleware';
-import { buildRefRelationKey } from '../schema/general';
-import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 
 const batchRegionLoader = batchLoader(batchRegion);
 

@@ -3,7 +3,6 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
@@ -14,15 +13,21 @@ import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  filterEventTypesOptions,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
-  constructHandleAddFilter, constructHandleRemoveFilter,
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
   Filter,
-  FilterGroup, filtersAfterSwitchLocalMode,
-  findFilterFromKey, findFilterIndexFromKey,
+  FilterGroup,
+  filtersAfterSwitchLocalMode,
   initialFilterGroup,
-  isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';

@@ -3,10 +3,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -18,7 +15,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
 import { OpinionLineDummy } from './opinions/OpinionLine';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
