@@ -140,67 +140,7 @@ const InvestigationAddStixCoreObjects = (props) => {
       },
     };
   };
-  const renderSearchResults = (searchPaginationOptions) => {
-    return (
-      <UserContext.Consumer>
-        {({ platformModuleHelpers }) => (
-          <div>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={buildColumns(platformModuleHelpers)}
-              handleSearch={setSearchTerm}
-              keyword={
-                mapping && searchTerm.length === 0 ? selectedText : searchTerm
-              }
-              handleSort={handleSort}
-              handleAddFilter={handleAddFilter}
-              handleRemoveFilter={handleRemoveFilter}
-              disableCards={true}
-              filters={filters}
-              paginationOptions={searchPaginationOptions}
-              numberOfElements={numberOfElements}
-              iconExtension={true}
-              parametersWithPadding={true}
-              disableExport={true}
-              availableEntityTypes={[resolveAvailableTypes()]}
-              availableFilterKeys={[
-                'entity_type',
-                'markedBy',
-                'labelledBy',
-                'createdBy',
-                'confidence',
-                'x_opencti_organization_type',
-                'created_start_date',
-                'created_end_date',
-                'created_at_start_date',
-                'created_at_end_date',
-                'creator',
-              ]}
-            >
-              <QueryRenderer
-                query={investigationAddStixCoreObjectsLinesQuery}
-                variables={{ count: 100, ...searchPaginationOptions }}
-                render={({ props: renderProps }) => (
-                  <InvestigationAddStixCoreObjectsLines
-                    data={renderProps}
-                    workspaceId={workspaceId}
-                    dataColumns={buildColumns(platformModuleHelpers)}
-                    initialLoading={renderProps === null}
-                    onAdd={onAdd}
-                    onDelete={onDelete}
-                    mapping={mapping}
-                    setNumberOfElements={setNumberOfElements}
-                    workspaceStixCoreObjects={workspaceStixCoreObjects}
-                  />
-                )}
-              />
-            </ListLines>
-          </div>
-        )}
-      </UserContext.Consumer>
-    );
-  };
+
   const finalFilters = convertFilters(filters);
   const searchPaginationOptions = {
     types: [resolveAvailableTypes()],
@@ -209,20 +149,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
   };
-  const renderButton = () => {
-    return (
-      <Tooltip title={t('Add an entity to this investigation')}>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={() => setOpen(true)}
-          size="large"
-        >
-          <Add />
-        </IconButton>
-      </Tooltip>
-    );
-  };
+
   const resetState = () => {
     setSearchTerm('');
     setFilters(
@@ -241,9 +168,21 @@ const InvestigationAddStixCoreObjects = (props) => {
         : {},
     );
   };
+
   return (
     <div>
-      {!mapping && renderButton()}
+      {!mapping && (
+        <Tooltip title={t('Add an entity to this investigation')}>
+          <IconButton
+            color="primary"
+            aria-label="Add"
+            onClick={() => setOpen(true)}
+            size="large"
+          >
+            <Add />
+          </IconButton>
+        </Tooltip>
+      )}
       <Drawer
         open={mapping ? openDrawer : open}
         onClose={() => {
@@ -256,9 +195,63 @@ const InvestigationAddStixCoreObjects = (props) => {
         }}
         title={t('Add entities')}
       >
-        <>
-          {renderSearchResults(searchPaginationOptions)}
-        </>
+        <UserContext.Consumer>
+          {({ platformModuleHelpers }) => (
+            <div>
+              <ListLines
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={buildColumns(platformModuleHelpers)}
+                handleSearch={setSearchTerm}
+                keyword={
+                  mapping && searchTerm.length === 0 ? selectedText : searchTerm
+                }
+                handleSort={handleSort}
+                handleAddFilter={handleAddFilter}
+                handleRemoveFilter={handleRemoveFilter}
+                disableCards={true}
+                filters={filters}
+                paginationOptions={searchPaginationOptions}
+                numberOfElements={numberOfElements}
+                iconExtension={true}
+                parametersWithPadding={true}
+                disableExport={true}
+                availableEntityTypes={[resolveAvailableTypes()]}
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'confidence',
+                  'x_opencti_organization_type',
+                  'created_start_date',
+                  'created_end_date',
+                  'created_at_start_date',
+                  'created_at_end_date',
+                  'creator',
+                ]}
+              >
+                <QueryRenderer
+                  query={investigationAddStixCoreObjectsLinesQuery}
+                  variables={{ count: 100, ...searchPaginationOptions }}
+                  render={({ props: renderProps }) => (
+                    <InvestigationAddStixCoreObjectsLines
+                      data={renderProps}
+                      workspaceId={workspaceId}
+                      dataColumns={buildColumns(platformModuleHelpers)}
+                      initialLoading={renderProps === null}
+                      onAdd={onAdd}
+                      onDelete={onDelete}
+                      mapping={mapping}
+                      setNumberOfElements={setNumberOfElements}
+                      workspaceStixCoreObjects={workspaceStixCoreObjects}
+                    />
+                  )}
+                />
+              </ListLines>
+            </div>
+          )}
+        </UserContext.Consumer>
       </Drawer>
     </div>
   );

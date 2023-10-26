@@ -8,14 +8,17 @@ import Skeleton from '@mui/material/Skeleton';
 import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
+import { InvestigationAddStixCoreObjectsLine_node$data } from '@components/workspaces/investigations/__generated__/InvestigationAddStixCoreObjectsLine_node.graphql';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -33,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: 10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   chip: {
     fontSize: 13,
@@ -52,13 +55,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+interface InvestigationAddStixCoreObjectsLineComponentProps {
+  dataColumns: DataColumns
+  node: InvestigationAddStixCoreObjectsLine_node$data,
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void,
+  onToggleEntity: (
+    entity: InvestigationAddStixCoreObjectsLine_node$data,
+    event: React.SyntheticEvent
+  ) => void,
+  addedElements: {
+    [key:string]: InvestigationAddStixCoreObjectsLine_node$data
+  },
+}
+
 const InvestigationAddStixCoreObjectsLineComponent = ({
   dataColumns,
   node,
   onLabelClick,
   onToggleEntity,
   addedElements,
-}) => {
+}: InvestigationAddStixCoreObjectsLineComponentProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
   return (
@@ -126,7 +147,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges}
+                markingDefinitionsEdges={(node.objectMarking?.edges ?? [])}
                 limit={1}
               />
             </div>
@@ -147,6 +168,7 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
         parent_types
         entity_type
         created_at
+        numberOfConnectedElement
         ... on StixDomainObject {
           created
         }
@@ -335,7 +357,13 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
   },
 );
 
-export const InvestigationAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
+interface InvestigationAddStixCoreObjecstLineDummyProps {
+  dataColumns: DataColumns
+}
+
+export const InvestigationAddStixCoreObjecstLineDummy = (
+  { dataColumns }: InvestigationAddStixCoreObjecstLineDummyProps,
+) => {
   const classes = useStyles();
   return (
     <ListItem
