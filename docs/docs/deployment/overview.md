@@ -41,12 +41,12 @@ roles on the platform:
 
 ### Dependencies
 
-| Component        | CPU         | RAM          | Disk type                    | Disk space      |
-| :--------------- | :---------- | :----------- | :--------------------------- | :-------------- |
-| ElasticSearch    | 2 cores     | ≥ 8GB        | SSD                          | ≥ 16GB          |
-| Redis            | 1 core      | ≥ 1GB        | SSD                          | ≥ 16GB          |
-| RabbitMQ         | 1 core      | ≥ 512MB      | Standard                     | ≥ 2GB           |
-| S3 / MinIO       | 1 core      | ≥ 128MB      | SSD                          | ≥ 16GB          |
+| Component         | Version            | CPU       | RAM          | Disk type                    | Disk space      |
+|:------------------|:-------------------|:----------| :----------- | :--------------------------- | :-------------- |
+| ElasticSearch     | >= 8.0             | 2 cores   | ≥ 8GB        | SSD                          | ≥ 16GB          |
+| Redis             | >= 7.1             | 1 core    | ≥ 1GB        | SSD                          | ≥ 16GB          |
+| RabbitMQ          | >= 3.11            | 1 core    | ≥ 512MB      | Standard                     | ≥ 2GB           |
+| S3 / MinIO        | >= RELEASE.2023-02 | 1 core    | ≥ 128MB      | SSD                          | ≥ 16GB          |
 
 
 ### Platform
