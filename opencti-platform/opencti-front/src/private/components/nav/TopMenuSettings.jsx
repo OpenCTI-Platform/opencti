@@ -130,6 +130,26 @@ const TopMenuSettings = () => {
           {t('Activity')}
         </Button>
       </Security>
+      <Security needs={[SETTINGS]}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/settings/file_indexing"
+          variant={
+            location.pathname.includes('/dashboard/settings/file_indexing')
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname.includes('/dashboard/settings/file_indexing')
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('File indexing')}
+        </Button>
+      </Security>
     </div>
   );
 };

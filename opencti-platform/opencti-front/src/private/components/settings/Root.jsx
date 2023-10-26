@@ -28,6 +28,7 @@ import Rules from './Rules';
 import Sessions from './Sessions';
 import Settings from './Settings';
 import SettingsOrganizations from './SettingsOrganizations';
+import FileIndexingConfiguration from './file_indexing/FileIndexingConfiguration';
 import StatusTemplates from './status_templates/StatusTemplates';
 import RootSubType from './sub_types/Root';
 import SubTypes from './sub_types/SubTypes';
@@ -182,6 +183,10 @@ const Root = () => {
         <BoundaryRoute
           path="/dashboard/settings/activity"
           render={() => <RootActivity />}
+        />
+        <BoundaryRoute
+          path="/dashboard/settings/file_indexing"
+          render={() => <FileIndexingConfiguration />}
         />
         <BoundaryRoute
           exact
