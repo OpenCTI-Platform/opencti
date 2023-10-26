@@ -19,9 +19,12 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -40,7 +43,8 @@ const FileIndexingConfiguration: FunctionComponent = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
-
+  const { platformModuleHelpers } = useAuth();
+  const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
   return (
     <div>
       {!isEnterpriseEdition && (
@@ -52,15 +56,23 @@ const FileIndexingConfiguration: FunctionComponent = () => {
             {t('Requirements')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
-            <ul>
-              <li>Elasticsearch &gt;= 8.4</li>
-              <li>Elasticsearch &lt; 8.4 with ingest-attachment plugin</li>
-              <li>OpenSearch with ingest-attachment plugin</li>
-            </ul>
+            <Alert
+                classes={{ root: classes.alert, message: classes.message }}
+                severity={isModuleWarning ? 'warning' : 'info'}
+                variant="outlined"
+                style={{ position: 'relative' }}
+            >
+              {t('File indexing needs one of these requirements: ')}
+              <ul>
+                <li>Elasticsearch &gt;= 8.4</li>
+                <li>Elasticsearch &lt; 8.4 with ingest-attachment plugin</li>
+                <li>OpenSearch with ingest-attachment plugin</li>
+              </ul>
+            </Alert>
           </Paper>
         </Grid>
       </Grid>
-        {isEnterpriseEdition && (
+        {isEnterpriseEdition && !isModuleWarning && (
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
               <Typography variant="h4" gutterBottom={true}>

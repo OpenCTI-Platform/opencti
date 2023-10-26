@@ -1140,6 +1140,7 @@ type Module {
   id: ID!
   enable: Boolean!
   running: Boolean!
+  warning: Boolean
 }
 
 type Cluster {

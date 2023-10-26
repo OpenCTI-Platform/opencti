@@ -12845,6 +12845,7 @@ export type Module = {
   enable: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   running: Scalars['Boolean']['output'];
+  warning?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type MultiDistribution = {
@@ -34646,6 +34647,7 @@ export type ModuleResolvers<ContextType = any, ParentType extends ResolversParen
   enable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  warning?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

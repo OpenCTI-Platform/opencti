@@ -17,6 +17,7 @@ export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
+  isModuleWarning: (id: string) => boolean;
   isFeatureEnable: (id: string) => boolean;
   isRuntimeFieldEnable: () => boolean;
   isRuleEngineEnable: () => boolean;
@@ -47,10 +48,20 @@ const isModuleEnable = (
   return module !== undefined && module.enable === true;
 };
 
+const isModuleWarning = (
+  settings: RootPrivateQuery$data['settings'],
+  id: string,
+) => {
+  const modules = settings.platform_modules || [];
+  const module = modules.find((f) => f.id === id);
+  return module !== undefined && module.warning === true;
+};
+
 const platformModuleHelper = (
   settings: RootPrivateQuery$data['settings'],
 ): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
+  isModuleWarning: (id: string) => isModuleWarning(settings, id),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),
   isRuleEngineEnable: () => isModuleEnable(settings, RULE_ENGINE),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, RUNTIME_SORTING),

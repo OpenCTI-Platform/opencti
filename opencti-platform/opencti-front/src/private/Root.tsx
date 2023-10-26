@@ -83,6 +83,7 @@ const rootPrivateQuery = graphql`
         id
         enable
         running
+        warning
       }
       enterprise_edition
       ...AppThemeProvider_settings
