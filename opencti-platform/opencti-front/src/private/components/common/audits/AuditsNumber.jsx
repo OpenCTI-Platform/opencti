@@ -25,7 +25,7 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { findFilterFromKey } from "../../../../utils/filters/filtersUtils";
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -47,8 +47,7 @@ const auditsNumberNumberQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $onlyInferred: Boolean
-    $
-    filters: FilterGroup
+    $filters: FilterGroup
     $search: String
   ) {
     auditsNumber(
@@ -101,15 +100,18 @@ const AuditsNumber = ({
     let types = ['History', 'Activity'];
     const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
     if (
-        entityTypeFilter
+      entityTypeFilter
       && entityTypeFilter.values.length > 0
     ) {
       if (
-          entityTypeFilter.values.filter((o) => o === 'all').length === 0
+        entityTypeFilter.values.filter((o) => o === 'all').length === 0
       ) {
         types = entityTypeFilter;
       }
     }
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'timestamp';
     const filtersContent = selection.filters.filters((f) => f.key !== 'entity_type');
     if (startDate) {
       filtersContent.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
@@ -118,12 +120,9 @@ const AuditsNumber = ({
       filtersContent.push({ key: dateAttribute, values: [endDate], operator: 'lt' });
     }
     const filters = {
-        ...selection.filters,
-        filters: filtersContent,
+      ...selection.filters,
+      filters: filtersContent,
     };
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'timestamp';
     return (
       <QueryRenderer
         query={auditsNumberNumberQuery}

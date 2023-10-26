@@ -516,13 +516,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           operator: op,
           mode: 'or',
         };
-        const newBaseFilters = dataFilters ? {
+        const newBaseFilters = {
           ...dataFilters,
           filters: [...dataFilters.filters, newFilterElement], // add new filter
-        } : {
-          mode: 'and',
-          filterGroups: [],
-          filters: [newFilterElement],
         };
         return {
           ...data,

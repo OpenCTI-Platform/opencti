@@ -14,7 +14,6 @@ import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
-import { initialFilterGroup } from "../../../../utils/filters/filtersUtils";
 
 const useStyles = makeStyles(() => ({
   paper: {

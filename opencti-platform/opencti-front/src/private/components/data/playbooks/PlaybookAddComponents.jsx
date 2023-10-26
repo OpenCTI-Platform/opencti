@@ -24,10 +24,9 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  constructHandleAddFilter, constructHandleRemoveFilter, filtersAfterSwitchLocalMode,
-  findFilterFromKey,
-  findFilterIndexFromKey,
-  isUniqFilter
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
