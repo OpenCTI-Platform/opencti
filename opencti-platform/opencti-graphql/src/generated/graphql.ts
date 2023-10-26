@@ -5067,6 +5067,13 @@ export enum CsvMapperRepresentationType {
   Relationship = 'relationship'
 }
 
+export type CsvMapperTestResult = {
+  __typename?: 'CsvMapperTestResult';
+  nbEntities: Scalars['Int']['output'];
+  nbRelationships: Scalars['Int']['output'];
+  objects: Scalars['JSON']['output'];
+};
+
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'DataComponent';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -18031,7 +18038,7 @@ export type Query = {
   coursesOfAction?: Maybe<CourseOfActionConnection>;
   creators?: Maybe<CreatorConnection>;
   csvMapper?: Maybe<CsvMapper>;
-  csvMapperTest?: Maybe<Scalars['JSON']['output']>;
+  csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
@@ -29223,6 +29230,7 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperRepresentationTargetColumnInput: CsvMapperRepresentationTargetColumnInput;
   CsvMapperRepresentationTargetInput: CsvMapperRepresentationTargetInput;
   CsvMapperRepresentationType: CsvMapperRepresentationType;
+  CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -30063,6 +30071,7 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperRepresentationTargetColumn: CsvMapperRepresentationTargetColumn;
   CsvMapperRepresentationTargetColumnInput: CsvMapperRepresentationTargetColumnInput;
   CsvMapperRepresentationTargetInput: CsvMapperRepresentationTargetInput;
+  CsvMapperTestResult: CsvMapperTestResult;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -32152,6 +32161,13 @@ export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, Pare
   column_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   operator?: Resolver<Maybe<ResolversTypes['Operator']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperTestResult'] = ResolversParentTypes['CsvMapperTestResult']> = ResolversObject<{
+  nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  objects?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -35822,7 +35838,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<QueryCoursesOfActionArgs>>;
   creators?: Resolver<Maybe<ResolversTypes['CreatorConnection']>, ParentType, ContextType, Partial<QueryCreatorsArgs>>;
   csvMapper?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<QueryCsvMapperArgs, 'id'>>;
-  csvMapperTest?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
+  csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
@@ -38788,6 +38804,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperRepresentationAttribute?: CsvMapperRepresentationAttributeResolvers<ContextType>;
   CsvMapperRepresentationTarget?: CsvMapperRepresentationTargetResolvers<ContextType>;
   CsvMapperRepresentationTargetColumn?: CsvMapperRepresentationTargetColumnResolvers<ContextType>;
+  CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;

@@ -16,7 +16,11 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
     query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
-        csvMapperTest(configuration: $configuration, content: $content)
+        csvMapperTest(configuration: $configuration, content: $content) {
+            objects
+            nbRelationships
+            nbEntities
+        }
     }
 `;
 
@@ -24,19 +28,6 @@ interface CsvMapperTestDialogProps {
   open: boolean;
   onClose: () => void;
   configuration: string;
-}
-
-interface CsvMapperResult {
-  value: string;
-  nbRelationships: number;
-  nbEntities: number;
-}
-
-interface ResultCSVMapper {
-  id: string;
-  spec_version: string;
-  type: string;
-  [key: string]: string | string[] | object
 }
 
 const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
@@ -47,7 +38,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   const { t } = useFormatter();
 
   const [value, setValue] = useState<string>('');
-  const [result, setResult] = useState<CsvMapperResult | undefined>(undefined);
+  const [result, setResult] = useState<CsvMapperTestDialogQuery$data | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
   const onChange = async (field: string, v: string | File | undefined) => {
@@ -73,9 +64,11 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         const resultTest = (data as CsvMapperTestDialogQuery$data)
           .csvMapperTest;
         setResult({
-          value: JSON.stringify(resultTest, null, '  '),
-          nbEntities: resultTest.filter((obj: ResultCSVMapper) => !obj.relationship_type).length,
-          nbRelationships: resultTest.filter((obj: ResultCSVMapper) => !!obj.relationship_type).length,
+          csvMapperTest: {
+            nbEntities: resultTest?.nbEntities ?? 0,
+            nbRelationships: resultTest?.nbRelationships ?? 0,
+            objects: JSON.stringify(resultTest?.objects, null, '  '),
+          },
         });
         setLoading(false);
       }).catch((error) => {
@@ -99,7 +92,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 1,
+            gap: '8px',
           }}
         >
           <CustomFileUploader
@@ -122,7 +115,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           </Tooltip>
         </Box>
         <Box
-          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: 2 }}
+          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}
         >
           <Button
             variant="contained"
@@ -133,7 +126,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             {t('Test')}
           </Button>
           {loading && (
-            <Box sx={{ marginLeft: 1 }}>
+            <Box sx={{ marginLeft: '8px' }}>
               <Loader variant={LoaderVariant.inElement}/>
             </Box>
           )}
@@ -141,20 +134,20 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         {result
           && <Box
             sx={{
-              paddingTop: 1,
+              paddingTop: '8px',
               fontSize: '1rem',
-              gap: 1,
+              gap: '8px',
               justifyContent: 'center',
               display: 'flex',
             }}>
             <span>{t('Objects found')} : </span>
-            <span><strong>{result.nbEntities} </strong> {t('Entities')}</span>
-            <span><strong>{result.nbRelationships}</strong> {t('Relationships')}</span>
+            <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t('Entities')}</span>
+            <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t('Relationships')}</span>
           </Box>
         }
-        <Box sx={{ marginTop: 2 }}>
+        <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.value || t('You will find here the result in JSON format')}
+            code={result?.csvMapperTest?.objects || t('You will find here the result in JSON format')}
             language={'json'}
           />
         </Box>

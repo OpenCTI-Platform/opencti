@@ -13,15 +13,15 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   switch (name) {
     case 'ImportCsv':
-      return <Box style={{ paddingTop: 1 }}>
+      return <Box sx={{ paddingTop: '8px' }}>
         {t('There are not any configurations set yet')}
-        <Box style={{ paddingTop: 1 }}>
+        <div>
           {
             isCsvMapperUpdater
               ? <Link to="/dashboard/data/processing/csv_mapper">{t('Create a CSV Mapper configuration')}</Link>
               : t('Please contact an administrator')
           }
-        </Box>
+        </div>
       </Box>;
     case undefined: // In case there isn't any connector selected
       return <></>;

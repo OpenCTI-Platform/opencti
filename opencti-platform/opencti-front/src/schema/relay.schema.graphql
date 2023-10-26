@@ -8438,7 +8438,7 @@ type Query {
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: [OrganizationsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: [CsvMapperFiltering!], filterMode: FilterMode, search: String): CsvMapperConnection
-  csvMapperTest(configuration: String!, content: String!): JSON
+  csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
 }
 
 type Subscription {
@@ -12379,6 +12379,12 @@ type CsvMapperConnection {
 type CsvMapperEdge {
   cursor: String!
   node: CsvMapper!
+}
+
+type CsvMapperTestResult {
+  objects: JSON!
+  nbRelationships: Int!
+  nbEntities: Int!
 }
 
 input AttributeColumnConfigurationInput {

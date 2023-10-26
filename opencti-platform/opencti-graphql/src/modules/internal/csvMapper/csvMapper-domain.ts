@@ -12,7 +12,11 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   try {
     const csvMapper = parseCsvMapper(JSON.parse(configuration));
     const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper);
-    return bundle.objects;
+    return {
+      objects: bundle.objects,
+      nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
+      nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
+    };
   } catch (error: any) {
     return error.stack;
   }

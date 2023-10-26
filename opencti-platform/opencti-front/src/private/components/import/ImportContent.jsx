@@ -202,7 +202,7 @@ class ImportContentComponent extends Component {
   handleCloseImport() {
     this.setState({
       fileToImport: null,
-      selectedConnector: null
+      selectedConnector: null,
     });
   }
 
@@ -302,7 +302,7 @@ class ImportContentComponent extends Component {
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
     const { fileToImport, fileToValidate, displayCreate } = this.state;
-    const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations)); // Can be null but not empty
+    const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
 
     const handleSelectConnector = (_, value) => {
