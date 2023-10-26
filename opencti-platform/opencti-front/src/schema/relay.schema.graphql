@@ -490,6 +490,7 @@ input TaxiiCollectionAddInput {
 enum TaxiiCollectionOrdering {
   name
   description
+  id
 }
 
 type FeedMapping {
@@ -544,6 +545,8 @@ input FeedAddInput {
 
 enum FeedOrdering {
   name
+  rolling_time
+  feed_types
 }
 
 type FeedEdge {
@@ -596,6 +599,8 @@ enum StreamCollectionOrdering {
   name
   description
   stream_public
+  id
+  stream_live
 }
 
 enum StreamCollectionFilter {
