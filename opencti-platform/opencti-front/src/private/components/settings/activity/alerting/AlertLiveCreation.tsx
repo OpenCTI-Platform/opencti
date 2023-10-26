@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
@@ -22,14 +21,23 @@ import TextField from '../../../../../components/TextField';
 import { Theme } from '../../../../../components/Theme';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter, Filter,
+  FilterGroup, filtersAfterSwitchLocalMode,
+} from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
 import Filters from '../../../common/lists/Filters';
-import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import {
+  TriggersLinesPaginationQuery$variables,
+} from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  AlertLiveCreationActivityMutation,
+  AlertLiveCreationActivityMutation$data,
+} from './__generated__/AlertLiveCreationActivityMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -110,34 +118,29 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<Record<string, { id: string; value: string }[]>>({});
+  const [filters, setFilters] = useState<FilterGroup | undefined>(undefined);
   const onReset = () => {
     handleClose?.();
-    setFilters({});
+    setFilters(undefined);
   };
-  const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // TODO MIGRATE LATER
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // TODO MIGRATE LATER
-      setFilters(R.assoc(key, [{ id, value }], filters));
+  const handleAddFilter = (key: string, id: string, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, key, id, op));
+  };
+  const handleRemoveFilter = (key: string, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, key, op));
+  };
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    if (filters) {
+      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
     }
   };
-  const handleRemoveFilter = (key: string) => {
-    setFilters(R.dissoc(key, filters));
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
   const [commitActivity] = useMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
   const liveInitialValues: TriggerActivityLiveAddInput = {
@@ -237,12 +240,16 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       />
       <NotifierField name="notifiers" onChange={setFieldValue} />
       {renderActivityTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        handleRemoveFilter={handleRemoveFilter}
-        classNameNumber={2}
-        redirection
-      />
+      {filters
+        && <FilterIconButton
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          classNameNumber={2}
+          redirection
+        />
+      }
     </React.Fragment>
   );
 
