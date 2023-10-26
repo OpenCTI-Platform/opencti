@@ -20,13 +20,15 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -37,14 +39,42 @@ const useStyles = makeStyles<Theme>(() => ({
   gridContainer: {
     marginBottom: 20,
   },
+  count: {
+    marginTop: 10,
+    fontSize: 30,
+    color: theme.palette.primary.main,
+    textAlign: 'center',
+  },
+  countText: {
+    textAlign: 'center',
+    marginTop: 5,
+    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: 500,
+    color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  },
 }));
 
 const FileIndexingConfiguration: FunctionComponent = () => {
-  const { t } = useFormatter();
+  const { n, t, b } = useFormatter();
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
+  const isStarted = false; // TODO get from config
+
+  const totalFiles = 333; // TODO queries
+  const dataToIndex = 140000000; // TODO managing different units of size  14000 => 14 GO  14 => 14 MO
+  const indexedFiles = 2;
+  const volumeIndexed = 1;
+
+  const handleStart = () => {};
+  const handlePause = () => {};
+
   return (
     <div>
       {!isEnterpriseEdition && (
@@ -79,6 +109,24 @@ const FileIndexingConfiguration: FunctionComponent = () => {
                 {t('Configuration and impact')}
               </Typography>
               <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={6}>
+                    <div className={classes.count}>
+                      {n(totalFiles)}
+                    </div>
+                    <div className={classes.countText}>
+                      {t('Files will be indexed')}
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <div className={classes.count}>
+                      {b(dataToIndex)}
+                    </div>
+                    <div className={classes.countText}>
+                      {t('Of data will be indexed')}
+                    </div>
+                  </Grid>
+                </Grid>
               </Paper>
             </Grid>
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -86,6 +134,51 @@ const FileIndexingConfiguration: FunctionComponent = () => {
                {t('Indexing information')}
               </Typography>
               <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={4}>
+                    {isStarted ? (
+                      <Button
+                        startIcon={<PauseOutlined />}
+                        aria-label="Pause"
+                        onClick={handlePause}
+                        size="large"
+                        color="warning"
+                        variant="contained"
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Pause')}
+                      </Button>
+                    ) : (
+                      <Button
+                        startIcon={<PlayArrowOutlined />}
+                        aria-label="Start"
+                        onClick={handleStart}
+                        size="large"
+                        color="success"
+                        variant="contained"
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Start')}
+                      </Button>
+                    )}
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <div className={classes.count}>
+                      {(isStarted ? n(indexedFiles) : '-')} / {n(totalFiles)}
+                    </div>
+                    <div className={classes.countText}>
+                      {t('Files indexed')}
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <div className={classes.count}>
+                      {(isStarted ? n(volumeIndexed) : '-')} / {b(dataToIndex)}
+                    </div>
+                    <div className={classes.countText}>
+                      {t('Volume indexed')}
+                    </div>
+                  </Grid>
+                </Grid>
               </Paper>
             </Grid>
           </Grid>
