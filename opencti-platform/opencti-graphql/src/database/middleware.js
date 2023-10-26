@@ -581,7 +581,8 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const convertedFilters = checkedAndConvertedFilters(args.filters, types);
+  const timeSeriesArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };

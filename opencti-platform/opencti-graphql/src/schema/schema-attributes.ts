@@ -1,3 +1,4 @@
+import { uniq } from 'ramda';
 import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
@@ -16,6 +17,7 @@ export const depsKeysRegister = {
 
 export const schemaAttributesDefinition = {
   attributes: {} as Record<string, Map<string, AttributeDefinition>>,
+  allAttributes: [] as Array<AttributeDefinition>,
   attributesCache: new Map<string, Map<string, AttributeDefinition>>(),
 
   attributesByTypes: {
@@ -33,6 +35,7 @@ export const schemaAttributesDefinition = {
   // attributes
   registerAttributes(entityType: string, attributes: AttributeDefinition[]) {
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
+    const listAllAttributes: AttributeDefinition[] = [];
 
     // Register given attribute
     const allAttributes = Object.values(this.attributes);
@@ -54,9 +57,10 @@ export const schemaAttributesDefinition = {
       }
 
       directAttributes.set(attribute.name, attribute);
+      listAllAttributes.push(attribute);
     });
     this.attributes[entityType] = directAttributes;
-
+    this.allAttributes = uniq(this.allAttributes.concat(listAllAttributes));
     this.computeCache(entityType);
   },
 
@@ -91,6 +95,10 @@ export const schemaAttributesDefinition = {
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
     this.computeCache(entityType);
     return this.attributesCache.get(entityType) ?? new Map();
+  },
+
+  getAllAttributesNames(): Array<string> {
+    return this.allAttributes.map((attribute) => attribute.name);
   },
 
   getAttributeNames(entityType: string): string[] {
