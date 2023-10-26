@@ -54,7 +54,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     lineHeight: '0.65rem',
   },
   div: {
-    marginTop: 30,
     width: '100%',
   },
   label: {

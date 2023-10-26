@@ -172,18 +172,17 @@ const importValidation = (t, configurations) => {
   return Yup.object().shape(shape);
 };
 
-const initState = {
-  fileToImport: null,
-  fileToValidate: null,
-  displayCreate: false,
-  sortBy: 'name',
-  orderAsc: true,
-  selectedConnector: null,
-};
 class ImportContentComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { ...initState };
+    this.state = {
+      fileToImport: null,
+      fileToValidate: null,
+      displayCreate: false,
+      sortBy: 'name',
+      orderAsc: true,
+      selectedConnector: null,
+    };
   }
 
   componentDidMount() {
@@ -201,7 +200,10 @@ class ImportContentComponent extends Component {
   }
 
   handleCloseImport() {
-    this.setState({ ...initState });
+    this.setState({
+      fileToImport: null,
+      selectedConnector: null
+    });
   }
 
   handleOpenValidate(file) {

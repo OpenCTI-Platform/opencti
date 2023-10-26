@@ -9,6 +9,7 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import CodeBlock from '@components/common/CodeBlock';
 import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
 import { InformationOutline } from 'mdi-material-ui';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -93,12 +94,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
-        <div
-          style={{
+        <Box
+          sx={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: '10px',
+            gap: 1,
           }}
         >
           <CustomFileUploader
@@ -116,12 +117,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             <InformationOutline
               fontSize="small"
               color="primary"
-              style={{ cursor: 'default', marginTop: '30px' }}
+              style={{ cursor: 'default' }}
             />
           </Tooltip>
-        </div>
-        <div
-          style={{ display: 'inline-flex', textAlign: 'center', marginTop: 20 }}
+        </Box>
+        <Box
+          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: 2 }}
         >
           <Button
             variant="contained"
@@ -132,30 +133,31 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             {t('Test')}
           </Button>
           {loading && (
-            <div style={{ marginLeft: 10 }}>
+            <Box sx={{ marginLeft: 1 }}>
               <Loader variant={LoaderVariant.inElement}/>
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
         {result
-          && <div style={{
-            paddingTop: 8,
-            fontSize: '1rem',
-            gap: 8,
-            justifyContent: 'center',
-            display: 'flex',
-          }}>
+          && <Box
+            sx={{
+              paddingTop: 1,
+              fontSize: '1rem',
+              gap: 1,
+              justifyContent: 'center',
+              display: 'flex',
+            }}>
             <span>{t('Objects found')} : </span>
-            <span><span style={{ fontWeight: 'bold' }}>{result.nbEntities} </span> {t('Entities')}</span>
-            <span><span style={{ fontWeight: 'bold' }}>{result.nbRelationships}</span> {t('Relationships')}</span>
-          </div>
+            <span><strong>{result.nbEntities} </strong> {t('Entities')}</span>
+            <span><strong>{result.nbRelationships}</strong> {t('Relationships')}</span>
+          </Box>
         }
-        <div style={{ marginTop: 20 }}>
+        <Box sx={{ marginTop: 2 }}>
           <CodeBlock
             code={result?.value || t('You will find here the result in JSON format')}
             language={'json'}
           />
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

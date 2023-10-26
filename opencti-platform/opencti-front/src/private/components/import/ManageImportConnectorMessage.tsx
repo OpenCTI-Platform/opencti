@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../components/i18n';
 import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 
@@ -12,16 +13,16 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   switch (name) {
     case 'ImportCsv':
-      return <div style={{ paddingTop: 6 }}>
+      return <Box style={{ paddingTop: 1 }}>
         {t('There are not any configurations set yet')}
-        <div style={{ paddingTop: 6 }}>
+        <Box style={{ paddingTop: 1 }}>
           {
             isCsvMapperUpdater
               ? <Link to="/dashboard/data/processing/csv_mapper">{t('Create a CSV Mapper configuration')}</Link>
               : t('Please contact an administrator')
           }
-        </div>
-      </div>;
+        </Box>
+      </Box>;
     case undefined: // In case there isn't any connector selected
       return <></>;
     default:
