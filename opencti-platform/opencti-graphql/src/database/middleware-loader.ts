@@ -467,12 +467,15 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
 };
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
+  args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<StoreEntityConnection<T>> => {
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const convertedFilters = (noFiltersChecking || !args.filters)
+    ? args.filters
+    : checkedAndConvertedFilters(args.filters, args.types ?? []);
+  const paginateArgs = buildEntityFilters({ ...args, entityTypes, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
 

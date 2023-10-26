@@ -691,8 +691,6 @@ const convertFilterKeys = (inputFilters) => {
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
       const databaseNames = filterKeys.map((key) => schemaRelationsRefDefinition.getDatabaseName(key)).filter((n) => n);
-      console.log('filterKeys', filterKeys);
-      console.log('databaseNames', databaseNames);
       if (databaseNames.length > 0) {
         const newKeys = databaseNames.map((name) => buildRefRelationKey(name));
         newFiltersContent.push({ ...f, key: newKeys });
@@ -711,25 +709,35 @@ const convertFilterKeys = (inputFilters) => {
 
 export const checkedAndConvertedFilters = (filters, entityTypes = []) => {
   // 01. check filters keys correspond to the entity types
-  if (isNotEmptyFilters(filters) && entityTypes.length > 0) {
+  if (isNotEmptyFilters(filters)) {
     const keys = extractFilterKeys(filters);
-    // correct keys are keys in AT LEAST one of the entity types schema definition
     if (keys.length > 0) {
       let incorrectKeys = keys;
-      entityTypes.forEach((type) => {
-        const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
-        const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
-        const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections']);
-        // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
-        console.log('availableKeys', availableKeys);
+      if (entityTypes.length > 0) {
+        // correct keys are keys in AT LEAST one of the entity types schema definition
+        entityTypes.forEach((type) => {
+          const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
+          const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
+          const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections']);
+          // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
+          keys.forEach((k) => {
+            if (availableKeys.includes(k)) {
+              incorrectKeys = incorrectKeys.filter((n) => n !== k);
+            }
+          });
+        });
+      } else { // correct keys are keys existing in the schema definition
+        const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
+        const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
+        const availableKeys = availableAttributes.concat(availableRelations);
         keys.forEach((k) => {
           if (availableKeys.includes(k)) {
             incorrectKeys = incorrectKeys.filter((n) => n !== k);
           }
         });
-      });
+      }
       if (incorrectKeys.length > 0) {
-        throw Error(`incorrect filter keys: ${incorrectKeys}`); // TODO remove filter keys that are not correct when dev finished
+        throw Error(`incorrect filter keys: ${incorrectKeys}`);
       }
     }
   }

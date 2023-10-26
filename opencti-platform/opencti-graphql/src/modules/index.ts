@@ -15,6 +15,7 @@ import './attributes/stixSightingRelationship-registrationAttributes';
 // endregion
 
 // region static registration ref, need to be imported before any other modules
+import './relationsRef/stixCoreObject-registrationRef';
 import './relationsRef/stixCyberObservable-registrationRef';
 import './relationsRef/stixDomainObject-registrationRef';
 import './relationsRef/stixRelationship-registrationRef';
