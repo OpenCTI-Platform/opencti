@@ -160,14 +160,11 @@ const getFiles = (stixDomainObject) => {
 const getExportFiles = (stixDomainObject) => {
   const exportFiles = stixDomainObject.exportFiles?.edges?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  /*  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
-    ?.map((n) => n?.node?.exportFiles?.edges).flat().filter((n) => !!n?.node)
-    .map((n) => n.node)
-    .filter((n) => n.metaData && isEmptyField(n.metaData.external_reference_id)) ?? [];
-  const result = sortByLastModified([...exportFiles, ...externalReferencesFiles].filter(() => {
-    return ['application/pdf'];
-  })); */
-  return exportFiles;
+  console.log('getexportfiles');
+  const result = sortByLastModified([...exportFiles].filter((n) => {
+    return ['application/pdf'].includes(n.metaData.mimetype);
+  }));
+  return result;
 };
 
 class StixDomainObjectContentComponent extends Component {
@@ -236,6 +233,38 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
+  loadExportFileContent() {
+    const { stixDomainObject } = this.props;
+    const exportFiles = getExportFiles(stixDomainObject);
+    this.setState({ isLoading: true }, () => {
+      const { currentExportId } = this.state;
+      if (!currentExportId) {
+        return this.setState({ isLoading: false });
+      }
+      const currentExportFile = R.head(
+        R.filter((n) => n.id === currentExportId, exportFiles),
+      );
+      const currentFileType = currentExportFile && currentExportFile.metaData.mimetype;
+
+      if (currentFileType === 'application/pdf') {
+        return this.setState({ isLoading: false });
+      }
+
+      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
+        currentExportId,
+      )}`;
+
+      return Axios.get(url).then((res) => {
+        const content = res.data;
+        return this.setState({
+          initialContent: content,
+          currentContent: content,
+          isLoading: false,
+        });
+      });
+    });
+  }
+
   componentDidMount() {
     this.subscriptionToggle = MESSAGING$.toggleNav.subscribe({
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
@@ -255,6 +284,13 @@ class StixDomainObjectContentComponent extends Component {
   handleSelectFile(fileId) {
     this.setState({ currentFileId: fileId, changed: false }, () => {
       this.loadFileContent();
+      this.saveView();
+    });
+  }
+
+  handleSelectExportFile(currentExportId) {
+    this.setState({ currentExportId, changed: false }, () => {
+      this.loadExportFileContent();
       this.saveView();
     });
   }
@@ -410,16 +446,6 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  extractIdFromUrl(currentExportId) {
-    const regex = /Report\/([a-f\d-]+)\//;
-    const match = currentExportId.match(regex);
-    if (match && match[1]) {
-      return match[1];
-    }
-    return null;
-  }
-
   render() {
     const { classes, stixDomainObject, t } = this.props;
 
@@ -435,39 +461,47 @@ class StixDomainObjectContentComponent extends Component {
     } = this.state;
 
     const files = getFiles(stixDomainObject);
-
+    console.log('exportFiles');
     const exportFiles = getExportFiles(stixDomainObject);
-    console.log('exportFiles', exportFiles);
 
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
 
-    console.log('currentExportId', currentExportId);
     const currentExportUrl = currentExportId
         && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
-    console.log('currentExportUrl', currentExportUrl);
-
-    const exportId = this.extractIdFromUrl(currentExportId);
-    console.log('exportId', exportId);
+    const currentGetExportUrl = currentExportId
+      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentExportId)}`;
 
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
+
+    const currentExportFile = currentExportId && R.head(R.filter((n) => n.id === currentExportId, exportFiles));
+    const currentExportFileType = currentExportFile && currentExportFile.metaData.mimetype;
+
     const { innerHeight } = window;
     const height = innerHeight - 190;
+    /*
+    console.log('currentExportId', currentExportId);
+    console.log('currentExportFile', currentExportFile);
 
-    console.log('stixDomainObject export.edges', stixDomainObject.exportFiles.edges);
-
+    console.log('currentFileType', currentFileType);
+    console.log('currentExportFileType', currentExportFileType); */
+    console.log(stixDomainObject);
+    console.log('exportFiles', exportFiles);
+    console.log('edges', stixDomainObject.exportFiles.edges);
+    // console.log('files', files);
     return (
       <div className={classes.container}>
         <StixDomainObjectContentFiles
           stixDomainObjectId={stixDomainObject.id}
           files={files}
+          exportFiles={exportFiles}
           currentExportUrl={currentExportUrl}
           currentExportId={currentExportId}
-          exportFiles={stixDomainObject.exportFiles.edges}
           handleSelectFile={this.handleSelectFile.bind(this)}
+          handleSelectExportFile={this.handleSelectExportFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
         />
@@ -572,12 +606,12 @@ class StixDomainObjectContentComponent extends Component {
             </div>
           </div>
         )}
-        {currentFileType === 'application/pdf' && (
+        {(currentFileType === 'application/pdf' || currentExportFileType === 'application/pdf') && (
           <div>
             <StixDomainObjectContentBar
               handleZoomIn={this.handleZoomIn.bind(this)}
               handleZoomOut={this.handleZoomOut.bind(this)}
-              directDownload={currentGetUrl}
+              directDownload={currentGetUrl || currentGetExportUrl}
               currentZoom={this.state.pdfViewerZoom}
               navOpen={navOpen}
             />
@@ -591,7 +625,7 @@ class StixDomainObjectContentComponent extends Component {
               <Document
                 onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                 loading={<Loader variant="inElement" />}
-                file={currentUrl}
+                file={currentUrl || currentExportUrl}
               >
                 {Array.from(new Array(totalPdfPageNumber), (el, index) => (
                   <Page
@@ -605,7 +639,7 @@ class StixDomainObjectContentComponent extends Component {
             </div>
           </div>
         )}
-        {!currentFile && (
+        {(!currentFile || !currentExportFile) && (
           <div
             className={
               navOpen
@@ -687,7 +721,14 @@ const StixDomainObjectContent = createRefetchContainer(
         exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
           edges {
             node {
-              id
+                id
+                name
+                uploadStatus
+                lastModified
+                lastModifiedSinceMin
+                metaData {
+                    mimetype
+                }
               ...FileLine_file
             }
           }

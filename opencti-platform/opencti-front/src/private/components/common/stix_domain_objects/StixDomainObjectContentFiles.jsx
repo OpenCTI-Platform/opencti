@@ -17,7 +17,7 @@ import {
 } from 'mdi-material-ui';
 import moment from 'moment';
 import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, AddOutlined } from '@mui/icons-material';
+import { DeleteOutlined, AddOutlined, WarningOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -27,6 +27,8 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
+import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import FileLine, { FileLineDeleteMutation } from '../files/FileLine';
@@ -208,8 +210,8 @@ class StixDomainObjectContentFiles extends Component {
       onFileChange,
       settingsMessagesBannerHeight,
       exportFiles,
-      // currentExportId,
-      // currentExportUrl,
+      handleSelectExportFile,
+
     } = this.props;
     const { deleting, displayCreate } = this.state;
     const textFiles = files.filter((n) => n.metaData.mimetype === 'text/plain');
@@ -220,6 +222,7 @@ class StixDomainObjectContentFiles extends Component {
     const pdfFiles = files.filter(
       (n) => n.metaData.mimetype === 'application/pdf',
     );
+
     return (
             <Drawer
                 variant="permanent"
@@ -261,13 +264,13 @@ class StixDomainObjectContentFiles extends Component {
                                 disabled={deleting === file.id}
                                 secondaryAction={
                                     <IconButton onClick={this.submitDelete.bind(this, file.id)}>
-                                        <DeleteOutlined/>
+                                        <DeleteOutlined color="primary"/>
                                     </IconButton>
                                 }
                             >
                                 <ListItemIcon>
                                     <div style={{ float: 'right' }}>
-                                        <FileOutline color="primary"/>
+                                        <FileOutline/>
                                     </div>
                                 </ListItemIcon>
                                 <ListItemText
@@ -279,7 +282,7 @@ class StixDomainObjectContentFiles extends Component {
                       : this.renderNoFiles()}
                 </List>
                 <Divider/>
-                 <List
+                  <List
                     style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
                     subheader={
                         <ListSubheader component="div">
@@ -289,7 +292,7 @@ class StixDomainObjectContentFiles extends Component {
                             <div style={{ float: 'left' }}>{t('Exported PDF files ')}</div>
                             <div style={{ float: 'right' }}>
                                 <FileExportOutline
-                                    fontSize="small"
+                                    fontSize="medium"
                                     color="primary"
                                 />
                             </div>
@@ -297,23 +300,77 @@ class StixDomainObjectContentFiles extends Component {
                     }
                 >
                 {exportFiles?.length ? (
-                    <>
+                    <div>
                         {exportFiles.map((file) => {
                           return (
-                            file?.node && (
-                                    <FileLine
-                                        key={file?.node.id}
-                                        file={file?.node}
-                                        dense={true}
-                                        disableImport={true}
-                                    />
+                            file && (
+                                <FileLine
+                                    key={file?.id}
+                                    file={file}
+                                    divider={true}
+                                    onClick={handleSelectExportFile.bind(this, file?.id)}
+                                    disableImport={true}
+                                    disabled={deleting === file?.id}
+                                    directDownload={true}
+                                />
                             )
                           );
                         })}
-                    </>
+                    </div>
                 ) : this.renderNoFiles()}
                  </List>
-                <Divider/>
+              <Divider/>
+              {/*  <List
+                    style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
+                    subheader={
+                        <ListSubheader component="div">
+                            <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
+                                <FilePdfBox/>
+                            </div>
+                            <div style={{ float: 'left' }}>{t('Exported PDF files ')}</div>
+                             <div style={{ float: 'right' }}>
+                                <FileExportOutline
+                                    fontSize="small"
+                                    color="primary"
+                                />
+                            </div>
+                        </ListSubheader>
+                    }
+                > */}
+                    {/* {exportFiles?.length ? (
+                            <>
+                            {exportFiles.map((file) => {
+                              return (
+                                file?.node && (
+                            <ListItem
+                                key={file?.node.id}
+                                dense={true}
+                                button={true}
+                                divider={true}
+                                selected={file?.node.id}
+                                onClick={handleSelectFile.bind(this, file?.node.id)}
+                                disabled={deleting === file?.node.id }
+                                secondaryAction={
+                                    <IconButton onClick={this.submitDelete.bind(this, file?.node.id)}>
+                                        <DeleteOutlined/>
+                                    </IconButton>
+                                }
+                            > */}
+                                {/* <ListItemIcon>
+                                    <FileOutline color="primary"/>
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={file?.name}
+                                    secondary={fld(R.propOr(moment(), 'lastModified', file))}
+                                />
+                            </ListItem>
+                                ));
+                            })}
+                            </>
+                    ) : this.renderNoFiles()
+                    }
+                </List>
+                <Divider/> */}
                 <List
                     style={{ marginBottom: 30 }}
                     subheader={
@@ -355,12 +412,12 @@ class StixDomainObjectContentFiles extends Component {
                                 disabled={deleting === file.id}
                                 secondaryAction={
                                     <IconButton onClick={this.submitDelete.bind(this, file.id)}>
-                                        <DeleteOutlined/>
+                                        <DeleteOutlined color="primary"/>
                                     </IconButton>
                                 }
                             >
                                 <ListItemIcon>
-                                    <FileOutline color="primary"/>
+                                    <FileOutline />
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={file.name}
@@ -412,12 +469,12 @@ class StixDomainObjectContentFiles extends Component {
                                 disabled={deleting === file.id}
                                 secondaryAction={
                                     <IconButton onClick={this.submitDelete.bind(this, file.id)}>
-                                        <DeleteOutlined/>
+                                        <DeleteOutlined color="primary"/>
                                     </IconButton>
                                 }
                             >
                                 <ListItemIcon>
-                                    <FileOutline color="primary"/>
+                                    <FileOutline/>
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={file.name}
@@ -469,12 +526,12 @@ class StixDomainObjectContentFiles extends Component {
                                 disabled={deleting === file.id}
                                 secondaryAction={
                                     <IconButton onClick={this.submitDelete.bind(this, file.id)}>
-                                        <DeleteOutlined/>
+                                        <DeleteOutlined color="primary"/>
                                     </IconButton>
                                 }
                             >
                                 <ListItemIcon>
-                                    <FileOutline color="primary"/>
+                                    <FileOutline/>
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={file.name}
@@ -541,6 +598,7 @@ StixDomainObjectContentFiles.propTypes = {
   currentExportId: PropTypes.string,
   currentExportUrl: PropTypes.string,
   exportFiles: PropTypes.array,
+  handleSelectExportFile: PropTypes.func,
 };
 
 export default R.compose(
