@@ -459,11 +459,11 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
         // comparison is case-insensitive (P2 or p2 for instance)
         const ids = values.map((v) => (v.id ? v.id.toLowerCase() : null));
         const isSeverityAvailable = severity ? ids.includes(severity.toLowerCase()) : ids.includes(null);
-        // If severity is available but must not be
+        // If available but must not be
         if (operator === 'not_eq' && isSeverityAvailable) {
           return false;
         }
-        // If severity is not available but must be
+        // If not available but must be
         if (operator === 'eq' && !isSeverityAvailable) {
           return false;
         }
@@ -472,11 +472,11 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
         const priority = stix[PRIORITY_FILTER];
         const ids = values.map((v) => (v.id ? v.id.toLowerCase() : null));
         const isPriorityAvailable = priority ? ids.includes(priority.toLowerCase()) : ids.includes(null);
-        // If severity is available but must not be
+        // If available but must not be
         if (operator === 'not_eq' && isPriorityAvailable) {
           return false;
         }
-        // If severity is not available but must be
+        // If not available but must be
         if (operator === 'eq' && !isPriorityAvailable) {
           return false;
         }
