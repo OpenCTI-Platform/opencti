@@ -13,7 +13,7 @@ import {
 } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-channels';
+const LOCAL_STORAGE_KEY = 'channels';
 
 const Channels = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(

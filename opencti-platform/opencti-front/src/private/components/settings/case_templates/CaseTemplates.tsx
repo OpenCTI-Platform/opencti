@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY_CASE_TEMPLATES = 'view-case-templates';
+const LOCAL_STORAGE_KEY_CASE_TEMPLATES = 'case-templates';
 
 const CaseTemplates = () => {
   const classes = useStyles();

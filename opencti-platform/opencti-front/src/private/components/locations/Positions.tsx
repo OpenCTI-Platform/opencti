@@ -13,7 +13,7 @@ import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery, } from './positions/PositionsLines';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY_POSITIONS = 'view-positions';
+const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 
 const Positions: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(

@@ -19,7 +19,7 @@ import { ExternalReferenceLineDummy } from './external_references/ExternalRefere
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-externalReferences';
+const LOCAL_STORAGE_KEY = 'externalReferences';
 
 interface ExternalReferencesProps {
   history: History;

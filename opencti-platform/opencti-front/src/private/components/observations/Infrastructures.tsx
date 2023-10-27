@@ -18,7 +18,7 @@ import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'view-infrastructures';
+export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
 const Infrastructures = () => {
   const {

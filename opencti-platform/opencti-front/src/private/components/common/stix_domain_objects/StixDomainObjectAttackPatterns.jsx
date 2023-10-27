@@ -24,7 +24,7 @@ const StixDomainObjectAttackPatterns = ({
   defaultStopTime,
   disableExport,
 }) => {
-  const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
 
   const {

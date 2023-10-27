@@ -22,13 +22,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'taxii';
+
 class Taxii extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'taxii-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       orderAsc: propOr(true, 'orderAsc', params),
@@ -41,7 +43,7 @@ class Taxii extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'taxii-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

@@ -18,7 +18,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-artifacts';
+const LOCAL_STORAGE_KEY = 'artifacts';
 
 const Artifacts: FunctionComponent = () => {
   const {

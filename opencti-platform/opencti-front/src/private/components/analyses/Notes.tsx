@@ -18,7 +18,7 @@ import {
 import NoteCreation from './notes/NoteCreation';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-notes';
+const LOCAL_STORAGE_KEY = 'notes';
 
 interface NotesProps {
   objectId: string;

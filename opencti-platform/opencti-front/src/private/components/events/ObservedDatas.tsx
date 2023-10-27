@@ -18,7 +18,7 @@ import {
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-observedDatas';
+const LOCAL_STORAGE_KEY = 'observedDatas';
 
 interface ObservedDatasProps {
   objectId: string;

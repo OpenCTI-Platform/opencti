@@ -12,7 +12,7 @@ import { RULE_ENGINE } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import CustomizationMenu from './CustomizationMenu';
 
-const LOCAL_STORAGE_KEY = 'view-rules';
+const LOCAL_STORAGE_KEY = 'rules';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

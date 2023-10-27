@@ -18,7 +18,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-opinions';
+const LOCAL_STORAGE_KEY = 'opinions';
 
 interface OpinionsProps {
   objectId?: string;
@@ -63,7 +63,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     handleToggleSelectAll,
     onToggleEntity,
     numberOfSelectedElements,
-  } = useEntityToggle<OpinionLine_node$data>('view-opinions');
+  } = useEntityToggle<OpinionLine_node$data>(LOCAL_STORAGE_KEY);
 
   const queryRef = useQueryLoading<OpinionsLinesPaginationQuery>(
     opinionsLinesQuery,

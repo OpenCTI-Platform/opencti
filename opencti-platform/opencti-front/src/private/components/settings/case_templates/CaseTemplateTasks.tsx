@@ -167,6 +167,8 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   );
 };
 
+const LOCAL_STORAGE_KEY = 'case-template-tasks';
+
 const CaseTemplateTasks = () => {
   const classes = useStyles();
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
@@ -178,7 +180,7 @@ const CaseTemplateTasks = () => {
     { key: 'taskContains', values: [caseTemplateId], operator: 'eq', mode: 'or' },
   ];
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
-    'view-case-template-tasks',
+    LOCAL_STORAGE_KEY,
     {
       sortBy: 'name',
       orderAsc: true,

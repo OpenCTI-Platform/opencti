@@ -19,7 +19,7 @@ interface FeedbacksProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_FEEDBACK = 'view-feedbacks';
+export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const {

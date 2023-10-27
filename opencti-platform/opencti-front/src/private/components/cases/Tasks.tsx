@@ -14,7 +14,7 @@ import {
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_TASKS = 'view-cases-casesTasks';
+export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
 const Tasks = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TasksLinesPaginationQuery$variables>(

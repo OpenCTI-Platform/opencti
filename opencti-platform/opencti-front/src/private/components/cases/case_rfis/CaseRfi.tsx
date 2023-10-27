@@ -63,9 +63,9 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
       mode: 'or',
     },
   ];
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseRfiData.id}-caseTask`;
+  const LOCAL_STORAGE_KEY = `cases-${caseRfiData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_TASKS,
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',

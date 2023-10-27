@@ -14,13 +14,15 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth from '../../../utils/hooks/useAuth';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
+const LOCAL_STORAGE_KEY = 'vulnerabilities';
+
 const Vulnerabilities = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
-    'view-vulnerabilities',
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',

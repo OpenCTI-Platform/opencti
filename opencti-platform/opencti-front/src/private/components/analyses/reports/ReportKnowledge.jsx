@@ -111,11 +111,12 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
 
 class ReportKnowledgeComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `report-knowledge-${props.report.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-knowledge-${props.report.id}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
@@ -133,10 +134,11 @@ class ReportKnowledgeComponent extends Component {
   }
 
   saveView() {
+    const LOCAL_STORAGE_KEY = `report-knowledge-${this.props.report.id}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-knowledge-${this.props.report.id}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

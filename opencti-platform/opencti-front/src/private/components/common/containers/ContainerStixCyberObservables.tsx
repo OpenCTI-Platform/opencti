@@ -81,7 +81,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
 > = ({ container }) => {
   const classes = useStyles();
-  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stixCyberObservables`;
+  const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
     paginationOptions: rawPaginationOptions,

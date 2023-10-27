@@ -145,7 +145,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
 }) => {
   const classes = useStyles();
   const { n, t } = useFormatter();
-  const LOCAL_STORAGE_KEY = `view-stix-domain-object-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
   const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
     {

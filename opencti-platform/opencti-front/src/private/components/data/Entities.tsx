@@ -27,7 +27,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'view-entities';
+const LOCAL_STORAGE_KEY = 'entities';
 
 const Entities = () => {
   const {

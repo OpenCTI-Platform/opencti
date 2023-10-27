@@ -13,7 +13,7 @@ import {
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-dataSources';
+export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
 const DataSources: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(

@@ -65,7 +65,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       mode: 'or',
     },
   ];
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseIncidentData.id}-caseTask`;
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {

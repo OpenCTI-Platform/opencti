@@ -14,13 +14,14 @@ import WorkspaceCreation from './WorkspaceCreation';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 
+const LOCAL_STORAGE_KEY = 'workspaces';
 class Investigations extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-workspaces',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -36,7 +37,7 @@ class Investigations extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-workspaces',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

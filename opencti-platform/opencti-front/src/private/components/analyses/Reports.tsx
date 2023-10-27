@@ -18,7 +18,7 @@ import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-reports';
+const LOCAL_STORAGE_KEY = 'reports';
 
 interface ReportsProps {
   objectId: string;

@@ -39,8 +39,10 @@ const Vocabularies = () => {
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
+  const LOCAL_STORAGE_KEY = `vocabulary-${category}`;
+
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(
-    `view-vocabulary-${category}`,
+    LOCAL_STORAGE_KEY,
     {
       filters: initialFilterGroup,
       sortBy: 'name',
@@ -62,7 +64,7 @@ const Vocabularies = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<useVocabularyCategory_Vocabularynode$data>(
-    `view-vocabulary-${category}`,
+    LOCAL_STORAGE_KEY,
   );
   const renderLines = () => {
     const dataColumns = {

@@ -63,7 +63,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
       mode: 'or',
     },
   ];
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseRftData.id}-caseTask`;
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRftData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {

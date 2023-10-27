@@ -37,7 +37,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const LOCAL_STORAGE_KEY = `view-indicators-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `indicators-${stixDomainObjectId}`;
 
   const [indicatorTypes, setIndicatorTypes] = useState<string[]>([]);
   const [observableTypes, setObservablesTypes] = useState<string[]>([]);

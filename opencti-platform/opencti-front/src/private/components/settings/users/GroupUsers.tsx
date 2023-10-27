@@ -34,12 +34,13 @@ interface GroupUsersProps {
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
     viewStorage,
     helpers,
     paginationOptions: paginationOptionsFromStorage,
   } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
-    `view-group-${groupId}-users`,
+    LOCAL_STORAGE_KEY,
     {
       id: groupId,
       searchTerm: '',

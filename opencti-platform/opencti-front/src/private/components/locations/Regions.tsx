@@ -13,9 +13,11 @@ import RegionCreation from './regions/RegionCreation';
 import { RegionLineDummy } from './regions/RegionLine';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
+const LOCAL_STORAGE_KEY = 'regions';
+
 const Regions: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<RegionsLinesPaginationQuery$variables>(
-    'view-regions',
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',
