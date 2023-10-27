@@ -116,6 +116,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         self.channel.basic_qos(prefetch_count=1)
+        assert self.channel is not None
         self.processing_count: int = 0
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
