@@ -8,7 +8,9 @@ import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddLocationsThreatActorIndividualLines, { addLocationsThreatActorIndividualLinesQuery } from './AddLocationsThreatActorIndividualLines';
+import AddLocationsThreatActorIndividualLines, {
+  addLocationsThreatActorIndividualLinesQuery,
+} from './AddLocationsThreatActorIndividualLines';
 import LocationCreation from '../../common/location/LocationCreation';
 
 const styles = () => ({
@@ -41,7 +43,12 @@ class AddLocationsThreatActorIndividual extends Component {
   }
 
   render() {
-    const { t, classes, threatActorIndividual, threatActorIndividualLocations } = this.props;
+    const {
+      t,
+      classes,
+      threatActorIndividual,
+      threatActorIndividualLocations,
+    } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -61,7 +68,7 @@ class AddLocationsThreatActorIndividual extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-          header={(
+          header={
             <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
@@ -69,7 +76,7 @@ class AddLocationsThreatActorIndividual extends Component {
                 onSubmit={this.handleSearch.bind(this)}
               />
             </div>
-          )}
+          }
         >
           <QueryRenderer
             query={addLocationsThreatActorIndividualLinesQuery}
@@ -81,7 +88,9 @@ class AddLocationsThreatActorIndividual extends Component {
               return (
                 <AddLocationsThreatActorIndividualLines
                   threatActorIndividual={threatActorIndividual}
-                  threatActorIndividualLocations={threatActorIndividualLocations}
+                  threatActorIndividualLocations={
+                    threatActorIndividualLocations
+                  }
                   data={props}
                 />
               );
@@ -106,4 +115,7 @@ AddLocationsThreatActorIndividual.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddLocationsThreatActorIndividual);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(AddLocationsThreatActorIndividual);

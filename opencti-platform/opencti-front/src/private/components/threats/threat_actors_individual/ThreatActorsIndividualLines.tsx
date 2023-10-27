@@ -4,9 +4,13 @@ import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ThreatActorIndividualLine, ThreatActorIndividualLineDummy } from './ThreatActorIndividualLine';
 import {
-  ThreatActorsIndividualLinesPaginationQuery, ThreatActorsIndividualLinesPaginationQuery$variables,
+  ThreatActorIndividualLine,
+  ThreatActorIndividualLineDummy,
+} from './ThreatActorIndividualLine';
+import {
+  ThreatActorsIndividualLinesPaginationQuery,
+  ThreatActorsIndividualLinesPaginationQuery$variables,
 } from './__generated__/ThreatActorsIndividualLinesPaginationQuery.graphql';
 import { ThreatActorsIndividualLines_data$key } from './__generated__/ThreatActorsIndividualLines_data.graphql';
 import { ThreatActorIndividualLine_node$data } from './__generated__/ThreatActorIndividualLine_node.graphql';
@@ -20,7 +24,7 @@ interface ThreatActorsIndividualLinesProps {
   deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>;
   onToggleEntity: (
     entity: ThreatActorIndividualLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   paginationOptions: ThreatActorsIndividualLinesPaginationQuery$variables;
@@ -37,14 +41,14 @@ export const threatActorsIndividualLinesQuery = graphql`
     $filters: [ThreatActorsIndividualFiltering!]
   ) {
     ...ThreatActorsIndividualLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -84,7 +88,9 @@ const threatActorsIndividualLinesFragment = graphql`
   }
 `;
 
-const ThreatActorsIndividualLines: FunctionComponent<ThreatActorsIndividualLinesProps> = ({
+const ThreatActorsIndividualLines: FunctionComponent<
+ThreatActorsIndividualLinesProps
+> = ({
   dataColumns,
   selectedElements,
   deSelectedElements,

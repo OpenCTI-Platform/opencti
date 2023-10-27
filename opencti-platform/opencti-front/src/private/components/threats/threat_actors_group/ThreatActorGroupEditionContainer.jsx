@@ -9,7 +9,11 @@ import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
-const ThreatActorGroupEditionContainer = ({ handleClose, threatActorGroup, open }) => {
+const ThreatActorGroupEditionContainer = ({
+  handleClose,
+  threatActorGroup,
+  open,
+}) => {
   const { t } = useFormatter();
   const { editContext } = threatActorGroup;
   const [currentTab, setCurrentTab] = useState(0);

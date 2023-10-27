@@ -4,7 +4,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, KeyboardArrowRightOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRight,
+  KeyboardArrowRightOutlined,
+} from '@mui/icons-material';
 import { graphql, useFragment } from 'react-relay';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
@@ -50,13 +53,13 @@ interface ThreatActorIndividualLineProps {
   deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>;
   onToggleEntity: (
     entity: ThreatActorIndividualLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: ThreatActorIndividualLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -91,7 +94,9 @@ const threatActorIndividualFragment = graphql`
   }
 `;
 
-export const ThreatActorIndividualLine: FunctionComponent<ThreatActorIndividualLineProps> = ({
+export const ThreatActorIndividualLine: FunctionComponent<
+ThreatActorIndividualLineProps
+> = ({
   dataColumns,
   node,
   deSelectedElements,
@@ -156,7 +161,11 @@ export const ThreatActorIndividualLine: FunctionComponent<ThreatActorIndividualL
   );
 };
 
-export const ThreatActorIndividualLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const ThreatActorIndividualLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

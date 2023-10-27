@@ -113,11 +113,11 @@ ThreatActorIndividualDetailsProps
                 </Typography>
                 <FieldOrEmpty source={data.threat_actor_types}>
                   {data.threat_actor_types?.map((threatActorIndividualType) => (
-                      <Chip
-                        key={threatActorIndividualType}
-                        classes={{ root: classes.chip }}
-                        label={threatActorIndividualType}
-                      />
+                    <Chip
+                      key={threatActorIndividualType}
+                      classes={{ root: classes.chip }}
+                      label={threatActorIndividualType}
+                    />
                   ))}
                 </FieldOrEmpty>
                 <Typography

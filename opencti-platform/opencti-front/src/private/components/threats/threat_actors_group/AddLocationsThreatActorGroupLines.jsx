@@ -25,10 +25,10 @@ class AddLocationsThreatActorGroupLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={threatActorGroup}
-        relationshipType='located-at'
+        relationshipType="located-at"
         availableDatas={data?.locations}
         existingDatas={threatActorGroupLocations}
-        updaterOptions={ { path: 'locations' } }
+        updaterOptions={{ path: 'locations' }}
       />
     );
   }
@@ -41,9 +41,13 @@ AddLocationsThreatActorGroupLinesContainer.propTypes = {
 };
 
 export const addLocationsThreatActorGroupLinesQuery = graphql`
-  query AddLocationsThreatActorGroupLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddLocationsThreatActorGroupLinesQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+  ) {
     ...AddLocationsThreatActorGroupLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -58,7 +62,7 @@ const AddLocationsThreatActorGroupLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         locations(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_threatActorGroup_locations") {
+          @connection(key: "Pagination_threatActorGroup_locations") {
           edges {
             node {
               id

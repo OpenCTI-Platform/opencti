@@ -12,7 +12,12 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -141,8 +146,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      ThreatActorGroupValidator
-        .validateAt(name, { [name]: value })
+      ThreatActorGroupValidator.validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
@@ -162,7 +166,9 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.assoc(
       'threat_actor_types',
-      threatActorGroup.threat_actor_types ? threatActorGroup.threat_actor_types : [],
+      threatActorGroup.threat_actor_types
+        ? threatActorGroup.threat_actor_types
+        : [],
     ),
     R.pick([
       'name',
@@ -287,41 +293,44 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
   );
 };
 
-export default createFragmentContainer(ThreatActorGroupEditionOverviewComponent, {
-  threatActorGroup: graphql`
-    fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
-      id
-      name
-      threat_actor_types
-      confidence
-      description
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
+export default createFragmentContainer(
+  ThreatActorGroupEditionOverviewComponent,
+  {
+    threatActorGroup: graphql`
+      fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
+        id
+        name
+        threat_actor_types
+        confidence
+        description
+        createdBy {
+          ... on Identity {
             id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
+            name
+            entity_type
           }
         }
-      }
-      status {
-        id
-        order
-        template {
-          name
-          color
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
-      workflowEnabled
-    }
-  `,
-});
+    `,
+  },
+);

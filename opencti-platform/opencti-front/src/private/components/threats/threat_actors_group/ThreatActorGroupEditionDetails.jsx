@@ -145,13 +145,20 @@ const ThreatActorGroupEditionDetailsComponent = ({
     R.assoc('last_seen', buildDate(threatActorGroup.last_seen)),
     R.assoc(
       'secondary_motivations',
-      threatActorGroup.secondary_motivations ? threatActorGroup.secondary_motivations : [],
+      threatActorGroup.secondary_motivations
+        ? threatActorGroup.secondary_motivations
+        : [],
     ),
     R.assoc(
       'personal_motivations',
-      threatActorGroup.personal_motivations ? threatActorGroup.personal_motivations : [],
+      threatActorGroup.personal_motivations
+        ? threatActorGroup.personal_motivations
+        : [],
     ),
-    R.assoc('goals', R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : [])),
+    R.assoc(
+      'goals',
+      R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : []),
+    ),
     R.assoc('roles', threatActorGroup.roles ? threatActorGroup.roles : []),
     R.pick([
       'first_seen',
@@ -322,19 +329,22 @@ const ThreatActorGroupEditionDetailsComponent = ({
   );
 };
 
-export default createFragmentContainer(ThreatActorGroupEditionDetailsComponent, {
-  threatActorGroup: graphql`
-    fragment ThreatActorGroupEditionDetails_ThreatActorGroup on ThreatActorGroup {
-      id
-      first_seen
-      last_seen
-      sophistication
-      resource_level
-      primary_motivation
-      secondary_motivations
-      personal_motivations
-      goals
-      roles
-    }
-  `,
-});
+export default createFragmentContainer(
+  ThreatActorGroupEditionDetailsComponent,
+  {
+    threatActorGroup: graphql`
+      fragment ThreatActorGroupEditionDetails_ThreatActorGroup on ThreatActorGroup {
+        id
+        first_seen
+        last_seen
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivations
+        personal_motivations
+        goals
+        roles
+      }
+    `,
+  },
+);

@@ -5,7 +5,10 @@ import CountryField from '@components/common/form/CountryField';
 import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+} from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -61,26 +64,22 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
   date_of_birth: Yup.date()
     .nullable()
     .typeError(t('The value must be a date (yyyy-MM-dd)')),
-  gender: Yup.string()
-    .nullable()
-    .typeError(t('The value must be a string')),
+  gender: Yup.string().nullable().typeError(t('The value must be a string')),
   marital_status: Yup.string()
     .nullable()
     .typeError(t('The value must be a string')),
-  job_title: Yup.string()
-    .nullable()
-    .max(250, t('The value is too long')),
+  job_title: Yup.string().nullable().max(250, t('The value is too long')),
   bornIn: Yup.object().nullable(),
   ethnicity: Yup.object().nullable(),
 });
 
 interface ThreatActorIndividualEditionDemographicsComponentProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key,
-  enableReferences: boolean,
+  threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
+  enableReferences: boolean;
   context: ReadonlyArray<{
-    readonly focusOn: string | null
-    readonly name: string
-  }> | null,
+    readonly focusOn: string | null;
+    readonly name: string;
+  }> | null;
 }
 
 const ThreatActorIndividualEditionDemographicsComponent = ({
@@ -89,7 +88,10 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   context,
 }: ThreatActorIndividualEditionDemographicsComponentProps) => {
   const { t } = useFormatter();
-  const threatActorIndividual = useFragment(threatActorIndividualEditionDemographicsFragment, threatActorIndividualRef);
+  const threatActorIndividual = useFragment(
+    threatActorIndividualEditionDemographicsFragment,
+    threatActorIndividualRef,
+  );
 
   const handleChangeFocus = (name: string) => commitMutation({
     ...defaultCommitMutation,
@@ -135,8 +137,14 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     gender: threatActorIndividual.gender,
     marital_status: threatActorIndividual.marital_status,
     job_title: threatActorIndividual.job_title,
-    bornIn: { label: threatActorIndividual.bornIn?.name ?? '', value: threatActorIndividual.bornIn?.id ?? '' },
-    ethnicity: { label: threatActorIndividual.ethnicity?.name ?? '', value: threatActorIndividual.ethnicity?.id ?? '' },
+    bornIn: {
+      label: threatActorIndividual.bornIn?.name ?? '',
+      value: threatActorIndividual.bornIn?.id ?? '',
+    },
+    ethnicity: {
+      label: threatActorIndividual.ethnicity?.name ?? '',
+      value: threatActorIndividual.ethnicity?.id ?? '',
+    },
   };
 
   return (
@@ -147,13 +155,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         validationSchema={threatActorIndividualValidation(t)}
         onSubmit={() => {}}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <CountryField

@@ -25,9 +25,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
-} from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -36,10 +34,15 @@ const ThreatActorIndividualMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    threatActorIndividualFieldPatch(id: $id, input: $input, commitMessage: $commitMessage, references: $references) {
-        ...ThreatActorIndividualEditionOverview_ThreatActorIndividual
-        ...ThreatActorIndividual_ThreatActorIndividual
-      }
+    threatActorIndividualFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...ThreatActorIndividualEditionOverview_ThreatActorIndividual
+      ...ThreatActorIndividual_ThreatActorIndividual
+    }
   }
 `;
 
@@ -49,7 +52,7 @@ export const ThreatActorIndividualEditionOverviewFocus = graphql`
     $input: EditContext!
   ) {
     threatActorIndividualContextPatch(id: $id, input: $input) {
-        id
+      id
     }
   }
 `;
@@ -73,49 +76,53 @@ const ThreatActorIndividualMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    threatActorIndividualRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+    threatActorIndividualRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
       ...ThreatActorIndividualEditionOverview_ThreatActorIndividual
     }
   }
 `;
 
 const threatActorIndividualEditionOverviewFragment = graphql`
-    fragment ThreatActorIndividualEditionOverview_ThreatActorIndividual on ThreatActorIndividual {
-      id
-      name
-      threat_actor_types
-      confidence
-      description
-      x_opencti_stix_ids
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      status {
+  fragment ThreatActorIndividualEditionOverview_ThreatActorIndividual on ThreatActorIndividual {
+    id
+    name
+    threat_actor_types
+    confidence
+    description
+    x_opencti_stix_ids
+    createdBy {
+      ... on Identity {
         id
-        order
-        template {
-          name
-          color
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
-      workflowEnabled
     }
-  `;
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
 
 interface ThreatActorIndividualEditionOverviewProps {
   threatActorIndividualRef: ThreatActorIndividualEditionOverview_ThreatActorIndividual$key;
@@ -139,14 +146,14 @@ interface ThreatActorIndividualEditionFormValues {
   killChainPhases?: Option[];
 }
 
-const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatActorIndividualEditionOverviewProps> = ({
-  threatActorIndividualRef,
-  enableReferences,
-  handleClose,
-  context,
-}) => {
+const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
+ThreatActorIndividualEditionOverviewProps
+> = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
   const { t } = useFormatter();
-  const threatActorIndividual = useFragment(threatActorIndividualEditionOverviewFragment, threatActorIndividualRef);
+  const threatActorIndividual = useFragment(
+    threatActorIndividualEditionOverviewFragment,
+    threatActorIndividualRef,
+  );
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
@@ -171,10 +178,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
     queries,
     ThreatActorIndividualValidator,
   );
-  const onSubmit: FormikConfig<ThreatActorIndividualEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<ThreatActorIndividualEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -184,14 +188,16 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
-      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+      killChainPhases: (values.killChainPhases ?? []).map(
+        ({ value }) => value,
+      ),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: threatActorIndividual.id,
         input: inputValues,
         commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+            commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -200,19 +206,26 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
       },
     });
   };
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: string | string[] | number | number[] | null,
+  ) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as unknown as Option).value;
       }
-      ThreatActorIndividualValidator
-        .validateAt(name, { [name]: value })
+      ThreatActorIndividualValidator.validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
               id: threatActorIndividual.id,
-              input: [{ key: name, value: Array.isArray(finalValue) ? finalValue : [finalValue] }],
+              input: [
+                {
+                  key: name,
+                  value: Array.isArray(finalValue) ? finalValue : [finalValue],
+                },
+              ],
             },
           });
         })

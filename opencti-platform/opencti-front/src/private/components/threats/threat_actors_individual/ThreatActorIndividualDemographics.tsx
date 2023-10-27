@@ -15,20 +15,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ThreatActorIndividualDemographicsCountryRelationships {
-  country_of_residence: Array<string>,
-  citizenship: Array<string>,
-  nationality: Array<string>,
-  place_of_birth: string | undefined,
-  ethnicity: string | undefined,
+  country_of_residence: Array<string>;
+  citizenship: Array<string>;
+  nationality: Array<string>;
+  place_of_birth: string | undefined;
+  ethnicity: string | undefined;
 }
 
 interface ThreatActorIndividualDemographicsProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
 }
 
-const ThreatActorIndividualDemographics = (
-  { threatActorIndividual }: ThreatActorIndividualDemographicsProps,
-) => {
+const ThreatActorIndividualDemographics = ({
+  threatActorIndividual,
+}: ThreatActorIndividualDemographicsProps) => {
   const classes = useStyles();
   const { t, fsd } = useFormatter();
   const countryRelationship: ThreatActorIndividualDemographicsCountryRelationships = {
@@ -65,103 +65,86 @@ const ThreatActorIndividualDemographics = (
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Country of Residence')}
             </Typography>
-            <div id='country_of_residence_list'>
+            <div id="country_of_residence_list">
               {countryRelationship.country_of_residence.length > 0
-                ? countryRelationship.country_of_residence.map((place: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={t(place)}
-                    style={{ margin: 1 }}
-                  />
-                ))
-                : '-'
-              }
+                ? countryRelationship.country_of_residence.map(
+                  (place: string, index: number) => (
+                      <Chip
+                        key={index}
+                        label={t(place)}
+                        style={{ margin: 1 }}
+                      />
+                  ),
+                )
+                : '-'}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Citizenship')}
             </Typography>
-            <div id='citizenship_list'>
+            <div id="citizenship_list">
               {countryRelationship.citizenship.length > 0
-                ? countryRelationship.citizenship.map((place: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={t(place)}
-                    style={{ margin: 1 }}
-                  />
-                ))
-                : '-'
-              }
+                ? countryRelationship.citizenship.map(
+                  (place: string, index: number) => (
+                      <Chip
+                        key={index}
+                        label={t(place)}
+                        style={{ margin: 1 }}
+                      />
+                  ),
+                )
+                : '-'}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Place of Birth')}
             </Typography>
-            <div id='place_of_birth'>
+            <div id="place_of_birth">
               {t(countryRelationship.place_of_birth ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Date of Birth')}
             </Typography>
-            <div id='date_of_birth'>
-              {threatActorIndividual.date_of_birth ? fsd(threatActorIndividual.date_of_birth) : '-'}
+            <div id="date_of_birth">
+              {threatActorIndividual.date_of_birth
+                ? fsd(threatActorIndividual.date_of_birth)
+                : '-'}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Nationality')}
             </Typography>
-            <div id='nationality'>
-              {countryRelationship.nationality && countryRelationship.nationality.length > 0
-                ? countryRelationship.nationality.map((place: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={t(place)}
-                    style={{ margin: 1 }}
-                  />
-                ))
-                : '-'
-              }
+            <div id="nationality">
+              {countryRelationship.nationality
+              && countryRelationship.nationality.length > 0
+                ? countryRelationship.nationality.map(
+                  (place: string, index: number) => (
+                      <Chip
+                        key={index}
+                        label={t(place)}
+                        style={{ margin: 1 }}
+                      />
+                  ),
+                )
+                : '-'}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Ethnicity')}
             </Typography>
-            <div id='ethnicity'>
-              {t(countryRelationship.ethnicity ?? '-')}
-            </div>
+            <div id="ethnicity">{t(countryRelationship.ethnicity ?? '-')}</div>
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Gender')}
             </Typography>
             <ItemOpenVocab
@@ -171,10 +154,7 @@ const ThreatActorIndividualDemographics = (
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Marital Status')}
             </Typography>
             <ItemOpenVocab
@@ -184,15 +164,10 @@ const ThreatActorIndividualDemographics = (
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Typography variant="h3" gutterBottom={true}>
               {t('Job Title')}
             </Typography>
-            <div id='job_title'>
-              {threatActorIndividual.job_title ?? '-'}
-            </div>
+            <div id="job_title">{threatActorIndividual.job_title ?? '-'}</div>
           </Grid>
         </Grid>
       </Paper>

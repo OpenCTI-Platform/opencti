@@ -2,14 +2,15 @@ import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+} from '../../../../relay/environment';
 import { HeightFieldEdit } from '../../common/form/HeightField';
 import { WeightFieldEdit } from '../../common/form/WeightField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CommitMessage from '../../common/form/CommitMessage';
-import {
-  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key,
-} from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
@@ -66,23 +67,30 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
 });
 
 interface ThreatActorIndividualEditionBiographicsComponentProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key,
-  enableReferences: boolean,
-  context: readonly {
+  threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key;
+  enableReferences: boolean;
+  context:
+  | readonly {
     readonly focusOn: string | null;
     readonly name: string;
-  }[] | null | undefined,
+  }[]
+  | null
+  | undefined;
 }
 
-const ThreatActorIndividualEditionBiographicsComponent:
-React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> = ({
+const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<
+ThreatActorIndividualEditionBiographicsComponentProps
+> = ({
   threatActorIndividualRef,
   enableReferences,
   context,
 }: ThreatActorIndividualEditionBiographicsComponentProps) => {
   const { t } = useFormatter();
   const { heightsConverterLoad, weightsConverterLoad } = useUserMetric();
-  const threatActorIndividual = useFragment(threatActorIndividualEditionBiographicsFragment, threatActorIndividualRef);
+  const threatActorIndividual = useFragment(
+    threatActorIndividualEditionBiographicsFragment,
+    threatActorIndividualRef,
+  );
 
   const handleChangeFocus = (name: string) => commitMutation({
     ...defaultCommitMutation,

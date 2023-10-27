@@ -14,9 +14,9 @@ import { ThreatActorIndividualEditionContainerQuery } from './__generated__/Thre
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
 
 interface ThreatActorIndividualEditionContainerProps {
-  queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
+  queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
 }
 
 export const ThreatActorIndividualEditionQuery = graphql`
@@ -36,9 +36,14 @@ export const ThreatActorIndividualEditionQuery = graphql`
 `;
 
 const THREAT_ACTOR_TYPE = 'Threat-Actor-Individual';
-const ThreatActorIndividualEditionContainer: FunctionComponent<ThreatActorIndividualEditionContainerProps> = ({ handleClose, queryRef, open }) => {
+const ThreatActorIndividualEditionContainer: FunctionComponent<
+ThreatActorIndividualEditionContainerProps
+> = ({ handleClose, queryRef, open }) => {
   const { t } = useFormatter();
-  const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(ThreatActorIndividualEditionQuery, queryRef);
+  const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(
+    ThreatActorIndividualEditionQuery,
+    queryRef,
+  );
 
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
@@ -58,9 +63,9 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<ThreatActorIndivi
               <Tabs value={currentTab} onChange={handleChangeTab}>
                 <Tab label={t('Overview')} />
                 <Tab label={t('Details')} />
-              <Tab label={t('Demographics')} />
-            <Tab label={t('Biographics')} />
-          </Tabs>
+                <Tab label={t('Demographics')} />
+                <Tab label={t('Biographics')} />
+              </Tabs>
             </Box>
             {currentTab === 0 && (
               <ThreatActorIndividualEditionOverview

@@ -13,15 +13,9 @@ import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  ThreatActorIndividualEditionDetails_ThreatActorIndividual$key,
-} from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
-import {
-  ThreatActorIndividualEditionDetailsFocusMutation,
-} from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
-import {
-  ThreatActorIndividualEditionDetailsFieldPatchMutation,
-} from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
+import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
+import { ThreatActorIndividualEditionDetailsFieldPatchMutation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const threatActorIndividualMutationFieldPatch = graphql`
@@ -31,7 +25,12 @@ const threatActorIndividualMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    threatActorIndividualFieldPatch(id: $id, input: $input, commitMessage: $commitMessage, references: $references) {
+    threatActorIndividualFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
       ...ThreatActorIndividualEditionDetails_ThreatActorIndividual
       ...ThreatActorIndividual_ThreatActorIndividual
     }
@@ -67,9 +66,9 @@ const threatActorIndividualEditionDetailsFragment = graphql`
 interface ThreatActorIndividualEditionDetailsProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
   context: ReadonlyArray<{
-    readonly focusOn: string | null
-    readonly name: string
-  }> | null
+    readonly focusOn: string | null;
+    readonly name: string;
+  }> | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -82,14 +81,14 @@ interface ThreatActorIndividualEditionDetailsFormValues {
   goals: string;
 }
 
-const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActorIndividualEditionDetailsProps> = ({
-  threatActorIndividualRef,
-  context,
-  enableReferences,
-  handleClose,
-}) => {
+const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
+ThreatActorIndividualEditionDetailsProps
+> = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
   const { t } = useFormatter();
-  const threatActorIndividual = useFragment(threatActorIndividualEditionDetailsFragment, threatActorIndividualRef);
+  const threatActorIndividual = useFragment(
+    threatActorIndividualEditionDetailsFragment,
+    threatActorIndividualRef,
+  );
   const [commitFieldPatch] = useMutation<ThreatActorIndividualEditionDetailsFieldPatchMutation>(
     threatActorIndividualMutationFieldPatch,
   );
@@ -112,7 +111,10 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     goals: Yup.string().nullable(),
     references: Yup.array(),
   };
-  const individualThreatActorValidator = useSchemaEditionValidation('Threat-Actor-Individual', basicShape);
+  const individualThreatActorValidator = useSchemaEditionValidation(
+    'Threat-Actor-Individual',
+    basicShape,
+  );
 
   const handleChangeFocus = (name: string) => {
     commitEditionDetailsFocus({
@@ -124,19 +126,19 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
       },
     });
   };
-  const onSubmit: FormikConfig<ThreatActorIndividualEditionDetailsFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<ThreatActorIndividualEditionDetailsFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
 
     const inputValues = Object.entries({
       ...otherValues,
-      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
+      first_seen: values.first_seen
+        ? parse(values.first_seen).format()
+        : null,
       last_seen: values.last_seen ? parse(values.last_seen).format() : null,
-      goals: values.goals && values.goals.length ? values.goals.split('\n') : [],
+      goals:
+          values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
@@ -144,7 +146,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
         id: threatActorIndividual.id,
         input: inputValues,
         commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+            commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -161,7 +163,9 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
           commitFieldPatch({
             variables: {
               id: threatActorIndividual.id,
-              input: [{ key: name, value: Array.isArray(value) ? value : [value] }],
+              input: [
+                { key: name, value: Array.isArray(value) ? value : [value] },
+              ],
             },
           });
         })
@@ -187,8 +191,12 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
   };
 
   const initialValues = {
-    first_seen: !isNone(threatActorIndividual.first_seen) ? threatActorIndividual.first_seen : null,
-    last_seen: !isNone(threatActorIndividual.last_seen) ? threatActorIndividual.last_seen : null,
+    first_seen: !isNone(threatActorIndividual.first_seen)
+      ? threatActorIndividual.first_seen
+      : null,
+    last_seen: !isNone(threatActorIndividual.last_seen)
+      ? threatActorIndividual.last_seen
+      : null,
     secondary_motivations: threatActorIndividual.secondary_motivations ?? [],
     personal_motivations: threatActorIndividual.personal_motivations ?? [],
     primary_motivation: threatActorIndividual.primary_motivation ?? '',
@@ -198,159 +206,159 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     goals: (threatActorIndividual.goals ?? []).join('\n'),
   };
   return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues as never}
-          validationSchema={individualThreatActorValidator}
-          onSubmit={onSubmit}
-        >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-            isValid,
-            dirty,
-          }) => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={DateTimePickerField}
-                  name="first_seen"
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  TextFieldProps={{
-                    label: t('First seen'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    helperText: (
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="first_seen"
-                      />
-                    ),
-                  }}
+    <div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues as never}
+        validationSchema={individualThreatActorValidator}
+        onSubmit={onSubmit}
+      >
+        {({
+          submitForm,
+          isSubmitting,
+          setFieldValue,
+          values,
+          isValid,
+          dirty,
+        }) => (
+          <div>
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={DateTimePickerField}
+                name="first_seen"
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="first_seen"
+                    />
+                  ),
+                }}
+              />
+              <Field
+                component={DateTimePickerField}
+                name="last_seen"
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="last_seen"
+                    />
+                  ),
+                }}
+              />
+              <OpenVocabField
+                label={t('Sophistication')}
+                type="threat_actor_individual_sophistication_ov"
+                name="sophistication"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Resource level')}
+                type="attack-resource-level-ov"
+                name="resource_level"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Roles')}
+                type="threat-actor-individual-role-ov"
+                name="roles"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Primary motivation')}
+                type="attack-motivation-ov"
+                name="primary_motivation"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Secondary motivations')}
+                type="attack-motivation-ov"
+                name="secondary_motivations"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Personal motivations')}
+                type="attack-motivation-ov"
+                name="personal_motivations"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <Field
+                component={TextField}
+                name="goals"
+                label={t('Goals (1 / line)')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitGoals}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="goals" />
+                }
+              />
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting || !isValid || !dirty}
+                  setFieldValue={setFieldValue}
+                  open={false}
+                  values={values.references}
+                  id={threatActorIndividual.id}
                 />
-                <Field
-                  component={DateTimePickerField}
-                  name="last_seen"
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  TextFieldProps={{
-                    label: t('Last seen'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                    helperText: (
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="last_seen"
-                      />
-                    ),
-                  }}
-                />
-                <OpenVocabField
-                  label={t('Sophistication')}
-                  type="threat_actor_individual_sophistication_ov"
-                  name="sophistication"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Resource level')}
-                  type="attack-resource-level-ov"
-                  name="resource_level"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Roles')}
-                  type="threat-actor-individual-role-ov"
-                  name="roles"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Primary motivation')}
-                  type="attack-motivation-ov"
-                  name="primary_motivation"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Secondary motivations')}
-                  type="attack-motivation-ov"
-                  name="secondary_motivations"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Personal motivations')}
-                  type="attack-motivation-ov"
-                  name="personal_motivations"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <Field
-                  component={TextField}
-                  name="goals"
-                  label={t('Goals (1 / line)')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitGoals}
-                  helperText={
-                    <SubscriptionFocus context={context} fieldName="goals" />
-                  }
-                />
-                {enableReferences && (
-                  <CommitMessage
-                    submitForm={submitForm}
-                    disabled={isSubmitting || !isValid || !dirty}
-                    setFieldValue={setFieldValue}
-                    open={false}
-                    values={values.references}
-                    id={threatActorIndividual.id}
-                  />
-                )}
-              </Form>
-            </div>
-          )}
-        </Formik>
-      </div>
+              )}
+            </Form>
+          </div>
+        )}
+      </Formik>
+    </div>
   );
 };
 

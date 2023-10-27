@@ -29,7 +29,11 @@ import { Option } from '../../common/form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { MeasureInput, ThreatActorIndividualCreationMutation, ThreatActorIndividualCreationMutation$variables } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
+import {
+  MeasureInput,
+  ThreatActorIndividualCreationMutation,
+  ThreatActorIndividualCreationMutation$variables,
+} from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { ThreatActorsIndividualCardsPaginationQuery$variables } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import DatePickerField from '../../../../components/DatePickerField';
 import { HeightFieldAdd } from '../../common/form/HeightField';
@@ -122,7 +126,9 @@ interface ThreatActorIndividualFormProps {
   inputValue?: string;
 }
 
-export const ThreatActorIndividualCreationForm: FunctionComponent<ThreatActorIndividualFormProps> = ({
+export const ThreatActorIndividualCreationForm: FunctionComponent<
+ThreatActorIndividualFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -213,8 +219,12 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<ThreatActorInd
       file: values?.file,
       first_seen: values?.first_seen,
       last_seen: values?.last_seen,
-      secondary_motivations: (values?.secondary_motivations ?? []).map((v) => v.value),
-      personal_motivations: (values?.personal_motivations ?? []).map((v) => v.value),
+      secondary_motivations: (values?.secondary_motivations ?? []).map(
+        (v) => v.value,
+      ),
+      personal_motivations: (values?.personal_motivations ?? []).map(
+        (v) => v.value,
+      ),
       primary_motivation: values?.primary_motivation?.value,
       roles: values?.roles,
       sophistication: values?.sophistication?.value,

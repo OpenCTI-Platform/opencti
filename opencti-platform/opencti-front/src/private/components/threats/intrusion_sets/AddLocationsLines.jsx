@@ -28,7 +28,7 @@ class AddLocationsLinesContainer extends Component {
         relationshipType={'originates-from'}
         availableDatas={data?.locations}
         existingDatas={intrusionSetLocations}
-        updaterOptions={ { path: 'locations' } }
+        updaterOptions={{ path: 'locations' }}
       />
     );
   }

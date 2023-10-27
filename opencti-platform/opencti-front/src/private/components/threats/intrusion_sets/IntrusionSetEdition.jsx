@@ -55,6 +55,4 @@ IntrusionSetEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(IntrusionSetEdition);
+export default compose(inject18n)(IntrusionSetEdition);

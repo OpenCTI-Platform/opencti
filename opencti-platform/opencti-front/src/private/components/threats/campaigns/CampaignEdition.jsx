@@ -65,6 +65,4 @@ CampaignEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(CampaignEdition);
+export default compose(inject18n)(CampaignEdition);

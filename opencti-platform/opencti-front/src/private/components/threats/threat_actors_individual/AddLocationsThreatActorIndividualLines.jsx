@@ -7,16 +7,16 @@ import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_r
 
 export const addLocationsThreatActorMutationRelationDelete = graphql`
   mutation AddLocationsThreatActorIndividualLinesRelationDeleteMutation(
-      $fromId: StixRef!
-      $toId: StixRef!
-      $relationship_type: String!
-    ) {
-      stixCoreRelationshipDelete(
-        fromId: $fromId
-        toId: $toId
-        relationship_type: $relationship_type
-      )
-    }
+    $fromId: StixRef!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
+  }
 `;
 
 class AddLocationsThreatActorIndividualLinesContainer extends Component {
@@ -28,7 +28,7 @@ class AddLocationsThreatActorIndividualLinesContainer extends Component {
         relationshipType={'located-at'}
         availableDatas={data?.locations}
         existingDatas={threatActorIndividualLocations}
-        updaterOptions={ { path: 'locations' } }
+        updaterOptions={{ path: 'locations' }}
       />
     );
   }
@@ -41,10 +41,14 @@ AddLocationsThreatActorIndividualLinesContainer.propTypes = {
 };
 
 export const addLocationsThreatActorIndividualLinesQuery = graphql`
-    query AddLocationsThreatActorIndividualLinesQuery($search: String, $count: Int!, $cursor: ID) {
-      ...AddLocationsThreatActorIndividualLines_data
+  query AddLocationsThreatActorIndividualLinesQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+  ) {
+    ...AddLocationsThreatActorIndividualLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
-    }
+  }
 `;
 
 const AddLocationsThreatActorIndividualLines = createPaginationContainer(
@@ -58,7 +62,7 @@ const AddLocationsThreatActorIndividualLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         locations(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_threatActorIndividual_locations") {
+          @connection(key: "Pagination_threatActorIndividual_locations") {
           edges {
             node {
               id

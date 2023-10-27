@@ -9,7 +9,9 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
-import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
+import AddLocationsThreatActorGroupLines, {
+  addLocationsThreatActorGroupLinesQuery,
+} from './AddLocationsThreatActorGroupLines';
 
 const styles = () => ({
   createButton: {
@@ -59,7 +61,7 @@ class AddLocationsThreatActorGroup extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-          header={(
+          header={
             <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
@@ -67,7 +69,7 @@ class AddLocationsThreatActorGroup extends Component {
                 onSubmit={this.handleSearch.bind(this)}
               />
             </div>
-          )}
+          }
         >
           <QueryRenderer
             query={addLocationsThreatActorGroupLinesQuery}
@@ -104,4 +106,7 @@ AddLocationsThreatActorGroup.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddLocationsThreatActorGroup);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(AddLocationsThreatActorGroup);

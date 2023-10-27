@@ -1,13 +1,18 @@
-import { Box, Grid, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Grid,
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  ThreatActorIndividual_ThreatActorIndividual$data,
-} from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import { isEmptyField } from '../../../../utils/utils';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
@@ -23,21 +28,21 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ListValue {
-  primary: string,
-  secondary: string,
+  primary: string;
+  secondary: string;
 }
 
 interface FormatValue {
-  date: string | Date | null,
-  height?: number | null,
-  weight?: number | null,
+  date: string | Date | null;
+  height?: number | null;
+  weight?: number | null;
 }
 
 interface DetailValue {
-  title: string,
-  tooltip: string,
-  children?: React.ReactNode,
-  extra?: React.ReactNode,
+  title: string;
+  tooltip: string;
+  children?: React.ReactNode;
+  extra?: React.ReactNode;
 }
 
 const ListValueDisplay = ({ primary, secondary }: ListValue) => (
@@ -54,7 +59,7 @@ const HeightDisplay = ({ height, date }: FormatValue) => {
   return (
     <ListValueDisplay
       primary={`${inchDisplay} ${lengthPrimaryUnit}`}
-      secondary={(date ? fsd(date) : 'Unknown Date')}
+      secondary={date ? fsd(date) : 'Unknown Date'}
     />
   );
 };
@@ -94,12 +99,12 @@ const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
 );
 
 interface ThreatActorIndividualBiographicsComponentProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
 }
 
-const ThreatActorIndividualBiographicsComponent = (
-  { threatActorIndividual }: ThreatActorIndividualBiographicsComponentProps,
-) => {
+const ThreatActorIndividualBiographicsComponent = ({
+  threatActorIndividual,
+}: ThreatActorIndividualBiographicsComponentProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
   return (
@@ -109,7 +114,10 @@ const ThreatActorIndividualBiographicsComponent = (
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <DetailGrid title={t('Eye Color')} tooltip={t('Known observed eye color(s) for the Identity.')}>
+          <DetailGrid
+            title={t('Eye Color')}
+            tooltip={t('Known observed eye color(s) for the Identity.')}
+          >
             <ItemOpenVocab
               type="eye-color-ov"
               value={threatActorIndividual.eye_color}
@@ -117,7 +125,10 @@ const ThreatActorIndividualBiographicsComponent = (
             />
           </DetailGrid>
 
-          <DetailGrid title={t('Hair Color')} tooltip={t('Known observed hair color(s) for the Identity.')}>
+          <DetailGrid
+            title={t('Hair Color')}
+            tooltip={t('Known observed hair color(s) for the Identity.')}
+          >
             <ItemOpenVocab
               type="hair-color-ov"
               value={threatActorIndividual.hair_color}
@@ -130,15 +141,20 @@ const ThreatActorIndividualBiographicsComponent = (
             tooltip={t('Known observed height(s) for the Identity.')}
           >
             <List dense={true} disablePadding={true} id={'HeightIDRead'}>
-              { (threatActorIndividual.height ?? []).length > 0
-                ? (threatActorIndividual.height ?? []).map((height, i) => (
+              {(threatActorIndividual.height ?? []).length > 0 ? (
+                (threatActorIndividual.height ?? []).map((height, i) => (
                   <HeightDisplay
                     key={i}
                     height={height?.measure}
                     date={height?.date_seen}
                   />
-                )) : <ListItem dense={true} disablePadding={true}> <ListItemText primary="-" /> </ListItem>
-              }
+                ))
+              ) : (
+                <ListItem dense={true} disablePadding={true}>
+                  {' '}
+                  <ListItemText primary="-" />{' '}
+                </ListItem>
+              )}
             </List>
           </DetailGrid>
 
@@ -147,15 +163,20 @@ const ThreatActorIndividualBiographicsComponent = (
             tooltip={t('Known observed weight(s) for the Individual.')}
           >
             <List dense={true} disablePadding={true} id={'WeightIDRead'}>
-              { (threatActorIndividual.weight ?? []).length > 0
-                ? (threatActorIndividual.weight ?? []).map((weight, i) => (
+              {(threatActorIndividual.weight ?? []).length > 0 ? (
+                (threatActorIndividual.weight ?? []).map((weight, i) => (
                   <WeightDisplay
                     key={i}
                     weight={weight?.measure}
                     date={weight?.date_seen}
                   />
-                )) : <ListItem dense={true} disablePadding={true}> <ListItemText primary="-" /> </ListItem>
-              }
+                ))
+              ) : (
+                <ListItem dense={true} disablePadding={true}>
+                  {' '}
+                  <ListItemText primary="-" />{' '}
+                </ListItem>
+              )}
             </List>
           </DetailGrid>
         </Grid>

@@ -21,7 +21,10 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import { IntrusionSetCreationMutation, IntrusionSetCreationMutation$variables } from './__generated__/IntrusionSetCreationMutation.graphql';
+import {
+  IntrusionSetCreationMutation,
+  IntrusionSetCreationMutation$variables,
+} from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -73,7 +76,9 @@ interface IntrusionSetFormProps {
   inputValue?: string;
 }
 
-export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> = ({
+export const IntrusionSetCreationForm: FunctionComponent<
+IntrusionSetFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -235,10 +240,7 @@ const IntrusionSetCreation = ({
     'intrusionSetAdd',
   );
   return (
-    <Drawer
-      title={t('Create an intrusion set')}
-      variant={DrawerVariant.create}
-    >
+    <Drawer title={t('Create an intrusion set')} variant={DrawerVariant.create}>
       {({ onClose }) => (
         <IntrusionSetCreationForm
           updater={updater}

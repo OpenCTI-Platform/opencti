@@ -66,7 +66,9 @@ const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
 }) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: threatActorIndividualId },
