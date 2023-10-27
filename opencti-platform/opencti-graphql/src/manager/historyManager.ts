@@ -163,6 +163,7 @@ const initHistoryManager = () => {
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of history manager processing');

@@ -315,6 +315,7 @@ const initPlaybookManager = () => {
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing');

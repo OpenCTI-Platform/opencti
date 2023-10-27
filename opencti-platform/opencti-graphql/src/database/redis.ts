@@ -16,7 +16,7 @@ import {
   waitInSec,
 } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
-import { AlreadyDeletedError, DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
@@ -322,59 +322,89 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-const defaultLockOpts = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
-export const lockResource = async (resources: Array<string>, opts: { automaticExtension?: boolean, retryCount?: number } = defaultLockOpts) => {
+interface LockOptions { automaticExtension?: boolean, retryCount?: number }
+const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
+const getStackTrace = () => {
+  const obj: any = {};
+  Error.captureStackTrace(obj, getStackTrace);
+  return obj.stack;
+};
+export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
   let timeout: NodeJS.Timeout | undefined;
+  let extension: undefined | Promise<void>;
+  const initialCallStack = getStackTrace();
   const locks = R.uniq(resources).map((id) => `{locks}:${id}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
+  const controller = new AbortController();
+  const { signal } = controller;
   const autoExtension = opts.automaticExtension ? opts.automaticExtension : true;
   const redlock = new Redlock([getClientLock()], { retryCount: opts.retryCount, retryDelay, retryJitter });
   // Get the lock
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
-  let expiration = Date.now() + maxTtl;
+  const queue = () => {
+    timeout = setTimeout(
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        extension = extend();
+      },
+      lock.expiration - Date.now() - 2 * automaticExtensionThreshold
+    );
+  };
   const extend = async () => {
+    timeout = undefined;
     try {
+      if (opts.retryCount !== 0) {
+        logApp.warn('[REDIS] Extending resources for long processing task', { locks, stack: initialCallStack });
+      }
       lock = await lock.extend(maxTtl);
-      expiration = Date.now() + maxTtl;
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       queue();
-    } catch (e) {
-      logApp.warn('[REDIS] Failed to extend resource', { locks });
+    } catch (error) {
+      controller.abort('[REDIS] Failed to extend resource');
     }
   };
-  const queue = () => {
-    const timeToWait = expiration - Date.now() - (2 * automaticExtensionThreshold);
-    timeout = setTimeout(() => extend(), timeToWait);
-  };
-  if (autoExtension) {
-    queue();
-  }
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
   const latestDeletions = await redisFetchLatestDeletions();
   const deletedParticipantsIds = resources.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
-    throw AlreadyDeletedError({ ids: deletedParticipantsIds });
+    throw LockTimeoutError({ participantIds: deletedParticipantsIds });
+  }
+  // If everything seems good, start auto extension if needed
+  if (autoExtension) {
+    queue();
   }
   // Return the lock and capable actions
   return {
+    signal,
     extend,
     unlock: async () => {
       // First clear the auto extends if needed
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = undefined;
+      try {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = undefined;
+        }
+      } catch (timeoutError) {
+        // Nothing to do here
+      }
+      // Wait for an in-flight extension to finish.
+      if (extension) {
+        await extension.catch(() => {
+          // An error here doesn't matter at all, because the routine has
+          // already completed, and a release will be attempted regardless. The
+          // only reason for waiting here is to prevent possible contention
+          // between the extension and release.
+        });
       }
       // Then unlock in redis
       try {
-        // Only try to unlock if redis connection is ready
-        if (getClientLock().status === 'ready') {
-          await lock.release();
-        }
+        // Finally try to unlock
+        await lock.release();
       } catch (e) {
+        // Nothing to do here
         logApp.warn('[REDIS] Failed to unlock resource', { locks });
       }
     },
