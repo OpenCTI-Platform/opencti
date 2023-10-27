@@ -16,7 +16,7 @@ import {
   waitInSec,
 } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
-import { AlreadyDeletedError, DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
@@ -365,15 +365,16 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       controller.abort('[REDIS] Failed to extend resource');
     }
   };
-  if (autoExtension) {
-    queue();
-  }
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
   const latestDeletions = await redisFetchLatestDeletions();
   const deletedParticipantsIds = resources.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
-    throw AlreadyDeletedError({ ids: deletedParticipantsIds });
+    throw LockTimeoutError({ participantIds: deletedParticipantsIds });
+  }
+  // If everything seems good, start auto extension if needed
+  if (autoExtension) {
+    queue();
   }
   // Return the lock and capable actions
   return {
@@ -381,9 +382,13 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     extend,
     unlock: async () => {
       // First clear the auto extends if needed
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = undefined;
+      try {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = undefined;
+        }
+      } catch (timeoutError) {
+        // Nothing to do here
       }
       // Wait for an in-flight extension to finish.
       if (extension) {
@@ -399,6 +404,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
         // Finally try to unlock
         await lock.release();
       } catch (e) {
+        // Nothing to do here
         logApp.warn('[REDIS] Failed to unlock resource', { locks });
       }
     },

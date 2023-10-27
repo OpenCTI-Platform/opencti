@@ -201,10 +201,6 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
-    // Remove redis work if needed
-    if (isComplete) {
-      await redisDeleteWorks(workId);
-    }
   }
   return workId;
 };
