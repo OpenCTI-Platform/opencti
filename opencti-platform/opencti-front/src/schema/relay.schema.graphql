@@ -909,6 +909,11 @@ type IndexedFileConnection {
   edges: [IndexedFileEdge]
 }
 
+type FilesMetrics {
+  globalCount: Int!
+  globalSize: Float!
+}
+
 type OpenCtiFile {
   id: ID!
   name: String!
@@ -8206,6 +8211,7 @@ type Query {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
+  filesMetrics(mimeTypes: [String]): FilesMetrics
   settings: Settings!
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection

@@ -1,5 +1,12 @@
 import { filesListing, loadFile } from '../database/file-storage';
-import { askJobImport, deleteImport, searchIndexedFiles, uploadImport, uploadPending } from '../domain/file';
+import {
+  askJobImport,
+  deleteImport,
+  filesMetrics,
+  searchIndexedFiles,
+  uploadImport,
+  uploadPending
+} from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
@@ -13,6 +20,7 @@ const fileResolvers = {
     file: (_, { id }, context) => loadFile(context.user, id),
     importFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/global/'),
     pendingFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/pending/'),
+    filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
     indexedFiles: (_, args, context) => searchIndexedFiles(context, context.user, args),
   },
   IndexedFile: {

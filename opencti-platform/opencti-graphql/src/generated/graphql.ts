@@ -7578,6 +7578,12 @@ export type FileMetadata = {
   version?: Maybe<Scalars['String']['output']>;
 };
 
+export type FilesMetrics = {
+  __typename?: 'FilesMetrics';
+  globalCount: Scalars['Int']['output'];
+  globalSize: Scalars['Int']['output'];
+};
+
 export enum FilterMode {
   And = 'and',
   Or = 'or'
@@ -18110,6 +18116,7 @@ export type Query = {
   feedbacks?: Maybe<FeedbackConnection>;
   feeds?: Maybe<FeedConnection>;
   file?: Maybe<File>;
+  filesMetrics?: Maybe<FilesMetrics>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -18835,6 +18842,11 @@ export type QueryFeedsArgs = {
 
 export type QueryFileArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryFilesMetricsArgs = {
+  mimeTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -29397,6 +29409,7 @@ export type ResolversTypes = ResolversObject<{
   FileConnection: ResolverTypeWrapper<FileConnection>;
   FileEdge: ResolverTypeWrapper<FileEdge>;
   FileMetadata: ResolverTypeWrapper<FileMetadata>;
+  FilesMetrics: ResolverTypeWrapper<FilesMetrics>;
   FilterMode: FilterMode;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
@@ -30227,6 +30240,7 @@ export type ResolversParentTypes = ResolversObject<{
   FileConnection: FileConnection;
   FileEdge: FileEdge;
   FileMetadata: FileMetadata;
+  FilesMetrics: FilesMetrics;
   Float: Scalars['Float']['output'];
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
@@ -33027,6 +33041,12 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   mimetype?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FilesMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilesMetrics'] = ResolversParentTypes['FilesMetrics']> = ResolversObject<{
+  globalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  globalSize?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -35984,6 +36004,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feedbacks?: Resolver<Maybe<ResolversTypes['FeedbackConnection']>, ParentType, ContextType, Partial<QueryFeedbacksArgs>>;
   feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
+  filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType, Partial<QueryFilesMetricsArgs>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
@@ -38980,6 +39001,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FileConnection?: FileConnectionResolvers<ContextType>;
   FileEdge?: FileEdgeResolvers<ContextType>;
   FileMetadata?: FileMetadataResolvers<ContextType>;
+  FilesMetrics?: FilesMetricsResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;

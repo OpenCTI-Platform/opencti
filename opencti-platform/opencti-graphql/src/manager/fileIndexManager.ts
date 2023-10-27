@@ -19,7 +19,7 @@ import {
   elUpdateFilesWithEntityRestrictions,
   isAttachmentProcessorEnabled,
 } from '../database/engine';
-import { getFileContent, rawFilesListing } from '../database/file-storage';
+import { fileListingForIndexing, getFileContent } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
 import { generateInternalId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -47,13 +47,8 @@ const indexImportedFiles = async (
   maxFileSize = MAX_FILE_SIZE,
   mimeTypes = ACCEPT_MIME_TYPES,
 ) => {
-  const fileListingOpts = { modifiedSince: fromDate, excludePath: 'import/pending/' };
-  let files = await rawFilesListing(context, SYSTEM_USER, path, true, fileListingOpts);
-  if (mimeTypes?.length > 0) {
-    files = files.filter((file) => {
-      return maxFileSize >= (file.size || 0) && file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
-    });
-  }
+  const fileListingOpts = { modifiedSince: fromDate, excludePath: 'import/pending/', mimeTypes, maxFileSize };
+  const files: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
   if (files.length === 0) {
     return;
   }

@@ -351,6 +351,28 @@ export const filesListing = async (context, user, first, path, entity = null, pr
   }, filesListingFn);
 };
 
+export const fileListingForIndexing = async (context, user, path, opts = {}) => {
+  const fileListingForIndexingFn = async () => {
+    let files = await rawFilesListing(context, user, path, true, opts);
+    const { mimeTypes, maxFileSize } = opts;
+    if (mimeTypes?.length > 0) {
+      files = files.filter((file) => {
+        return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
+      });
+    }
+    if (maxFileSize) {
+      files = files.filter((file) => {
+        return maxFileSize >= (file.size || 0);
+      });
+    }
+    return files.sort((a, b) => a.lastModified - b.lastModified);
+  };
+  return telemetry(context, user, `STORAGE ${path}`, {
+    [SemanticAttributes.DB_NAME]: 'storage_engine',
+    [SemanticAttributes.DB_OPERATION]: 'listing',
+  }, fileListingForIndexingFn);
+};
+
 export const deleteAllFiles = async (context, user, path) => {
   const files = await rawFilesListing(context, user, path);
   const inExport = await loadExportWorksAsProgressFiles(context, user, path);

@@ -1,10 +1,23 @@
+import * as R from 'ramda';
 import { logApp } from '../config/conf';
-import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
+import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { elSearchFiles } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+
+export const filesMetrics = async (context, user, args) => {
+  const finalArgs = {
+    excludePath: 'import/pending/',
+    ...args
+  };
+  const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
+  return {
+    globalCount: files.length,
+    globalSize: R.sum(files.map((file) => file.size)),
+  };
+};
 
 export const searchIndexedFiles = async (context, user, args) => {
   return elSearchFiles(context, context.user, args);

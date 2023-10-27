@@ -856,6 +856,11 @@ type IndexedFileConnection {
   edges: [IndexedFileEdge]
 }
 
+type FilesMetrics {
+  globalCount: Int!
+  globalSize: Int!
+}
+
 type OpenCtiFile {
   id: ID!
   name: String!
@@ -12072,6 +12077,7 @@ type Query {
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
+  filesMetrics(mimeTypes: [String]): FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES
 
