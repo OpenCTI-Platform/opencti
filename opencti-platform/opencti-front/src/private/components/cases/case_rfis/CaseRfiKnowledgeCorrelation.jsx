@@ -222,6 +222,7 @@ const caseRfiKnowledgeCorrelationStixCoreRelationshipQuery = graphql`
 
 class CaseRfiKnowledgeCorrelationComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `case-rfis-${props.caseData.id}-knowledge-correlation`;
     super(props);
     this.initialized = false;
     this.zoomed = 0;
@@ -231,7 +232,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-case-rfis-${props.caseData.id}-knowledge-correlation`,
+      LOCAL_STORAGE_KEY,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.caseData.objects.edges);
@@ -337,10 +338,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
   }
 
   saveParameters(refreshGraphData = false) {
+    const LOCAL_STORAGE_KEY = `case-rfis-${this.props.caseData.id}-knowledge-correlation`;
+
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-case-rfis-${this.props.caseData.id}-knowledge-correlation`,
+      LOCAL_STORAGE_KEY,
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {

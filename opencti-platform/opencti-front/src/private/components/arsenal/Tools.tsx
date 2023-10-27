@@ -13,7 +13,7 @@ import {
 } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-tools';
+const LOCAL_STORAGE_KEY = 'tools';
 
 const Tools = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ToolsLinesPaginationQuery$variables>(

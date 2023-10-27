@@ -24,13 +24,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'Labels';
+
 class Labels extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Labels-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('value', 'sortBy', params),
@@ -48,7 +50,7 @@ class Labels extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Labels-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

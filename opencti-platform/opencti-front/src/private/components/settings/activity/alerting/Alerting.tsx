@@ -22,7 +22,7 @@ import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import { Theme } from '../../../../../components/Theme';
 import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-alerting';
+export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
 
 const useStyles = makeStyles<Theme>(() => ({

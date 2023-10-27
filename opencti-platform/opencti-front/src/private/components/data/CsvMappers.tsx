@@ -16,7 +16,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
-const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'view-csvMappers';
+const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
 const useStyles = makeStyles(() => ({
   container: {

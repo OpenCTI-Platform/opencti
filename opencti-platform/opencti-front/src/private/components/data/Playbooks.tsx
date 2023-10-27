@@ -34,7 +34,7 @@ import { PlaybookLineDummy } from './playbooks/PlaybookLine';
 import { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
-export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'view-playbooks';
+export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

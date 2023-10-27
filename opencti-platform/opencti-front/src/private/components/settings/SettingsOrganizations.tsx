@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
 const SettingsOrganizations = () => {
   const classes = useStyles();
   const { me } = useAuth();
-  const LOCAL_STORAGE_KEY = 'view-settings-organizations';
+  const LOCAL_STORAGE_KEY = 'settings-organizations';
   const {
     viewStorage,
     helpers,
@@ -35,7 +35,9 @@ const SettingsOrganizations = () => {
   const userIsOrganizationAdmin = (me.administrated_organizations ?? []).length > 0;
   const paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables = {
     ...paginationOptionsFromStorage,
-    filters: userIsOrganizationAdmin ? [{ key: ['authorized_authorities'], values: [me.id] }] : undefined,
+    filters: userIsOrganizationAdmin
+      ? { mode: 'and', filters: [{ key: ['authorized_authorities'], values: [me.id] }], filterGroups: [] }
+      : undefined,
   };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);

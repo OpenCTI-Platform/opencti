@@ -17,7 +17,7 @@ import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-notifiers';
+const LOCAL_STORAGE_KEY = 'notifiers';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

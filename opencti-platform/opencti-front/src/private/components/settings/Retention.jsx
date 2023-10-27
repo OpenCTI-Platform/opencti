@@ -13,7 +13,7 @@ import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
 import CustomizationMenu from './CustomizationMenu';
 
-const LOCAL_STORAGE_KEY = 'retention-view';
+const LOCAL_STORAGE_KEY = 'retention';
 
 const useStyles = makeStyles(() => ({
   container: {

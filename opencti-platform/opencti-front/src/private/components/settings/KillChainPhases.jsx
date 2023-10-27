@@ -39,13 +39,15 @@ export const killChainPhasesSearchQuery = graphql`
   }
 `;
 
+const LOCAL_STORAGE_KEY = 'killChainPhases';
+
 class KillChainPhases extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'KillChainPhases-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('x_opencti_order', 'sortBy', params),
@@ -59,7 +61,7 @@ class KillChainPhases extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'KillChainPhases-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

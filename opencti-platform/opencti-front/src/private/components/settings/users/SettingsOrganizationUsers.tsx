@@ -41,8 +41,9 @@ MembersListContainerProps
 > = ({ organization }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
-    `view-organization-${organization.id}-users`,
+    LOCAL_STORAGE_KEY,
     {
       sortBy: 'name',
       orderAsc: true,

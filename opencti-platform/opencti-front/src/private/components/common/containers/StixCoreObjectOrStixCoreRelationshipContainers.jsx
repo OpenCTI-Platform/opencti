@@ -41,7 +41,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const LOCAL_STORAGE_KEY = `view-containers${
+  const LOCAL_STORAGE_KEY = `containers${
     stixDomainObjectOrStixCoreRelationship
       ? `-${stixDomainObjectOrStixCoreRelationship.id}`
       : `-${authorId}`

@@ -15,9 +15,11 @@ import {
 } from './administrative_areas/__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
+const LOCAL_STORAGE_KEY = 'administrative-areas';
+
 const AdministrativeAreas: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
-    'view-administrative-areas',
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',

@@ -14,12 +14,12 @@ import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
 import { addFilter, filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-notifiers';
+export const LOCAL_STORAGE_KEY = 'notifiers';
 
 const Notifications: FunctionComponent = () => {
   const { me } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'created',
@@ -40,7 +40,7 @@ const Notifications: FunctionComponent = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<NotificationLine_node$data>(
-    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    LOCAL_STORAGE_KEY,
   );
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, filters, numberOfElements } = viewStorage;

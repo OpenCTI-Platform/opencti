@@ -22,14 +22,14 @@ interface CaseRfisProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_RFI = 'view-caseRfis';
+export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRfiLinesCasesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_RFI,
+    LOCAL_STORAGE_KEY,
     {
       numberOfElements: {
         number: 0,
@@ -50,7 +50,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY_CASE_RFI);
+  } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
     const {
       sortBy,

@@ -80,8 +80,9 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
     );
     useSubscription(config);
   }
+  const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
   const { viewStorage, helpers } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
-    `view-${subType.id}-attributes`,
+    LOCAL_STORAGE_KEY,
     { searchTerm: '' },
   );
   const { searchTerm } = viewStorage;

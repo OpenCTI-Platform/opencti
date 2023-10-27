@@ -18,7 +18,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY = 'view-sightings';
+export const LOCAL_STORAGE_KEY = 'sightings';
 
 const useStyles = makeStyles(() => ({
   container: {

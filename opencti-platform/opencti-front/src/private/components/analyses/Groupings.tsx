@@ -19,7 +19,7 @@ import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_n
 import { GroupingLineDummy } from './groupings/GroupingLine';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-groupings';
+const LOCAL_STORAGE_KEY = 'groupings';
 
 interface GroupingsProps {
   objectId: string;
@@ -85,7 +85,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<GroupingLine_node$data>('view-groupings');
+  } = useEntityToggle<GroupingLine_node$data>(LOCAL_STORAGE_KEY);
   const queryRef = useQueryLoading<GroupingsLinesPaginationQuery>(
     groupingsLinesQuery,
     paginationOptions,

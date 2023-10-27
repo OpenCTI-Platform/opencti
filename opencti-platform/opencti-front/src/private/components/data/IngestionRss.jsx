@@ -11,7 +11,7 @@ import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 
-const LOCAL_STORAGE_KEY = 'ingestionRss-view';
+const LOCAL_STORAGE_KEY = 'ingestionRss';
 
 const useStyles = makeStyles(() => ({
   container: {

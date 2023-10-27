@@ -34,7 +34,7 @@ const ContainerStixCoreObjectsMapping = ({
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
-  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stixCoreObjectsMapping`;
+  const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsMapping`;
   const {
     viewStorage,
     paginationOptions,

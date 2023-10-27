@@ -24,7 +24,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import { useFormatter } from '../../components/i18n';
 import { initialFilterGroup } from '../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-search';
+const LOCAL_STORAGE_KEY = 'search';
 
 const Search = () => {
   const {

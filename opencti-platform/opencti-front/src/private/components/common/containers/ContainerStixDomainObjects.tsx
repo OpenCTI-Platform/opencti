@@ -63,7 +63,7 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const containerData = useFragment(ContainerStixDomainObjectsFragment, container);
-  const LOCAL_STORAGE_KEY = `view-container-${containerData.id}-stixDomainObjects`;
+  const LOCAL_STORAGE_KEY = `container-${containerData.id}-stixDomainObjects`;
   const {
     viewStorage,
     paginationOptions,

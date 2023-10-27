@@ -17,7 +17,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-relationships';
+const LOCAL_STORAGE_KEY = 'relationships';
 
 const Relationships = () => {
   const {

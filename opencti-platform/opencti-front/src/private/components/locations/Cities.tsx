@@ -13,9 +13,11 @@ import {
 } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
+const LOCAL_STORAGE_KEY = 'cities';
+
 const Cities: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
-    'view-cities',
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',

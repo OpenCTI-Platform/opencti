@@ -11,7 +11,7 @@ import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_TRIGGERS = 'view-triggers';
+export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';
 
 const Triggers: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(

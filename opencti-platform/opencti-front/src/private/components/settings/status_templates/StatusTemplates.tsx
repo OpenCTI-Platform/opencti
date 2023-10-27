@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'view-status-templates';
+const LOCAL_STORAGE_KEY = 'status-templates';
 
 const StatusTemplates = () => {
   const classes = useStyles();

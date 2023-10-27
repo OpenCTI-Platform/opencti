@@ -109,11 +109,12 @@ export const caseRftKnowledgeAttackPatternsGraphQuery = graphql`
 
 class CaseRftKnowledgeComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `case-rfts-knowledge-${props.caseData.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-case-rfts-knowledge-${props.caseData.id}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
@@ -131,10 +132,11 @@ class CaseRftKnowledgeComponent extends Component {
   }
 
   saveView() {
+    const LOCAL_STORAGE_KEY = `case-rfts-knowledge-${this.props.caseData.id}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-case-rfts-knowledge-${this.props.caseData.id}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

@@ -22,14 +22,14 @@ interface CaseRftsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_RFT = 'view-caseRfts';
+export const LOCAL_STORAGE_KEY = 'caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRftLinesCasesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_RFT,
+    LOCAL_STORAGE_KEY,
     {
       numberOfElements: {
         number: 0,
@@ -50,7 +50,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<CaseRftLineCase_node$data>(LOCAL_STORAGE_KEY_CASE_RFT);
+  } = useEntityToggle<CaseRftLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
     const {
       sortBy,

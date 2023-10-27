@@ -35,14 +35,14 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
 import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-audit';
-
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
   },
 }));
+
+const LOCAL_STORAGE_KEY = 'audit';
 
 const Audit = () => {
   const classes = useStyles();
@@ -66,7 +66,7 @@ const Audit = () => {
     },
   );
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc, types } = viewStorage;
-  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>('view-audit');
+  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     timestamp: {
       label: 'Date',

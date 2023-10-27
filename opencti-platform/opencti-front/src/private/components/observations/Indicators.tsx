@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'view-indicators';
+const LOCAL_STORAGE_KEY = 'indicators';
 
 const Indicators = () => {
   const classes = useStyles();

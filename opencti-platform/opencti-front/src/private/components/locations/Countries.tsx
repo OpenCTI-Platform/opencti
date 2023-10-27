@@ -13,7 +13,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CountryLineDummy } from './countries/CountryLine';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-countries';
+const LOCAL_STORAGE_KEY = 'countries';
 
 const Countries: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(

@@ -16,7 +16,7 @@ import {
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'view-threatActorsIndividuals';
+const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
 const ThreatActorsIndividual = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsIndividualCardsPaginationQuery$variables>(

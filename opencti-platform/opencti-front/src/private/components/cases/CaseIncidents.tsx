@@ -22,7 +22,7 @@ interface CaseIncidentsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-caseIncidents';
+export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const {
