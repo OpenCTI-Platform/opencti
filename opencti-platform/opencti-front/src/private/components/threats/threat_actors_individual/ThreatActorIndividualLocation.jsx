@@ -69,6 +69,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
           )}
           {threatActorIndividual.locations.edges.map((locationEdge) => {
             const location = locationEdge.node;
+            console.log('location', location);
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
               && R.head(
@@ -77,6 +78,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                 ),
               );
             const isInferred = location.is_from_relation_inferred;
+            console.log('isInferred', isInferred);
             return (
               <ListItem
                 key={location.id}
@@ -98,7 +100,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   )}
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                {isInferred && (
+                {!isInferred && (
                   <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
