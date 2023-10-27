@@ -1,4 +1,3 @@
-import { uniq } from 'ramda';
 import type { RelationRefDefinition } from './relationRef-definition';
 import { getParentTypes } from './schemaUtils';
 import { UnsupportedError } from '../config/errors';
@@ -6,7 +5,8 @@ import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, Map<string, RelationRefDefinition>>,
-  allRelationsRef: [] as Array<RelationRefDefinition>,
+  // allRelationsRef is a list of the names of all the relations ref registered in a schema definition
+  allRelationsRef: [] as string[],
 
   inputNamesCache: new Map<string, string[]>(),
   stixNamesCache: new Map<string, string[]>(),
@@ -23,7 +23,6 @@ export const schemaRelationsRefDefinition = {
 
   registerRelationsRef(entityType: string, relationsRefDefinition: RelationRefDefinition[]) {
     const directRefs = this.relationsRef[entityType] ?? new Map<string, RelationRefDefinition>();
-    const allRelationsRef: RelationRefDefinition[] = [];
 
     // Register given relations ref
     relationsRefDefinition.forEach((relationRefDefinition) => {
@@ -43,11 +42,10 @@ export const schemaRelationsRefDefinition = {
       }
 
       directRefs.set(relationRefDefinition.inputName, relationRefDefinition);
-      allRelationsRef.push(relationRefDefinition);
+      this.allRelationsRef.push(relationRefDefinition.inputName);
     });
 
     this.relationsRef[entityType] = directRefs;
-    this.allRelationsRef = uniq(this.allRelationsRef.concat(allRelationsRef));
 
     this.computeCache(entityType);
   },
@@ -100,7 +98,7 @@ export const schemaRelationsRefDefinition = {
   },
 
   getAllInputNames(): string[] {
-    return this.allRelationsRef.map((relation) => relation.inputName);
+    return this.allRelationsRef;
   },
 
   getStixNames(entityType: string): string[] {
