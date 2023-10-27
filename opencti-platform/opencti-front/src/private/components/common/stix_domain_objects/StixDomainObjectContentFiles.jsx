@@ -17,7 +17,7 @@ import {
 } from 'mdi-material-ui';
 import moment from 'moment';
 import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, AddOutlined, WarningOutlined } from '@mui/icons-material';
+import { DeleteOutlined, AddOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -27,8 +27,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Divider from '@mui/material/Divider';
-import CircularProgress from '@mui/material/CircularProgress';
-import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import FileLine, { FileLineDeleteMutation } from '../files/FileLine';
@@ -145,22 +143,6 @@ class StixDomainObjectContentFiles extends Component {
 
   onReset() {
     this.handleCloseCreate();
-  }
-
-  prepareSaveFile() {
-    const fragment = this.state.currentFile.id.split('/');
-    const currentName = R.last(fragment);
-    const currentId = fragment[fragment.length - 2];
-    const currentType = fragment[fragment.length - 3];
-    const isExternalReference = currentType === 'External-Reference';
-    const content = this.state.currentContent;
-    const blob = new Blob([content], {
-      type: this.state.currentFile.metaData.mimetype,
-    });
-    const file = new File([blob], currentName, {
-      type: this.state.currentFile.metaData.mimetype,
-    });
-    return { currentId, isExternalReference, file };
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -308,7 +290,7 @@ class StixDomainObjectContentFiles extends Component {
                                     key={file?.id}
                                     file={file}
                                     divider={true}
-                                    onClick={handleSelectExportFile.bind(this, file?.id)}
+                                    onClick={handleSelectExportFile.bind(this, file.id)}
                                     disableImport={true}
                                     disabled={deleting === file?.id}
                                     directDownload={true}

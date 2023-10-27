@@ -142,7 +142,7 @@ const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
   }
 `;
 
-const sortByLastModified = R.sortBy(R.prop('name'));
+const sortByLastModified = R.sortBy(R.prop('lastModified'));
 
 const getFiles = (stixDomainObject) => {
   const importFiles = stixDomainObject.importFiles?.edges?.filter((n) => !!n?.node)
@@ -160,11 +160,9 @@ const getFiles = (stixDomainObject) => {
 const getExportFiles = (stixDomainObject) => {
   const exportFiles = stixDomainObject.exportFiles?.edges?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  console.log('getexportfiles');
-  const result = sortByLastModified([...exportFiles].filter((n) => {
-    return ['application/pdf'].includes(n.metaData.mimetype);
+  return sortByLastModified([...exportFiles].filter((n) => {
+    return (['application/pdf'].includes(n.metaData.mimetype) || n.uploadStatus === 'progress');
   }));
-  return result;
 };
 
 class StixDomainObjectContentComponent extends Component {
@@ -233,38 +231,6 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
-  loadExportFileContent() {
-    const { stixDomainObject } = this.props;
-    const exportFiles = getExportFiles(stixDomainObject);
-    this.setState({ isLoading: true }, () => {
-      const { currentExportId } = this.state;
-      if (!currentExportId) {
-        return this.setState({ isLoading: false });
-      }
-      const currentExportFile = R.head(
-        R.filter((n) => n.id === currentExportId, exportFiles),
-      );
-      const currentFileType = currentExportFile && currentExportFile.metaData.mimetype;
-
-      if (currentFileType === 'application/pdf') {
-        return this.setState({ isLoading: false });
-      }
-
-      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
-        currentExportId,
-      )}`;
-
-      return Axios.get(url).then((res) => {
-        const content = res.data;
-        return this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
-      });
-    });
-  }
-
   componentDidMount() {
     this.subscriptionToggle = MESSAGING$.toggleNav.subscribe({
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
@@ -284,13 +250,6 @@ class StixDomainObjectContentComponent extends Component {
   handleSelectFile(fileId) {
     this.setState({ currentFileId: fileId, changed: false }, () => {
       this.loadFileContent();
-      this.saveView();
-    });
-  }
-
-  handleSelectExportFile(currentExportId) {
-    this.setState({ currentExportId, changed: false }, () => {
-      this.loadExportFileContent();
       this.saveView();
     });
   }
@@ -461,7 +420,6 @@ class StixDomainObjectContentComponent extends Component {
     } = this.state;
 
     const files = getFiles(stixDomainObject);
-    console.log('exportFiles');
     const exportFiles = getExportFiles(stixDomainObject);
 
     const currentUrl = currentFileId
@@ -482,16 +440,7 @@ class StixDomainObjectContentComponent extends Component {
 
     const { innerHeight } = window;
     const height = innerHeight - 190;
-    /*
-    console.log('currentExportId', currentExportId);
-    console.log('currentExportFile', currentExportFile);
 
-    console.log('currentFileType', currentFileType);
-    console.log('currentExportFileType', currentExportFileType); */
-    console.log(stixDomainObject);
-    console.log('exportFiles', exportFiles);
-    console.log('edges', stixDomainObject.exportFiles.edges);
-    // console.log('files', files);
     return (
       <div className={classes.container}>
         <StixDomainObjectContentFiles
@@ -501,7 +450,7 @@ class StixDomainObjectContentComponent extends Component {
           currentExportUrl={currentExportUrl}
           currentExportId={currentExportId}
           handleSelectFile={this.handleSelectFile.bind(this)}
-          handleSelectExportFile={this.handleSelectExportFile.bind(this)}
+          handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
         />
