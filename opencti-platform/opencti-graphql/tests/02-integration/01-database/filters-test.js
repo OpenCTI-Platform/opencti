@@ -136,4 +136,26 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
   });
+
+  // severity
+  it('Should severity filters correctly applied', async () => {
+    const filters = { severity: [{ id: 'low', value: 'low' }] };
+    const filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(0); // no severity in the data
+
+    const filtersNo = { severity: [{ id: '', value: '' }] };
+    const filteredObjectsNo = await applyFilters(filtersNo);
+    expect(filteredObjectsNo.length).toBe(64);
+  });
+
+  // priority
+  it('Should priority filters correctly applied', async () => {
+    const filters = { priority: [{ id: 'p2', value: 'p2' }] };
+    const filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(0); // no priority in the data
+
+    const filtersNo = { priority: [{ id: '', value: '' }] };
+    const filteredObjectsNo = await applyFilters(filtersNo);
+    expect(filteredObjectsNo.length).toBe(64);
+  });
 });

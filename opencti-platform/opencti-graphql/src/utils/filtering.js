@@ -49,6 +49,8 @@ export const TYPE_FILTER = 'entity_type';
 export const INDICATOR_FILTER = 'indicator_types';
 export const SCORE_FILTER = 'x_opencti_score';
 export const DETECTION_FILTER = 'x_opencti_detection';
+export const SEVERITY_FILTER = 'severity';
+export const PRIORITY_FILTER = 'priority';
 export const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
@@ -448,6 +450,34 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
         const { id } = values.at(0) ?? {};
         const isDetection = (id === 'true') === stix.extensions?.[STIX_EXT_OCTI]?.detection;
         if (!isDetection) {
+          return false;
+        }
+      }
+      if (key === SEVERITY_FILTER) {
+        const severity = stix[SEVERITY_FILTER];
+        // no-severity is a filter { id: '', value '' } ; we use null to track it below
+        // comparison is case-insensitive (P2 or p2 for instance)
+        const ids = values.map((v) => (v.id ? v.id.toLowerCase() : null));
+        const isSeverityAvailable = severity ? ids.includes(severity.toLowerCase()) : ids.includes(null);
+        // If available but must not be
+        if (operator === 'not_eq' && isSeverityAvailable) {
+          return false;
+        }
+        // If not available but must be
+        if (operator === 'eq' && !isSeverityAvailable) {
+          return false;
+        }
+      }
+      if (key === PRIORITY_FILTER) {
+        const priority = stix[PRIORITY_FILTER];
+        const ids = values.map((v) => (v.id ? v.id.toLowerCase() : null));
+        const isPriorityAvailable = priority ? ids.includes(priority.toLowerCase()) : ids.includes(null);
+        // If available but must not be
+        if (operator === 'not_eq' && isPriorityAvailable) {
+          return false;
+        }
+        // If not available but must be
+        if (operator === 'eq' && !isPriorityAvailable) {
           return false;
         }
       }
