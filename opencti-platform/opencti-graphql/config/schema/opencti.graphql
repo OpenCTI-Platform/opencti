@@ -2246,6 +2246,7 @@ enum StixDomainObjectsFilter {
   product
   result_name
   operatingSystem
+  x_opencti_score
 }
 input StixDomainObjectsFiltering {
   key: [StixDomainObjectsFilter!]!
