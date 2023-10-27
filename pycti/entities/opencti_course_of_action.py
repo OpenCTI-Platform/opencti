@@ -464,7 +464,7 @@ class CourseOfAction:
                         or external_reference["source_name"] == "mitre-mobile-attack"
                         or external_reference["source_name"] == "amitt-attack"
                     ):
-                        x_mitre_id = external_reference["external_id"]
+                        x_mitre_id = external_reference.get("external_id", None)
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
