@@ -117,6 +117,7 @@ export const testDetection = (stix: any, filter: Filter) => {
  * - numerical value stored in id that must be parsed from string
  */
 export const testScore = (stix: any, filter: Filter) => {
+  // path depends on entity type
   const stixValue: number | null = stix.x_opencti_score ?? stix.extensions?.[STIX_EXT_OCTI]?.score ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score ?? null;
   return testNumericByMode(filter, stixValue);
 };

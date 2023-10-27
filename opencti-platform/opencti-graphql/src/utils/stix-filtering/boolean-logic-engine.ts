@@ -1,3 +1,4 @@
+import moment from 'moment';
 import type { Filter } from './stix-filtering';
 
 /**
@@ -88,6 +89,45 @@ export const testNumericByMode = ({ mode, operator, values }: Pick<Filter, 'mode
       || (operator === 'lte' && filterValuesAsNumbers.some((c) => stixCandidate <= c))
       || (operator === 'gt' && filterValuesAsNumbers.some((c) => stixCandidate > c))
       || (operator === 'gte' && filterValuesAsNumbers.some((c) => stixCandidate >= c));
+  }
+
+  return false;
+};
+
+export const testDateByMode = ({ mode, operator, values }: Pick<Filter, 'mode' | 'operator' | 'values'>, stixCandidate: string | null) => {
+  const filterValuesAsDates = values.map((v) => moment(new Date(v))).filter((d) => d.isValid());
+
+  if (operator === 'nil' || (operator === 'eq' && filterValuesAsDates.length === 0)) {
+    return stixCandidate === null;
+  }
+  if (operator === 'not_nil' || (operator === 'not_eq' && filterValuesAsDates.length === 0)) {
+    return stixCandidate !== null;
+  }
+
+  // excluding the cases above, comparing to nothing is not supported and would never match
+  if (stixCandidate === null) {
+    return false;
+  }
+
+  const stixDate = moment(new Date(stixCandidate));
+
+  if (mode === 'AND') {
+    // NOTE: equality is very strict (milliseconds)
+    return (operator === 'eq' && filterValuesAsDates.every((c) => stixDate.isSame(c)))
+      || (operator === 'not_eq' && filterValuesAsDates.every((c) => !stixDate.isSame(c)))
+      || (operator === 'lt' && filterValuesAsDates.every((c) => stixDate.isBefore(c)))
+      || (operator === 'lte' && filterValuesAsDates.every((c) => stixDate.isSameOrBefore(c)))
+      || (operator === 'gt' && filterValuesAsDates.every((c) => stixDate.isAfter(c)))
+      || (operator === 'gte' && filterValuesAsDates.every((c) => stixDate.isSameOrAfter(c)));
+  }
+  if (mode === 'OR') {
+    // value must compare to at least one of the candidates according to operator
+    return (operator === 'eq' && filterValuesAsDates.some((c) => stixDate.isSame(c)))
+      || (operator === 'not_eq' && filterValuesAsDates.some((c) => !stixDate.isSame(c)))
+      || (operator === 'lt' && filterValuesAsDates.some((c) => stixDate.isBefore(c)))
+      || (operator === 'lte' && filterValuesAsDates.some((c) => stixDate.isSameOrBefore(c)))
+      || (operator === 'gt' && filterValuesAsDates.some((c) => stixDate.isAfter(c)))
+      || (operator === 'gte' && filterValuesAsDates.some((c) => stixDate.isSameOrAfter(c)));
   }
 
   return false;

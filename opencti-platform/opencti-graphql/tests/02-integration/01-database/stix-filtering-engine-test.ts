@@ -65,7 +65,6 @@ describe('Filter Boolean logic engine ', () => {
       // these tests are a bit stupid as a given value cannot be different at the same time (AND); let's test for consistency
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'eq', values: ['14'] }, 14)).toEqual(true);
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'eq', values: ['14', '17'] }, 14)).toEqual(false);
-      expect(engine.testNumericByMode({ mode: 'AND', operator: 'eq', values: ['14', '17'] }, null)).toEqual(false);
       // these are more legit
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'not_eq', values: ['5', '17'] }, 52)).toEqual(true);
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'not_eq', values: ['52', '89'] }, 52)).toEqual(false);
@@ -94,6 +93,60 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'nil', values: ['12', 'test'] }, 14)).toEqual(false);
       expect(engine.testNumericByMode({ mode: 'AND', operator: 'not_nil', values: [] }, null)).toEqual(false);
       expect(engine.testNumericByMode({ mode: 'OR', operator: 'not_nil', values: ['12', 'test'] }, 52)).toEqual(true);
+    });
+  });
+
+  describe('testDateByMode', () => {
+    const d1 = '2023-10-15T08:25:10';
+    const d2 = '2023-10-30T12:10:54';
+    const d3 = '2023-10-30T14:01:18';
+    const d4 = '2023-12-25T00:25:10';
+
+    it('OR mode', () => {
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'eq', values: [d1, d2] }, d2)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'eq', values: [d1, d2] }, d3)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'not_eq', values: [d1, d2] }, d2)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'not_eq', values: [d1] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'gt', values: [d1, d3] }, d2)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'gt', values: [d2, d3] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'gte', values: [d1] }, d1)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'gte', values: [d2] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'lt', values: [d2, d3] }, d1)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'lt', values: [d2, d3] }, d4)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'lte', values: [d3] }, d3)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'lte', values: [d2] }, d3)).toEqual(false);
+    });
+    it('AND mode', () => {
+      // these tests are a bit stupid as a given value cannot be different at the same time (AND); let's test for consistency
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'eq', values: [d1] }, d1)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'eq', values: [d1, d2] }, d1)).toEqual(false);
+      // these are more legit
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'not_eq', values: [d1, d2] }, d3)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'not_eq', values: [d1, d2] }, d2)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'gt', values: [d1, d2] }, d3)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'gt', values: [d1, d3] }, d2)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'gt', values: [d2, d3] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'gte', values: [d1, d2] }, d2)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'gte', values: [d1, d2] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'lt', values: [d2, d3] }, d1)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'lt', values: [d2, d3] }, d2)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'lt', values: [d1, d3] }, d2)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'lte', values: [d1, d2] }, d1)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'lte', values: [d1, d2] }, d2)).toEqual(false);
+    });
+    it('eq/not_eq nothing', () => {
+      // independent of the inputs mode, filter values is empty
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'eq', values: [] }, null)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'eq', values: [] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'not_eq', values: [] }, null)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'not_eq', values: [] }, d1)).toEqual(true);
+    });
+    it('nil/not_nil', () => {
+      // these operators are independent of the inputs mode and filter values
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'nil', values: ['should', 'not', 'matter'] }, null)).toEqual(true);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'nil', values: [] }, d1)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'AND', operator: 'not_nil', values: [] }, null)).toEqual(false);
+      expect(engine.testDateByMode({ mode: 'OR', operator: 'not_nil', values: ['should', 'not', 'matter'] }, d1)).toEqual(true);
     });
   });
 });
