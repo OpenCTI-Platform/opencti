@@ -61,7 +61,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
   const classes = useStyles();
   const { t, fd } = useFormatter();
 
-  const remoteNode = node.from ? node.from : node.to;
+  const remoteNode = (node.from && !node.from.relationship_type) ? node.from : node.to;
   let link = null;
   if (remoteNode) {
     link = `${resolveLink(remoteNode.entity_type)}/${
