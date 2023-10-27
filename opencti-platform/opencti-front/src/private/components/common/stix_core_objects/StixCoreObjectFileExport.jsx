@@ -61,6 +61,8 @@ const StixCoreObjectFileExportComponent = ({
   queryRef,
   id,
 }) => {
+  const navigate = useNavigate();
+
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
@@ -74,10 +76,21 @@ const StixCoreObjectFileExportComponent = ({
         maxMarkingDefinition,
       },
 
-      onCompleted: () => {
+      onCompleted: (a) => {
+        console.log(a);
+        // TODO: retrieve property 'name' inside object 'a'
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
+        navigate(`/dashboard/analyses/reports/${id}/content`);
+        // TODO: add filename inside the url of navigate
+        // https://reactrouter.com/en/main/hooks/use-navigate
+        /**
+         * navigate({
+         *       pathname: '...'
+         *       search: ... fileName
+         * });
+         */
       },
     });
   };
@@ -88,8 +101,6 @@ const StixCoreObjectFileExportComponent = ({
   const handleClickOpen = () => {
     setOpen(true);
   };
-
-  const navigate = useNavigate();
 
   const data = usePreloadedQuery(
     stixCoreObjectFileExportQuery,
@@ -222,7 +233,6 @@ const StixCoreObjectFileExportComponent = ({
                   onClick={(e) => {
                     e.preventDefault();
                     submitForm();
-                    navigate(`/dashboard/analyses/reports/${id}/content`);
                   }}
                   disabled={isSubmitting}
                 >
