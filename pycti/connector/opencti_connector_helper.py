@@ -307,6 +307,7 @@ class ListenQueue(threading.Thread):
                 )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
+                self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
                     queue=self.queue_name, on_message_callback=self._process_message
