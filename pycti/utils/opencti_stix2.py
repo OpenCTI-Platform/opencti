@@ -67,8 +67,10 @@ class OpenCTIStix2:
         :return: sanitized text with markdown style code annotation
         :rtype: str
         """
-
-        return text.replace("<code>", "`").replace("</code>", "`")
+        if text is not None:
+            return text.replace("<code>", "`").replace("</code>", "`")
+        else:
+            return None
 
     def format_date(self, date: Any = None) -> str:
         """converts multiple input date formats to OpenCTI style dates
