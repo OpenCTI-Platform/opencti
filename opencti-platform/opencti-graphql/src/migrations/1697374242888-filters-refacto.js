@@ -56,8 +56,6 @@ export const up = async (next) => {
           key = filterKeysConvertor.get(key);
         }
         const values = last(pair);
-        console.log('pair', pair);
-        console.log('values', values);
         const valIds = values.map((v) => v.id);
         return { key, values: valIds, operator, mode };
       });
