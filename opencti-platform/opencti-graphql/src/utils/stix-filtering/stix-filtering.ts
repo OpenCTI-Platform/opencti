@@ -1,6 +1,7 @@
 //----------------------------------------------------------------------------------------------------------
 // TYPES: TODO: remove them from here and use the one defined for #2686
 
+export type FilterMode = 'AND' | 'OR';
 export type FilterOperator = 'eq' | 'not_eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'nil' | 'not_nil';
 
 export type Filter = {
@@ -17,3 +18,4 @@ export type FilterGroup = {
   filters: Filter[]
   filterGroups: FilterGroup[]
 };
+//----------------------------------------------------------------------------------------------------------
