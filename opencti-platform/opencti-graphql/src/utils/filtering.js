@@ -713,31 +713,35 @@ export const checkedAndConvertedFilters = (filters, entityTypes = []) => {
     const keys = extractFilterKeys(filters);
     if (keys.length > 0) {
       let incorrectKeys = keys;
+      // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
+      const availableSpecialKeys = ['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections'];
       if (entityTypes.length > 0) {
         // correct keys are keys in AT LEAST one of the entity types schema definition
         entityTypes.forEach((type) => {
           const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
           const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
-          const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections']);
-          // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
+          const availableKeys = availableAttributes.concat(availableRelations).concat(availableSpecialKeys);
           keys.forEach((k) => {
             if (availableKeys.includes(k)) {
               incorrectKeys = incorrectKeys.filter((n) => n !== k);
             }
           });
         });
+        if (incorrectKeys.length > 0) {
+          throw Error(`incorrect filter keys: ${incorrectKeys} for types ${entityTypes}`);
+        }
       } else { // correct keys are keys existing in the schema definition
         const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
         const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
-        const availableKeys = availableAttributes.concat(availableRelations);
+        const availableKeys = availableAttributes.concat(availableRelations).concat(availableSpecialKeys);
         keys.forEach((k) => {
           if (availableKeys.includes(k)) {
             incorrectKeys = incorrectKeys.filter((n) => n !== k);
           }
         });
-      }
-      if (incorrectKeys.length > 0) {
-        throw Error(`incorrect filter keys: ${incorrectKeys}`);
+        if (incorrectKeys.length > 0) {
+          throw Error(`incorrect filter keys: ${incorrectKeys} not existing in any schema definition`);
+        }
       }
     }
   }
