@@ -51,6 +51,7 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
+import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { parseDomain } from '../../../../utils/Graph';
@@ -62,7 +63,6 @@ import StixCoreRelationshipCreation from '../../common/stix_core_relationships/S
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
-import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 
@@ -806,20 +806,18 @@ class InvestigationGraphBar extends Component {
                         height: '100%',
                       }}
                     >
-                      <InvestigationAddStixCoreObjects
-                        workspaceId={workspace.id}
-                        workspaceStixCoreObjects={workspace.objects.edges}
-                        defaultCreatedBy={workspace.createdBy ?? null}
-                        defaultMarkingDefinitions={(
-                          workspace.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
-                        targetStixCoreObjectTypes={[
-                          'Stix-Domain-Object',
-                          'Stix-Cyber-Observable',
-                        ]}
-                        onAdd={onAdd}
-                        onDelete={onDelete}
-                      />
+                      {onAdd && (
+                        <InvestigationAddStixCoreObjects
+                          workspaceId={workspace.id}
+                          workspaceStixCoreObjects={workspace.objects.edges}
+                          targetStixCoreObjectTypes={[
+                            'Stix-Domain-Object',
+                            'Stix-Cyber-Observable',
+                          ]}
+                          onAdd={onAdd}
+                          onDelete={onDelete}
+                        />
+                      )}
                       <Tooltip title={t('Edit the selected item')}>
                         <span>
                           <IconButton
