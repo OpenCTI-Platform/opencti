@@ -515,145 +515,159 @@ class OpenCTIStix2:
             )
         if "external_references" in stix_object:
             for external_reference in stix_object["external_references"]:
-                url = external_reference["url"] if "url" in external_reference else None
-                source_name = (
-                    external_reference["source_name"]
-                    if "source_name" in external_reference
-                    else None
-                )
-                external_id = (
-                    external_reference["external_id"]
-                    if "external_id" in external_reference
-                    else None
-                )
-                generated_ref_id = self.opencti.external_reference.generate_id(
-                    url, source_name, external_id
-                )
-                if generated_ref_id is None:
-                    continue
-                if generated_ref_id in self.mapping_cache:
-                    external_reference_id = self.mapping_cache[generated_ref_id]
-                else:
-                    external_reference_id = self.opencti.external_reference.create(
-                        source_name=source_name,
-                        url=url,
-                        external_id=external_id,
-                        description=external_reference["description"]
-                        if "description" in external_reference
-                        else None,
-                    )["id"]
-                if "x_opencti_files" in external_reference:
-                    for file in external_reference["x_opencti_files"]:
-                        self.opencti.external_reference.add_file(
-                            id=external_reference_id,
-                            file_name=file["name"],
-                            data=base64.b64decode(file["data"]),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                        )
-                if (
-                    self.opencti.get_attribute_in_extension("files", external_reference)
-                    is not None
-                ):
-                    for file in self.opencti.get_attribute_in_extension(
-                        "files", external_reference
-                    ):
-                        self.opencti.external_reference.add_file(
-                            id=external_reference_id,
-                            file_name=file["name"],
-                            data=base64.b64decode(file["data"]),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                        )
-                self.mapping_cache[generated_ref_id] = generated_ref_id
-                external_references_ids.append(external_reference_id)
-                if stix_object["type"] in [
-                    "threat-actor",
-                    "intrusion-set",
-                    "campaign",
-                    "incident",
-                    "malware",
-                    "relationship",
-                ] and (types is not None and "external-reference-as-report" in types):
-                    # Add a corresponding report
-                    # Extract date
-                    try:
-                        if "description" in external_reference:
-                            matches = datefinder.find_dates(
-                                external_reference["description"],
-                                base_date=datetime.datetime.fromtimestamp(0),
-                            )
-                        else:
-                            matches = datefinder.find_dates(
-                                source_name,
-                                base_date=datetime.datetime.fromtimestamp(0),
-                            )
-                    except:
-                        matches = None
-                    published = None
-                    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-                    default_date = datetime.datetime.fromtimestamp(1)
-                    if matches is not None:
-                        try:
-                            for match in matches:
-                                if (
-                                    match.timestamp() < yesterday.timestamp()
-                                    and len(str(match.year)) == 4
-                                ):
-                                    published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
-                                    break
-                        except:
-                            pass
-                    if published is None:
-                        published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-                    if "mitre" in source_name and "name" in stix_object:
-                        title = "[MITRE ATT&CK] " + stix_object["name"]
-                        if "modified" in stix_object:
-                            published = stix_object["modified"]
-                    elif "amitt" in source_name and "name" in stix_object:
-                        title = "[AM!TT] " + stix_object["name"]
-                        if "modified" in stix_object:
-                            published = stix_object["modified"]
-                    else:
-                        title = source_name
-
-                    if "external_id" in external_reference:
-                        title = (
-                            title + " (" + str(external_reference["external_id"]) + ")"
-                        )
-
-                    if "marking_tlpclear" in self.mapping_cache:
-                        object_marking_ref_result = self.mapping_cache[
-                            "marking_tlpclear"
-                        ]
-                    else:
-                        object_marking_ref_result = (
-                            self.opencti.marking_definition.read(
-                                filters=[
-                                    {"key": "definition_type", "values": ["TLP"]},
-                                    {"key": "definition", "values": ["TLP:CLEAR"]},
-                                ]
-                            )
-                        )
-                        self.mapping_cache["marking_tlpclear"] = {
-                            "id": object_marking_ref_result["id"]
-                        }
-
-                    author = self.resolve_author(title)
-                    report = self.opencti.report.create(
-                        name=title,
-                        createdBy=author["id"] if author is not None else None,
-                        objectMarking=[object_marking_ref_result["id"]],
-                        externalReferences=[external_reference_id],
-                        description=external_reference["description"]
-                        if "description" in external_reference
-                        else "",
-                        report_types="threat-report",
-                        published=published,
-                        update=True,
+                try:
+                    url = (
+                        external_reference["url"]
+                        if "url" in external_reference
+                        else None
                     )
-                    reports[external_reference_id] = report
+                    source_name = (
+                        external_reference["source_name"]
+                        if "source_name" in external_reference
+                        else None
+                    )
+                    external_id = (
+                        external_reference["external_id"]
+                        if "external_id" in external_reference
+                        else None
+                    )
+                    generated_ref_id = self.opencti.external_reference.generate_id(
+                        url, source_name, external_id
+                    )
+                    if generated_ref_id is None:
+                        continue
+                    if generated_ref_id in self.mapping_cache:
+                        external_reference_id = self.mapping_cache[generated_ref_id]
+                    else:
+                        external_reference_id = self.opencti.external_reference.create(
+                            source_name=source_name,
+                            url=url,
+                            external_id=external_id,
+                            description=external_reference["description"]
+                            if "description" in external_reference
+                            else None,
+                        )["id"]
+                    if "x_opencti_files" in external_reference:
+                        for file in external_reference["x_opencti_files"]:
+                            self.opencti.external_reference.add_file(
+                                id=external_reference_id,
+                                file_name=file["name"],
+                                data=base64.b64decode(file["data"]),
+                                mime_type=file["mime_type"],
+                                no_trigger_import=file.get("no_trigger_import", False),
+                            )
+                    if (
+                        self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        )
+                        is not None
+                    ):
+                        for file in self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        ):
+                            self.opencti.external_reference.add_file(
+                                id=external_reference_id,
+                                file_name=file["name"],
+                                data=base64.b64decode(file["data"]),
+                                mime_type=file["mime_type"],
+                                no_trigger_import=file.get("no_trigger_import", False),
+                            )
+                    self.mapping_cache[generated_ref_id] = generated_ref_id
+                    external_references_ids.append(external_reference_id)
+                    if stix_object["type"] in [
+                        "threat-actor",
+                        "intrusion-set",
+                        "campaign",
+                        "incident",
+                        "malware",
+                        "relationship",
+                    ] and (
+                        types is not None and "external-reference-as-report" in types
+                    ):
+                        # Add a corresponding report
+                        # Extract date
+                        try:
+                            if "description" in external_reference:
+                                matches = datefinder.find_dates(
+                                    external_reference["description"],
+                                    base_date=datetime.datetime.fromtimestamp(0),
+                                )
+                            else:
+                                matches = datefinder.find_dates(
+                                    source_name,
+                                    base_date=datetime.datetime.fromtimestamp(0),
+                                )
+                        except:
+                            matches = None
+                        published = None
+                        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+                        default_date = datetime.datetime.fromtimestamp(1)
+                        if matches is not None:
+                            try:
+                                for match in matches:
+                                    if (
+                                        match.timestamp() < yesterday.timestamp()
+                                        and len(str(match.year)) == 4
+                                    ):
+                                        published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                                        break
+                            except:
+                                pass
+                        if published is None:
+                            published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                        if "mitre" in source_name and "name" in stix_object:
+                            title = "[MITRE ATT&CK] " + stix_object["name"]
+                            if "modified" in stix_object:
+                                published = stix_object["modified"]
+                        elif "amitt" in source_name and "name" in stix_object:
+                            title = "[AM!TT] " + stix_object["name"]
+                            if "modified" in stix_object:
+                                published = stix_object["modified"]
+                        else:
+                            title = source_name
+
+                        if "external_id" in external_reference:
+                            title = (
+                                title
+                                + " ("
+                                + str(external_reference["external_id"])
+                                + ")"
+                            )
+
+                        if "marking_tlpclear" in self.mapping_cache:
+                            object_marking_ref_result = self.mapping_cache[
+                                "marking_tlpclear"
+                            ]
+                        else:
+                            object_marking_ref_result = (
+                                self.opencti.marking_definition.read(
+                                    filters=[
+                                        {"key": "definition_type", "values": ["TLP"]},
+                                        {"key": "definition", "values": ["TLP:CLEAR"]},
+                                    ]
+                                )
+                            )
+                            self.mapping_cache["marking_tlpclear"] = {
+                                "id": object_marking_ref_result["id"]
+                            }
+
+                        author = self.resolve_author(title)
+                        report = self.opencti.report.create(
+                            name=title,
+                            createdBy=author["id"] if author is not None else None,
+                            objectMarking=[object_marking_ref_result["id"]],
+                            externalReferences=[external_reference_id],
+                            description=external_reference["description"]
+                            if "description" in external_reference
+                            else "",
+                            report_types="threat-report",
+                            published=published,
+                            update=True,
+                        )
+                        reports[external_reference_id] = report
+                except:
+                    API_LOGGER.warn("Cannot generate external reference")
         elif "x_opencti_external_references" in stix_object:
             for external_reference in stix_object["x_opencti_external_references"]:
                 url = external_reference["url"] if "url" in external_reference else None
