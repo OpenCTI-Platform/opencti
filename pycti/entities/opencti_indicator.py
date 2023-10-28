@@ -473,7 +473,7 @@ class Indicator:
         pattern_type = kwargs.get("pattern_type", None)
         pattern_version = kwargs.get("pattern_version", None)
         pattern = kwargs.get("pattern", None)
-        name = kwargs.get("name", None)
+        name = kwargs.get("name", kwargs.get("pattern", None))
         description = kwargs.get("description", None)
         indicator_types = kwargs.get("indicator_types", None)
         valid_from = kwargs.get("valid_from", None)
