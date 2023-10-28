@@ -365,22 +365,16 @@ class OpenCTIApiClient:
                     else main_error["message"]
                 )
                 if "data" in main_error and "reason" in main_error["data"]:
-                    # Warning here because the error should be caught at a higher level
-                    LOGGER.warning(main_error["data"]["reason"])
                     raise ValueError(
                         {"name": error_name, "message": main_error["data"]["reason"]}
                     )
                 else:
-                    # Warning here because the error should be caught at a higher level
-                    LOGGER.warning(main_error["message"])
                     raise ValueError(
                         {"name": error_name, "message": main_error["message"]}
                     )
             else:
                 return result
         else:
-            # Info here because the error should be caught at a higher level
-            LOGGER.info(r.text)
             raise ValueError(r.text)
 
     def fetch_opencti_file(self, fetch_uri, binary=False, serialize=False):
