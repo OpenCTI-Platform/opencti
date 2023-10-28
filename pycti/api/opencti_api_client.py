@@ -365,18 +365,21 @@ class OpenCTIApiClient:
                     else main_error["message"]
                 )
                 if "data" in main_error and "reason" in main_error["data"]:
-                    LOGGER.error(main_error["data"]["reason"])
+                    # Warning here because the error should be caught at a higher level
+                    LOGGER.warning(main_error["data"]["reason"])
                     raise ValueError(
                         {"name": error_name, "message": main_error["data"]["reason"]}
                     )
                 else:
-                    LOGGER.error(main_error["message"])
+                    # Warning here because the error should be caught at a higher level
+                    LOGGER.warning(main_error["message"])
                     raise ValueError(
                         {"name": error_name, "message": main_error["message"]}
                     )
             else:
                 return result
         else:
+            # Info here because the error should be caught at a higher level
             LOGGER.info(r.text)
             raise ValueError(r.text)
 
