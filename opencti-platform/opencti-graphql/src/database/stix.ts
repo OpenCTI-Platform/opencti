@@ -1011,12 +1011,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // Observables
   // region HOSTNAME
-  [`${ENTITY_HOSTNAME}_${ENTITY_IPV4_ADDR}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_HOSTNAME}_${ENTITY_IPV6_ADDR}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_EXTENDED }
-  ],
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED }
   ],
@@ -1027,10 +1021,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
   ],
   [`${ENTITY_HOSTNAME}_${ENTITY_IPV4_ADDR}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
+    { name: RELATION_RESOLVES_TO, type: REL_EXTENDED }
   ],
   [`${ENTITY_HOSTNAME}_${ENTITY_IPV6_ADDR}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
+    { name: RELATION_RESOLVES_TO, type: REL_EXTENDED }
   ],
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED }
