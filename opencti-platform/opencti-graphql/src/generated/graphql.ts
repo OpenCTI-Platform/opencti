@@ -23532,6 +23532,7 @@ export enum StixDomainObjectsFilter {
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiReliability = 'x_opencti_reliability',
+  XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
