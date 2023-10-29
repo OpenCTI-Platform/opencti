@@ -1355,13 +1355,13 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleZoomToFit(adjust = false) {
-    let px = 150;
+    let px = 50;
     if (this.graphData.nodes.length === 1) {
-      px = 500;
-    } else if (this.graphData.nodes.length < 4) {
       px = 300;
-    } else if (this.graphData.nodes.length < 8) {
+    } else if (this.graphData.nodes.length < 4) {
       px = 200;
+    } else if (this.graphData.nodes.length < 8) {
+      px = 100;
     }
     if (adjust) {
       const container = document.getElementById('container');

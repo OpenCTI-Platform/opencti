@@ -329,7 +329,10 @@ const StixDomainObjectHeader = (props) => {
           <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
             {t('Display as')}
           </InputLabel>
-          <FormControl classes={{ root: classes.viewAsField }} variant="outlined">
+          <FormControl
+            classes={{ root: classes.viewAsField }}
+            variant="outlined"
+          >
             <Select
               size="small"
               name="view-as"
