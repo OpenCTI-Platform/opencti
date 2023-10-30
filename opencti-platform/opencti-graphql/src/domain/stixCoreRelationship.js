@@ -23,6 +23,7 @@ import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/s
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY
 } from '../schema/general';
@@ -89,7 +90,7 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
   return distributionRelations(context, context.user, finalArgs);
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
-  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], dynamicFrom, dynamicTo } = args;
+  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], dynamicFrom, dynamicTo, authorId } = args;
   let finalArgs = args;
   if (isNotEmptyField(dynamicFrom)) {
     const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
@@ -104,6 +105,10 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
     }
+  }
+  if (isNotEmptyField(authorId)) {
+    const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+    finalArgs = { ...finalArgs, filters };
   }
   const numberArgs = buildEntityFilters({ ...finalArgs, types: relationship_type });
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
