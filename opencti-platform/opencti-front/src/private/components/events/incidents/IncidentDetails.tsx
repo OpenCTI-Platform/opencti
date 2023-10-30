@@ -84,7 +84,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
       filters: {
         entity_type: [{ id: 'Stix-Domain-Object' }],
         elementId: [{ id: incident.id }],
-        relationship_type: [{ id: 'related-to' }],
+        relationship_type: [{ id: 'related-to' }, { id: 'targets' }, { id: 'uses' }, { id: 'attributed-to' }],
       },
     },
   ];

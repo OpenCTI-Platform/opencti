@@ -205,6 +205,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
               small={true}
               type="case_priority_ov"
               value={data.priority}
+              displayMode="chip"
             />
           </Grid>
           <Grid item={true} xs={6}>
@@ -216,6 +217,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
               small={true}
               type="case_severity_ov"
               value={data.severity}
+              displayMode="chip"
             />
           </Grid>
           <Grid item={true} xs={12}>

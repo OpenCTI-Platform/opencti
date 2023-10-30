@@ -10,6 +10,8 @@ import { Theme } from './Theme';
 import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
 import { ItemOpenVocabQuery } from './__generated__/ItemOpenVocabQuery.graphql';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
+import ItemSeverity from './ItemSeverity';
+import ItemPriority from './ItemPriority';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -25,7 +27,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 'auto',
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
     borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
     '& .MuiChip-label': {
       whiteSpace: 'normal',
       padding: '4px 6px',
@@ -69,16 +74,19 @@ const itemOpenVocabQuery = graphql`
   }
 `;
 
-const ItemOpenVocabDummy = ({ small = true, displayMode = 'span' }: { small?: boolean, displayMode?: 'chip' | 'span' }) => {
+const ItemOpenVocabDummy = ({
+  small = true,
+  displayMode = 'span',
+}: {
+  small?: boolean;
+  displayMode?: 'chip' | 'span';
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   if (displayMode === 'chip') {
     return (
       <Tooltip title={t('No description')}>
-        <Chip
-          classes={{ root: classes.chip }}
-          label={t('Unknown')}
-        />
+        <Chip classes={{ root: classes.chip }} label={t('Unknown')} />
       </Tooltip>
     );
   }
@@ -97,9 +105,14 @@ const ItemOpenVocabDummy = ({ small = true, displayMode = 'span' }: { small?: bo
     </span>
   );
 };
-const ItemOpenVocabComponent: FunctionComponent<
-Omit<ItemOpenVocabProps, 'type'>
-> = ({ value, small = true, hideEmpty = true, displayMode = 'span', queryRef }) => {
+const ItemOpenVocabComponent: FunctionComponent<ItemOpenVocabProps> = ({
+  type,
+  value,
+  small = true,
+  hideEmpty = true,
+  displayMode = 'span',
+  queryRef,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
@@ -113,31 +126,37 @@ Omit<ItemOpenVocabProps, 'type'>
     description = openVocab?.description ? openVocab.description : null;
   }
   if (displayMode === 'chip') {
-    const chip = (<Chip
-      classes={{ root: classes.chip }}
-      label={value || t('Unknown')}
-    />);
-    return (!description && hideEmpty)
-      ? chip
-      : (
+    let chip = (
+      <Chip classes={{ root: classes.chip }} label={value || t('Unknown')} />
+    );
+    if (type === 'case_severity_ov') {
+      chip = <ItemSeverity label={value || t('Unknown')} severity={value} />;
+    } else if (type === 'case_priority_ov') {
+      chip = <ItemPriority label={value || t('Unknown')} priority={value} />;
+    }
+    return !description && hideEmpty ? (
+      chip
+    ) : (
       <Tooltip title={t(description ?? t('No description'))}>
-        {chip}
+        <span>{chip}</span>
       </Tooltip>
-      );
+    );
   }
   const preClass = small ? classes.smallPre : classes.pre;
   const iconClass = small ? classes.smallIcon : classes.icon;
-  const tooltip = (<Tooltip title={t(description ?? t('No description'))}>
-    <InformationOutline
-      className={iconClass}
-      fontSize="small"
-      color="secondary"
-    />
-  </Tooltip>);
+  const tooltip = (
+    <Tooltip title={t(description ?? t('No description'))}>
+      <InformationOutline
+        className={iconClass}
+        fontSize="small"
+        color="secondary"
+      />
+    </Tooltip>
+  );
   return (
     <span className={classes.container}>
       <pre className={preClass}>{value || t('Unknown')}</pre>
-      {(!description && hideEmpty) ? '' : tooltip}
+      {!description && hideEmpty ? '' : tooltip}
     </span>
   );
 };
@@ -152,7 +171,14 @@ const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} displayMode={props.displayMode} />}>
+        <React.Suspense
+          fallback={
+            <ItemOpenVocabDummy
+              small={props.small}
+              displayMode={props.displayMode}
+            />
+          }
+        >
           <ItemOpenVocabComponent {...props} queryRef={queryRef} />
         </React.Suspense>
       )}

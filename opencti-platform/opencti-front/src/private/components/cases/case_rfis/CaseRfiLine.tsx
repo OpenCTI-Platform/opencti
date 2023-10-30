@@ -20,6 +20,8 @@ import {
   CaseRfiLineCase_node$data,
   CaseRfiLineCase_node$key,
 } from './__generated__/CaseRfiLineCase_node.graphql';
+import ItemPriority from '../../../../components/ItemPriority';
+import ItemSeverity from '../../../../components/ItemSeverity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -50,20 +52,20 @@ interface CaseRfiLineComponentProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    event: React.KeyboardEvent,
   ) => void;
   node: CaseRfiLineCase_node$key;
   selectedElements: Record<string, CaseRfiLineCase_node$data>;
   deSelectedElements: Record<string, CaseRfiLineCase_node$data>;
   onToggleEntity: (
     entity: CaseRfiLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: CaseRfiLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -135,7 +137,7 @@ export const CaseRfiLine: FunctionComponent<CaseRfiLineComponentProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { t, fd } = useFormatter();
   const data = useFragment(caseFragment, node);
   return (
     <ListItem
@@ -163,7 +165,7 @@ export const CaseRfiLine: FunctionComponent<CaseRfiLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Case-Rfi'} />
+        <ItemIcon type="Case-Rfi" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -180,13 +182,21 @@ export const CaseRfiLine: FunctionComponent<CaseRfiLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.priority.width }}
             >
-              {data.priority}
+              <ItemPriority
+                variant="inList"
+                priority={data.priority}
+                label={data.priority ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.severity.width }}
             >
-              {data.severity}
+              <ItemSeverity
+                variant="inList"
+                severity={data.severity}
+                label={data.severity ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}

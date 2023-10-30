@@ -20,6 +20,8 @@ import {
   CaseIncidentLineCase_node$data,
   CaseIncidentLineCase_node$key,
 } from './__generated__/CaseIncidentLineCase_node.graphql';
+import ItemSeverity from '../../../../components/ItemSeverity';
+import ItemPriority from '../../../../components/ItemPriority';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -50,20 +52,20 @@ interface CaseIncidentLineComponentProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    event: React.KeyboardEvent,
   ) => void;
   node: CaseIncidentLineCase_node$key;
   selectedElements: Record<string, CaseIncidentLineCase_node$data>;
   deSelectedElements: Record<string, CaseIncidentLineCase_node$data>;
   onToggleEntity: (
     entity: CaseIncidentLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: CaseIncidentLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -138,7 +140,7 @@ CaseIncidentLineComponentProps
   index,
 }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { t, fd } = useFormatter();
   const data = useFragment(caseIncidentFragment, node);
   return (
     <ListItem
@@ -166,7 +168,7 @@ CaseIncidentLineComponentProps
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Case-Incident'} />
+        <ItemIcon type="Case-Incident" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -183,13 +185,21 @@ CaseIncidentLineComponentProps
               className={classes.bodyItem}
               style={{ width: dataColumns.priority.width }}
             >
-              {data.priority}
+              <ItemPriority
+                variant="inList"
+                priority={data.priority}
+                label={data.priority ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.severity.width }}
             >
-              {data.severity}
+              <ItemSeverity
+                variant="inList"
+                severity={data.severity}
+                label={data.severity ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}

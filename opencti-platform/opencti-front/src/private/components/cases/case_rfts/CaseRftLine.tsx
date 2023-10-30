@@ -20,6 +20,8 @@ import {
   CaseRftLineCase_node$data,
   CaseRftLineCase_node$key,
 } from './__generated__/CaseRftLineCase_node.graphql';
+import ItemPriority from '../../../../components/ItemPriority';
+import ItemSeverity from '../../../../components/ItemSeverity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -53,20 +55,20 @@ interface CaseRftLineComponentProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    event: React.KeyboardEvent,
   ) => void;
   node: CaseRftLineCase_node$key;
   selectedElements: Record<string, CaseRftLineCase_node$data>;
   deSelectedElements: Record<string, CaseRftLineCase_node$data>;
   onToggleEntity: (
     entity: CaseRftLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: CaseRftLineCase_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -138,7 +140,7 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { t, fd } = useFormatter();
   const data = useFragment(caseFragment, node);
   return (
     <ListItem
@@ -183,19 +185,29 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.priority.width }}
             >
-              {data.priority}
+              <ItemPriority
+                variant="inList"
+                priority={data.priority}
+                label={data.priority ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.severity.width }}
             >
-              {data.severity}
+              <ItemSeverity
+                variant="inList"
+                severity={data.severity}
+                label={data.severity ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectAssignee.width }}
             >
-              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
+              {(data.objectAssignee?.edges ?? [])
+                .map((p) => p?.node.name)
+                .join(', ')}
             </div>
             <div
               className={classes.bodyItem}
