@@ -581,6 +581,7 @@ StixDomainObjectContentFiles.propTypes = {
   currentExportUrl: PropTypes.string,
   exportFiles: PropTypes.array,
   handleSelectExportFile: PropTypes.func,
+
 };
 
 export default R.compose(

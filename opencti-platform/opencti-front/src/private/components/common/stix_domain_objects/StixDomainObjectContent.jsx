@@ -169,15 +169,22 @@ class StixDomainObjectContentComponent extends Component {
   constructor(props) {
     super(props);
     // TODO: also fetch fileName to open to correct file
+
     // Done by default I suppose
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
       `view-stix-domain-object-content-${props.stixDomainObject.id}`,
     );
+
     const files = getFiles(props.stixDomainObject);
     const exportFiles = getExportFiles(props.stixDomainObject);
     // TODO: loop through exportFiles array to get file with same name as fileName query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileName = urlParams.get('filename');
+    const exportName = urlParams.get('currentExportId');
+    console.log('fileName', fileName);
+    console.log('exportName', exportName);
 
     this.state = {
       // TODO: To display a document at page load => set document id here
@@ -451,11 +458,10 @@ class StixDomainObjectContentComponent extends Component {
           stixDomainObjectId={stixDomainObject.id}
           files={files}
           exportFiles={exportFiles}
-          currentExportUrl={currentExportUrl}
-          currentExportId={currentExportId}
           handleSelectFile={this.handleSelectFile.bind(this)}
           handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
+          currentExportId={currentExportId}
           onFileChange={this.handleFileChange.bind(this)}
         />
         {currentFileType === 'text/plain' && (

@@ -13,7 +13,7 @@ import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -77,12 +77,12 @@ const StixCoreObjectFileExportComponent = ({
       },
 
       onCompleted: (a) => {
-        console.log(a);
         // TODO: retrieve property 'name' inside object 'a'
+        const filename = a.stixCoreObjectEdit.exportAsk[0].name;
+        console.log('a', filename);
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
-        navigate(`/dashboard/analyses/reports/${id}/content`);
         // TODO: add filename inside the url of navigate
         // https://reactrouter.com/en/main/hooks/use-navigate
         /**
@@ -91,6 +91,10 @@ const StixCoreObjectFileExportComponent = ({
          *       search: ... fileName
          * });
          */
+        navigate({
+          pathname: `/dashboard/analyses/reports/${id}/content`,
+          search: `?${createSearchParams({ filename })}`,
+        });
       },
     });
   };
