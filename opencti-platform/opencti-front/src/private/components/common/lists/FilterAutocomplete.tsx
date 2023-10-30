@@ -34,8 +34,8 @@ interface FilterAutocompleteProps {
   filterKey: string;
   searchContext: { entityTypes: string[], elementId?: string[] };
   defaultHandleAddFilter: HandleAddFilter;
-  inputValues: { key: string, values: (string | Date)[], operator?: string }[];
-  setInputValues: (value: { key: string, values: (string | Date)[], operator?: string }[]) => void;
+  inputValues: { key: string, values: string[], operator?: string }[];
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
@@ -47,6 +47,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   filterKey,
   searchContext,
   defaultHandleAddFilter,
+  inputValues,
   setInputValues,
   availableEntityTypes,
   availableRelationshipTypes,
@@ -138,6 +139,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   } else if (entities[filterKey]) {
     options = entities[filterKey];
   }
+  const input = inputValues.filter((f) => f.key === filterKey)?.[0]?.values?.[0] ?? '';
   return (
     <MUIAutocomplete
       key={filterKey}
@@ -154,7 +156,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         setCacheEntities,
         event,
       )}
-      inputValue={''}
+      inputValue={input}
       onChange={handleChange}
       groupBy={
         isStixObjectTypes
