@@ -665,13 +665,15 @@ export const extractFilterKeys = (filters) => {
   return keys;
 };
 
-// extract all the ids from a filter group / all the ids corresponding to a specific key if key is specified
-export const extractFilterIds = (filters, key = null) => {
+// extract all the ids from a filter group / all the ids corresponding to the specific keys if key is specified
+export const extractFilterIds = (inputFilters, key = []) => {
+  const keysToKeep = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
   let ids = key
-    ? filters.filters?.filter((f) => f.key.includes(key)).map((f) => f.values).flat() ?? []
-    : filters.filters?.map((f) => f.values).flat() ?? [];
-  if (filters.filterGroups && filters.filterGroups.length > 0) {
-    ids = ids.concat(filters.filterGroups.map((group) => extractFilterIds(group, key)).flat());
+    ? filters.filter((f) => f.key.some((k) => keysToKeep.includes(k))).map((f) => f.values).flat() ?? []
+    : filters.map((f) => f.values).flat() ?? [];
+  if (filterGroups.length > 0) {
+    ids = ids.concat(filterGroups.map((group) => extractFilterIds(group, key)).flat());
   }
   return uniq(ids);
 };

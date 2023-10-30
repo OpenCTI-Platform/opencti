@@ -42,7 +42,7 @@ export const schemaRelationsRefDefinition = {
       }
 
       directRefs.set(relationRefDefinition.inputName, relationRefDefinition);
-      this.allRelationsRef.push(relationRefDefinition.inputName);
+      if (!this.allRelationsRef.includes(relationRefDefinition.inputName)) this.allRelationsRef.push(relationRefDefinition.inputName);
     });
 
     this.relationsRef[entityType] = directRefs;
