@@ -1,6 +1,9 @@
 /* eslint-disable no-underscore-dangle */
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
+/* eslint-disable import/no-unresolved */
+import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
@@ -244,6 +247,7 @@ export const searchEngineInit = async () => {
   const ca = conf.get('elasticsearch:ssl:ca')
     ? loadCert(conf.get('elasticsearch:ssl:ca'))
     : conf.get('elasticsearch:ssl:ca_plain') || null;
+  const region = conf.get('opensearch:region');
   const searchConfiguration = {
     node: conf.get('elasticsearch:url'),
     proxy: conf.get('elasticsearch:proxy') || null,
@@ -263,6 +267,14 @@ export const searchEngineInit = async () => {
       ca,
       rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
     },
+    ...(region ? AwsSigv4Signer({
+      region,
+      service: conf.get('opensearch:service') || 'es',
+      getCredentials: () => {
+        const credentialsProvider = defaultProvider();
+        return credentialsProvider();
+      }
+    }) : {})
   };
   searchConfiguration.auth = await enrichWithRemoteCredentials('elasticsearch', searchConfiguration.auth);
   // Select the correct engine
