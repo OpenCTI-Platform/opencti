@@ -447,6 +447,9 @@ class ListenStream(threading.Thread):
                 # First run, if no recover iso date in config, put today
                 if recover_until is None:
                     recover_until = self.helper.date_now_z()
+                self.helper.set_state(
+                    {"start_from": start_from, "recover_until": recover_until}
+                )
             else:
                 # Get start_from from state
                 # Backward compat
@@ -462,10 +465,7 @@ class ListenStream(threading.Thread):
                 # Current implem
                 else:
                     recover_until = current_state["recover_until"]
-            # Set state
-            self.helper.set_state(
-                {"start_from": start_from, "recover_until": recover_until}
-            )
+
             # Start the stream alive watchdog
             q = Queue(maxsize=1)
             stream_alive = StreamAlive(q)
@@ -1280,6 +1280,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             return object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ][key]
+        elif key in object and key not in ["type"]:
+            return object[key]
         return None
 
     @staticmethod
