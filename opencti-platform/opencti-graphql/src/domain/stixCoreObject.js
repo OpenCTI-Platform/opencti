@@ -71,6 +71,7 @@ import {
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterIds } from '../utils/filtering';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -522,12 +523,11 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // endregion
 
 // region filters representatives
-
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
-  // extract the ids from inputFilters
-  const ids = extractFilterIds(inputFilters);
-  // keep ids that should be resolved
-  const idsToResolve = ids; // TODO to complete: keep only the ids to resolve
+  // extract the ids to resolve from inputFilters
+  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id']);
+  const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
+  // resolve the ids
   const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
   // resolve status ids differently
   for (let index = 0; index < resolvedEntities.length; index += 1) {
