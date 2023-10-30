@@ -911,7 +911,7 @@ type IndexedFileConnection {
 
 type FilesMetrics {
   globalCount: Int!
-  globalSize: Float!
+  globalSize: Int!
 }
 
 type OpenCtiFile {
