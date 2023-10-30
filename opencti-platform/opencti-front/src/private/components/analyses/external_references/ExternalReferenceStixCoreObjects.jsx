@@ -52,6 +52,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
               </ListItemIcon>
               <ListItemText
                 primary={stixCoreObjectOrRelationship?.representative?.main}
+                primaryTypographyProps={{ style: { overflow: 'hidden', textOverflow: 'ellipsis' } }}
                 secondary={truncate(stixCoreObjectOrRelationship?.representative?.secondary, 150)}
               />
             </ListItem>
