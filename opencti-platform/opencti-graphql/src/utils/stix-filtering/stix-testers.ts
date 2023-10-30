@@ -249,9 +249,20 @@ export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching
   if (filter.operator !== 'eq') {
     return false;
   }
+
   // advanced test between filter ids and the entity relations and refs
-  // TODO: this will only work properly with the mode=OR, as our testers work in isolation
-  // In mode=AND, if filter.values=[X, Y] it will match only if X and Y are both found during one of the testers below
-  // It won't match if X is found in a ref and Y in a relation (arguably, it should match as all filter values are found)
-  return testRelationTo(stix, filter) || testRelationFrom(stix, filter) || testRefs(stix, filter);
+  // we shall aggregate all candidate fields and match the filter
+  const aggregatedStixValues = [];
+  if (stix.type === STIX_TYPE_RELATION) {
+    aggregatedStixValues.push(...toValidArray(stix.target_ref)); // to
+    aggregatedStixValues.push(...toValidArray(stix.source_ref)); // from
+  }
+  if (stix.type === STIX_TYPE_SIGHTING) {
+    aggregatedStixValues.push(...(stix.where_sighted_refs ?? [])); // to
+    aggregatedStixValues.push(...toValidArray(stix.sighting_of_ref)); // from
+  }
+  // refs
+  aggregatedStixValues.push(...stixRefsExtractor(stix, generateStandardId));
+
+  return testStringFilter(filter, aggregatedStixValues);
 };
