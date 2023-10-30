@@ -260,7 +260,7 @@ class StixDomainObjectContentFiles extends Component {
                                     secondary={fld(R.propOr(moment(), 'lastModified', file))}
                                 />
                             </ListItem>
-                      ))
+                      )).reverse()
                       : this.renderNoFiles()}
                 </List>
                 <Divider/>
@@ -283,7 +283,7 @@ class StixDomainObjectContentFiles extends Component {
                 >
                 {exportFiles?.length ? (
                     <div>
-                        {exportFiles.map((file) => {
+                        {exportFiles.reverse().map((file) => {
                           return (
                             file && (
                                 <FileLine
