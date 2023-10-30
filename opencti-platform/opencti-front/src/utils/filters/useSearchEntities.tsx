@@ -313,7 +313,7 @@ const useSearchEntities = ({
   availableRelationshipTypes?: string[];
   searchContext: { entityTypes: string[]; elementId?: string[] };
   searchScope: Record<string, string[]>;
-  setInputValues: (value: { key: string, values: (string | Date)[], operator?: string }[]) => void;
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
   allEntityTypes?: boolean;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
@@ -360,11 +360,11 @@ const useSearchEntities = ({
     if (!event) {
       return;
     }
-    const newInputValue = { key: filterKey, values: [event.target.value] };
-    setInputValues(((c: { key: string, values: (string | Date)[], operator?: string }[]) => ([
-      ...c.filter((f) => f.key !== filterKey),
+    console.log('event.target.value', event.target.value);
+    const newInputValue = { key: filterKey, values: [event.target.value?.toString()], operator: 'eq' };
+    setInputValues([
       newInputValue,
-    ])) as unknown as { key: string, values: (string | Date)[], operator?: string }[]);
+    ]);
     switch (filterKey) {
       case 'toSightingId':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -687,9 +687,9 @@ const useSearchEntities = ({
             mode: 'and',
             filterGroups: [],
             filters: [
-            { key: 'objects', values: searchContext?.elementId ?? [] },
-            { key: 'entity_type', values: availableEntityTypes ?? [] },
-          ],
+              { key: 'objects', values: searchContext?.elementId ?? [] },
+              { key: 'entity_type', values: availableEntityTypes ?? [] },
+            ],
           },
         })
           .toPromise()
@@ -1068,11 +1068,11 @@ const useSearchEntities = ({
             mode: 'and',
             filterGroups: [],
             filters: [
-            {
-              key: 'type',
-              values: isNotEmptyField(entityType) ? [entityType] : [],
-            },
-          ],
+              {
+                key: 'type',
+                values: isNotEmptyField(entityType) ? [entityType] : [],
+              },
+            ],
           },
         })
           .toPromise()

@@ -12,8 +12,8 @@ interface FilterDateProps {
   ) => void;
   filterKey: string;
   operator?: string;
-  inputValues: { key: string, values: (string | Date)[], operator?: string }[];
-  setInputValues: (value: { key: string, values: (string | Date)[], operator?: string }[]) => void;
+  inputValues: { key: string, values: string[], operator?: string }[];
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -37,7 +37,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   };
 
   const handleChangeDate = (date: Date) => {
-    const newInputValue = { key: filterKey, values: [date], operator };
+    const newInputValue = { key: filterKey, values: [date.toString()], operator };
     const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
     setInputValues([...newInputValues, newInputValue]);
   };
