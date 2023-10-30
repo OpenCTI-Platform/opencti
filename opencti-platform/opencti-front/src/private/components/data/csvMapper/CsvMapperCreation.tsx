@@ -15,6 +15,7 @@ const csvMapperCreation = graphql`
       name
       has_header
       separator
+      skipLineChar
       errors
     }
   }
@@ -39,6 +40,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
       has_header: values.has_header,
       separator: values.separator,
       representations: JSON.stringify(sanitized(values.representations)),
+      skipLineChar: values.skipLineChar,
     };
     commit({
       variables: {
@@ -64,6 +66,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     has_header: false,
     separator: ',',
     representations: [],
+    skipLineChar: '',
     errors: null,
   };
 

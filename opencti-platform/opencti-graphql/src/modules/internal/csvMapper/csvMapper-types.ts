@@ -57,6 +57,7 @@ export interface BasicStoreEntityCsvMapper extends BasicStoreEntity {
   name: string
   has_header: boolean
   separator: string
+  skipLineChar: string
   representations: CsvMapperRepresentation[]
 }
 

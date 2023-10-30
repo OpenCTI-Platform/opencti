@@ -60,6 +60,7 @@ type CsvMapper implements InternalObject & BasicObject {
   name: String! @auth
   has_header: Boolean! @auth
   separator: String! @auth
+  skipLineChar: String @auth
   representations: [CsvMapperRepresentation!]! @auth
   errors: String
 }
@@ -163,6 +164,7 @@ input CsvMapperAddInput {
   has_header: Boolean!
   separator: String!
   representations: String!
+  skipLineChar: String
 }
 
 type Mutation {

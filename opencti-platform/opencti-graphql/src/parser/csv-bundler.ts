@@ -32,8 +32,10 @@ export const bundleProcess = async (context: AuthContext, user: AuthUser, conten
 
   const bundleBuilder = new BundleBuilder();
   let skipLine = sanitizedMapper.has_header;
-
-  const records = await parsingProcess(content, mapper.separator);
+  let records = await parsingProcess(content, mapper.separator);
+  if (mapper.skipLineChar) {
+    records = records.filter((record) => !record[0].startsWith(mapper.skipLineChar));
+  }
   if (records) {
     await Promise.all((records.map(async (record: string[]) => {
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
