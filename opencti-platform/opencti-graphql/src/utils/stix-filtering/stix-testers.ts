@@ -4,7 +4,7 @@ import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../schema/general';
 import type { Filter } from './stix-filtering';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../../schema/identifier';
-import { testEqualityByMode, testNumericByMode, toValidArray } from './boolean-logic-engine';
+import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from './boolean-logic-engine';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -18,7 +18,7 @@ import { testEqualityByMode, testNumericByMode, toValidArray } from './boolean-l
  */
 export const testMarkingFilter = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.object_marking_refs ?? [];
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -29,7 +29,7 @@ export const testMarkingFilter = (stix: any, filter: Filter) => {
 export const testEntityType = (stix: any, filter: Filter) => {
   const stixValue: string = stix.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(stix);
   const extendedStixValues = [stixValue, ...getParentTypes(stixValue)];
-  return testEqualityByMode(filter, filter.values, extendedStixValues);
+  return testStringFilter(filter, extendedStixValues);
 };
 
 /**
@@ -37,9 +37,8 @@ export const testEntityType = (stix: any, filter: Filter) => {
  * - search must be insensitive to case due to constraint in frontend keywords (using "runtimeAttribute" based on keyword which is always lowercase)
  */
 export const testIndicator = (stix: any, filter: Filter) => {
-  const filterValuesInLowerCase = filter.values.map((v) => v.toLowerCase());
-  const stixValues: string[] = (stix.indicator_types ?? []).map((v: string) => v.toLowerCase());
-  return testEqualityByMode(filter, filterValuesInLowerCase, stixValues);
+  const stixValues: string[] = stix.indicator_types ?? [];
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -47,8 +46,8 @@ export const testIndicator = (stix: any, filter: Filter) => {
  * - x_opencti_workflow_id is workflow_id in stix (in extension)
  */
 export const testWorkflow = (stix: any, filter: Filter) => {
-  const stixValue = stix.extensions?.[STIX_EXT_OCTI].workflow_id;
-  return testEqualityByMode(filter, filter.values, toValidArray(stixValue));
+  const stixValue: string | null = stix.extensions?.[STIX_EXT_OCTI].workflow_id;
+  return testStringFilter(filter, toValidArray(stixValue));
 };
 
 /**
@@ -57,7 +56,7 @@ export const testWorkflow = (stix: any, filter: Filter) => {
  */
 export const testCreatedBy = (stix: any, filter: Filter) => {
   const stixValue: string | undefined = stix.created_by_ref ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref;
-  return testEqualityByMode(filter, filter.values, toValidArray(stixValue));
+  return testStringFilter(filter, toValidArray(stixValue));
 };
 
 /**
@@ -66,7 +65,7 @@ export const testCreatedBy = (stix: any, filter: Filter) => {
  */
 export const testCreator = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.creator_ids ?? [];
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -75,7 +74,7 @@ export const testCreator = (stix: any, filter: Filter) => {
  */
 export const testAssignee = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.assignee_ids ?? [];
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -85,7 +84,7 @@ export const testAssignee = (stix: any, filter: Filter) => {
  */
 export const testLabel = (stix: any, filter: Filter) => {
   const stixValues: string[] = [...(stix.labels ?? []), ...(stix.extensions?.[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -93,11 +92,8 @@ export const testLabel = (stix: any, filter: Filter) => {
  * - boolean stored in id that must be parsed from string "true" or "false"
  */
 export const testRevoked = (stix: any, filter: Filter) => {
-  // it would be stupid to have filter.values with both true and false
-  // but we handle it anyway for consistency among the tester functions
-  const filterValuesAsBooleans = filter.values.map((v) => v === 'true');
-  const stixValues: boolean[] = toValidArray(stix.revoked);
-  return testEqualityByMode(filter, filterValuesAsBooleans, stixValues);
+  const stixValue: boolean | undefined = stix.revoked;
+  return testBooleanFilter(filter, stixValue);
 };
 
 /**
@@ -106,9 +102,8 @@ export const testRevoked = (stix: any, filter: Filter) => {
  * - boolean stored in id that must be parsed from string "true" or "false"
  */
 export const testDetection = (stix: any, filter: Filter) => {
-  const filterValuesAsBooleans = filter.values.map((v) => v === 'true');
-  const stixValues: boolean[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.detection);
-  return testEqualityByMode(filter, filterValuesAsBooleans, stixValues);
+  const stixValue: boolean | undefined = stix.extensions?.[STIX_EXT_OCTI]?.detection;
+  return testBooleanFilter(filter, stixValue);
 };
 
 /**
@@ -119,7 +114,7 @@ export const testDetection = (stix: any, filter: Filter) => {
 export const testScore = (stix: any, filter: Filter) => {
   // path depends on entity type
   const stixValue: number | null = stix.x_opencti_score ?? stix.extensions?.[STIX_EXT_OCTI]?.score ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score ?? null;
-  return testNumericByMode(filter, stixValue);
+  return testNumericFilter(filter, stixValue);
 };
 
 /**
@@ -128,7 +123,7 @@ export const testScore = (stix: any, filter: Filter) => {
  */
 export const testConfidence = (stix: any, filter: Filter) => {
   const stixValue: number | null = stix.confidence ?? null;
-  return testNumericByMode(filter, stixValue);
+  return testNumericFilter(filter, stixValue);
 };
 
 /**
@@ -136,9 +131,8 @@ export const testConfidence = (stix: any, filter: Filter) => {
  * - need lowercase comparison
  */
 export const testPattern = (stix: any, filter: Filter) => {
-  const filterValuesInLowerCase = filter.values.map((v) => v.toLowerCase());
-  const stixValues: string[] = toValidArray(stix.pattern_type ? stix.pattern_type.toLowerCase() : null);
-  return testEqualityByMode(filter, filterValuesInLowerCase, stixValues);
+  const stixValues: string[] = toValidArray(stix.pattern_type);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -147,10 +141,8 @@ export const testPattern = (stix: any, filter: Filter) => {
  * - need lowercase comparison
  */
 export const testMainObservableType = (stix: any, filter: Filter) => {
-  const filterValuesInLowerCase = filter.values.map((v) => v.toLowerCase());
-  const stixValue = stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type;
-  const stixValues: string[] = toValidArray(stixValue ? stixValue.toLowerCase() : null);
-  return testEqualityByMode(filter, filterValuesInLowerCase, stixValues);
+  const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type;
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -159,7 +151,7 @@ export const testMainObservableType = (stix: any, filter: Filter) => {
  */
 export const testObjectContains = (stix: any, filter: Filter) => {
   const stixValues: string[] = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -169,11 +161,11 @@ export const testObjectContains = (stix: any, filter: Filter) => {
 export const testRelationFrom = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValues: string[] = toValidArray(stix.source_ref);
-    return testEqualityByMode(filter, filter.values, stixValues);
+    return testStringFilter(filter, stixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     const stixValues: string[] = toValidArray(stix.sighting_of_ref);
-    return testEqualityByMode(filter, filter.values, stixValues);
+    return testStringFilter(filter, stixValues);
   }
   return false;
 };
@@ -185,11 +177,11 @@ export const testRelationFrom = (stix: any, filter: Filter) => {
 export const testRelationTo = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValues: string[] = toValidArray(stix.target_ref);
-    return testEqualityByMode(filter, filter.values, stixValues);
+    return testStringFilter(filter, stixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     const stixValues: string[] = stix.where_sighted_refs ?? [];
-    return testEqualityByMode(filter, filter.values, stixValues);
+    return testStringFilter(filter, stixValues);
   }
   return false;
 };
@@ -202,13 +194,13 @@ export const testRelationTo = (stix: any, filter: Filter) => {
 export const testRelationFromTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].source_type;
-    const extendedStixValues: string[] = [stixValue, ...getParentTypes(stixValue)];
-    return testEqualityByMode(filter, filter.values, extendedStixValues);
+    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    return testStringFilter(filter, extendedStixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].sighting_of_type;
-    const extendedStixValues: string[] = [stixValue, ...getParentTypes(stixValue)];
-    return testEqualityByMode(filter, filter.values, extendedStixValues);
+    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    return testStringFilter(filter, extendedStixValues);
   }
   return false;
 };
@@ -221,13 +213,13 @@ export const testRelationFromTypes = (stix: any, filter: Filter) => {
 export const testRelationToTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].target_type;
-    const extendedStixValues: string[] = [stixValue, ...getParentTypes(stixValue)];
-    return testEqualityByMode(filter, filter.values, extendedStixValues);
+    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    return testStringFilter(filter, extendedStixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI].where_sighted_types || [];
     const extendedStixValues = [...stixValues, ...stixValues.map((t) => getParentTypes(t)).flat()];
-    return testEqualityByMode(filter, filter.values, extendedStixValues);
+    return testStringFilter(filter, extendedStixValues);
   }
   return false;
 };
@@ -238,7 +230,7 @@ export const testRelationToTypes = (stix: any, filter: Filter) => {
  */
 export const testRefs = (stix: any, filter: Filter) => {
   const stixValues: string[] = stixRefsExtractor(stix, generateStandardId);
-  return testEqualityByMode(filter, filter.values, stixValues);
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -247,10 +239,10 @@ export const testRefs = (stix: any, filter: Filter) => {
  * - useSideEventMatching arg to optionally test against relations and refs of the object
  */
 export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching = false) => {
-  const stixValues = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.id);
+  const stixValues = stix.extensions?.[STIX_EXT_OCTI]?.id ? [stix.extensions?.[STIX_EXT_OCTI]?.id] : [];
   if (!useSideEventMatching) {
     // basic equality test between ids
-    return testEqualityByMode(filter, filter.values, stixValues);
+    return testStringFilter(filter, stixValues);
   }
 
   // useSideEventMatching is set ; only applies with "eq" operator
