@@ -24,15 +24,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 
 const stixCoreObjectFileExportQuery = graphql`
-    query StixCoreObjectFileExportQuery {
-        connectorsForExport {
-            id
-            name
-            active
-            connector_scope
-            updated_at
-        }
+  query StixCoreObjectFileExportQuery {
+    connectorsForExport {
+      id
+      name
+      active
+      connector_scope
+      updated_at
     }
+  }
 `;
 
 const exportValidation = (t) => Yup.object().shape({
@@ -217,7 +217,7 @@ const StixCoreObjectFileExportComponent = ({
                       </DialogContent>
                     );
                   }
-                  return <Loader variant="inElement"/>;
+                  return <Loader variant="inElement" />;
                 }}
               />
               <DialogActions>
@@ -247,11 +247,11 @@ const StixCoreObjectFileExport = (
   const queryRef = useQueryLoading(stixCoreObjectFileExportQuery, { id });
 
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <StixCoreObjectFileExportComponent id={id} queryRef={queryRef}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <StixCoreObjectFileExportComponent id={id} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 
