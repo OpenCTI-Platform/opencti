@@ -5071,7 +5071,7 @@ export type CsvMapperTestResult = {
   __typename?: 'CsvMapperTestResult';
   nbEntities: Scalars['Int']['output'];
   nbRelationships: Scalars['Int']['output'];
-  objects: Scalars['JSON']['output'];
+  objects: Scalars['String']['output'];
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -32167,7 +32167,7 @@ export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, Pare
 export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperTestResult'] = ResolversParentTypes['CsvMapperTestResult']> = ResolversObject<{
   nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  objects?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
+  objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

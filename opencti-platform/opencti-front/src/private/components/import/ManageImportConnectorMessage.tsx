@@ -6,11 +6,11 @@ import { useFormatter } from '../../../components/i18n';
 import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 
 interface ManageImportConnectorMessageProps {
-  name: string;
+  name: string
 }
-const WarningText = styled('span')({
-  color: '#f44336',
-});
+const WarningText = styled('span')(({ theme }) => ({
+  color: theme.palette.error.main,
+}));
 
 const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessageProps> = ({ name }) => {
   const { t } = useFormatter();

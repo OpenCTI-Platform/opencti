@@ -63,13 +63,13 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       .then((data) => {
         const resultTest = (data as CsvMapperTestDialogQuery$data)
           .csvMapperTest;
-        setResult({
-          csvMapperTest: {
-            nbEntities: resultTest?.nbEntities ?? 0,
-            nbRelationships: resultTest?.nbRelationships ?? 0,
-            objects: JSON.stringify(resultTest?.objects, null, '  '),
-          },
-        });
+        if (resultTest) {
+          setResult({
+            csvMapperTest: {
+              ...resultTest,
+            },
+          });
+        }
         setLoading(false);
       }).catch((error) => {
         handleError(error);

@@ -12382,7 +12382,7 @@ type CsvMapperEdge {
 }
 
 type CsvMapperTestResult {
-  objects: JSON!
+  objects: String!
   nbRelationships: Int!
   nbEntities: Int!
 }

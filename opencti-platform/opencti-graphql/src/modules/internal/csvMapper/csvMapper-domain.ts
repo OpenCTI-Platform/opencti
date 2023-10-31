@@ -13,7 +13,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
     const csvMapper = parseCsvMapper(JSON.parse(configuration));
     const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper);
     return {
-      objects: bundle.objects,
+      objects: JSON.stringify(bundle.objects, null, 2),
       nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
       nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
     };
