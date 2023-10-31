@@ -168,7 +168,8 @@ const ReportDetailsComponent = (props) => {
           {t('Correlated reports')}
         </Typography>
         <List>
-          {R.take(expanded ? 200 : 5, report.relatedContainers.edges)
+          {(report.relatedContainers?.edges ?? []).length >= 2
+            ? R.take(expanded ? 200 : 5, report.relatedContainers.edges)
             .filter(
               (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
             )
@@ -211,7 +212,7 @@ const ReportDetailsComponent = (props) => {
                   </div>
                 </ListItem>
               );
-            })}
+            }) : '-'}
         </List>
         {expandable && (
           <Button
