@@ -179,16 +179,24 @@ class StixDomainObjectContentComponent extends Component {
 
     const files = getFiles(props.stixDomainObject);
     const exportFiles = getExportFiles(props.stixDomainObject);
-    // TODO: loop through exportFiles array to get file with same name as fileName query param
-    const urlParams = new URLSearchParams(window.location.search);
-    const fileName = urlParams.get('filename');
-    const exportName = urlParams.get('currentExportId');
-    console.log('fileName', fileName);
-    console.log('exportName', exportName);
+
+    let currentFileId = R.head(files)?.id;
+    let isLoading = false;
+    let onProgressExportFileName;
+    if (params.currentFileId) {
+      const onProgressExportFile = exportFiles.find((file) => (
+        (file.id === params.currentFileId)
+          && (file.uploadStatus === 'progress')
+      ));
+      if (onProgressExportFile) {
+        isLoading = true;
+        onProgressExportFileName = onProgressExportFile.name;
+      }
+      currentFileId = params.currentFileId;
+    }
 
     this.state = {
-      // TODO: To display a document at page load => set document id here
-      currentFileId: R.propOr(R.head(files)?.id, 'currentFileId', params),
+      currentFileId,
       currentExportId: R.propOr(R.head(exportFiles)?.id, 'currentExportId', params),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
@@ -198,6 +206,8 @@ class StixDomainObjectContentComponent extends Component {
       currentContent: props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
       changed: false,
+      isLoading,
+      onProgressExportFileName,
     };
   }
 
@@ -211,6 +221,7 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   loadFileContent() {
+    console.log('loadFileContent');
     const { stixDomainObject } = this.props;
     const files = getFiles(stixDomainObject);
     this.setState({ isLoading: true }, () => {
@@ -428,26 +439,33 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab,
       navOpen,
       changed,
+      onProgressExportFileName,
     } = this.state;
 
     const files = getFiles(stixDomainObject);
     const exportFiles = getExportFiles(stixDomainObject);
-    console.log('currentExportId', currentExportId);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
 
-    const currentExportUrl = currentExportId
+    /* const currentExportUrl = currentExportId
         && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
     const currentGetExportUrl = currentExportId
-      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentExportId)}`;
+      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentExportId)}`; */
+
+    if (onProgressExportFileName) {
+      const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
+      if (exportFile && exportFile.uploadStatus === 'complete') {
+        this.setState({
+          currentFileId: exportFile.id,
+          onProgressExportFileName: undefined,
+        });
+      }
+    }
 
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
-
-    const currentExportFile = currentExportId && R.head(R.filter((n) => n.id === currentExportId, exportFiles));
-    const currentExportFileType = currentExportFile && currentExportFile.metaData.mimetype;
 
     const { innerHeight } = window;
     const height = innerHeight - 190;
@@ -464,167 +482,168 @@ class StixDomainObjectContentComponent extends Component {
           currentExportId={currentExportId}
           onFileChange={this.handleFileChange.bind(this)}
         />
-        {currentFileType === 'text/plain' && (
-          <div>
-            <StixDomainObjectContentBar
-              directDownload={currentGetUrl}
-              handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-              navOpen={navOpen}
-              handleSave={this.saveFile.bind(this)}
-              changed={changed}
-            />
-            <div
-              className={classes.editorContainer}
-              style={{ minHeight: height }}
-            >
-              {isLoading ? (
-                <Loader variant="inElement" />
-              ) : (
-                <TextField
-                  rows={Math.round(height / 23)}
-                  key={currentFile.id}
-                  id={currentFile.id}
-                  value={currentContent}
-                  multiline={true}
-                  onChange={this.onTextFieldChange.bind(this)}
-                  fullWidth={true}
-                />
+
+        {isLoading ? (
+            <Loader variant="container" />
+        ) : (
+            <>
+              {currentFileType === 'text/plain' && (
+                  <div>
+                    <StixDomainObjectContentBar
+                        directDownload={currentGetUrl}
+                        handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                        navOpen={navOpen}
+                        handleSave={this.saveFile.bind(this)}
+                        changed={changed}
+                    />
+                    <div
+                        className={classes.editorContainer}
+                        style={{ minHeight: height }}
+                    >
+                      <TextField
+                          rows={Math.round(height / 23)}
+                          key={currentFile.id}
+                          id={currentFile.id}
+                          value={currentContent}
+                          multiline={true}
+                          onChange={this.onTextFieldChange.bind(this)}
+                          fullWidth={true}
+                      />
+                    </div>
+                  </div>
               )}
-            </div>
-          </div>
-        )}
-        {currentFileType === 'text/html' && (
-          <div>
-            <StixDomainObjectContentBar
-              directDownload={currentGetUrl}
-              handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-              handleSave={this.saveFile.bind(this)}
-              changed={changed}
-              navOpen={navOpen}
-            />
-            <div
-              className={classes.editorContainer}
-              style={{ minHeight: height, height }}
-            >
-              <CKEditor
-                editor={Editor}
-                config={{
-                  width: '100%',
-                  language: 'en',
-                  image: {
-                    resizeUnit: 'px',
-                  },
-                }}
-                data={currentContent}
-                onChange={(event, editor) => {
-                  this.onHtmlFieldChange(editor.getData());
-                }}
-              />
-            </div>
-          </div>
-        )}
-        {currentFileType === 'text/markdown' && (
-          <div>
-            <StixDomainObjectContentBar
-              directDownload={currentGetUrl}
-              handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-              navOpen={navOpen}
-              handleSave={this.saveFile.bind(this)}
-              changed={changed}
-            />
-            <div
-              className={classes.editorContainer}
-              style={{ minHeight: height, height }}
-            >
-              {isLoading ? (
-                <Loader variant="inElement" />
-              ) : (
-                <ReactMde
-                  value={currentContent}
-                  minEditorHeight={height - 80}
-                  maxEditorHeight={height - 80}
-                  onChange={this.onMarkDownFieldChange.bind(this)}
-                  selectedTab={markdownSelectedTab}
-                  onTabChange={this.onMarkdownChangeTab.bind(this)}
-                  generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <MarkdownDisplay
-                        content={markdown}
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />,
-                  )
-                  }
-                  l18n={{
-                    write: t('Write'),
-                    preview: t('Preview'),
-                    uploadingImage: t('Uploading image'),
-                    pasteDropSelect: t('Paste'),
-                  }}
-                />
+              {currentFileType === 'text/html' && (
+                  <div>
+                    <StixDomainObjectContentBar
+                        directDownload={currentGetUrl}
+                        handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                        handleSave={this.saveFile.bind(this)}
+                        changed={changed}
+                        navOpen={navOpen}
+                    />
+                    <div
+                        className={classes.editorContainer}
+                        style={{ minHeight: height, height }}
+                    >
+                      <CKEditor
+                          editor={Editor}
+                          config={{
+                            width: '100%',
+                            language: 'en',
+                            image: {
+                              resizeUnit: 'px',
+                            },
+                          }}
+                          data={currentContent}
+                          onChange={(event, editor) => {
+                            this.onHtmlFieldChange(editor.getData());
+                          }}
+                      />
+                    </div>
+                  </div>
               )}
-            </div>
-          </div>
-        )}
-        {(currentFileType === 'application/pdf' || currentExportFileType === 'application/pdf') && (
-          <div>
-            <StixDomainObjectContentBar
-              handleZoomIn={this.handleZoomIn.bind(this)}
-              handleZoomOut={this.handleZoomOut.bind(this)}
-              directDownload={currentGetUrl || currentGetExportUrl}
-              currentZoom={this.state.pdfViewerZoom}
-              navOpen={navOpen}
-            />
-            <div
-              className={
-                navOpen
-                  ? classes.documentContainerNavOpen
-                  : classes.documentContainer
-              }
-            >
-              <Document
-                onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
-                loading={<Loader variant="inElement" />}
-                file={currentUrl || currentExportUrl}
-              >
-                {Array.from(new Array(totalPdfPageNumber), (el, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    pageNumber={index + 1}
-                    height={height}
-                    scale={this.state.pdfViewerZoom}
-                  />
-                ))}
-              </Document>
-            </div>
-          </div>
-        )}
-        {(!currentFile || !currentExportFile) && (
-          <div
-            className={
-              navOpen
-                ? classes.adjustedContainerNavOpen
-                : classes.adjustedContainer
-            }
-          >
-            <div
-              style={{
-                display: 'table',
-                height: '100%',
-                width: '100%',
-              }}
-            >
+              {currentFileType === 'text/markdown' && (
+                  <div>
+                    <StixDomainObjectContentBar
+                        directDownload={currentGetUrl}
+                        handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                        navOpen={navOpen}
+                        handleSave={this.saveFile.bind(this)}
+                        changed={changed}
+                    />
+                    <div
+                        className={classes.editorContainer}
+                        style={{ minHeight: height, height }}
+                    >
+                      <ReactMde
+                          value={currentContent}
+                          minEditorHeight={height - 80}
+                          maxEditorHeight={height - 80}
+                          onChange={this.onMarkDownFieldChange.bind(this)}
+                          selectedTab={markdownSelectedTab}
+                          onTabChange={this.onMarkdownChangeTab.bind(this)}
+                          generateMarkdownPreview={(markdown) => Promise.resolve(
+                              <MarkdownDisplay
+                                  content={markdown}
+                                  remarkGfmPlugin={true}
+                                  commonmark={true}
+                              />,
+                          )
+                          }
+                          l18n={{
+                            write: t('Write'),
+                            preview: t('Preview'),
+                            uploadingImage: t('Uploading image'),
+                            pasteDropSelect: t('Paste'),
+                          }}
+                      />
+                    </div>
+                  </div>
+              )}
+
+              {currentFileType === 'application/pdf' && (
+                  <div>
+                    <StixDomainObjectContentBar
+                        handleZoomIn={this.handleZoomIn.bind(this)}
+                        handleZoomOut={this.handleZoomOut.bind(this)}
+                        directDownload={currentGetUrl}
+                        currentZoom={this.state.pdfViewerZoom}
+                        navOpen={navOpen}
+                    />
+                    <div
+                        className={
+                          navOpen
+                            ? classes.documentContainerNavOpen
+                            : classes.documentContainer
+                        }
+                    >
+                      <Document
+                          onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                          loading={<Loader variant="inElement" />}
+                          file={currentUrl}
+                      >
+                        {Array.from(new Array(totalPdfPageNumber), (el, index) => (
+                            <Page
+                                key={`page_${index + 1}`}
+                                pageNumber={index + 1}
+                                height={height}
+                                scale={this.state.pdfViewerZoom}
+                            />
+                        ))}
+                      </Document>
+                    </div>
+                  </div>
+              )}
+              {!currentFile && (
+                  <div
+                      className={
+                        navOpen
+                          ? classes.adjustedContainerNavOpen
+                          : classes.adjustedContainer
+                      }
+                  >
+                    <div
+                        style={{
+                          display: 'table',
+                          height: '100%',
+                          width: '100%',
+                        }}
+                    >
               <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
               >
                 {t('No file selected.')}
               </span>
-            </div>
-          </div>
+                    </div>
+                  </div>
+              )}
+            </>
         )}
+
       </div>
     );
   }
