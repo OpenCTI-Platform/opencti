@@ -12,6 +12,7 @@ import { logApp } from '../config/conf';
 import { READ_DATA_INDICES } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { DatabaseError } from '../config/errors';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const message = '[MIGRATION] Stored filters refacto';
 
@@ -29,11 +30,13 @@ export const up = async (next) => {
     ['participant', 'objectParticipant'],
     ['creator', 'creator_id'],
   ]);
-  const convertFilters = (filters) => {
-    if (JSON.parse(filters).mode) { // filters already in new format are not converted again (code protection in case of migration re-run)
+  const convertFilters = (filters, alreadyParsed = false) => {
+    const parsedFilters = alreadyParsed ? filters : JSON.parse(filters);
+    // filters already in new format are not converted again (code protection in case of migration re-run)
+    if (parsedFilters.mode) {
       return filters;
     }
-    const newFiltersContent = toPairs(JSON.parse(filters))
+    const newFiltersContent = toPairs(parsedFilters)
       .map((pair) => {
         let key = head(pair);
         let operator = 'eq';
@@ -59,11 +62,12 @@ export const up = async (next) => {
         const valIds = values.map((v) => v.id);
         return { key, values: valIds, operator, mode };
       });
-    return JSON.stringify({
+    const newFilters = {
       mode: 'and',
       filters: newFiltersContent,
       filterGroups: [],
-    });
+    };
+    return alreadyParsed ? newFilters : JSON.stringify(newFilters);
   };
 
   // 01. feeds, taxiiCollections and triggers
@@ -171,6 +175,77 @@ export const up = async (next) => {
     '[MIGRATION] Query tasks filters refacto',
     READ_DATA_INDICES,
     tasksUpdateQuery
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
+
+  // 03. Workspaces
+  const workspaces = await listAllEntities(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_WORKSPACE],
+  );
+
+  let workspacesManifestConvertor = {};
+  workspaces
+    .forEach((workspace) => {
+      const decodedManifest = JSON.parse(atob(workspace.manifest)); // atob is used to decode B64 strings
+      const { widgets } = decodedManifest;
+      const widgetEntries = Object.entries(widgets);
+      const newWidgets = {};
+      for (let i = 0; i < widgetEntries.length; i += 1) {
+        const [key, value] = widgetEntries[i];
+        const { dataSelection } = value;
+        const newDataSelection = dataSelection.map((selection) => {
+          const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
+          const newFilters = convertFilters(filters, true);
+          const newDynamicFrom = convertFilters(dynamicFrom, true);
+          const newDynamicTo = convertFilters(dynamicTo, true);
+          return {
+            ...selection,
+            filters: newFilters,
+            dynamicFrom: newDynamicFrom,
+            dynamicTo: newDynamicTo,
+          };
+        });
+        newWidgets[key] = {
+          ...value,
+          dataSelection: newDataSelection,
+        };
+      }
+      const newManifest = {
+        ...decodedManifest,
+        widgets: newWidgets,
+      };
+      const newEncodedManifest = btoa(JSON.stringify(newManifest));
+      workspacesManifestConvertor = {
+        ...workspacesManifestConvertor,
+        [workspace.internal_id]: newEncodedManifest,
+      };
+    });
+
+  const workspacesUpdateQuery = {
+    script: {
+      params: { convertor: workspacesManifestConvertor },
+      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.manifest = params.convertor[ctx._source.internal_id]; }',
+    },
+    query: {
+      bool: {
+        should: [
+          {
+            bool: {
+              must: [{ term: { 'entity_type.keyword': { value: 'Workspace' } } }],
+            }
+          },
+        ],
+        minimum_should_match: 1,
+      },
+    }
+  };
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Workspaces filters refacto',
+    READ_DATA_INDICES,
+    workspacesUpdateQuery
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
