@@ -40,8 +40,8 @@ const FileIndexingConfigurationRequirements: FunctionComponent<FileIndexingConfi
             variant="outlined"
             style={{ position: 'relative' }}
             >
-            {t('File indexing needs one of these requirements: ')}
-              <ul>
+            {t('File indexing needs one of these requirements')}:
+            <ul>
                 <li>Elasticsearch &gt;= 8.4</li>
                 <li>Elasticsearch &lt; 8.4 with ingest-attachment plugin</li>
                 <li>OpenSearch with ingest-attachment plugin</li>
