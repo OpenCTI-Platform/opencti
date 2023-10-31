@@ -77,6 +77,10 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [
     { name: 'mime_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Mime type' },
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_MD5', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA1', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA256', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA512', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'payload_bin', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Payload' },
     { name: 'url', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'encryption_algorithm', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Algorithm' },
@@ -85,6 +89,10 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_MD5', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA1', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA256', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA512', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'size', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -99,6 +107,10 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'hashes_MD5', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA1', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA256', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'hashes_SHA512', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'is_self_signed', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'version', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'serial_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },

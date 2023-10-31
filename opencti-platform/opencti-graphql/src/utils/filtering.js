@@ -715,9 +715,9 @@ export const checkedAndConvertedFilters = (filters, entityTypes = []) => {
     const keys = extractFilterKeys(filters);
     if (keys.length > 0) {
       let incorrectKeys = keys;
-      // TODO remove hardcode when all the enum are removed, don't remove 'connections' (it's for nested filters)
+      // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
       const availableSpecialKeys = ['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections'];
-      if (entityTypes.length > 0) {
+      if (entityTypes.length > 0 && !entityTypes.includes('Stix-Core-Object')) { // TODO remove '&& !entityTypes.includes('Stix-Core-Object')' when StixCoreObject attribute registration done
         // correct keys are keys in AT LEAST one of the entity types schema definition
         entityTypes.forEach((type) => {
           const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
