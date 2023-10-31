@@ -128,7 +128,6 @@ export const testConfidence = (stix: any, filter: Filter) => {
 
 /**
  * PATTERN
- * - need lowercase comparison
  */
 export const testPattern = (stix: any, filter: Filter) => {
   const stixValues: string[] = toValidArray(stix.pattern_type);
@@ -138,7 +137,6 @@ export const testPattern = (stix: any, filter: Filter) => {
 /**
  * MAIN OBSERVABLE TYPES
  * - x_opencti_main_observable_type is main_observable_type in stix extension
- * - need lowercase comparison
  */
 export const testMainObservableType = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type;
@@ -151,6 +149,22 @@ export const testMainObservableType = (stix: any, filter: Filter) => {
  */
 export const testObjectContains = (stix: any, filter: Filter) => {
   const stixValues: string[] = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
+  return testStringFilter(filter, stixValues);
+};
+
+/**
+ * SEVERITY
+ */
+export const testSeverity = (stix: any, filter: Filter) => {
+  const stixValues: string[] = toValidArray(stix.severity);
+  return testStringFilter(filter, stixValues);
+};
+
+/**
+ * PRIORITY
+ */
+export const testPriority = (stix: any, filter: Filter) => {
+  const stixValues: string[] = toValidArray(stix.priority);
   return testStringFilter(filter, stixValues);
 };
 

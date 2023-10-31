@@ -266,6 +266,10 @@ describe('Filter testers', () => {
     });
   });
 
+  // TODO: describe('Severity (key=severity)', () => { }); --> no data in DATA-TEST-STIX2_v2.json
+
+  // TODO: describe('Priority (key=priority)', () => { }); --> no data in DATA-TEST-STIX2_v2.json
+
   describe('Relationship', () => {
     const stixRelationship = data.objects.find((obj) => obj.type === 'relationship');
 
