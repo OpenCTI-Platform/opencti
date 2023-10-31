@@ -119,7 +119,6 @@ class StixCoreObjectHistory extends Component {
               variables={{
                 filters: {
                   mode: 'and',
-                  filterGroups: [],
                   filters: [
                     {
                       key: 'connection_id',
@@ -127,14 +126,25 @@ class StixCoreObjectHistory extends Component {
                       operator: 'wildcard',
                     },
                     {
-                      key: 'event_scope',
-                      values: ['create', 'delete', null], // if event_scope is null, event_type is not
-                    },
-                    {
                       key: 'event_type',
                       values: ['create', 'delete', 'mutation'], // retro-compatibility
                     },
                   ],
+                  filterGroups: [{
+                    mode: 'or',
+                    filters: [
+                      {
+                        key: 'event_scope',
+                        values: ['create', 'delete'],
+                      },
+                      {
+                        key: 'event_scope',
+                        values: [], // if event_scope is null, event_type is not
+                        operator: 'nil',
+                      },
+                    ],
+                    filterGroups: [],
+                  }],
                 },
                 first: 20,
                 orderBy: 'timestamp',
