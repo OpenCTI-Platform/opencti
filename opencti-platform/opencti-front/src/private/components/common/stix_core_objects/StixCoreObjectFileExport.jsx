@@ -76,24 +76,14 @@ const StixCoreObjectFileExportComponent = ({
         maxMarkingDefinition,
       },
 
-      onCompleted: (a) => {
-        // TODO: retrieve property 'name' inside object 'a'
-        const filename = a.stixCoreObjectEdit.exportAsk[0].name;
-        console.log('a', filename);
+      onCompleted: (data) => {
+        const fileId = data.stixCoreObjectEdit.exportAsk[0].id;
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
-        // TODO: add filename inside the url of navigate
-        // https://reactrouter.com/en/main/hooks/use-navigate
-        /**
-         * navigate({
-         *       pathname: '...'
-         *       search: ... fileName
-         * });
-         */
         navigate({
           pathname: `/dashboard/analyses/reports/${id}/content`,
-          search: `?${createSearchParams({ filename })}`,
+          search: `?${createSearchParams({ currentFileId: fileId })}`,
         });
       },
     });

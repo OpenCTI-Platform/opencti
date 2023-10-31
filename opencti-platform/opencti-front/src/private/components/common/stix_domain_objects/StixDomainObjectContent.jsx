@@ -223,24 +223,25 @@ class StixDomainObjectContentComponent extends Component {
   loadFileContent() {
     console.log('loadFileContent');
     const { stixDomainObject } = this.props;
-    const files = getFiles(stixDomainObject);
+    const files = [...getFiles(stixDomainObject), ...getExportFiles(stixDomainObject)];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
       if (!currentFileId) {
         return this.setState({ isLoading: false });
       }
-      const currentFile = R.head(
-        R.filter((n) => n.id === currentFileId, files),
-      );
+      const currentFile = files.find((f) => f.id === currentFileId);
       const currentFileType = currentFile && currentFile.metaData.mimetype;
 
       if (currentFileType === 'application/pdf') {
+        console.log('return pdf');
         return this.setState({ isLoading: false });
       }
 
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
+
+      console.log('url', url);
 
       return Axios.get(url).then((res) => {
         const content = res.data;
@@ -257,11 +258,18 @@ class StixDomainObjectContentComponent extends Component {
     this.subscriptionToggle = MESSAGING$.toggleNav.subscribe({
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
-    this.loadFileContent();
-
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch();
     });
+
+    const { stixDomainObject } = this.props;
+    const { currentFileId } = this.state;
+    const files = [...getFiles(stixDomainObject), ...getExportFiles(stixDomainObject)];
+    const currentFile = files.find((f) => f.id === currentFileId);
+
+    if (currentFile?.uploadStatus !== 'progress') {
+      this.loadFileContent();
+    }
   }
 
   componentWillUnmount() {
@@ -464,7 +472,7 @@ class StixDomainObjectContentComponent extends Component {
       }
     }
 
-    const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
+    const currentFile = currentFileId && [...files, ...exportFiles].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
 
     const { innerHeight } = window;
