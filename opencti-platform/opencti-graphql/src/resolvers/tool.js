@@ -11,6 +11,7 @@ import { batchKillChainPhases } from '../domain/stixCoreObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
+import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const killChainPhaseLoader = batchLoader(batchKillChainPhases);
 
@@ -23,6 +24,7 @@ const toolResolvers = {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    targets: buildRefRelationKey(RELATION_TARGETS),
   },
   Tool: {
     killChainPhases: (tool, _, context) => killChainPhaseLoader.load(tool.id, context, context.user),

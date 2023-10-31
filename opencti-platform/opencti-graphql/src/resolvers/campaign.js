@@ -14,6 +14,7 @@ import {
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
+import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const campaignResolvers = {
   Query: {
@@ -31,6 +32,7 @@ const campaignResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },
   Mutation: {

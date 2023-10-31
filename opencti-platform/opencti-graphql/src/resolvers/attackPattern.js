@@ -25,7 +25,7 @@ import {
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
+import { RELATION_MITIGATES, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const coursesOfActionLoader = batchLoader(batchCoursesOfAction);
@@ -53,6 +53,7 @@ const attackPatternResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
+    targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },
   Mutation: {

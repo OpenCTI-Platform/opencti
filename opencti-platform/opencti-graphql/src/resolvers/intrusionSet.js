@@ -15,6 +15,7 @@ import {
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
+import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const locationsLoader = batchLoader(batchLocations);
 
@@ -31,6 +32,7 @@ const intrusionSetResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },
   Mutation: {

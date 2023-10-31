@@ -865,6 +865,7 @@ export enum AttackPatternsFilter {
   Name = 'name',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   UpdatedAt = 'updated_at',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -26451,6 +26452,7 @@ export enum ThreatActorsIndividualFilter {
   Name = 'name',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -26759,6 +26761,7 @@ export enum ToolsFilter {
   Modified = 'modified',
   Name = 'name',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 

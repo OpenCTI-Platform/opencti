@@ -2383,6 +2383,7 @@ enum AttackPatternsFilter {
   source_reliability
   x_opencti_workflow_id
   creator
+  targets
 }
 
 input AttackPatternsFiltering {
@@ -5364,6 +5365,7 @@ enum ToolsFilter {
   x_opencti_workflow_id
   confidence
   source_reliability
+  targets
 }
 
 input ToolsFiltering {
@@ -11833,6 +11835,7 @@ enum ThreatActorsIndividualFilter {
   confidence
   source_reliability
   creator
+  targets
 }
 
 input ThreatActorsIndividualFiltering {
