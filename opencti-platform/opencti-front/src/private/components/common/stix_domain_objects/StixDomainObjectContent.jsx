@@ -168,9 +168,7 @@ const getExportFiles = (stixDomainObject) => {
 class StixDomainObjectContentComponent extends Component {
   constructor(props) {
     super(props);
-    // TODO: also fetch fileName to open to correct file
 
-    // Done by default I suppose
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
@@ -465,6 +463,7 @@ class StixDomainObjectContentComponent extends Component {
     if (onProgressExportFileName) {
       const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
       if (exportFile && exportFile.uploadStatus === 'complete') {
+        this.handleSelectFile(currentFileId);
         this.setState({
           currentFileId: exportFile.id,
           onProgressExportFileName: undefined,
