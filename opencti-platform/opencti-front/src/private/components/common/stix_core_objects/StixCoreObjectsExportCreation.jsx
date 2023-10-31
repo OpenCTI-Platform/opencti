@@ -23,7 +23,6 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
   createButton: {

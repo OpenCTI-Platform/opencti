@@ -1,8 +1,6 @@
-import React, {Component, useState} from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import * as R from 'ramda';
-import {createRefetchContainer, graphql, useFragment} from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -19,41 +17,18 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Slide from '@mui/material/Slide';
-import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
+import makeStyles from '@mui/styles/makeStyles';
 import TaskStatus from '../../../../components/TaskStatus';
-import inject18n, {useFormatter} from '../../../../components/i18n';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import TaskScope from '../../../../components/TaskScope';
-import makeStyles from "@mui/styles/makeStyles";
-
-const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles((theme) => ({
-  container: {
-    margin: 0,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'right',
-    marginTop: '-13px',
-  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -62,28 +37,9 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 6,
     position: 'relative',
   },
-  card: {
-    width: '100%',
-    marginBottom: 20,
-    borderRadius: 6,
-    position: 'relative',
-  },
-  chip: {
-    height: 30,
-    float: 'left',
-    margin: '0 10px 10px 0',
-    backgroundColor: '#607d8b',
-  },
-  number: {
-    fontWeight: 600,
-    fontSize: 18,
-  },
   progress: {
     borderRadius: 5,
     height: 10,
-  },
-  chipValue: {
-    margin: 0,
   },
   filter: {
     margin: '5px 10px 5px 0',
@@ -180,7 +136,7 @@ const TasksListFragment = graphql`
     }
   }
 `;
-const TasksList= ({ data }) => {
+const TasksList = ({ data }) => {
   const classes = useStyles();
   const { t, nsdt, n } = useFormatter();
   const [displayMessages, setDisplayMessages] = useState(false);
@@ -193,17 +149,17 @@ const TasksList= ({ data }) => {
     setMessages([]);
   };
 
-  const handleOpenErrors = (errors) => {
+  const handleOpenErrors = (err) => {
     setDisplayErrors(true);
-    setErrors(errors);
+    setErrors(err);
   };
 
   const handleCloseErrors = () => {
-   setDisplayErrors(false);
-   setErrors([]);
+    setDisplayErrors(false);
+    setErrors([]);
   };
 
- const handleDeleteTask = (taskId) => {
+  const handleDeleteTask = (taskId) => {
     commitMutation({
       mutation: tasksListTaskDeletionMutation,
       variables: {
@@ -314,7 +270,7 @@ const TasksList= ({ data }) => {
                                       : t('No label')}{' '}
                                     {R.last(currentFilter[1]).value
                                       !== o.value && (
-                                      <code>{localFilterMode}</code>
+                                        <code>{localFilterMode}</code>
                                     )}{' '}
                                   </span>
                                 ),
@@ -334,10 +290,10 @@ const TasksList= ({ data }) => {
                               />
                               {R.last(R.toPairs(filters))[0]
                                 !== currentFilter[0] && (
-                                <Chip
-                                  classes={{ root: classes.operator }}
-                                  label={t('AND')}
-                                />
+                                  <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                  />
                               )}
                             </span>
                           );
@@ -461,7 +417,7 @@ const TasksList= ({ data }) => {
                             : Math.round(
                               (task.task_processed_number
                                 / task.task_expected_number)
-                                * 100,
+                              * 100,
                             )
                       }
                     />
@@ -481,7 +437,7 @@ const TasksList= ({ data }) => {
                 ? <Button
                   style={{ position: 'absolute', right: 10, bottom: 10 }}
                   variant="outlined"
-                  onClick={() => handleDeleteTask( task.id)}
+                  onClick={() => handleDeleteTask(task.id)}
                   size="small"
                 >
                   <Delete fontSize="small"/>
@@ -494,7 +450,7 @@ const TasksList= ({ data }) => {
                     onClick={() => handleDeleteTask(task.id)}
                     size="small"
                   >
-                  <Delete fontSize="small" />
+                    <Delete fontSize="small" />
                     &nbsp;&nbsp;{t('Delete')}
                   </Button>
                 </Security>
@@ -583,7 +539,5 @@ const TasksList= ({ data }) => {
     </div>
   );
 };
-
-
 
 export default TasksList;
