@@ -252,21 +252,22 @@ const ContainerContentComponent = ({ containerData }) => {
   const contentMapping = {};
   if (!editionMode) {
     for (const mappedString of mappedStrings) {
-      const descriptionRegex = new RegExp(mappedString, 'ig');
+      const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const descriptionRegex = new RegExp(escapedMappedString, 'ig');
       const descriptionCount = (
         (description || '').match(descriptionRegex) || []
       ).length;
       description = (description || '').replace(
         descriptionRegex,
-        (match) => `==${matchCase(mappedString, match)}==`,
+        (match) => `==${matchCase(escapedMappedString, match)}==`,
       );
-      const contentRegex = new RegExp(mappedString, 'ig');
+      const contentRegex = new RegExp(escapedMappedString, 'ig');
       const contentCount = ((content || '').match(contentRegex) || []).length;
       content = (content || '').replace(
         contentRegex,
-        (match) => `<mark class="marker-yellow">${matchCase(mappedString, match)}</mark>`,
+        (match) => `<mark class="marker-yellow">${matchCase(escapedMappedString, match)}</mark>`,
       );
-      contentMapping[contentMappingData[mappedString]] = descriptionCount + contentCount;
+      contentMapping[contentMappingData[escapedMappedString]] = descriptionCount + contentCount;
     }
   }
   const initialValues = {
