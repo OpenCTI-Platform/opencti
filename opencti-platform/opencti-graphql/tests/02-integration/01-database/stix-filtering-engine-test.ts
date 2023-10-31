@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as engine from '../../../src/utils/stix-filtering/boolean-logic-engine';
-import type { Filter, FilterGroup } from '../../../src/utils/stix-filtering/stix-filtering';
+import type { Filter, FilterGroup } from '../../../src/utils/stix-filtering/filter-group';
 
 describe('Filter Boolean logic engine ', () => {
   describe('testGenericFilter', () => {

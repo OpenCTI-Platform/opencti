@@ -1,10 +1,11 @@
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../schema/general';
-import type { Filter, TesterFunction } from './stix-filtering';
+import type { Filter } from './filter-group';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../../schema/identifier';
 import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from './boolean-logic-engine';
+import type { TesterFunction } from './boolean-logic-engine';
 
 import {
   // ASSIGNEE_FILTER,

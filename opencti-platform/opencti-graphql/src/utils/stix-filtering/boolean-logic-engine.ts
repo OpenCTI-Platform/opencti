@@ -1,5 +1,5 @@
 import moment from 'moment';
-import type { Filter, FilterGroup, TesterFunction } from './stix-filtering';
+import type { Filter, FilterGroup } from './filter-group';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
@@ -139,6 +139,10 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
   return false;
 };
 
+// generic representation of a tester function
+// its implementations are dependent on the data model, to find the information requested by the filter
+export type TesterFunction = (data: any, filter: Filter) => boolean;
+
 /**
  * Recursive function that tests a whole filter group.
  * Thanks to the param getTesterFromFilterKey, this function is agnostic of the data content and how to test it.
@@ -146,7 +150,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
  * @param stix data to test
  * @param filterGroup complex filter group object with nested groups and filters
  * @param getTesterFromFilterKey function that gives a function to test a filter, according to the filter key
- *                               see function getStixTesterFromFilterKey.
+ *                               see unit tests for an example.
  */
 export const testFilterGroup = (stix: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
   if (filterGroup.mode === 'AND') {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import * as testers from '../../../src/utils/stix-filtering/stix-testers';
-import type { Filter } from '../../../src/utils/stix-filtering/stix-filtering';
+import type { Filter } from '../../../src/utils/stix-filtering/filter-group';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 
 describe('Filter testers', () => {
