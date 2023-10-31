@@ -170,12 +170,12 @@ const ReportDetailsComponent = (props) => {
         <List>
           {(report.relatedContainers?.edges ?? []).length >= 2
             ? R.take(expanded ? 200 : 5, report.relatedContainers.edges)
-            .filter(
-              (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
-            )
-            .map((relatedContainerEdge) => {
-              const relatedContainer = relatedContainerEdge.node;
-              return (
+              .filter(
+                (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
+              )
+              .map((relatedContainerEdge) => {
+                const relatedContainer = relatedContainerEdge.node;
+                return (
                 <ListItem
                   key={report.id}
                   dense={true}
@@ -211,8 +211,8 @@ const ReportDetailsComponent = (props) => {
                     />
                   </div>
                 </ListItem>
-              );
-            }) : '-'}
+                );
+              }) : '-'}
         </List>
         {expandable && (
           <Button
