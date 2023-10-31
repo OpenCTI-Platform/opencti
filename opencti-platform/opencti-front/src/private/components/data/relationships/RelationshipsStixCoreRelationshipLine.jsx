@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
-import { resolveLink } from '../../../../utils/Entity';
+import { computeLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({
@@ -64,9 +64,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
   const remoteNode = (node.from && !node.from.relationship_type) ? node.from : node.to;
   let link = null;
   if (remoteNode) {
-    link = `${resolveLink(remoteNode.entity_type)}/${
-      remoteNode.id
-    }/knowledge/relations/${node.id}`;
+    link = `${computeLink(remoteNode)}`;
   }
   return (
       <ListItem
