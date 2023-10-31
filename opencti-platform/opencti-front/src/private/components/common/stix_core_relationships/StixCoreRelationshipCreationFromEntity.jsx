@@ -770,6 +770,11 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        SlideProps={{
+          // containerRef is forwarded to ListLinesContent so it listens to scroll events and load data with an InfiniteLoader
+          // we must target the element inside the Drawer that holds the scrolling = the Slide
+          ref: containerRef,
+        }}
       >
         <QueryRenderer
           query={stixCoreRelationshipCreationFromEntityQuery}
@@ -777,18 +782,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
           render={({ props: renderProps }) => {
             if (renderProps && renderProps.stixCoreObject) {
               return (
-                <div
-                  style={{ minHeight: '100%' }}
-                  ref={(ref) => {
-                    if (ref) {
-                      // containerRef is forwarded to the ListLinesContent displaying the data
-                      // it is is used to listen to scroll events and load data with an InfiniteLoader
-                      // but it must be the element that actually scrolls in the DOM.
-                      // As we use MUI drawer, this is the parent of the content (not the <Drawer> itself!)
-                      containerRef.current = ref.parentElement;
-                    }
-                  }}
-                >
+                <div style={{ minHeight: '100%' }} >
                   {step === 0 ? renderSelectEntity() : ''}
                   {step === 1 ? renderForm(renderProps.stixCoreObject) : ''}
                 </div>
