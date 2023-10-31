@@ -1,12 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import { useFormatter } from '../../../components/i18n';
 import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 
 interface ManageImportConnectorMessageProps {
   name: string;
 }
+const WarningText = styled('span')({
+  color: '#f44336',
+});
 
 const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessageProps> = ({ name }) => {
   const { t } = useFormatter();
@@ -14,12 +18,12 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   switch (name) {
     case 'ImportCsv':
       return <Box sx={{ paddingTop: '8px' }}>
-        {t('There are not any configurations set yet')}
+        <WarningText >{t('There are not any configurations set yet')}</WarningText>
         <div>
           {
             isCsvMapperUpdater
               ? <Link to="/dashboard/data/processing/csv_mapper">{t('Create a CSV Mapper configuration')}</Link>
-              : t('Please contact an administrator')
+              : <WarningText>{t('Please contact an administrator')}</WarningText>
           }
         </div>
       </Box>;

@@ -202,7 +202,6 @@ class ImportContentComponent extends Component {
   handleCloseImport() {
     this.setState({
       fileToImport: null,
-      selectedConnector: null,
     });
   }
 
@@ -304,7 +303,6 @@ class ImportContentComponent extends Component {
     const { fileToImport, fileToValidate, displayCreate } = this.state;
     const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
-
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
@@ -500,7 +498,7 @@ class ImportContentComponent extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{ connector_id: '', configuration: '' }}
-            validationSchema={importValidation(t, this.state.selectedConnector?.configurations?.length > 0)}
+            validationSchema={importValidation(t, !!this.state.selectedConnector?.configurations)}
             onSubmit={this.onSubmitImport.bind(this)}
             onReset={this.handleCloseImport.bind(this)}
           >
@@ -572,7 +570,7 @@ class ImportContentComponent extends Component {
                     <Button
                       color="secondary"
                       onClick={submitForm}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !this.state.selectedConnector}
                     >
                       {t('Create')}
                     </Button>
