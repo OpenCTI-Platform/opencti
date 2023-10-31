@@ -37,6 +37,12 @@ class NoteComponent extends Component {
         <CollaborativeSecurity
           data={note}
           needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+          placeholder={
+            <ContainerHeader
+              container={note}
+              PopoverComponent={<NotePopover note={note} />}
+            />
+          }
         >
           <ContainerHeader
             container={note}

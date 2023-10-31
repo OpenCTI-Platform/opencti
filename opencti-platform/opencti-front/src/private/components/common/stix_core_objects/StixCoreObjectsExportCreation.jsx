@@ -201,23 +201,6 @@ const StixCoreObjectsExportCreationComponent = ({
                                 ))}
                               </Field>
                               <Field
-                                  component={SelectField}
-                                  variant="standard"
-                                  name="type"
-                                  label={t('Export type')}
-                                  fullWidth={true}
-                                  containerstyle={fieldSpacingContainerStyle}
-                              >
-                                <MenuItem value="simple">
-                                  {t('Simple export (just the entity)')}
-                                </MenuItem>
-                                <MenuItem value="full">
-                                  {t(
-                                    'Full export (entity and first neighbours)',
-                                  )}
-                                </MenuItem>
-                              </Field>
-                              <Field
                                 component={SelectField}
                                 variant="standard"
                                 name="maxMarkingDefinition"

@@ -3,7 +3,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import StixCoreObjectFileExport from '../../common/stix_core_objects/StixCoreObjectFileExport';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
@@ -27,7 +26,6 @@ const StixCyberObservableHeaderComponent = ({
   stixCyberObservable,
   isArtifact,
   disableSharing,
-  enableQuickExport,
 }) => {
   const classes = useStyles();
   return (
@@ -53,11 +51,7 @@ const StixCyberObservableHeaderComponent = ({
               variant="header"
             />
           )}
-            {enableQuickExport && (
-                <StixCoreObjectFileExport id={stixCyberObservable.id} />
-            )
-            }
-            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+          <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
         </ToggleButtonGroup>
       </div>
       <div className="clearfix" />

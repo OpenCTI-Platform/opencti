@@ -3,6 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import TaskDetails from './TaskDetails';
@@ -12,7 +13,6 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
-import ContainerHeader from "@components/common/containers/ContainerHeader";
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
