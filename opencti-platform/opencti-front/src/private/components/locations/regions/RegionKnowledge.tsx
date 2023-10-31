@@ -46,7 +46,6 @@ const RegionKnowledgeComponent = ({
         disableSharing={true}
         stixDomainObject={region}
         PopoverComponent={<RegionPopover id={region.id} />}
-        enableQuickExport={false}
       />
       <Switch>
         <Route

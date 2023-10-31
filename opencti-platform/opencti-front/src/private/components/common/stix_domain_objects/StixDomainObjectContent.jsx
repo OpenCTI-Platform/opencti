@@ -231,15 +231,12 @@ class StixDomainObjectContentComponent extends Component {
       const currentFileType = currentFile && currentFile.metaData.mimetype;
 
       if (currentFileType === 'application/pdf') {
-        console.log('return pdf');
         return this.setState({ isLoading: false });
       }
 
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
-
-      console.log('url', url);
 
       return Axios.get(url).then((res) => {
         const content = res.data;
@@ -454,11 +451,6 @@ class StixDomainObjectContentComponent extends Component {
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
-
-    /* const currentExportUrl = currentExportId
-        && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentExportId)}`;
-    const currentGetExportUrl = currentExportId
-      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentExportId)}`; */
 
     if (onProgressExportFileName) {
       const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);

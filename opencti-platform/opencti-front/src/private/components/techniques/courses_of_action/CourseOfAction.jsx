@@ -37,7 +37,6 @@ class CourseOfActionComponent extends Component {
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
           isOpenctiAlias={true}
-          enableQuickExport={true}
         />
         <Grid
           container={true}

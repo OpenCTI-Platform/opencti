@@ -25,7 +25,6 @@ class CourseOfActionKnowledgeComponent extends Component {
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
           isOpenctiAlias={true}
-          enableQuickExport={false}
         />
         <Switch>
           <Route

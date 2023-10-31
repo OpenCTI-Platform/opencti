@@ -34,7 +34,6 @@ class StixCyberObservableComponent extends Component {
         <StixCyberObservableHeader
           stixCyberObservable={stixCyberObservable}
           isArtifact={isArtifact}
-          enableQuickExport={true}
         />
         <Grid
           container={true}

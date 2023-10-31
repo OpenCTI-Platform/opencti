@@ -32,7 +32,6 @@ class ToolKnowledgeComponent extends Component {
           entityType={'Tool'}
           stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
-          enableQuickExport={false}
         />
         <Switch>
           <Route

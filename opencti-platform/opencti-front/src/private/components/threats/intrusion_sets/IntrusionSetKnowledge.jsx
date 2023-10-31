@@ -34,7 +34,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           entityType={'Intrusion-Set'}
           stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
-          enableQuickExport={false}
         />
         <Switch>
           <Route

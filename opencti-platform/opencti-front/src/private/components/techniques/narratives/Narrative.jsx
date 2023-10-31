@@ -36,7 +36,6 @@ class NarrativeComponent extends Component {
           entityType='Narrative'
           stixDomainObject={narrative}
           PopoverComponent={<NarrativePopover />}
-          enableQuickExport={true}
         />
         <Grid
           container={true}

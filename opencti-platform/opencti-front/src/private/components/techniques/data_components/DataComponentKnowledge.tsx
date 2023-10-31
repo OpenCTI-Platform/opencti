@@ -44,7 +44,6 @@ DataComponentKnowledgeProps
         PopoverComponent={
           <DataComponentPopover dataComponentId={dataComponent.id} />
         }
-        enableQuickExport={false}
       />
       <Switch>
         <Route

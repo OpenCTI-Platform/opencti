@@ -92,7 +92,6 @@ const ToolComponent = ({ tool }: { tool: Tool_tool$key }) => {
         stixDomainObject={toolData}
         PopoverComponent={<ToolPopover />}
         enableQuickSubscription
-        enableQuickExport={true}
       />
       <Grid
         container={true}

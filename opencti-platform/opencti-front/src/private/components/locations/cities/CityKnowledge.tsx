@@ -44,7 +44,6 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
         stixDomainObject={city}
         PopoverComponent={CityPopover}
         variant="noaliases"
-        enableQuickExport={false}
       />
       <Switch>
         <Route

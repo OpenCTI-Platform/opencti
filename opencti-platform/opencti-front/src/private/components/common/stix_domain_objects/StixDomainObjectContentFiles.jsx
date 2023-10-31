@@ -265,7 +265,7 @@ class StixDomainObjectContentFiles extends Component {
                 </List>
                 <Divider/>
                   <List
-                    style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
+                    style={{ marginBottom: 30 }}
                     subheader={
                         <ListSubheader component="div">
                             <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
@@ -281,25 +281,28 @@ class StixDomainObjectContentFiles extends Component {
                         </ListSubheader>
                     }
                 >
-                {exportFiles?.length ? (
-                    <div>
-                        {exportFiles.reverse().map((file) => {
-                          return (
-                            file && (
-                                <FileLine
-                                    key={file?.id}
-                                    file={file}
-                                    divider={true}
-                                    onClick={handleSelectExportFile.bind(this, file.id)}
-                                    disableImport={true}
-                                    disabled={deleting === file?.id}
-                                    directDownload={true}
-                                />
-                            )
-                          );
-                        })}
+                    <div className="clearfix">
+                      {exportFiles?.length ? (
+                      <List>
+                          {exportFiles.map((file) => {
+                            return (
+                              file && (
+                                  <FileLine
+                                      key={file?.id}
+                                      file={file}
+                                      divider={true}
+                                      onClick={handleSelectExportFile.bind(this, file.id)}
+                                      disableImport={true}
+                                      disabled={deleting === file?.id}
+                                      directDownload={true}
+                                  />
+                              )
+                            );
+                          }).reverse()
+                          }
+                      </List>
+                      ) : this.renderNoFiles()}
                     </div>
-                ) : this.renderNoFiles()}
                  </List>
               <Divider/>
               {/*  <List

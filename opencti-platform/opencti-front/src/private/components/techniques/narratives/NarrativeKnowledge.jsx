@@ -32,7 +32,6 @@ class NarrativeKnowledgeComponent extends Component {
           disableSharing={true}
           stixDomainObject={narrative}
           PopoverComponent={<NarrativePopover />}
-          enableQuickExport={false}
         />
         <Switch>
           <Route

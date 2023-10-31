@@ -37,7 +37,6 @@ class ThreatActorGroupComponent extends Component {
           stixDomainObject={threatActorGroup}
           PopoverComponent={<ThreatActorGroupPopover />}
           enableQuickSubscription={true}
-          enableQuickExport={true}
         />
         <Grid
           container={true}

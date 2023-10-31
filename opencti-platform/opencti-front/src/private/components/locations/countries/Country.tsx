@@ -114,7 +114,6 @@ const CountryComponent = ({
         isOpenctiAlias={true}
         PopoverComponent={CountryPopover}
         enableQuickSubscription={true}
-        enableQuickExport={true}
       />
       <Grid
         container={true}

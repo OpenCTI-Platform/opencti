@@ -94,7 +94,6 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         stixDomainObject={city}
         isOpenctiAlias={true}
         PopoverComponent={CityPopover}
-        enableQuickExport={true}
       />
       <Grid
         container={true}

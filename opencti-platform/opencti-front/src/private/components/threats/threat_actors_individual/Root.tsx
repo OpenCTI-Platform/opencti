@@ -150,7 +150,6 @@ const RootThreatActorIndividualComponent = ({
                     PopoverComponent={
                       <ThreatActorIndividualPopover id={data.id} />
                     }
-                    enableQuickExport={true}
                   />
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     {...routeProps}
