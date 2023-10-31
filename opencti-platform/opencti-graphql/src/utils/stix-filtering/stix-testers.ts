@@ -1,10 +1,40 @@
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../schema/general';
-import type { Filter } from './stix-filtering';
+import type { Filter, TesterFunction } from './stix-filtering';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../../schema/identifier';
 import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from './boolean-logic-engine';
+
+import {
+  // ASSIGNEE_FILTER,
+  CONFIDENCE_FILTER,
+  CREATED_BY_FILTER,
+  // CREATOR_FILTER,
+  DETECTION_FILTER,
+  INDICATOR_FILTER,
+  INSTANCE_FILTER,
+  // LABEL_FILTER,
+  MAIN_OBSERVABLE_TYPE_FILTER,
+  // MARKING_FILTER,
+  // OBJECT_CONTAINS_FILTER,
+  PATTERN_FILTER,
+  RELATION_FROM,
+  RELATION_FROM_TYPES,
+  RELATION_TO, RELATION_TO_TYPES,
+  REVOKED_FILTER,
+  SCORE_FILTER,
+  TYPE_FILTER,
+  WORKFLOW_FILTER
+} from '../filtering';
+
+// TODO: changed by Cathia, to integrate properly with her
+// not used: participant > objectParticipant | killChainPhase > killChainPhases
+const ASSIGNEE_FILTER = 'objectAssignee';
+const CREATOR_FILTER = 'creator_id';
+const LABEL_FILTER = 'objectLabel';
+const MARKING_FILTER = 'objectMarking';
+const OBJECT_CONTAINS_FILTER = 'objects';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -279,4 +309,57 @@ export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching
   aggregatedStixValues.push(...stixRefsExtractor(stix, generateStandardId));
 
   return testStringFilter(filter, aggregatedStixValues);
+};
+
+/**
+ * Gives the right tester function according to the filter key.
+ * If the key is not handled, returns a function that always return false.
+ * TODO: make it dependent on the schema.
+ * @param key
+ */
+export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
+  switch (key) {
+    case MARKING_FILTER:
+      return testMarkingFilter;
+    case TYPE_FILTER:
+      return testEntityType;
+    case INSTANCE_FILTER:
+      return testInstanceType;
+    case INDICATOR_FILTER:
+      return testIndicator;
+    case WORKFLOW_FILTER:
+      return testWorkflow;
+    case CREATED_BY_FILTER:
+      return testCreatedBy;
+    case CREATOR_FILTER:
+      return testCreator;
+    case ASSIGNEE_FILTER:
+      return testAssignee;
+    case LABEL_FILTER:
+      return testLabel;
+    case REVOKED_FILTER:
+      return testRevoked;
+    case DETECTION_FILTER:
+      return testDetection;
+    case SCORE_FILTER:
+      return testScore;
+    case CONFIDENCE_FILTER:
+      return testConfidence;
+    case PATTERN_FILTER:
+      return testPattern;
+    case MAIN_OBSERVABLE_TYPE_FILTER:
+      return testMainObservableType;
+    case OBJECT_CONTAINS_FILTER:
+      return testObjectContains;
+    case RELATION_FROM:
+      return testRelationFrom;
+    case RELATION_TO:
+      return testRelationTo;
+    case RELATION_FROM_TYPES:
+      return testRelationFromTypes;
+    case RELATION_TO_TYPES:
+      return testRelationToTypes;
+    default:
+      return () => false;
+  }
 };

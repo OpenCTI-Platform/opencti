@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as engine from '../../../src/utils/stix-filtering/boolean-logic-engine';
+import type { Filter, FilterGroup } from '../../../src/utils/stix-filtering/stix-filtering';
 
 describe('Filter Boolean logic engine ', () => {
   describe('testGenericFilter', () => {
@@ -253,6 +254,107 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testDateFilter({ mode: 'AND', operator: 'nil', values: [] }, d1)).toEqual(false);
       expect(engine.testDateFilter({ mode: 'AND', operator: 'not_nil', values: [] }, null)).toEqual(false);
       expect(engine.testDateFilter({ mode: 'OR', operator: 'not_nil', values: ['should', 'not', 'matter'] }, d1)).toEqual(true);
+    });
+  });
+
+  describe('testFilterGroup', () => {
+    it('recurse properly inside a complex FilterGroup', () => {
+      const filterGroup: FilterGroup = { // FG
+        mode: 'AND',
+        filters: [],
+        filterGroups: [
+          { // FG1
+            mode: 'OR',
+            filters: [
+              { mode: 'AND', key: ['id'], operator: 'not_eq', values: ['aa', 'bb'] }, // F1
+              { mode: 'OR', key: ['refs'], operator: 'eq', values: ['ref1', 'ref2'] }, // F2
+              { mode: 'AND', key: ['score'], operator: 'gt', values: ['100'] } // F3
+            ],
+            filterGroups: []
+          },
+          { // FG2
+            mode: 'AND',
+            filters: [
+              { mode: 'AND', key: ['options'], operator: 'nil', values: [] }, // F4
+              { mode: 'AND', key: ['score'], operator: 'lt', values: ['100'] } // F5
+            ],
+            filterGroups: []
+          },
+          { // FG3
+            mode: 'OR',
+            filters: [],
+            filterGroups: [
+              { // FG4
+                mode: 'OR',
+                filters: [
+                  { mode: 'AND', key: ['color'], operator: 'not_eq', values: ['red', 'yellow'] }, // F6
+                  { mode: 'AND', key: ['height'], operator: 'gt', values: ['100'] } // F7
+                ],
+                filterGroups: []
+              },
+              { // FG5
+                mode: 'AND',
+                filters: [
+                  { mode: 'AND', key: ['posX'], operator: 'lt', values: ['50'] }, // F8
+                  { mode: 'AND', key: ['posY'], operator: 'lt', values: ['10'] } // F9
+                ],
+                filterGroups: []
+              }
+            ]
+          }
+        ]
+      };
+
+      // ----> (F1- or F2+ or F3-) --> FG1+
+      // ----> (F4+ and F5+) --> FG2+
+      // --------> (F6+ or F7+) --> FG4+
+      // --------> (F8+ and F9-) --> FG5-
+      // --> (FG4+ or FG5-) --> FG3+
+      // --> (FG1+ and FG2+ and FG3+) --> FG+
+      const dataMatch = {
+        id: 'aa',
+        refs: ['ref1', 'ref2'],
+        score: 90,
+        labels: ['label1'],
+        color: 'blue',
+        height: 175,
+        posX: 10,
+        posY: 12,
+      };
+
+      // fake testers for our dummy data (a simplistic version)
+      const getTesterFromKey = (key: string) => {
+        return (data: any, filter: Filter) => {
+          if (data[key] === undefined) return engine.testStringFilter(filter, []);
+          if (typeof data[key] === 'number') return engine.testNumericFilter(filter, data[key]);
+          if (typeof data[key] === 'string') return engine.testStringFilter(filter, [data[key]]);
+          if (Array.isArray(data[key])) return engine.testStringFilter(filter, data[key]);
+          return false;
+        };
+      };
+
+      expect(engine.testFilterGroup(dataMatch, filterGroup, getTesterFromKey)).toEqual(true);
+
+      // failing F4 will propagate to failing FG
+      const dataNoMatch1 = {
+        ...dataMatch,
+        options: ['opt1']
+      };
+      // failing F6 and F7 will propagate to failing FG
+      const dataNoMatch2 = {
+        ...dataMatch,
+        color: 'yellow',
+        height: 99,
+      };
+      // failing F6 and F7 but matching F9 will propagate to matching FG
+      const dataMatch2 = {
+        ...dataNoMatch2,
+        posY: 8,
+      };
+
+      expect(engine.testFilterGroup(dataNoMatch1, filterGroup, getTesterFromKey)).toEqual(false);
+      expect(engine.testFilterGroup(dataNoMatch2, filterGroup, getTesterFromKey)).toEqual(false);
+      expect(engine.testFilterGroup(dataMatch2, filterGroup, getTesterFromKey)).toEqual(true);
     });
   });
 });

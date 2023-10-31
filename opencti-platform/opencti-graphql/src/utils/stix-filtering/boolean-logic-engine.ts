@@ -1,5 +1,5 @@
 import moment from 'moment';
-import type { Filter } from './stix-filtering';
+import type { Filter, FilterGroup, TesterFunction } from './stix-filtering';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
@@ -134,6 +134,40 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
       || (operator === 'lte' && filterValuesAsDates.some((v) => stixDate.isSameOrBefore(v)))
       || (operator === 'gt' && filterValuesAsDates.some((v) => stixDate.isAfter(v)))
       || (operator === 'gte' && filterValuesAsDates.some((v) => stixDate.isSameOrAfter(v)));
+  }
+
+  return false;
+};
+
+/**
+ * Recursive function that tests a whole filter group.
+ * Thanks to the param getTesterFromFilterKey, this function is agnostic of the data content and how to test it.
+ * It only takes care of the recursion mechanism.
+ * @param stix data to test
+ * @param filterGroup complex filter group object with nested groups and filters
+ * @param getTesterFromFilterKey function that gives a function to test a filter, according to the filter key
+ *                               see function getStixTesterFromFilterKey.
+ */
+export const testFilterGroup = (stix: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
+  if (filterGroup.mode === 'AND') {
+    const results: boolean[] = [];
+    if (filterGroup.filters.length > 0) {
+      // note that we are not compatible with multiple keys yet, so we'll always check the first one only
+      results.push(filterGroup.filters.every((filter) => getTesterFromFilterKey(filter.key[0])(stix, filter)));
+    }
+    if (filterGroup.filterGroups.length > 0) {
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(stix, fg, getTesterFromFilterKey)));
+    }
+    return results.length > 0 && results.every((isTrue) => isTrue);
+  }
+
+  if (filterGroup.mode === 'OR') {
+    if (filterGroup.filters.length > 0) {
+      return filterGroup.filters.some((filter) => getTesterFromFilterKey(filter.key[0])(stix, filter));
+    }
+    if (filterGroup.filterGroups.length > 0) {
+      return filterGroup.filterGroups.some((fg) => testFilterGroup(stix, fg, getTesterFromFilterKey));
+    }
   }
 
   return false;
