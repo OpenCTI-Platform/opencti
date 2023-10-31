@@ -168,7 +168,7 @@ const ReportDetailsComponent = (props) => {
           {t('Correlated reports')}
         </Typography>
         <List>
-          {(report.relatedContainers?.edges ?? []).length >= 2
+          {report.relatedContainers?.edges?.length >= 2
             ? R.take(expanded ? 200 : 5, report.relatedContainers.edges)
               .filter(
                 (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
