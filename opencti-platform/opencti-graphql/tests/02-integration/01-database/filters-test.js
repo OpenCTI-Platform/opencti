@@ -26,7 +26,14 @@ describe('Filters testing', () => {
 
   it('Should marking filters correctly applied for admin user', async () => {
     // With eq on marking
-    const filters = { markedBy: [{ id: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'objectMarking',
+        values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(17);
     for (let objectIndex = 0; objectIndex < filteredObjects.length; objectIndex += 1) {
@@ -42,7 +49,14 @@ describe('Filters testing', () => {
   it('Should marking filters correctly applied for standard user', async () => {
     const WHITE_USER = buildStandardUser([WHITE_TLP]);
     // With eq on marking
-    const filters = { createdBy: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'createdBy',
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsWhite = await applyFilters(filters, WHITE_USER);
     expect(filteredObjectsWhite.length).toBe(0);
     const filteredObjectAdmin = await applyFilters(filters);
@@ -53,7 +67,14 @@ describe('Filters testing', () => {
   it('Should entity filters correctly applied for standard user', async () => {
     const WHITE_USER = buildStandardUser([WHITE_TLP]);
     // With eq on marking
-    const filters = { entity_type: [{ id: ENTITY_TYPE_INTRUSION_SET }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'entity_type',
+        values: [ENTITY_TYPE_INTRUSION_SET],
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsWhite = await applyFilters(filters, WHITE_USER);
     expect(filteredObjectsWhite.length).toBe(0);
     const filteredObjectAdmin = await applyFilters(filters);
@@ -66,7 +87,14 @@ describe('Filters testing', () => {
 
   it('Should createdBy filters correctly applied', async () => {
     // With eq on marking
-    const filters = { createdBy: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'createdBy',
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3);
     // With _not_eq
@@ -79,7 +107,14 @@ describe('Filters testing', () => {
 
   it('Should labels filters correctly applied', async () => {
     // With eq on marking
-    const filters = { objectLabel: [{ id: 'attack-pattern', value: 'attack-pattern' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'objectLabel',
+        values: ['attack-pattern'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(2);
     // With _not_eq
@@ -92,7 +127,15 @@ describe('Filters testing', () => {
 
   it('Should confidence filters correctly applied', async () => {
     // With gte on marking
-    const filters = { confidence_gte: [{ id: 30 }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'confidence',
+        values: ['30'],
+        operator: 'gte',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(9);
     // With lt
@@ -107,14 +150,28 @@ describe('Filters testing', () => {
 
   it('Should pattern_type filters correctly applied', async () => {
     // With eq on marking
-    const filters = { pattern_type: [{ id: 'stix' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'pattern_type',
+        values: ['stix'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3);
   });
 
   it('Should objects filters correctly applied', async () => {
     // With eq on marking
-    const filters = { objects: [{ id: 'note--573f623c-bf68-4f19-9500-d618f0d00af0' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'objects',
+        values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
     // With _not_eq
@@ -125,21 +182,42 @@ describe('Filters testing', () => {
 
   it('Should from filters correctly applied', async () => {
     // With eq on marking
-    const filters = { fromId: [{ id: 'indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'fromId',
+        values: ['indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3); // 2 source_ref, 1 sighting_of_ref
   });
 
   it('Should to filters correctly applied', async () => {
     // With eq on marking
-    const filters = { toId: [{ id: 'location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'toId',
+        values: ['location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
   });
 
   // severity
   it('Should severity filters correctly applied', async () => {
-    const filters = { severity: [{ id: 'low', value: 'low' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'severity',
+        values: ['low'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no severity in the data
 
@@ -150,7 +228,14 @@ describe('Filters testing', () => {
 
   // priority
   it('Should priority filters correctly applied', async () => {
-    const filters = { priority: [{ id: 'p2', value: 'p2' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: 'priority',
+        values: ['p2'],
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no priority in the data
 
