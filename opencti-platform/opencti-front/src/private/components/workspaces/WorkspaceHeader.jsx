@@ -322,6 +322,7 @@ const WorkspaceHeader = ({
           type={workspace.type}
           adjust={adjust}
           handleDownloadAsStixReport={handleDownloadAsStixReport}
+          workspace={workspace}
         />
       </div>
       {variant === 'investigation' && (

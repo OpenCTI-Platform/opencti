@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import type { FileHandle } from 'fs/promises';
 import {
   createEntity,
   deleteElementById,
@@ -21,12 +22,18 @@ import type {
   WorkspaceAddInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import {
+  getUserAccessRight,
+  isValidMemberAccessRight,
+  MEMBER_ACCESS_RIGHT_ADMIN
+} from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+
+export const WORKSPACE_VERSION = '1.0.0';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -134,4 +141,46 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
   await setEditContext(user, workspaceId, input);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE)
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
+};
+
+function checkDashboardConfigurationImport(parsedData: any) {
+  if (parsedData.type !== 'dashboard') {
+    throw FunctionalError('Invalid type. Please import OpenCTI dashboard-type only', { reason: parsedData.type });
+  }
+
+  if (parsedData.version !== WORKSPACE_VERSION) {
+    throw FunctionalError(`Invalid version. Your workspace version must match the current one. Actual version : ${WORKSPACE_VERSION}`);
+  }
+}
+
+export const workspaceImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const uploadedFile = await file;
+  const readStream = uploadedFile.createReadStream();
+  let fileContent = '';
+  await new Promise<void>((resolve, reject) => {
+    readStream.on('data', (chunk) => {
+      fileContent += chunk.toString();
+    });
+    readStream.on('end', () => {
+      resolve();
+    });
+    readStream.on('error', (error) => {
+      reject(error);
+    });
+  });
+  const parsedData = JSON.parse(fileContent);
+  checkDashboardConfigurationImport(parsedData);
+
+  const importWorkspaceCreation = await createEntity(context, user, parsedData, ENTITY_TYPE_WORKSPACE);
+  const workspaceId = importWorkspaceCreation.id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import ${importWorkspaceCreation.name} workspace`,
+    context_data: { id: workspaceId, entity_type: ENTITY_TYPE_WORKSPACE, input: importWorkspaceCreation }
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, importWorkspaceCreation, user);
+  return workspaceId;
 };

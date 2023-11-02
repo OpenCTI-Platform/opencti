@@ -70,6 +70,7 @@ interface DrawerProps {
     readonly name: string;
   }> | null;
   header?: React.ReactElement;
+  controlledDial?: ({ onOpen, onClose }:{ onOpen: () => void, onClose: () => void }) => React.ReactElement;
 }
 
 const Drawer = ({
@@ -80,6 +81,7 @@ const Drawer = ({
   variant,
   context,
   header,
+  controlledDial,
 }: DrawerProps) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -112,6 +114,7 @@ const Drawer = ({
   }
   return (
     <>
+      {controlledDial ? controlledDial({ onOpen: () => setOpen(true), onClose: handleClose }) : undefined }
       {variant && (
         <Fab
           onClick={() => setOpen(true)}

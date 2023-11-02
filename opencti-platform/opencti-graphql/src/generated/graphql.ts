@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { BasicStoreEntityFeed } from '../types/store.d';
+import type { BasicStoreEntityFeed } from '../types/store';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -12905,6 +12905,7 @@ export type Mutation = {
   channelRelationDelete?: Maybe<Channel>;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  configurationImport: Scalars['String']['output'];
   containerEdit?: Maybe<ContainerEditMutations>;
   countryAdd?: Maybe<Country>;
   countryEdit?: Maybe<CountryEditMutations>;
@@ -13373,6 +13374,11 @@ export type MutationCityAddArgs = {
 
 export type MutationCityEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -34725,6 +34731,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   channelRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  configurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationConfigurationImportArgs, 'file'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import gql from "graphql-tag";
+import fs from "node:fs";
+import path from 'node:path';
+import Upload from 'graphql-upload/Upload.mjs';
 import {
   ADMIN_USER,
   editorQuery,
@@ -201,7 +204,63 @@ describe("Workspace resolver standard behavior", () => {
       },
     });
 
-    expect(queryResult.errors[0].message).toEqual("Business validation");
+    expect(queryResult.errors[0].message).toEqual("Invalid ids specified");
+  });
+
+  it("can not import workspace configuration, given invalid entity type JSON import", async () => {
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_type.json'));
+    const upload = new Upload();
+    const fileUpload = {
+      fieldName: "fieldName",
+      filename: "invalid-type.json",
+      mimetype: "application/json",
+      createReadStream: () => file,
+    };
+    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.file = fileUpload;
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation importWorkspaceConfiguration($file: Upload!) {
+          configurationImport(file: $file)
+        }
+      `,
+      variables: {
+        file: upload,
+      },
+    });
+
+    expect(queryResult.errors[0].message).toEqual(
+      "Invalid type. Please import OpenCTI dashboard-type only",
+    );
+  });
+
+  it("can not import workspace configuration, given invalid dashboard version import", async () => {
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_version.json'));
+    const upload = new Upload();
+    const fileUpload = {
+      fieldName: "fieldName",
+      filename: "invalid-version.json",
+      mimetype: "application/json",
+      createReadStream: () => file,
+    };
+    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.file = fileUpload;
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation importWorkspaceConfiguration($file: Upload!) {
+          configurationImport(file: $file)
+        }
+      `,
+      variables: {
+        file: upload,
+      },
+    });
+
+    expect(queryResult.errors[0].message).toEqual(
+      "Invalid version. Your workspace version must match the current one. Actual version : 1.0.0",
+    );
   });
 
   it("can not investigate on an internal object", async () => {
@@ -223,7 +282,7 @@ describe("Workspace resolver standard behavior", () => {
       },
     });
 
-    expect(queryResult.errors[0].message).toEqual("Business validation");
+    expect(queryResult.errors[0].message).toEqual("Invalid ids specified");
   });
 
   it("can investigate on an entity", async () => {
@@ -402,7 +461,7 @@ describe("Workspace resolver standard behavior", () => {
       query: CREATE_QUERY,
       variables: REPORT_TO_CREATE,
     });
-    const reportId = report.data.reportAdd.id
+    const reportId = report.data.reportAdd.id;
 
     const graphQLResponse = await queryAsAdmin({
       query: gql`

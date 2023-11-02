@@ -12,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { withRouter } from 'react-router-dom';
+import fileDownload from 'js-file-download';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -108,6 +109,24 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: event.currentTarget });
   }
 
+  handleExportJson(workspace) {
+    this.setState({ exporting: true });
+
+    const dashboardName = workspace.name;
+    const dashboardConfig = JSON.stringify({
+      version: '1.0.0',
+      type: workspace.type,
+      name: dashboardName,
+      manifest: workspace.manifest,
+    });
+    const blob = new Blob([dashboardConfig], { type: 'text/json' });
+    const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+    const fileName = `${year}${month}${day}_octi_dashboard_${dashboardName}`;
+
+    fileDownload(blob, fileName, 'application/json');
+    this.setState({ exporting: false });
+  }
+
   handleClosePdf() {
     this.setState({ anchorElPdf: null });
   }
@@ -168,7 +187,10 @@ class ExportButtons extends Component {
       containerId,
       investigationAddFromContainer,
       history,
+      location,
+      workspace,
     } = this.props;
+    const isCustomDashBoard = location.pathname.includes('dashboards/');
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
@@ -182,6 +204,13 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
+          {isCustomDashBoard && (
+            <Tooltip title={t('Export to JSON')}>
+              <ToggleButton onClick={this.handleExportJson.bind(this, workspace)}>
+                <GetAppOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          )}
           {investigationAddFromContainer && (
             <Tooltip title={t('Start an investigation')}>
               <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId, history)}>

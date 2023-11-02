@@ -84,8 +84,8 @@ export const UnsupportedError = (reason, data) => error(UNSUPPORTED_ERROR, 'Unsu
   ...data,
 });
 
-export const FunctionalError = (reason, data) => error('FunctionalError', 'Business validation', {
-  reason: reason || 'No reason specify',
+export const FunctionalError = (reason, data) => error('FunctionalError', reason || 'Business validation', {
+  reason: reason || 'No specified reason',
   http_status: 400,
   category: CATEGORY_BUSINESS,
   ...data,
