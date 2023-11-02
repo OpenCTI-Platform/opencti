@@ -27,7 +27,7 @@ import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import {
   getManagerConfigurationFromCache,
-  saveManagerConfiguration
+  updateManagerConfigurationLastRun
 } from '../modules/managerConfiguration/managerConfiguration-domain';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
@@ -140,13 +140,15 @@ const initFileIndexManager = () => {
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager');
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
-        const startDate = new Date();
-        const indexFromDate = managerConfiguration?.last_run_start_date ? moment(managerConfiguration.last_run_start_date).toDate() : null;
-        logApp.info('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
-        await indexImportedFiles(context, indexFromDate);
-        const endDate = new Date();
-        await saveManagerConfiguration(context, SYSTEM_USER, 'FILE_INDEX_MANAGER', { last_run_start_date: startDate, last_run_end_date: endDate });
-        logApp.info('[OPENCTI-MODULE] End of file index manager processing');
+        if (managerConfiguration?.manager_running) {
+          const startDate = new Date();
+          const indexFromDate = managerConfiguration?.last_run_start_date ? moment(managerConfiguration.last_run_start_date).toDate() : null;
+          logApp.info('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
+          await indexImportedFiles(context, indexFromDate);
+          const endDate = new Date();
+          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: startDate, last_run_end_date: endDate });
+          logApp.info('[OPENCTI-MODULE] End of file index manager processing');
+        }
       } finally {
         running = false;
         if (lock) await lock.unlock();
