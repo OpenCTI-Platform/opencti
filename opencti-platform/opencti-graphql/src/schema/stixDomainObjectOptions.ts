@@ -15,7 +15,7 @@ export const stixDomainObjectOptions = {
     participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
     objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objects: buildRefRelationKey(RELATION_OBJECT, '*'),
-    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    externalReferences: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
     creator: 'creator_id',
   },
