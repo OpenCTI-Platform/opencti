@@ -204,8 +204,8 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
 
 export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
   const relationsToGet = Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes || 'stix-core-relationship'];
-  const { relationFilter } = args;
   const {
+    relationFilter,
     filters = undefined,
     elementId = [],
     fromId,
@@ -312,8 +312,26 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   if (confidences && confidences.length > 0) {
     filtersContent.push({ key: 'confidence', values: confidences });
   }
+  // remove options already passed in filters and useless for the next steps
+  const cleanedArgs = R.pipe(
+    R.dissoc('fromId'),
+    R.dissoc('fromRole'),
+    R.dissoc('toId'),
+    R.dissoc('toRole'),
+    R.dissoc('fromTypes'),
+    R.dissoc('toTypes'),
+    R.dissoc('startTimeStart'),
+    R.dissoc('startTimeStop'),
+    R.dissoc('stopTimeStart'),
+    R.dissoc('stopTimeStop'),
+    R.dissoc('firstSeenStart'),
+    R.dissoc('firstSeenStop'),
+    R.dissoc('lastSeenStart'),
+    R.dissoc('lastSeenStop'),
+    R.dissoc('confidences'),
+  )(args);
   return {
-    ...args,
+    ...cleanedArgs,
     types: relationsToGet,
     filters: {
       mode: finalFilters?.mode ?? 'and',
@@ -358,7 +376,6 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
-  const builtArgs = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
   const { elementId, elementWithTargetTypes = [] } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
@@ -423,6 +440,15 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     customFiltersContent.push({ key: 'connections', nested: nestedTo });
   }
   // endregion
+  // Remove options passed in filters
+  const builtArgs = R.pipe(
+    R.dissoc('fromId'),
+    R.dissoc('fromRole'),
+    R.dissoc('fromTypes'),
+    R.dissoc('toId'),
+    R.dissoc('toRole'),
+    R.dissoc('toTypes'),
+  )(args);
   // Override some special filters
   builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
   const customFilters = {
@@ -454,10 +480,7 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
 export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}, noFiltersChecking = false) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   const { filters } = args;
-  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkedAndConvertedFilters(filters, entityTypes);
-  if (!noFiltersChecking) {
-    console.log('convertedFilters', convertedFilters);
-  }
+  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkedAndConvertedFilters(filters);
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
@@ -468,7 +491,7 @@ export const listEntities: InternalListEntities = async (context, user, entityTy
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkedAndConvertedFilters(args.filters, entityTypes);
+  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkedAndConvertedFilters(args.filters);
   const paginateArgs = buildEntityFilters({ entityTypes, filters, ...args });
   return elList(context, user, indices, paginateArgs);
 };
@@ -481,7 +504,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   }
   const convertedFilters = (noFiltersChecking || !args.filters)
     ? args.filters
-    : checkedAndConvertedFilters(args.filters, args.types ?? []);
+    : checkedAndConvertedFilters(args.filters);
   const paginateArgs = buildEntityFilters({ ...args, entityTypes, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };

@@ -17,6 +17,7 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { availableStixCoreRelationships } from "../database/stix";
 
 // Resolutions
 export const MARKING_FILTER = 'objectMarking';
@@ -692,13 +693,24 @@ const convertFilterKeys = (inputFilters) => {
     }
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
-      const databaseNames = filterKeys.map((key) => schemaRelationsRefDefinition.getDatabaseName(key)).filter((n) => n);
-      if (databaseNames.length > 0) {
-        const newKeys = databaseNames.map((name) => buildRefRelationKey(name));
-        newFiltersContent.push({ ...f, key: newKeys });
-      } else {
-        newFiltersContent.push(f);
-      }
+      const convertedFilterKeys = filterKeys
+        .map((key) => { // 1. convert special keys
+          if (key === 'elementId') {
+            return buildRefRelationKey('*');
+          } if (key === 'hashes_MD5') {
+            return 'hashes.MD5';
+          } if (key === 'hashes_SHA1') {
+            return 'hashes.SHA-1';
+          } if (key === 'hashes_SHA256') {
+            return 'hashes.SHA-256';
+          } if (key === 'hashes_SHA512') {
+            return 'hashes.SHA-512';
+          }
+          return key;
+        })
+        .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key)]) // 2. fetch eventual ref database names
+        .map(([inputName, databaseName]) => (databaseName ? buildRefRelationKey(databaseName) : inputName)); // 3. convert databaseName if exists or keep initial key if not
+      newFiltersContent.push({ ...f, key: convertedFilterKeys });
     });
     return {
       mode: inputFilters.mode,
@@ -709,41 +721,30 @@ const convertFilterKeys = (inputFilters) => {
   return inputFilters;
 };
 
-export const checkedAndConvertedFilters = (filters, entityTypes = []) => {
-  // 01. check filters keys correspond to the entity types
+export const checkedAndConvertedFilters = (filters) => {
+  // 01. check filters keys exist in schema
+  // TODO check filters keys correspond to the entity types
   if (isNotEmptyFilters(filters)) {
     const keys = extractFilterKeys(filters);
     if (keys.length > 0) {
       let incorrectKeys = keys;
       // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
       const availableSpecialKeys = ['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections'];
-      if (entityTypes.length > 0 && !entityTypes.includes('Stix-Core-Object')) { // TODO remove '&& !entityTypes.includes('Stix-Core-Object')' when StixCoreObject attribute registration done
-        // correct keys are keys in AT LEAST one of the entity types schema definition
-        entityTypes.forEach((type) => {
-          const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
-          const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
-          const availableKeys = availableAttributes.concat(availableRelations).concat(availableSpecialKeys);
-          keys.forEach((k) => {
-            if (availableKeys.includes(k)) {
-              incorrectKeys = incorrectKeys.filter((n) => n !== k);
-            }
-          });
-        });
-        if (incorrectKeys.length > 0) {
-          throw Error(`incorrect filter keys: ${incorrectKeys} for types ${entityTypes}`);
+      const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
+      const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
+      const availableStixCoreRelations = availableStixCoreRelationships();
+      const extendedAvailableStixCoreRelations = availableStixCoreRelations.concat(availableStixCoreRelations.map((relationName) => `rel_${relationName}.internal_id`));
+      const availableKeys = availableAttributes
+        .concat(availableRelations)
+        .concat(extendedAvailableStixCoreRelations)
+        .concat(availableSpecialKeys);
+      keys.forEach((k) => {
+        if (availableKeys.includes(k)) {
+          incorrectKeys = incorrectKeys.filter((n) => n !== k);
         }
-      } else { // correct keys are keys existing in the schema definition
-        const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
-        const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
-        const availableKeys = availableAttributes.concat(availableRelations).concat(availableSpecialKeys);
-        keys.forEach((k) => {
-          if (availableKeys.includes(k)) {
-            incorrectKeys = incorrectKeys.filter((n) => n !== k);
-          }
-        });
-        if (incorrectKeys.length > 0) {
-          throw Error(`incorrect filter keys: ${incorrectKeys} not existing in any schema definition`);
-        }
+      });
+      if (incorrectKeys.length > 0) {
+        throw Error(`incorrect filter keys: ${incorrectKeys} not existing in any schema definition`);
       }
     }
   }
