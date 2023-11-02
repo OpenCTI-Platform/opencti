@@ -19,7 +19,8 @@ const styles = () => ({
     marginTop: -15,
   },
   search: {
-    float: 'right',
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
 });
 
