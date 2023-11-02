@@ -233,7 +233,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           {t('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
-          {(data?.relatedContainers?.edges && data.relatedContainers.edges.length >= 2)
+          {(data.relatedContainers?.edges && data.relatedContainers.edges.length >= 2)
             ? R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
               .filter(
                 (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
