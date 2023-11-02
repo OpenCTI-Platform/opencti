@@ -38,7 +38,6 @@ export const stixCoreObjectOptions = {
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
     elementId: buildRefRelationKey('*'),
-    creator: 'creator_id',
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
     hashes_SHA256: 'hashes.SHA-256',

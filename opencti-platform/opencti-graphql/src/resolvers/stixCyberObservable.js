@@ -65,7 +65,6 @@ const stixCyberObservableResolvers = {
       return filesListing(context, context.user, first, 'export/Stix-Cyber-Observable/');
     },
   },
-  StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   HashedObservable: {
     hashes: (stixCyberObservable) => stixHashesToInput(stixCyberObservable),

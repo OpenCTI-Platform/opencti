@@ -320,9 +320,8 @@ export const stixCyberObservablesExportAsk = async (context, user, args) => {
   const { format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, types } = args;
   const argsFilters = { search, orderBy, orderMode, filters, types };
-  const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const listParams = exportTransformFilters(argsFilters, ordersOpts);
   const works = await askListExport(
     context,
     user,

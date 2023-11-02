@@ -39,6 +39,7 @@ import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { checkedAndConvertedFilters } from '../utils/filtering';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -194,35 +195,14 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   return worksForExport;
 };
 
-const transformFilterGroup = (filterGroup, filtersInversed) => {
-  const newFilterGroup = {
-    mode: filterGroup.mode ?? 'and',
-    filterGroups: (filterGroup.filterGroups && filterGroup.filterGroups.length > 0) ? transformFilterGroup(filterGroup.filterGroups, filtersInversed) : [],
-    filters: (filterGroup.filters ?? []).map(
-      (n) => {
-        const keys = Array.isArray(n.key) ? n.key : [n.key];
-        const key = keys.map((k) => (k in filtersInversed ? filtersInversed[k] : k));
-        return {
-          key,
-          values: n.values,
-          operator: n.operator ?? 'eq',
-          mode: n.mode ?? 'or',
-        };
-      }
-    ),
-  };
-  return newFilterGroup;
-};
-
-export const exportTransformFilters = (filteringArgs, filterOptions, orderOptions) => {
-  const filtersInversed = invertObj(filterOptions);
+export const exportTransformFilters = (filteringArgs, orderOptions) => {
   const orderingInversed = invertObj(orderOptions);
   return {
     ...filteringArgs,
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: transformFilterGroup(filteringArgs.filters, filtersInversed),
+    filters: checkedAndConvertedFilters(filteringArgs),
   };
 };
 

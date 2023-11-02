@@ -66,7 +66,6 @@ const stixCoreRelationshipResolvers = {
       return filesListing(context, context.user, first, `export/${type}/`);
     },
   },
-  StixCoreRelationshipsFilter: stixCoreRelationshipOptions.StixCoreRelationshipsFilter,
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
