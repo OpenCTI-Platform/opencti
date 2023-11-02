@@ -21,6 +21,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
 import { batchBornIn, batchEthnicity } from '../../domain/stixCoreObject';
 import { utcDate } from '../../utils/format';
+import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 
 const bornInLoader = batchLoader(batchBornIn);
 const ethnicityLoader = batchLoader(batchEthnicity);
@@ -47,6 +48,7 @@ const threatActorIndividualResolvers: Resolvers = {
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },
   Mutation: {
