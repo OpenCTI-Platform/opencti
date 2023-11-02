@@ -110,7 +110,7 @@ const prepareManifestElement = async (data) => {
   };
 };
 
-const collectionQuery = async (context, user, collection, args) => {
+export const collectionQuery = async (context, user, collection, args) => {
   const { added_after, limit, next, match = {} } = args;
   const { id, spec_version, type, version } = match;
   if (spec_version && spec_version !== '2.1') {
