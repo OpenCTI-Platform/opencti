@@ -7581,7 +7581,7 @@ export type FileMetadata = {
 export type FilesMetrics = {
   __typename?: 'FilesMetrics';
   globalCount: Scalars['Int']['output'];
-  globalSize: Scalars['Int']['output'];
+  globalSize: Scalars['Float']['output'];
 };
 
 export enum FilterMode {
@@ -18133,6 +18133,7 @@ export type Query = {
   incidents?: Maybe<IncidentConnection>;
   incidentsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   indexedFiles?: Maybe<IndexedFileConnection>;
+  indexedFilesMetrics?: Maybe<FilesMetrics>;
   indicator?: Maybe<Indicator>;
   indicators?: Maybe<IndicatorConnection>;
   indicatorsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -33046,7 +33047,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
 
 export type FilesMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilesMetrics'] = ResolversParentTypes['FilesMetrics']> = ResolversObject<{
   globalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  globalSize?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  globalSize?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -36021,6 +36022,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   incidents?: Resolver<Maybe<ResolversTypes['IncidentConnection']>, ParentType, ContextType, Partial<QueryIncidentsArgs>>;
   incidentsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryIncidentsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   indexedFiles?: Resolver<Maybe<ResolversTypes['IndexedFileConnection']>, ParentType, ContextType, Partial<QueryIndexedFilesArgs>>;
+  indexedFilesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType>;
   indicator?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<QueryIndicatorArgs, 'id'>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<QueryIndicatorsArgs>>;
   indicatorsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryIndicatorsDistributionArgs, 'field' | 'operation'>>;

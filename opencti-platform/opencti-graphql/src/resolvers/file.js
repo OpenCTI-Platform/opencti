@@ -3,6 +3,7 @@ import {
   askJobImport,
   deleteImport,
   filesMetrics,
+  indexedFilesMetrics,
   searchIndexedFiles,
   uploadImport,
   uploadPending
@@ -21,6 +22,7 @@ const fileResolvers = {
     importFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/global/'),
     pendingFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/pending/'),
     filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
+    indexedFilesMetrics: () => indexedFilesMetrics(),
     indexedFiles: (_, args, context) => searchIndexedFiles(context, context.user, args),
   },
   IndexedFile: {

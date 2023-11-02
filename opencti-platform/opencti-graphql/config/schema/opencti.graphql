@@ -858,7 +858,7 @@ type IndexedFileConnection {
 
 type FilesMetrics {
   globalCount: Int!
-  globalSize: Int!
+  globalSize: Float!
 }
 
 type OpenCtiFile {
@@ -12078,6 +12078,7 @@ type Query {
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
   filesMetrics(mimeTypes: [String]): FilesMetrics @auth(for: [SETTINGS])
+  indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES
 

@@ -4,8 +4,9 @@ import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport }
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { elSearchFiles } from '../database/engine';
+import { elSearchFiles, getPrimaryStats } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { READ_INDEX_FILES } from '../database/utils';
 
 export const filesMetrics = async (context, user, args) => {
   const finalArgs = {
@@ -16,6 +17,14 @@ export const filesMetrics = async (context, user, args) => {
   return {
     globalCount: files.length,
     globalSize: R.sum(files.map((file) => file.size)),
+  };
+};
+
+export const indexedFilesMetrics = async () => {
+  const metrics = await getPrimaryStats([READ_INDEX_FILES]);
+  return {
+    globalCount: metrics.docs.count,
+    globalSize: metrics.store.size_in_bytes,
   };
 };
 

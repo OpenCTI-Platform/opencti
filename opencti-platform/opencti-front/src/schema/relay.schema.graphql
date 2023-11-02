@@ -911,7 +911,7 @@ type IndexedFileConnection {
 
 type FilesMetrics {
   globalCount: Int!
-  globalSize: Int!
+  globalSize: Float!
 }
 
 type OpenCtiFile {
@@ -8212,6 +8212,7 @@ type Query {
   pendingFiles(first: Int): FileConnection
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   filesMetrics(mimeTypes: [String]): FilesMetrics
+  indexedFilesMetrics: FilesMetrics
   settings: Settings!
   group(id: String!): Group
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection

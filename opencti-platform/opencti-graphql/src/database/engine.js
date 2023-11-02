@@ -2792,3 +2792,9 @@ export const getStats = () => {
     .stats({ index: READ_PLATFORM_INDICES }) //
     .then((result) => oebp(result)._all.total);
 };
+
+export const getPrimaryStats = (indices = READ_PLATFORM_INDICES) => {
+  return engine.indices
+    .stats({ index: indices }) //
+    .then((result) => oebp(result)._all.primaries);
+};
