@@ -2787,13 +2787,7 @@ export const elUpdateElement = async (instance) => {
   return Promise.all([replacePromise, connectionPromise]);
 };
 
-export const getStats = () => {
-  return engine.indices
-    .stats({ index: READ_PLATFORM_INDICES }) //
-    .then((result) => oebp(result)._all.total);
-};
-
-export const getPrimaryStats = (indices = READ_PLATFORM_INDICES) => {
+export const getStats = (indices = READ_PLATFORM_INDICES) => {
   return engine.indices
     .stats({ index: indices }) //
     .then((result) => oebp(result)._all.primaries);
