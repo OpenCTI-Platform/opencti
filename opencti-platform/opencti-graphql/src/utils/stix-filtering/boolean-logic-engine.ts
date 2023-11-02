@@ -5,7 +5,13 @@ type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
 
 /**
- * Take a single value and return an array.
+ * The Boolean Logic Engine is responsible for testing some data recursively against a filter group.
+ * The model of the data is unknown (specifically, we are not using any stix concept here).
+ * The engine job is to compare strings, booleans, numbers and dates with a nested AND/OR logic.
+ */
+
+/**
+ * Utility function that takes a single value and return an array.
  * The array contains the value only if the value is defined, otherwise array is empty
  */
 export const toValidArray = <T = unknown>(v: T) => {
@@ -16,13 +22,13 @@ export const toValidArray = <T = unknown>(v: T) => {
 };
 
 /**
- * Apply the boolean logic of testing the equality of some candidate values to an array of values.
- * It works with string, numeric, and boolean values.
- * Note that with operator gt, gte, lt or lte, string values are compared alphabetically.
- * With boolean values, expect these operators to work as if true is 1 and false 0 (i.e. true > false).
+ * Apply the filtering logic on values that are compatible with simple arithmetic operators (string, number, boolean).
+ *  - With operator gt, gte, lt or lte, string values are compared alphabetically.
+ *  - With boolean values, expect these operators to work as if true is 1 and false 0 (i.e. true > false).
  * @param filter the filter with mode and operator
  * @param adaptedFilterValues filter.values (strings) adapted for the test (e.g. parsing numbers, forcing lower case...)
- * @param stixCandidates the values inside the stix bundle that we compare to the filter values; they are properly types
+ * @param stixCandidates the values inside the DATA that we compare to the filter values; they are properly types
+ *                       We always assume an array of value(s) ; use toValidArray if the data is a single, nullable value.
  */
 export const testGenericFilter = <T extends string | number | boolean>({ mode, operator }: FilterLogic, adaptedFilterValues: T[], stixCandidates: T[]) => {
   // "(not) nil" or "(not) equal to nothing" is resolved the same way
@@ -76,10 +82,11 @@ export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[]
 
 /**
  * Implementation of testGenericFilter for boolean values.
- * Filter values are parsed as booleans.
+ * Filter values are parsed as booleans
+ * The strings "true", "yes" or "1" are interpreted as true ; anything else is false.
  */
 export const testBooleanFilter = (filter: FilterExcerpt, stixCandidate: boolean | null | undefined) => {
-  const filterValuesAsBooleans = filter.values.map((v) => v.toLowerCase() === 'true' || v === '1');
+  const filterValuesAsBooleans = filter.values.map((v) => v.toLowerCase() === 'true' || v.toLowerCase() === 'yes' || v === '1');
   return testGenericFilter<boolean>(filter, filterValuesAsBooleans, toValidArray(stixCandidate));
 };
 
@@ -139,38 +146,40 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
   return false;
 };
 
+//----------------------------------------------------------------------------------------------------------------------
+
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
 export type TesterFunction = (data: any, filter: Filter) => boolean;
 
 /**
- * Recursive function that tests a whole filter group.
+ * Recursive function that tests a complex filter group.
  * Thanks to the param getTesterFromFilterKey, this function is agnostic of the data content and how to test it.
  * It only takes care of the recursion mechanism.
- * @param stix data to test
+ * @param data data to test
  * @param filterGroup complex filter group object with nested groups and filters
  * @param getTesterFromFilterKey function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (stix: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
   if (filterGroup.mode === 'AND') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
       // note that we are not compatible with multiple keys yet, so we'll always check the first one only
-      results.push(filterGroup.filters.every((filter) => getTesterFromFilterKey(filter.key[0])(stix, filter)));
+      results.push(filterGroup.filters.every((filter) => getTesterFromFilterKey(filter.key[0])(data, filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(stix, fg, getTesterFromFilterKey)));
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, getTesterFromFilterKey)));
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
 
   if (filterGroup.mode === 'OR') {
     if (filterGroup.filters.length > 0) {
-      return filterGroup.filters.some((filter) => getTesterFromFilterKey(filter.key[0])(stix, filter));
+      return filterGroup.filters.some((filter) => getTesterFromFilterKey(filter.key[0])(data, filter));
     }
     if (filterGroup.filterGroups.length > 0) {
-      return filterGroup.filterGroups.some((fg) => testFilterGroup(stix, fg, getTesterFromFilterKey));
+      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, getTesterFromFilterKey));
     }
   }
 

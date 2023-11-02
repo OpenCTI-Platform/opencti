@@ -333,6 +333,7 @@ describe('Filter Boolean logic engine ', () => {
         };
       };
 
+      // our example data+filter matches
       expect(engine.testFilterGroup(dataMatch, filterGroup, getTesterFromKey)).toEqual(true);
 
       // failing F4 will propagate to failing FG
@@ -340,20 +341,21 @@ describe('Filter Boolean logic engine ', () => {
         ...dataMatch,
         options: ['opt1']
       };
+      expect(engine.testFilterGroup(dataNoMatch1, filterGroup, getTesterFromKey)).toEqual(false);
+
       // failing F6 and F7 will propagate to failing FG
       const dataNoMatch2 = {
         ...dataMatch,
         color: 'yellow',
         height: 99,
       };
+      expect(engine.testFilterGroup(dataNoMatch2, filterGroup, getTesterFromKey)).toEqual(false);
+
       // failing F6 and F7 but matching F9 will propagate to matching FG
       const dataMatch2 = {
         ...dataNoMatch2,
         posY: 8,
       };
-
-      expect(engine.testFilterGroup(dataNoMatch1, filterGroup, getTesterFromKey)).toEqual(false);
-      expect(engine.testFilterGroup(dataNoMatch2, filterGroup, getTesterFromKey)).toEqual(false);
       expect(engine.testFilterGroup(dataMatch2, filterGroup, getTesterFromKey)).toEqual(true);
     });
   });
