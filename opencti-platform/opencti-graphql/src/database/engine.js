@@ -1753,7 +1753,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   return body;
 };
 export const elCount = async (context, user, indexName, options = {}) => {
-  const convertedFilters = checkedAndConvertedFilters(options.filters, options.types ?? []);
+  const convertedFilters = checkedAndConvertedFilters(options.filters);
   const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
   const query = { index: indexName, body };
   logApp.debug('[SEARCH] elCount', { query });
@@ -2056,7 +2056,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
 export const elList = async (context, user, indexName, options = {}, noFiltersChecking = false) => {
   const convertedFilters = (noFiltersChecking || !options.filters)
     ? options.filters
-    : checkedAndConvertedFilters(options.filters, options.types ?? []);
+    : checkedAndConvertedFilters(options.filters);
   const { first = MAX_SEARCH_SIZE, infinite = false } = options;
   let hasNextPage = true;
   let continueProcess = true;

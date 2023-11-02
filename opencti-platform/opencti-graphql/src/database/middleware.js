@@ -392,7 +392,7 @@ export const listAllThings = async (context, user, thingsTypes, args = {}, noFil
   const { indices = READ_DATA_INDICES } = args;
   const convertedFilters = (noFiltersChecking || !args.filters)
     ? args.filters
-    : checkedAndConvertedFilters(args.filters, args.types ?? []);
+    : checkedAndConvertedFilters(args.filters);
   const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elList(context, user, indices, paginateArgs);
 };
@@ -572,7 +572,7 @@ export const timeSeriesHistory = async (context, user, types, args) => {
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
-  const convertedFilters = checkedAndConvertedFilters(args.filters, types);
+  const convertedFilters = checkedAndConvertedFilters(args.filters);
   const timeSeriesArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
@@ -581,7 +581,7 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const convertedFilters = checkedAndConvertedFilters(args.filters, types);
+  const convertedFilters = checkedAndConvertedFilters(args.filters);
   const timeSeriesArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
@@ -622,7 +622,7 @@ export const distributionHistory = async (context, user, types, args) => {
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (context, user, types, args) => {
-  const convertedFilters = checkedAndConvertedFilters(args.filters, types);
+  const convertedFilters = checkedAndConvertedFilters(args.filters);
   const distributionArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && !field.endsWith('internal_id')) {
