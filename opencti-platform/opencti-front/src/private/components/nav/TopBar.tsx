@@ -11,6 +11,7 @@ import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import MuiLink from '@mui/material/Link';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -496,8 +497,17 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t('Profile')}
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
-              <MenuItem id="logout-button" onClick={() => handleLogout()}>
-                {t('Logout')}
+              <MenuItem id="logout-button">
+                <MuiLink
+                  underline="none"
+                  color="secondary"
+                  href="/logout"
+                  // user will be redirected to login, but we do not want to keep the referrer url
+                  // on next login, the user might not be the same and might not have access to this url
+                  rel="noreferrer"
+                >
+                  {t('Logout')}
+                </MuiLink>
               </MenuItem>
             </Menu>
           </div>

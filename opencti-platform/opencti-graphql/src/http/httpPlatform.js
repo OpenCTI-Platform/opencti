@@ -257,7 +257,7 @@ const createApp = async (app) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res, next) => {
     try {
-      const referer = extractRefererPathFromReq(req);
+      const referer = extractRefererPathFromReq(req) ?? '/';
       const strategy = passport._strategy(req.session.session_provider?.provider);
       const { user } = req.session;
       const withOrigin = userWithOrigin(req, user);
