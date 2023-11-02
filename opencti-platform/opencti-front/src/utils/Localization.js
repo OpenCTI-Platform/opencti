@@ -2200,6 +2200,7 @@ const i18n = {
       'Please contact an administrator': 'Por favor, póngase en contacto con un administrador',
       'Create a CSV Mapper configuration': 'Crear una configuración de mapeo CSV',
       'There are not any configurations set yet': 'Todavía no se han configurado ninguna configuración',
+      'Do you want to delete this CSV mapper ?': '¿Desea eliminar este mapeador CSV?',
     },
     'fr-fr': {
       // Titles
@@ -4405,6 +4406,7 @@ const i18n = {
       'Please contact an administrator': 'Veuillez contacter un administrateur',
       'Create a CSV Mapper configuration': 'Créer une configuration de mappage CSV',
       'There are not any configurations set yet': 'Il n\'y a pas encore de configurations définies',
+      'Do you want to delete this CSV mapper ?': 'Voulez-vous supprimer ce mappage CSV ?',
     },
     'ja-jp': {
       // Titles
@@ -6532,6 +6534,7 @@ const i18n = {
       'Please contact an administrator': '管理者に連絡してください',
       'Create a CSV Mapper configuration': 'CSVマッパーの構成を作成',
       'There are not any configurations set yet': 'まだ設定がありません',
+      'Do you want to delete this CSV mapper ?': 'このCSVマッパーを削除しますか？',
     },
     'zh-cn': {
       // Titles
@@ -8556,6 +8559,7 @@ const i18n = {
       'Please contact an administrator': '请联系管理员',
       'Create a CSV Mapper configuration': '创建CSV映射配置',
       'There are not any configurations set yet': '目前尚未设置任何配置',
+      'Do you want to delete this CSV mapper ?': '您要删除此CSV映射吗？',
     },
     'en-us': {
       gt: 'Greater than',

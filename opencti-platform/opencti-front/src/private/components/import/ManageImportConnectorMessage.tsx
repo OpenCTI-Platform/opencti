@@ -28,9 +28,9 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
         </div>
       </Box>;
     case undefined: // In case there isn't any connector selected
-      return <></>;
+      return null;
     default:
-      return <></>;
+      return null;
   }
 };
 

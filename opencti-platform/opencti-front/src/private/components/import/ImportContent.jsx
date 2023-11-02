@@ -233,7 +233,7 @@ class ImportContentComponent extends Component {
         setSubmitting(false);
         resetForm();
         this.handleCloseImport();
-        MESSAGING$.notifySuccess('Import successfully asked');
+        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
       },
     });
   }
@@ -250,7 +250,7 @@ class ImportContentComponent extends Component {
         setSubmitting(false);
         resetForm();
         this.handleCloseValidate();
-        MESSAGING$.notifySuccess('Import successfully asked');
+        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
       },
     });
   }
