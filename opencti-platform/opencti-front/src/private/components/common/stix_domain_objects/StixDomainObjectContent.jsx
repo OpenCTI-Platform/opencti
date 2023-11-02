@@ -195,7 +195,6 @@ class StixDomainObjectContentComponent extends Component {
 
     this.state = {
       currentFileId,
-      currentExportId: R.propOr(R.head(exportFiles)?.id, 'currentExportId', params),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
@@ -219,7 +218,6 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   loadFileContent() {
-    console.log('loadFileContent');
     const { stixDomainObject } = this.props;
     const files = [...getFiles(stixDomainObject), ...getExportFiles(stixDomainObject)];
     this.setState({ isLoading: true }, () => {
@@ -436,7 +434,6 @@ class StixDomainObjectContentComponent extends Component {
 
     const {
       currentFileId,
-      currentExportId,
       totalPdfPageNumber,
       isLoading,
       currentContent,
@@ -456,9 +453,8 @@ class StixDomainObjectContentComponent extends Component {
     if (onProgressExportFileName) {
       const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
       if (exportFile && exportFile.uploadStatus === 'complete') {
-        this.handleSelectFile(currentFileId);
+        this.handleSelectFile(exportFile.id);
         this.setState({
-          currentFileId: exportFile.id,
           onProgressExportFileName: undefined,
         });
       }
@@ -479,7 +475,6 @@ class StixDomainObjectContentComponent extends Component {
           handleSelectFile={this.handleSelectFile.bind(this)}
           handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
-          currentExportId={currentExportId}
           onFileChange={this.handleFileChange.bind(this)}
         />
 

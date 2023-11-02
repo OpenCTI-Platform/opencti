@@ -35,6 +35,9 @@ const stixCoreObjectFileExportQuery = graphql`
   }
 `;
 
+// TODO see if possible to extract common logic between this component
+// and StixCoreObjectsExportCreation to limit duplicated code.
+
 const exportValidation = (t) => Yup.object().shape({
   format: Yup.string().required(t('This field is required')),
 });
@@ -62,6 +65,14 @@ const StixCoreObjectFileExportComponent = ({
   id,
 }) => {
   const navigate = useNavigate();
+  const { t } = useFormatter();
+
+  const data = usePreloadedQuery(
+    stixCoreObjectFileExportQuery,
+    queryRef,
+  );
+
+  const [open, setOpen] = useState(false);
 
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
@@ -76,8 +87,8 @@ const StixCoreObjectFileExportComponent = ({
         maxMarkingDefinition,
       },
 
-      onCompleted: (data) => {
-        const fileId = data.stixCoreObjectEdit.exportAsk[0].id;
+      onCompleted: (exportData) => {
+        const fileId = exportData.stixCoreObjectEdit.exportAsk[0].id;
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
@@ -89,17 +100,10 @@ const StixCoreObjectFileExportComponent = ({
     });
   };
 
-  const { t } = useFormatter();
-
-  const [open, setOpen] = useState(false);
   const handleClickOpen = () => {
     setOpen(true);
   };
 
-  const data = usePreloadedQuery(
-    stixCoreObjectFileExportQuery,
-    queryRef,
-  );
   const connectorsExport = R.propOr([], 'connectorsForExport', data);
   const exportScopes = R.uniq(
     R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
@@ -122,7 +126,7 @@ const StixCoreObjectFileExportComponent = ({
         aria-label="generate-export"
       >
         <ToggleButton
-          onClick={handleClickOpen}
+          onClick={() => handleClickOpen()}
           disabled={!isExportPossible}
           value="quick-export"
           aria-haspopup="true"
@@ -149,11 +153,14 @@ const StixCoreObjectFileExportComponent = ({
       >
         {({ submitForm, handleReset, isSubmitting }) => (
           <Form>
-            <Dialog PaperProps={{ elevation: 1 }}
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    fullWidth={true}>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={open}
+              onClose={() => setOpen(false)}
+              fullWidth={true}
+            >
               <DialogTitle>{t('Generate an export')}</DialogTitle>
+              {/* Duplicate code for displaying list of marking in select input. TODO a component */}
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
                 variables={{ first: 200 }}

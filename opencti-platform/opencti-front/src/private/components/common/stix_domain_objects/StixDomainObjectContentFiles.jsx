@@ -13,7 +13,7 @@ import {
   LanguageHtml5,
   NoteTextOutline,
   FileOutline,
-  LanguageMarkdownOutline, FileExportOutline,
+  LanguageMarkdownOutline,
 } from 'mdi-material-ui';
 import moment from 'moment';
 import IconButton from '@mui/material/IconButton';
@@ -526,8 +526,6 @@ StixDomainObjectContentFiles.propTypes = {
   currentFileId: PropTypes.string,
   handleSelectFile: PropTypes.func,
   onFileChange: PropTypes.func,
-  currentExportId: PropTypes.string,
-  currentExportUrl: PropTypes.string,
   exportFiles: PropTypes.array,
   handleSelectExportFile: PropTypes.func,
 
