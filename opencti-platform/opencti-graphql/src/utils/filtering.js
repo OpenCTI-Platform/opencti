@@ -71,7 +71,6 @@ export const GlobalFilters = {
   objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   indicates: buildRefRelationKey(RELATION_INDICATES),
   objects: buildRefRelationKey(RELATION_OBJECT),
-  creator: 'creator_id',
 };
 
 export const extractFilterIdsToResolve = (filters) => {

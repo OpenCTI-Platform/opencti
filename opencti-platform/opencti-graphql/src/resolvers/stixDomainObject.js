@@ -26,8 +26,12 @@ import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
+import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
+import {
+  stixCoreObjectExportPush,
+  stixCoreObjectImportPush,
+  stixCoreObjectsExportPush
+} from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
 
 const assigneesLoader = batchLoader(batchAssignees);
@@ -51,8 +55,7 @@ const stixDomainObjectResolvers = {
     },
     stixDomainObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
-  StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
-  StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,
+  StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,
   StixDomainObject: {
     __resolveType(obj) {
       if (obj.entity_type) {
