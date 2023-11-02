@@ -338,6 +338,7 @@ export const convertOldFilters = (filters: string) => {
     ['assigneeTo', 'objectAssignee'],
     ['participant', 'objectParticipant'],
     ['creator', 'creator_id'],
+    ['hasExternalReference', 'externalReferences'],
   ]);
   if (JSON.parse(filters).mode) { // filters already in new format are not converted again (protection)
     return filters;

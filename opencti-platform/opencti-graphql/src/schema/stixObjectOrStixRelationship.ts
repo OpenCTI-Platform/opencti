@@ -14,7 +14,7 @@ export const stixObjectOrStixRelationshipOptions = {
     objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
     relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
     objects: buildRefRelationKey(RELATION_OBJECT),
-    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    externalReferences: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
