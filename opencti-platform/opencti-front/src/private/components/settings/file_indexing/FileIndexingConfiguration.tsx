@@ -75,8 +75,6 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
   const managerConfigurationId = managerConfigurationByManagerId?.id;
   const totalFiles = filesMetrics?.globalCount;
   const dataToIndex = filesMetrics?.globalSize;
-  const indexedFiles = 2;
-  const volumeIndexed = 1;
 
   return (
     <div>
@@ -96,9 +94,7 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
             </Grid>
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
              <FileIndexingConfigurationInformations
-               indexedFiles={indexedFiles}
                totalFiles={totalFiles}
-               volumeIndexed={volumeIndexed}
                isStarted={isStarted}
                managerConfigurationId={managerConfigurationId}
              />

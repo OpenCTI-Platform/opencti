@@ -13,18 +13,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
-import { useMutation } from 'react-relay';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexingConfiguration';
+import {
+  FileIndexingConfigurationInformationsQuery,
+} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationInformationsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError } from '../../../../relay/environment';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -54,23 +58,34 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface FileIndexingConfigurationInformationsProps {
+const fileIndexingConfigurationInformationsQuery = graphql`
+  query FileIndexingConfigurationInformationsQuery {
+    indexedFilesMetrics {
+      globalCount
+      globalSize
+    }
+  }
+`;
+
+interface FileIndexingConfigurationInformationsComponentProps {
+  queryRef: PreloadedQuery<FileIndexingConfigurationInformationsQuery>
   managerConfigurationId: string | undefined
   isStarted: boolean
-  indexedFiles: number | undefined // TODO undefined??
   totalFiles: number | undefined
-  volumeIndexed: number | undefined
 }
 
-const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfigurationInformationsProps> = ({
+const FileIndexingConfigurationInformationsComponent: FunctionComponent<FileIndexingConfigurationInformationsComponentProps> = ({
   managerConfigurationId,
   isStarted,
-  indexedFiles,
   totalFiles,
-  volumeIndexed,
+  queryRef,
 }) => {
   const { n, t } = useFormatter();
   const classes = useStyles();
+
+  const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingConfigurationInformationsQuery>(fileIndexingConfigurationInformationsQuery, queryRef);
+  const indexedFiles = indexedFilesMetrics?.globalCount;
+  const volumeIndexed = indexedFilesMetrics?.globalSize;
 
   const [commit] = useMutation(fileIndexingConfigurationFieldPatch);
   const updateManagerRunning = (running: boolean) => {
@@ -131,7 +146,7 @@ const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfi
                 </Grid>
                 <Grid item={true} xs={4}>
                   <div className={classes.count}>
-                      {(isStarted ? n(indexedFiles) : '-')} / {n(totalFiles)}
+                      {indexedFiles} / {totalFiles}
                   </div>
                   <div className={classes.countText}>
                       {t('Files indexed')}
@@ -139,7 +154,7 @@ const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfi
                 </Grid>
                 <Grid item={true} xs={4}>
                   <div className={classes.count}>
-                      {(isStarted ? n(volumeIndexed) : '-')}
+                      {n(volumeIndexed)}
                   </div>
                   <div className={classes.countText}>
                       {t('Volume indexed')}
@@ -148,6 +163,35 @@ const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfi
             </Grid>
         </Paper>
     </div>
+  );
+};
+
+interface FileIndexingConfigurationInformationsProps {
+  managerConfigurationId: string | undefined
+  isStarted: boolean
+  totalFiles: number | undefined
+}
+
+const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfigurationInformationsProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
+  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationInformationsQuery>(fileIndexingConfigurationInformationsQuery);
+  useEffect(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, []);
+  return (
+      <>
+        {queryRef ? (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+              <FileIndexingConfigurationInformationsComponent
+                  queryRef={queryRef}
+                  managerConfigurationId={managerConfigurationId}
+                  isStarted={isStarted}
+                  totalFiles={totalFiles}
+              />
+            </React.Suspense>
+        ) : (
+            <Loader variant={LoaderVariant.container} />
+        )}
+      </>
   );
 };
 
