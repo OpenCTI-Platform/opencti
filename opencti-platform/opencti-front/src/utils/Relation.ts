@@ -30,8 +30,9 @@ export const resolveTypesForRelationship = (
   toType?: string,
 ) => {
   const types: string[] = [];
+
   schemaRelationsTypesMapping.forEach((values, key) => {
-    if (values.includes(relationshipType) || relationshipType === 'related-to') {
+    if (values.includes(relationshipType)) {
       const [from, to] = key.split('_');
       if (relationshipRefKey === 'from') {
         if (!toType || toType === to) {
