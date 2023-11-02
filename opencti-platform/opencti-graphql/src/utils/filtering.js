@@ -17,7 +17,8 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { availableStixCoreRelationships } from "../database/stix";
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { availableStixCoreRelationships } from '../database/stix';
 
 // Resolutions
 export const MARKING_FILTER = 'objectMarking';
@@ -704,6 +705,8 @@ const convertFilterKeys = (inputFilters) => {
             return 'hashes.SHA-256';
           } if (key === 'hashes_SHA512') {
             return 'hashes.SHA-512';
+          } if (key === 'sightedBy') {
+            return buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP);
           }
           return key;
         })
@@ -731,7 +734,7 @@ export const checkedAndConvertedFilters = (filters) => {
       const availableSpecialKeys = ['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections'];
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableStixCoreRelations = availableStixCoreRelationships();
+      const availableStixCoreRelations = availableStixCoreRelationships().concat('sightedBy');
       const extendedAvailableStixCoreRelations = availableStixCoreRelations.concat(availableStixCoreRelations.map((relationName) => `rel_${relationName}.internal_id`));
       const availableKeys = availableAttributes
         .concat(availableRelations)
