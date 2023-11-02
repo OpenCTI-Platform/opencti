@@ -250,7 +250,10 @@ class StixDomainObjectContentFiles extends Component {
                 onClick={handleSelectFile.bind(this, file.id)}
                 disabled={deleting === file.id}
                 secondaryAction={
-                  <IconButton onClick={this.submitDelete.bind(this, file.id)}>
+                  <IconButton
+                    onClick={this.submitDelete.bind(this, file.id)}
+                    size="large"
+                  >
                     <DeleteOutlined color="primary" />
                   </IconButton>
                 }
@@ -342,7 +345,10 @@ class StixDomainObjectContentFiles extends Component {
                 classes={{ root: classes.item }}
                 disabled={deleting === file.id}
                 secondaryAction={
-                  <IconButton onClick={this.submitDelete.bind(this, file.id)}>
+                  <IconButton
+                    onClick={this.submitDelete.bind(this, file.id)}
+                    size="large"
+                  >
                     <DeleteOutlined color="primary" />
                   </IconButton>
                 }
@@ -399,7 +405,10 @@ class StixDomainObjectContentFiles extends Component {
                 classes={{ root: classes.item }}
                 disabled={deleting === file.id}
                 secondaryAction={
-                  <IconButton onClick={this.submitDelete.bind(this, file.id)}>
+                  <IconButton
+                    onClick={this.submitDelete.bind(this, file.id)}
+                    size="large"
+                  >
                     <DeleteOutlined color="primary" />
                   </IconButton>
                 }
@@ -456,7 +465,10 @@ class StixDomainObjectContentFiles extends Component {
                 classes={{ root: classes.item }}
                 disabled={deleting === file.id}
                 secondaryAction={
-                  <IconButton onClick={this.submitDelete.bind(this, file.id)}>
+                  <IconButton
+                    onClick={this.submitDelete.bind(this, file.id)}
+                    size="large"
+                  >
                     <DeleteOutlined color="primary" />
                   </IconButton>
                 }
