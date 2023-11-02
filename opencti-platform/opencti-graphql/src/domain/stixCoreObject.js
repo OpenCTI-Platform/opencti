@@ -593,7 +593,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // region filters representatives
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
   // extract the ids to resolve from inputFilters
-  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id']);
+  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id', 'sightedBy']);
   const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
   // resolve the ids
   const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);

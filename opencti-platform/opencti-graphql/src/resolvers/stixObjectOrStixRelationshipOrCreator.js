@@ -3,7 +3,6 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { onlyStableStixIds } from '../database/stix';
 import { isInferredIndex } from '../database/utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { stixObjectOrStixRelationshipOptions } from '../schema/stixObjectOrStixRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { extractRepresentative } from '../database/entity-representative';
@@ -22,7 +21,6 @@ const stixObjectOrStixRelationshipOrCreatorResolvers = {
   Creator: {
     representative: (object) => extractRepresentative(object),
   },
-  StixObjectOrStixRelationshipOrCreatorsFilter: stixObjectOrStixRelationshipOptions.StixObjectOrStixRelationshipsFilter,
   StixObjectOrStixRelationshipOrCreator: {
     // eslint-disable-next-line
     __resolveType(obj) {
