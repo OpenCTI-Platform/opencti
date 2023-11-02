@@ -45,12 +45,21 @@ const LIST_QUERY = gql`
     }
 `;
 
-const READ_QUERY = gql`
+const READ_REPORT_QUERY = gql`
     query report($id: String!) {
         report(id: $id) {
             id
             standard_id
             name
+        }
+    }
+`;
+
+const READ_MARKING_QUERY = gql`
+    query markingDefinition($id: String!) {
+        markingDefinition(id: $id) {
+            id
+            standard_id
         }
     }
 `;
@@ -658,23 +667,23 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     });
     // Verify is no longer found
     let queryResult;
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: report1StixId } });
+    queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report1StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: report2StixId } });
+    queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report2StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: report3StixId } });
+    queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report3StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: report4StixId } });
+    queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report4StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: marking1StixId } });
+    queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking1StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
-    queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: marking2StixId } });
+    expect(queryResult.data.markingDefinition).toBeNull();
+    queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data.markingDefinition).toBeNull();
   });
 });
