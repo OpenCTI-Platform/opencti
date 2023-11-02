@@ -29,6 +29,7 @@ export const up = async (next) => {
     ['assigneeTo', 'objectAssignee'],
     ['participant', 'objectParticipant'],
     ['creator', 'creator_id'],
+    ['hasExternalReference', 'externalReferences'],
   ]);
   const convertFilters = (filters, alreadyParsed = false) => {
     const parsedFilters = alreadyParsed ? filters : JSON.parse(filters);
