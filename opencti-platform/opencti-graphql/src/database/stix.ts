@@ -1297,3 +1297,16 @@ export const checkRelationshipRef = (fromType: string, toType: string, relations
     );
   }
 };
+
+export const availableStixCoreRelationships = (entityType?: string) => {
+  let availableRelationsNames: string[] = [];
+  Object.entries(stixCoreRelationshipsMapping).forEach(([key, value]) => {
+    console.log('key', key);
+    console.log('value', value);
+    console.log('key.includes(entityType))', entityType && key.includes(entityType));
+    if (!entityType || (entityType && key.includes(entityType))) {
+      availableRelationsNames = availableRelationsNames.concat(value.map((n) => n.name));
+    }
+  });
+  return R.uniq(availableRelationsNames);
+};
