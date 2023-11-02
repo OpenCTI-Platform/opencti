@@ -17,21 +17,28 @@ import React, { FunctionComponent, useEffect } from 'react';
 import EnterpriseEdition from '@components/common/EnterpriseEdition';
 import Grid from '@mui/material/Grid';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import {
-  FileIndexingConfigurationFilesMetricsQuery,
-} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationFilesMetricsQuery.graphql';
 import FileIndexingConfigurationRequirements
   from '@components/settings/file_indexing/FileIndexingConfigurationRequirements';
 import FileIndexingConfigurationAndImpact from '@components/settings/file_indexing/FileIndexingConfigurationAndImpact';
 import FileIndexingConfigurationInformations
   from '@components/settings/file_indexing/FileIndexingConfigurationInformations';
+import {
+  FileIndexingConfigurationQuery,
+} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-const fileIndexingConfigurationFilesMetricsQuery = graphql`
-  query FileIndexingConfigurationFilesMetricsQuery($mimeTypes: [String]) {
+const fileIndexingConfigurationQuery = graphql`
+  query FileIndexingConfigurationQuery($managerId: String!, $mimeTypes: [String]) {
+    managerConfigurationByManagerId(managerId: $managerId) {
+      id
+      manager_id
+      manager_running
+      last_run_start_date
+      last_run_end_date
+    }
     filesMetrics(mimeTypes: $mimeTypes) {
       globalCount
       globalSize
@@ -39,8 +46,21 @@ const fileIndexingConfigurationFilesMetricsQuery = graphql`
   }
 `;
 
+export const fileIndexingConfigurationFieldPatch = graphql`
+  mutation FileIndexingConfigurationFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
+    managerConfigurationFieldPatch(id: $id, input: $input) {
+      id
+      manager_id
+      manager_running
+    }
+  }
+`;
+
 interface FileIndexingConfigurationComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationFilesMetricsQuery>
+  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
 }
 
 const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigurationComponentProps> = ({
@@ -49,17 +69,14 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
   const isEnterpriseEdition = useEnterpriseEdition();
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
-  const isStarted = false; // TODO get from config
 
-  const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationFilesMetricsQuery>(fileIndexingConfigurationFilesMetricsQuery, queryRef);
-
+  const { filesMetrics, managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
+  const isStarted = managerConfigurationByManagerId?.manager_running || false;
+  const managerConfigurationId = managerConfigurationByManagerId?.id;
   const totalFiles = filesMetrics?.globalCount;
   const dataToIndex = filesMetrics?.globalSize;
   const indexedFiles = 2;
   const volumeIndexed = 1;
-
-  const handleStart = () => {};
-  const handlePause = () => {};
 
   return (
     <div>
@@ -69,7 +86,7 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
       <FileIndexingConfigurationRequirements
         isModuleWarning={isModuleWarning}
       />
-        {isEnterpriseEdition && !isModuleWarning && (
+        {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
              <FileIndexingConfigurationAndImpact
@@ -83,8 +100,7 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
                totalFiles={totalFiles}
                volumeIndexed={volumeIndexed}
                isStarted={isStarted}
-               handleStart={handleStart}
-               handlePause={handlePause}
+               managerConfigurationId={managerConfigurationId}
              />
             </Grid>
           </Grid>
@@ -94,9 +110,9 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
 };
 
 const FileIndexingConfiguration = () => {
-  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationFilesMetricsQuery>(fileIndexingConfigurationFilesMetricsQuery);
+  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
   useEffect(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    loadQuery({ managerId: FILE_INDEX_MANAGER }, { fetchPolicy: 'store-and-network' });
   }, []);
   return (
       <>

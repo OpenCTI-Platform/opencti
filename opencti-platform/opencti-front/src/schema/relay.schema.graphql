@@ -11695,8 +11695,8 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   parent_types: [String!]!
   manager_id: String!
   manager_running: Boolean
-  last_run_start_date: DateTime!
-  last_run_end_date: DateTime!
+  last_run_start_date: DateTime
+  last_run_end_date: DateTime
 }
 
 enum NotifierFilter {

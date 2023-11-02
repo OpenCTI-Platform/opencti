@@ -20,8 +20,11 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
+import { useMutation } from 'react-relay';
+import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexingConfiguration';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
+import { handleError } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -52,24 +55,45 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FileIndexingConfigurationInformationsProps {
+  managerConfigurationId: string | undefined
   isStarted: boolean
-  handlePause: () => void
-  handleStart: () => void
   indexedFiles: number | undefined // TODO undefined??
   totalFiles: number | undefined
   volumeIndexed: number | undefined
 }
 
 const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfigurationInformationsProps> = ({
+  managerConfigurationId,
   isStarted,
-  handlePause,
-  handleStart,
   indexedFiles,
   totalFiles,
   volumeIndexed,
 }) => {
   const { n, t } = useFormatter();
   const classes = useStyles();
+
+  const [commit] = useMutation(fileIndexingConfigurationFieldPatch);
+  const updateManagerRunning = (running: boolean) => {
+    commit({
+      variables: {
+        id: managerConfigurationId,
+        input: { key: 'manager_running', value: running },
+      },
+      onCompleted: (data) => {
+        console.log('data', data);
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
+  };
+
+  const handleStart = () => {
+    updateManagerRunning(true);
+  };
+  const handlePause = () => {
+    updateManagerRunning(false);
+  };
 
   return (
     <div>

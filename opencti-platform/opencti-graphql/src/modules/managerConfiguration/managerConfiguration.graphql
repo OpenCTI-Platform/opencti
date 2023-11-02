@@ -6,8 +6,8 @@ type ManagerConfiguration implements InternalObject & BasicObject {
     # ManagerConfiguration
     manager_id: String! @auth
     manager_running: Boolean @auth
-    last_run_start_date: DateTime! @auth
-    last_run_end_date: DateTime! @auth
+    last_run_start_date: DateTime @auth
+    last_run_end_date: DateTime @auth
 }
 
 # Queries

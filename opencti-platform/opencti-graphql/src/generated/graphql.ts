@@ -12435,8 +12435,8 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   __typename?: 'ManagerConfiguration';
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  last_run_end_date: Scalars['DateTime']['output'];
-  last_run_start_date: Scalars['DateTime']['output'];
+  last_run_end_date?: Maybe<Scalars['DateTime']['output']>;
+  last_run_start_date?: Maybe<Scalars['DateTime']['output']>;
   manager_id: Scalars['String']['output'];
   manager_running?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
@@ -34468,8 +34468,8 @@ export type MalwareEditMutationsResolvers<ContextType = any, ParentType extends 
 export type ManagerConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerConfiguration'] = ResolversParentTypes['ManagerConfiguration']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  last_run_end_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  last_run_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  last_run_end_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_run_start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   manager_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
