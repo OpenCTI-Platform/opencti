@@ -79,19 +79,5 @@ export const isStixCyberObservable = (type: string) => schemaTypesDefinition.isT
   || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 
 export const stixCyberObservableOptions = {
-  StixCyberObservablesFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
-    objects: buildRefRelationKey(RELATION_OBJECT),
-    externalReferences: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
-    sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
-    hashes_MD5: 'hashes.MD5',
-    hashes_SHA1: 'hashes.SHA-1',
-    hashes_SHA256: 'hashes.SHA-256',
-    hashes_SHA512: 'hashes.SHA-512',
-    creator: 'creator_id',
-  },
   StixCyberObservablesOrdering: {}
 };
