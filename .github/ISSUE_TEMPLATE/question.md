@@ -2,7 +2,7 @@
 name: Question
 about: Ask a question concerning OpenCTI
 title: ''
-labels: "question, needs triage"
+labels: needs triage, question
 assignees: ''
 
 ---
