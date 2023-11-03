@@ -189,7 +189,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                                   name="platform_organization"
                                   disabled={!isEnterpriseEdition}
                                   label={'Platform organization'}
-                                  onChange={(name: string, value: Option) => handleSubmitField(name, value)}
+                                  onChange={(name: string, value: Option) => handleSubmitField(name, value || null)}
                                   style={{ width: '100%', marginTop: 20 }}
                                   multiple={false}
                                   outlined={false}
