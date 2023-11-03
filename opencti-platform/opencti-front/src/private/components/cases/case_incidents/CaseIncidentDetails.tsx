@@ -177,7 +177,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   const responseTypes = (data.response_types ?? []);
 
-  const filteredData = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
+  const relatedContainers = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
     .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
 
   return (
@@ -237,8 +237,8 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           {t('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
-          {filteredData.length > 0
-            ? filteredData.map((relatedContainerEdge) => {
+          {relatedContainers.length > 0
+            ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge?.node;
               return (
                 <ListItem

@@ -113,7 +113,7 @@ const ReportDetailsComponent = (props) => {
   });
   const expandable = report.relatedContainers.edges.length > 5;
 
-  const filteredData = R.take(expanded ? 200 : 5, report.relatedContainers.edges)
+  const relatedContainers = R.take(expanded ? 200 : 5, report.relatedContainers.edges)
     .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== report.id);
 
   return (
@@ -172,8 +172,8 @@ const ReportDetailsComponent = (props) => {
           {t('Correlated reports')}
         </Typography>
         <List>
-          {filteredData.length > 0
-            ? filteredData.map((relatedContainerEdge) => {
+          {relatedContainers.length > 0
+            ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
                 <ListItem
