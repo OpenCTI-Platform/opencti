@@ -28,7 +28,7 @@ import {
 import { interval } from 'rxjs';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
-import { handleError } from '../../../../relay/environment';
+import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
 
@@ -100,8 +100,8 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         id: managerConfigurationId,
         input: { key: 'manager_running', value: running },
       },
-      onCompleted: (data) => {
-        console.log('data', data);
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(`File indexing successfully ${running ? 'started' : 'paused'}`);
       },
       onError: (error) => {
         handleError(error);
