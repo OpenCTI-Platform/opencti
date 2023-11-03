@@ -30,7 +30,7 @@ import {
   type BasicStoreEntityTrigger,
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
-import { convertFiltersFrontendFormat, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
+import { adaptFiltersIds, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -444,7 +444,7 @@ export const buildTargetEvents = async (
       // For each user for a specific trigger
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
+      const adaptedFilters = await adaptFiltersIds(context, user, frontendFilters);
       // Check if the event matched/matches the trigger filters and the user rights
       const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, useSideEventMatching);
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
@@ -482,7 +482,7 @@ export const buildTargetEvents = async (
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
+      const adaptedFilters = await adaptFiltersIds(context, user, frontendFilters);
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
       if (isCurrentlyMatch) {
         if (!useSideEventMatching) { // classic live trigger or instance trigger with direct event

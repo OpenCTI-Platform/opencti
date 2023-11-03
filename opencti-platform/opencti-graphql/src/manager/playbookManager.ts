@@ -42,7 +42,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
-import { convertFiltersFrontendFormat, isStixMatchFilters } from '../utils/filtering';
+import { adaptFiltersIds, isStixMatchFilters } from '../utils/filtering';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
@@ -266,7 +266,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           if (type === 'create' && create === true) validEventType = true;
           if (type === 'update' && update === true) validEventType = true;
           if (type === 'delete' && deletion === true) validEventType = true;
-          const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+          const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
           const isMatch = await isStixMatchFilters(context, SYSTEM_USER, data, adaptedFilters);
           // 02. Execute the component
           if (validEventType && isMatch) {

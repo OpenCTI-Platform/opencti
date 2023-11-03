@@ -22,7 +22,7 @@ import {
   type PlaybookComponent,
   type PlaybookComponentConfiguration
 } from './playbook-types';
-import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
+import { adaptFiltersIds, isStixMatchFilters } from '../../utils/filtering';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
@@ -224,7 +224,7 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+    const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
     // Checking on all bundle elements
     if (all) {
       let matchedElements = 0;
@@ -267,7 +267,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
+    const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
