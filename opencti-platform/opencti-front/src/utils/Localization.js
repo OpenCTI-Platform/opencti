@@ -711,7 +711,7 @@ const i18n = {
       // File Indexing Configuration
       'Configuration and impact': 'Configuración e impacto',
       'Files will be indexed': 'Los archivos se indexarán',
-      'Of data will be indexed': 'De datos serán indexados',
+      'Storage size': 'Tamaño de almacenamiento',
       'Indexing information': 'Información de indexación',
       Pause: 'Pausa',
       'Files indexed': 'Ficheros indexados',
@@ -2939,7 +2939,7 @@ const i18n = {
       // File Indexing Configuration
       'Configuration and impact': 'Configuration et impact',
       'Files will be indexed': 'Fichiers à indexer',
-      'Of data will be indexed': 'Données à indexer',
+      'Storage size': 'Taille de stockage',
       'Indexing information': 'Informations d\'indexation',
       Pause: 'Pause',
       'Files indexed': 'Fichiers indexés',
@@ -5116,7 +5116,7 @@ const i18n = {
       // File Indexing Configuration
       'Configuration and impact': '配置和影响',
       'Files will be indexed': '文件将被编入索引',
-      'Of data will be indexed': '将索引哪些数据',
+      'Storage size': '存储容量',
       'Indexing information': '索引信息',
       Pause: '暂停',
       'Files indexed': '索引的文件',
@@ -7192,7 +7192,7 @@ const i18n = {
       // File Indexing Configuration
       'Configuration and impact': '構成と影響',
       'Files will be indexed': 'ファイルがインデックス化される',
-      'Of data will be indexed': 'データのインデックス化',
+      'Storage size': 'ストレージサイズ',
       'Indexing information': 'インデックス情報',
       Pause: 'ポーズ',
       'Files indexed': 'インデックスされたファイル',

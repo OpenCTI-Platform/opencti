@@ -12077,7 +12077,7 @@ type Query {
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
-  filesMetrics(mimeTypes: [String]): FilesMetrics @auth(for: [SETTINGS])
+  filesMetrics(mimeTypes: [String], maxFileSize: Float): FilesMetrics @auth(for: [SETTINGS])
   indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES

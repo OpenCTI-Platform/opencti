@@ -77,7 +77,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
                   {b(dataToIndex)}
                 </div>
                 <div className={classes.countText}>
-                  {t('Of data will be indexed')}
+                  {t('Storage size')}
                 </div>
               </Grid>
           </Grid>

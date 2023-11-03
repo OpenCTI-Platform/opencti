@@ -18847,6 +18847,7 @@ export type QueryFileArgs = {
 
 
 export type QueryFilesMetricsArgs = {
+  maxFileSize?: InputMaybe<Scalars['Float']['input']>;
   mimeTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
