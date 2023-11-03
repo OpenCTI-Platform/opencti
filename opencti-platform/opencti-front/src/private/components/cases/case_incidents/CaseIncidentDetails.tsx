@@ -176,6 +176,10 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   );
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   const responseTypes = (data.response_types ?? []);
+
+  const filteredData = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
+    .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -233,14 +237,10 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           {t('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
-          {(data.relatedContainers?.edges && data.relatedContainers.edges.length >= 2)
-            ? R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-              .filter(
-                (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
-              )
-              .map((relatedContainerEdge) => {
-                const relatedContainer = relatedContainerEdge?.node;
-                return (
+          {filteredData.length > 0
+            ? filteredData.map((relatedContainerEdge) => {
+              const relatedContainer = relatedContainerEdge?.node;
+              return (
                 <ListItem
                   key={data.id}
                   dense={true}
@@ -275,8 +275,8 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                     />
                   </div>
                 </ListItem>
-                );
-              }) : '-'}
+              );
+            }) : '-'}
         </List>
         {expandable && (
           <Button

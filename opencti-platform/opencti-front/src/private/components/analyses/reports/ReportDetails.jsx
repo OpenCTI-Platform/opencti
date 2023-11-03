@@ -112,6 +112,10 @@ const ReportDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = report.relatedContainers.edges.length > 5;
+
+  const filteredData = R.take(expanded ? 200 : 5, report.relatedContainers.edges)
+    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== report.id);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -168,14 +172,10 @@ const ReportDetailsComponent = (props) => {
           {t('Correlated reports')}
         </Typography>
         <List>
-          {report.relatedContainers?.edges?.length >= 2
-            ? R.take(expanded ? 200 : 5, report.relatedContainers.edges)
-              .filter(
-                (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
-              )
-              .map((relatedContainerEdge) => {
-                const relatedContainer = relatedContainerEdge.node;
-                return (
+          {filteredData.length > 0
+            ? filteredData.map((relatedContainerEdge) => {
+              const relatedContainer = relatedContainerEdge.node;
+              return (
                 <ListItem
                   key={report.id}
                   dense={true}
@@ -211,8 +211,8 @@ const ReportDetailsComponent = (props) => {
                     />
                   </div>
                 </ListItem>
-                );
-              }) : '-'}
+              );
+            }) : '-'}
         </List>
         {expandable && (
           <Button
