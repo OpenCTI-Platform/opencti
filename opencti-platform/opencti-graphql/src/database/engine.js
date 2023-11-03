@@ -2206,7 +2206,7 @@ const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = tru
   return convertedHits;
 };
 export const elSearchFiles = async (context, user, options = {}) => {
-  const { first = 20, after, orderBy = null } = options; // pagination options // TODO orderMode = 'asc'
+  const { first = 20, after, orderBy = null, orderMode = 'asc' } = options; // pagination options
   const { search = null, fileIds = [], entityIds = [] } = options; // search options
   const { fields = [], excludeFields = ['attachment.content'], connectionFormat = true, highlight = true } = options; // result options
   const searchAfter = after ? cursorToOffset(after) : undefined;
@@ -2238,6 +2238,8 @@ export const elSearchFiles = async (context, user, options = {}) => {
     sort.push({ indexed_at: 'desc' });
     // add internal_id sort since indexed_at is not unique
     sort.push({ 'internal_id.keyword': 'desc' });
+  } else {
+    sort.push({ [orderBy]: orderMode });
   }
   const body = {
     query: {

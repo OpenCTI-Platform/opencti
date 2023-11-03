@@ -1,8 +1,9 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { Promise as BluePromise } from 'bluebird';
 import moment from 'moment';
+import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
-import { EVENT_TYPE_UPDATE, isNotEmptyField } from '../database/utils';
+import { EVENT_TYPE_UPDATE, isNotEmptyField, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import {
   createStreamProcessor,
@@ -41,6 +42,18 @@ const ACCEPT_MIME_TYPES: string[] = conf.get('file_index_manager:accept_mime_typ
 const MAX_FILE_SIZE: number = conf.get('file_index_manager:max_file_size') || 5242880; // 5 mb
 const INCLUDE_GLOBAL_FILES: boolean = conf.get('file_index_manager:include_global_files') || false;
 
+const loadFilesToIndex = async (file: { id: string, internalId: string, entityId: string | null, name: string, uploaded_at: Date | undefined }) => {
+  const content = await getFileContent(file.id, 'base64');
+  return {
+    internal_id: file.internalId,
+    file_id: file.id,
+    file_data: content,
+    entity_id: file.entityId,
+    name: file.name,
+    uploaded_at: file.uploaded_at,
+  };
+};
+
 const indexImportedFiles = async (
   context: AuthContext,
   fromDate: Date | null = null,
@@ -51,45 +64,42 @@ const indexImportedFiles = async (
 ) => {
   const excludedPaths = includeGlobalFiles ? ['import/pending/'] : ['import/pending/', 'import/global/'];
   const fileListingOpts = { modifiedSince: fromDate, excludedPaths, mimeTypes, maxFileSize };
-  const files: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
-  if (files.length === 0) {
+  const allFiles: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
+  if (allFiles.length === 0) {
     return;
   }
-  // search documents by file id (to update if already indexed)
-  const searchOptions = {
-    first: files.length,
-    connectionFormat: false,
-    highlight: false,
-    fileIds: files.map((f) => f.id),
-    fields: ['internal_id', 'file_id'],
-  };
-  const existingFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
-  const filesToLoad = files.map((file) => {
-    const existingFile = existingFiles.find((e: { file_id: string, internal_id: string }) => e.file_id === file.id);
-    const internalId = existingFile ? existingFile.internal_id : generateInternalId();
-    const entityId = file.metaData.entity_id;
-    return {
-      id: file.id,
-      internalId,
-      entityId,
-      name: file.name,
-      uploaded_at: file.lastModified,
-    };
-  });
-  const loadFilesToIndex = async (file: { id: string, internalId: string, entityId: string | null, name: string, uploaded_at: Date | undefined }) => {
-    const content = await getFileContent(file.id, 'base64');
-    return {
-      internal_id: file.internalId,
-      file_id: file.id,
-      file_data: content,
-      entity_id: file.entityId,
-      name: file.name,
-      uploaded_at: file.uploaded_at,
-    };
-  };
-  const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 });
-  // index all files one by one
-  await elIndexFiles(context, SYSTEM_USER, filesToIndex);
+  const filesBulk = R.splitEvery(20, allFiles);
+  for (let index = 0; index < filesBulk.length; index += 1) {
+    const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+    if (managerConfiguration?.manager_running) {
+      const files = filesBulk[index];
+      // search documents by file id (to update if already indexed)
+      const searchOptions = {
+        first: files.length,
+        connectionFormat: false,
+        highlight: false,
+        fileIds: files.map((f) => f.id),
+        fields: ['internal_id', 'file_id'],
+      };
+      const existingFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
+      const filesToLoad = files.map((file) => {
+        const existingFile = existingFiles.find((e: { file_id: string, internal_id: string }) => e.file_id === file.id);
+        const internalId = existingFile ? existingFile.internal_id : generateInternalId();
+        const entityId = file.metaData.entity_id;
+        return {
+          id: file.id,
+          internalId,
+          entityId,
+          name: file.name,
+          uploaded_at: file.lastModified,
+        };
+      });
+      const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 });
+      // index all files one by one
+      await elIndexFiles(context, SYSTEM_USER, filesToIndex);
+      await waitInSec(1);
+    }
+  }
 };
 
 const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
@@ -146,7 +156,16 @@ const initFileIndexManager = () => {
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
         if (managerConfiguration?.manager_running) {
           const startDate = new Date();
-          const indexFromDate = managerConfiguration?.last_run_start_date ? moment(managerConfiguration.last_run_start_date).toDate() : null;
+          const searchOptions = {
+            first: 1,
+            connectionFormat: false,
+            highlight: false,
+            orderBy: 'uploaded_at',
+            orderMode: 'desc',
+          };
+          const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
+          const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
+          const indexFromDate = lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toDate() : null;
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
           await indexImportedFiles(context, indexFromDate);
           const endDate = new Date();
