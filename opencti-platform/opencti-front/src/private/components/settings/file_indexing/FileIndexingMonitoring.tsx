@@ -25,10 +25,14 @@ import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_i
 import {
   FileIndexingMonitoringQuery,
 } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
+import { interval } from 'rxjs';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+
+const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -69,6 +73,7 @@ const fileIndexingMonitoringQuery = graphql`
 
 interface FileIndexingMonitoringComponentProps {
   queryRef: PreloadedQuery<FileIndexingMonitoringQuery>
+  refetch: () => void;
   managerConfigurationId: string | undefined
   isStarted: boolean
   totalFiles: number | undefined
@@ -79,6 +84,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   isStarted,
   totalFiles,
   queryRef,
+  refetch,
 }) => {
   const { n, t } = useFormatter();
   const classes = useStyles();
@@ -102,6 +108,15 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
       },
     });
   };
+
+  useEffect(() => {
+    const subscription = interval$.subscribe(() => {
+      refetch();
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleStart = () => {
     updateManagerRunning(true);
@@ -177,12 +192,18 @@ const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = (
   useEffect(() => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
   }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
+
   return (
       <>
         {queryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
               <FileIndexingMonitoringComponent
                   queryRef={queryRef}
+                  refetch={refetch}
                   managerConfigurationId={managerConfigurationId}
                   isStarted={isStarted}
                   totalFiles={totalFiles}
