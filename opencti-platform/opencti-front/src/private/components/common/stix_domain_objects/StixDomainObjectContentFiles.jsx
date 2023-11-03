@@ -301,7 +301,7 @@ class StixDomainObjectContentFiles extends Component {
             );
           }).reverse()}
 
-          {exportFiles?.length === 0 && this.renderNoFiles()}
+          {exportFiles.length === 0 && this.renderNoFiles()}
         </List>
         <Divider />
         <List

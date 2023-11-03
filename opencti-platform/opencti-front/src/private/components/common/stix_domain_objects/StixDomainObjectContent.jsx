@@ -265,6 +265,22 @@ class StixDomainObjectContentComponent extends Component {
     }
   }
 
+  componentDidUpdate() {
+    const { onProgressExportFileName } = this.state;
+    const { stixDomainObject } = this.props;
+    const exportFiles = getExportFiles(stixDomainObject);
+
+    if (onProgressExportFileName) {
+      const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
+      if (exportFile?.uploadStatus === 'complete') {
+        this.handleSelectFile(exportFile.id);
+        this.setState({
+          onProgressExportFileName: undefined,
+        });
+      }
+    }
+  }
+
   componentWillUnmount() {
     this.subscriptionToggle.unsubscribe();
     this.subscription.unsubscribe();
@@ -440,7 +456,6 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab,
       navOpen,
       changed,
-      onProgressExportFileName,
     } = this.state;
 
     const files = getFiles(stixDomainObject);
@@ -449,16 +464,6 @@ class StixDomainObjectContentComponent extends Component {
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
-
-    if (onProgressExportFileName) {
-      const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
-      if (exportFile?.uploadStatus === 'complete') {
-        this.handleSelectFile(exportFile.id);
-        this.setState({
-          onProgressExportFileName: undefined,
-        });
-      }
-    }
 
     const currentFile = currentFileId && [...files, ...exportFiles].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
