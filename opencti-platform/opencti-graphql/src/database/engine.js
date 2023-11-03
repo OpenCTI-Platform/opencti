@@ -2131,11 +2131,10 @@ const buildIndexFileBody = (documentId, file, entity = null) => {
   return documentBody;
 };
 
-export const elBulkIndexFiles = async (context, user, files, maxBulkOperations = 10) => {
+export const elIndexFiles = async (context, user, files) => {
   if (!files || files.length === 0) {
     return;
   }
-  const bulkOperations = [];
   const entityIds = files.filter((file) => !!file.entity_id).map((file) => file.entity_id);
   const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, toMap: true };
   const entitiesMap = await elFindByIds(context, user, entityIds, opts);
@@ -2143,14 +2142,6 @@ export const elBulkIndexFiles = async (context, user, files, maxBulkOperations =
     const file = files[index];
     const { internal_id, file_data, file_id, entity_id } = file;
     if (internal_id && file_id && file_data) {
-      const indexQuery = {
-        index: {
-          _index: INDEX_FILES,
-          _id: internal_id,
-          pipeline: 'attachment',
-          retry_on_conflict: ES_RETRY_ON_CONFLICT
-        }
-      };
       const entity = entity_id ? entitiesMap[entity_id] : null;
       const fileObject = {
         id: file_id,
@@ -2159,18 +2150,9 @@ export const elBulkIndexFiles = async (context, user, files, maxBulkOperations =
         uploaded_at: file.uploaded_at,
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
-      bulkOperations.push(...[indexQuery, documentBody]);
+      await elIndex(INDEX_FILES, documentBody, true, 'attachment');
     }
   }
-  let currentProcessing = 0;
-  // TODO compute length of bulk operations to be sure it's less then 100mb (ES limit)
-  const groupsOfOperations = R.splitEvery(maxBulkOperations, bulkOperations);
-  const concurrentUpdate = async (bulk) => {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
-    currentProcessing += bulk.length;
-    logApp.debug(`[SEARCH] indexing files: ${currentProcessing} / ${bulkOperations.length}`);
-  };
-  await BluePromise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
 };
 
 export const elUpdateFilesWithEntityRestrictions = async (entity) => {
@@ -2333,17 +2315,21 @@ export const elBulk = async (args) => {
   });
 };
 /* istanbul ignore next */
-export const elIndex = async (indexName, documentBody, refresh = true) => {
+export const elIndex = async (indexName, documentBody, refresh = true, pipeline = null) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
-  await engine.index({
+  let indexParams = {
     index: indexName,
     id: documentBody.internal_id,
     refresh,
     timeout: '60m',
     body: R.dissoc('_index', documentBody),
-  }).catch((err) => {
+  };
+  if (pipeline) {
+    indexParams = { ...indexParams, pipeline };
+  }
+  await engine.index(indexParams).catch((err) => {
     throw DatabaseError('[SEARCH] Error updating elastic (index)', { error: err, body: documentBody });
   });
   return documentBody;

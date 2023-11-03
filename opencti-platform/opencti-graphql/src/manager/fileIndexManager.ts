@@ -13,7 +13,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import {
-  elBulkIndexFiles,
+  elIndexFiles,
   elLoadById,
   elSearchFiles,
   elUpdateFilesWithEntityRestrictions,
@@ -88,7 +88,8 @@ const indexImportedFiles = async (
     };
   };
   const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 });
-  await elBulkIndexFiles(context, SYSTEM_USER, filesToIndex);
+  // index all files one by one
+  await elIndexFiles(context, SYSTEM_USER, filesToIndex);
 };
 
 const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {

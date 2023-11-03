@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { createReadStream } from 'node:fs';
-import { elBulkIndexFiles, elDelete, elLoadById, elSearchFiles } from '../../../src/database/engine';
+import { elIndexFiles, elDelete, elLoadById, elSearchFiles } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteFile, getFileContent, upload } from '../../../src/database/file-storage';
 import { INDEX_FILES } from '../../../src/database/utils';
@@ -27,7 +27,7 @@ const indexFile = async (fileName, mimetype, documentId) => {
   };
 
   // index file content
-  await elBulkIndexFiles(testContext, ADMIN_USER, [fileToIndex]);
+  await elIndexFiles(testContext, ADMIN_USER, [fileToIndex]);
 
   // load file document
   const document = await elLoadById(testContext, ADMIN_USER, documentId, { indices: INDEX_FILES });
