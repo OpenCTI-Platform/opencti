@@ -86,8 +86,8 @@ export const testWorkflow = (stix: any, filter: Filter) => {
  * - createdBy is created_by_ref in stix (in first level or in extension)
  */
 export const testCreatedBy = (stix: any, filter: Filter) => {
-  const stixValue: string | undefined = stix.created_by_ref ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref;
-  return testStringFilter(filter, toValidArray(stixValue));
+  const stixValues = [...toValidArray(stix.created_by_ref), ...toValidArray(stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref)];
+  return testStringFilter(filter, stixValues);
 };
 
 /**
@@ -144,6 +144,7 @@ export const testDetection = (stix: any, filter: Filter) => {
  */
 export const testScore = (stix: any, filter: Filter) => {
   // path depends on entity type
+  // do not take all possible scores in stix, we implement a priority order
   const stixValue: number | null = stix.x_opencti_score ?? stix.extensions?.[STIX_EXT_OCTI]?.score ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score ?? null;
   return testNumericFilter(filter, stixValue);
 };
@@ -170,7 +171,7 @@ export const testPattern = (stix: any, filter: Filter) => {
  * - x_opencti_main_observable_type is main_observable_type in stix extension
  */
 export const testMainObservableType = (stix: any, filter: Filter) => {
-  const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type;
+  const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type);
   return testStringFilter(filter, stixValues);
 };
 
@@ -239,12 +240,12 @@ export const testRelationTo = (stix: any, filter: Filter) => {
 export const testRelationFromTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].source_type;
-    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].sighting_of_type;
-    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }
   return false;
@@ -257,12 +258,12 @@ export const testRelationFromTypes = (stix: any, filter: Filter) => {
  */
 export const testRelationToTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
-    const stixValue = stix.extensions?.[STIX_EXT_OCTI].target_type;
-    const extendedStixValues: string[] = [...(stixValue ? [stixValue] : []), ...getParentTypes(stixValue)];
+    const stixValue: string = stix.extensions?.[STIX_EXT_OCTI].target_type;
+    const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
-    const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI].where_sighted_types || [];
+    const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI].where_sighted_types ?? [];
     const extendedStixValues = [...stixValues, ...stixValues.map((t) => getParentTypes(t)).flat()];
     return testStringFilter(filter, extendedStixValues);
   }
@@ -284,7 +285,7 @@ export const testRefs = (stix: any, filter: Filter) => {
  * - useSideEventMatching arg to optionally test against relations and refs of the object
  */
 export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching = false) => {
-  const stixValues = stix.extensions?.[STIX_EXT_OCTI]?.id ? [stix.extensions?.[STIX_EXT_OCTI]?.id] : [];
+  const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.id);
   if (!useSideEventMatching) {
     // basic equality test between ids
     return testStringFilter(filter, stixValues);

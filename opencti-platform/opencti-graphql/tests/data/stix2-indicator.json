@@ -1,0 +1,42 @@
+{
+  "id": "indicator--86d9fae0-300e-54a8-9b7e-041e303406ad",
+  "spec_version": "2.1",
+  "type": "indicator",
+  "extensions": {
+    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+      "extension_type": "property-extension",
+      "id": "cee1aad9-81a9-4e38-a829-a06b56b29338",
+      "type": "Indicator",
+      "created_at": "2023-10-05T07:57:00.671Z",
+      "updated_at": "2023-11-02T16:33:20.409Z",
+      "stix_ids": [
+        "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079"
+      ],
+      "is_inferred": false,
+      "creator_ids": [
+        "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+      ],
+      "detection": true,
+      "score": 50,
+      "main_observable_type": "Unknown"
+    }
+  },
+  "created": "2020-02-25T22:25:59.717Z",
+  "modified": "2023-11-02T16:33:20.409Z",
+  "revoked": true,
+  "confidence": 0,
+  "lang": "en",
+  "labels": [
+    "indicator"
+  ],
+  "object_marking_refs": [
+    "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+  ],
+  "created_by_ref": "identity--4f347cc9-4658-59ee-9707-134f434f9d1c",
+  "name": "www.xolod-teplo.ru",
+  "description": "download location",
+  "pattern": "[domain-name:value = 'www.xolod-teplo.ru']",
+  "pattern_type": "stix",
+  "valid_from": "2016-09-09T05:58:03.000Z",
+  "valid_until": "2017-09-09T05:58:03.000Z"
+}
