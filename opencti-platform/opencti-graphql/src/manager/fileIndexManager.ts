@@ -35,26 +35,29 @@ const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 300000; // 5 mi
 const STREAM_SCHEDULE_TIME = 10000;
 const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_key');
 
-const MAX_FILE_SIZE: number = conf.get('file_index_manager:max_file_size') || 5242880; // 5 mb
+// configuration that will be handled in ManagerConfiguration in MVP2
 const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
 const ACCEPT_MIME_TYPES: string[] = conf.get('file_index_manager:accept_mime_types') || defaultMimeTypes;
+const MAX_FILE_SIZE: number = conf.get('file_index_manager:max_file_size') || 5242880; // 5 mb
+const INCLUDE_GLOBAL_FILES: boolean = conf.get('file_index_manager:include_global_files') || false;
 
-// TODO add limit for number of files ? => to be defined during performance test
 const indexImportedFiles = async (
   context: AuthContext,
   fromDate: Date | null = null,
   path = 'import/',
+  includeGlobalFiles = INCLUDE_GLOBAL_FILES,
   maxFileSize = MAX_FILE_SIZE,
   mimeTypes = ACCEPT_MIME_TYPES,
 ) => {
-  const fileListingOpts = { modifiedSince: fromDate, excludedPaths: ['import/pending/'], mimeTypes, maxFileSize };
+  const excludedPaths = includeGlobalFiles ? ['import/pending/'] : ['import/pending/', 'import/global/'];
+  const fileListingOpts = { modifiedSince: fromDate, excludedPaths, mimeTypes, maxFileSize };
   const files: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
   if (files.length === 0) {
     return;
   }
   // search documents by file id (to update if already indexed)
   const searchOptions = {
-    first: files.length, // TODO pagination needed ? to be defined during performance test
+    first: files.length,
     connectionFormat: false,
     highlight: false,
     fileIds: files.map((f) => f.id),
@@ -156,27 +159,32 @@ const initFileIndexManager = () => {
     }
   };
   const fileIndexStreamHandler = async () => {
-    let lock;
-    try {
-      // Lock the manager
-      lock = await lockResource([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
-      running = true;
-      logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents);
-      await streamProcessor.start('live');
-      while (!shutdown && streamProcessor.running()) {
-        await wait(WAIT_TIME_ACTION);
+    const context = executionContext('file_index_manager');
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
+    if (enterpriseEditionEnabled) {
+      let lock;
+      try {
+        // Lock the manager
+        lock = await lockResource([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
+        running = true;
+        logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
+        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents);
+        await streamProcessor.start('live');
+        while (!shutdown && streamProcessor.running()) {
+          await wait(WAIT_TIME_ACTION);
+        }
+        logApp.info('[OPENCTI-MODULE] End of file index manager stream handler');
+      } catch (e: any) {
+        if (e.name === TYPE_LOCK_ERROR) {
+          logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
+        } else {
+          logApp.error('[OPENCTI-MODULE] File index manager stream handler failed to start', { error: e });
+        }
+      } finally {
+        if (streamProcessor) await streamProcessor.shutdown();
+        if (lock) await lock.unlock();
       }
-      logApp.info('[OPENCTI-MODULE] End of file index manager stream handler');
-    } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
-        logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
-      } else {
-        logApp.error('[OPENCTI-MODULE] File index manager stream handler failed to start', { error: e });
-      }
-    } finally {
-      if (streamProcessor) await streamProcessor.shutdown();
-      if (lock) await lock.unlock();
     }
   };
 

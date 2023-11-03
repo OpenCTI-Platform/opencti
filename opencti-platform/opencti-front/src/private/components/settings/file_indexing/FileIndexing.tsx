@@ -31,7 +31,7 @@ import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const fileIndexingConfigurationQuery = graphql`
-  query FileIndexingConfigurationQuery($managerId: String!, $mimeTypes: [String], $maxFileSize: Float) {
+  query FileIndexingConfigurationQuery($managerId: String!, $mimeTypes: [String!], $maxFileSize: Float, $excludedPaths: [String!]) {
     managerConfigurationByManagerId(managerId: $managerId) {
       id
       manager_id
@@ -39,7 +39,7 @@ const fileIndexingConfigurationQuery = graphql`
       last_run_start_date
       last_run_end_date
     }
-    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize) {
+    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths) {
       globalCount
       globalSize
     }
@@ -107,10 +107,16 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
 
 const FileIndexing = () => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
+  // TODO MVP2 : get from configuration
   const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-  const defaultMaxFileSize = 5242880;
+  const queryArgs = {
+    managerId: FILE_INDEX_MANAGER,
+    mimeTypes: defaultMimeTypes,
+    maxFileSize: 5242880,
+    excludedPaths: ['import/global'],
+  };
   useEffect(() => {
-    loadQuery({ managerId: FILE_INDEX_MANAGER, mimeTypes: defaultMimeTypes, maxFileSize: defaultMaxFileSize }, { fetchPolicy: 'store-and-network' });
+    loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
   }, []);
   return (
       <>

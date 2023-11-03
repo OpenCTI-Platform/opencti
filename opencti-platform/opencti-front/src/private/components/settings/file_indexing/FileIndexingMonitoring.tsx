@@ -169,7 +169,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 </Grid>
                 <Grid item={true} xs={4}>
                   <div className={classes.count}>
-                      {n(volumeIndexed)}
+                      {indexedFiles ? n(volumeIndexed) : 0}
                   </div>
                   <div className={classes.countText}>
                       {t('Volume indexed')}

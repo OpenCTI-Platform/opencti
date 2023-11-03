@@ -159,6 +159,7 @@
     "lock_key": "file_index_manager_lock",
     "stream_lock_key": "file_index_manager_stream_lock",
     "interval": 300000,
+    "include_global_files": false,
     "max_file_size": 5242880,
     "accept_mime_types": ["application/pdf", "text/plain", "text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
   },
