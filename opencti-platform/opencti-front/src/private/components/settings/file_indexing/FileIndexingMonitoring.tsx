@@ -30,9 +30,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { TEN_SECONDS } from '../../../../utils/Time';
 
-const interval$ = interval(FIVE_SECONDS);
+const interval$ = interval(TEN_SECONDS);
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
