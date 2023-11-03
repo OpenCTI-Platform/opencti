@@ -41,7 +41,7 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { convertFiltersFrontendFormat, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
+import { adaptFiltersIds, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
@@ -460,7 +460,7 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
+      const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
       const isFromVisible = await isStixMatchFilters(context, user, fromStix, adaptedFilters);
       const isToVisible = await isStixMatchFilters(context, user, toStix, adaptedFilters);
       if (isFromVisible || isToVisible) {
@@ -560,7 +560,7 @@ const createSseMiddleware = () => {
               const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
               const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
-                const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
+                const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
                 const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, adaptedFilters);
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
