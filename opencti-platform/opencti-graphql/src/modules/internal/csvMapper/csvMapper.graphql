@@ -90,6 +90,12 @@ type CsvMapperEdge {
   node: CsvMapper!
 }
 
+type CsvMapperTestResult {
+  objects: String!
+  nbRelationships: Int!
+  nbEntities: Int!
+}
+
 # Queries
 type Query {
   csvMapper(id: String!): CsvMapper @auth
@@ -105,7 +111,7 @@ type Query {
   csvMapperTest(
     configuration: String!
     content: String!
-  ): JSON @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  ): CsvMapperTestResult @auth(for: [TAXIIAPI_SETCSVMAPPERS])
 }
 
 # Mutations

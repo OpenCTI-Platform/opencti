@@ -90,7 +90,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           uploadRef.current.value = ''; // Reset the upload input
         }
         setUpload(null);
-        MESSAGING$.notifySuccess('File successfully uploaded');
+        MESSAGING$.notifySuccess(t('File successfully uploaded'));
         const fileId = entityId
           ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
             ?.importPush?.id

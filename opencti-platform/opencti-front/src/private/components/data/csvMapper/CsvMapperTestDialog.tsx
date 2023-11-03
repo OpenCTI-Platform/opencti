@@ -7,15 +7,22 @@ import Tooltip from '@mui/material/Tooltip';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import CodeBlock from '@components/common/CodeBlock';
-import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
+import {
+  CsvMapperTestDialogQuery$data,
+} from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
 import { InformationOutline } from 'mdi-material-ui';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery, handleError } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const csvMapperTestQuery = graphql`
   query CsvMapperTestDialogQuery($configuration: String!, $content: String!) {
-    csvMapperTest(configuration: $configuration, content: $content)
+    csvMapperTest(configuration: $configuration, content: $content) {
+      objects
+      nbRelationships
+      nbEntities
+    }
   }
 `;
 
@@ -33,7 +40,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   const { t } = useFormatter();
 
   const [value, setValue] = useState<string>('');
-  const [result, setResult] = useState<string>('');
+  const [result, setResult] = useState<CsvMapperTestDialogQuery$data | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
   const onChange = async (field: string, v: string | File | undefined) => {
@@ -43,7 +50,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         setValue(fileValue);
       } else {
         setValue('');
-        setResult('');
+        setResult(undefined);
       }
     }
   };
@@ -58,14 +65,23 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
       .then((data) => {
         const resultTest = (data as CsvMapperTestDialogQuery$data)
           .csvMapperTest;
-        setResult(JSON.stringify(resultTest, null, '  '));
+        if (resultTest) {
+          setResult({
+            csvMapperTest: {
+              ...resultTest,
+            },
+          });
+        }
+        setLoading(false);
+      }).catch((error) => {
+        handleError(error);
         setLoading(false);
       });
   };
 
   const handleClose = () => {
     setValue('');
-    setResult('');
+    setResult(undefined);
     onClose();
   };
 
@@ -73,12 +89,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
-        <div
-          style={{
+        <Box
+          sx={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
           }}
         >
           <CustomFileUploader
@@ -96,12 +112,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             <InformationOutline
               fontSize="small"
               color="primary"
-              style={{ cursor: 'default', marginTop: '30px' }}
+              style={{ cursor: 'default' }}
             />
           </Tooltip>
-        </div>
-        <div
-          style={{ display: 'inline-flex', textAlign: 'center', marginTop: 20 }}
+        </Box>
+        <Box
+          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}
         >
           <Button
             variant="contained"
@@ -112,17 +128,31 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             {t('Test')}
           </Button>
           {loading && (
-            <div style={{ marginLeft: 10 }}>
-              <Loader variant={LoaderVariant.inElement} />
-            </div>
+            <Box sx={{ marginLeft: '8px' }}>
+              <Loader variant={LoaderVariant.inElement}/>
+            </Box>
           )}
-        </div>
-        <div style={{ marginTop: 20 }}>
+        </Box>
+        {result
+          && <Box
+            sx={{
+              paddingTop: '8px',
+              fontSize: '1rem',
+              gap: '8px',
+              justifyContent: 'center',
+              display: 'flex',
+            }}>
+            <span>{t('Objects found')} : </span>
+            <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t('Entities')}</span>
+            <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t('Relationships')}</span>
+          </Box>
+        }
+        <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result || t('You will find here the result in JSON format')}
+            code={result?.csvMapperTest?.objects || t('You will find here the result in JSON format')}
             language={'json'}
           />
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );
