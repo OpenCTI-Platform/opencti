@@ -44,7 +44,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
-import { convertFiltersFrontendFormat } from '../utils/filtering';
+import { adaptFiltersIds } from '../utils/filtering';
 import type { BasicStoreEntityLiveTrigger } from '../modules/notification/notification-types';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
@@ -62,42 +62,36 @@ const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntit
   const { type, event_scope, status, origin } = event;
   const { filters: rawFilters } = trigger;
   const filters = rawFilters ? JSON.parse(rawFilters) : {};
-  const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, filters);
+  const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, filters);
   for (let index = 0; index < adaptedFilters.length; index += 1) {
-    const { key, values } = adaptedFilters[index];
-    if (values.length > 0) {
+    const { key, values: ids } = adaptedFilters[index];
+    if (ids.length > 0) {
       if (key === 'event_type') {
-        const ids = values.map((v) => v.id);
         if (!ids.includes(type)) {
           return false;
         }
       }
       if (key === 'event_scope') {
-        const ids = values.map((v) => v.id);
         if (!ids.includes(event_scope)) {
           return false;
         }
       }
       if (key === 'members_user') {
-        const ids = values.map((v) => v.id);
         if (!ids.includes(origin.user_id)) {
           return false;
         }
       }
       if (key === 'members_group') {
-        const ids = values.map((v) => v.id);
         if (!ids.some((id) => (origin.group_ids ?? []).includes(id))) {
           return false;
         }
       }
       if (key === 'members_organization') {
-        const ids = values.map((v) => v.id);
         if (!ids.some((id) => (origin.organization_ids ?? []).includes(id))) {
           return false;
         }
       }
       if (key === 'activity_statuses') {
-        const ids = values.map((v) => v.id);
         if (!ids.includes(status)) {
           return false;
         }
