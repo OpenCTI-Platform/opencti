@@ -107,8 +107,9 @@ const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigur
 
 const FileIndexingConfiguration = () => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
+  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
   useEffect(() => {
-    loadQuery({ managerId: FILE_INDEX_MANAGER }, { fetchPolicy: 'store-and-network' });
+    loadQuery({ managerId: FILE_INDEX_MANAGER, mimeTypes: defaultMimeTypes }, { fetchPolicy: 'store-and-network' });
   }, []);
   return (
       <>
