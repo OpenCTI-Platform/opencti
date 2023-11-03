@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as R from 'ramda';
 import { map } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
@@ -11,9 +12,16 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, usePreloadedQuery } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
+import { FormikHelpers } from 'formik/dist/types';
+import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
+import {
+  StixCoreObjectFileExportQuery,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
+import {
+  MarkingDefinitionsLinesSearchQuery$data,
+} from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -21,7 +29,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -35,51 +43,39 @@ const stixCoreObjectFileExportQuery = graphql`
   }
 `;
 
-// TODO see if possible to extract common logic between this component
-// and StixCoreObjectsExportCreation to limit duplicated code.
-
-const exportValidation = (t) => Yup.object().shape({
+const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
   format: Yup.string().required(t('This field is required')),
 });
+interface StixCoreObjectFileExportComponentProps {
+  queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>
+  id: string
+}
 
-export const scopesConn = (exportConnectors) => {
-  const scopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, exportConnectors)),
-  );
-  const connectors = R.map((s) => {
-    const filteredConnectors = R.filter(
-      (e) => R.includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return R.map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
-  }, scopes);
-  const zipped = R.zip(scopes, connectors);
-  return R.fromPairs(zipped);
-};
+interface FormValues {
+  format: string;
+  type: string;
+  maxMarkingDefinition: string | null;
+}
 
 const StixCoreObjectFileExportComponent = ({
   queryRef,
   id,
-}) => {
+}:StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t } = useFormatter();
 
-  const data = usePreloadedQuery(
+  const data = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     queryRef,
   );
-
+  const [commitExport] = useMutation<FileManagerExportMutation>(fileManagerExportMutation);
   const [open, setOpen] = useState(false);
 
-  const onSubmitExport = (values, { setSubmitting, resetForm }) => {
+  const onSubmitExport = (values: FormValues, { setSubmitting, resetForm }: FormikHelpers<FormValues>) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
-    commitMutation({
-      mutation: fileManagerExportMutation,
+    commitExport({
       variables: {
         id,
         format: values.format,
@@ -88,13 +84,13 @@ const StixCoreObjectFileExportComponent = ({
       },
 
       onCompleted: (exportData) => {
-        const fileId = exportData.stixCoreObjectEdit.exportAsk[0].id;
+        const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
         navigate({
           pathname: `/dashboard/analyses/reports/${id}/content`,
-          search: `?${createSearchParams({ currentFileId: fileId })}`,
+          search: fileId ? `?${createSearchParams({ currentFileId: fileId })}` : '',
         });
       },
     });
@@ -104,16 +100,16 @@ const StixCoreObjectFileExportComponent = ({
     setOpen(true);
   };
 
-  const connectorsExport = R.propOr([], 'connectorsForExport', data);
-  const exportScopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
-  );
+  const connectorsExport = data.connectorsForExport ?? [];
 
-  const formatValue = exportScopes[0];
+  const exportScopes = R.uniq(connectorsExport.map((c) => c?.connector_scope).flat());
 
-  const exportConnsPerFormat = scopesConn(connectorsExport);
-  const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-  const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
+  // Handling only pdf for now
+  const formatValue = 'application/pdf';
+
+  const isExportPossible = connectorsExport.some((connector) => {
+    return connector?.connector_scope?.includes(formatValue) && connector?.active;
+  });
 
   return (
     <div>
@@ -136,11 +132,11 @@ const StixCoreObjectFileExportComponent = ({
         >
           <FileExportOutline
             fontSize="small"
-            color="primary"
+            color={isExportPossible ? 'primary' : 'disabled' }
           />
         </ToggleButton>
       </Tooltip>
-      <Formik
+      <Formik<FormValues>
         enableReinitialize={true}
         initialValues={{
           format: formatValue,
@@ -164,7 +160,7 @@ const StixCoreObjectFileExportComponent = ({
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
                 variables={{ first: 200 }}
-                render={({ props }) => {
+                render={({ props }: { props: MarkingDefinitionsLinesSearchQuery$data }) => {
                   if (props && props.markingDefinitions) {
                     return (
                       <DialogContent>
@@ -179,7 +175,7 @@ const StixCoreObjectFileExportComponent = ({
                           {exportScopes.map((value, i) => (
                             <MenuItem
                               key={i}
-                              value={value}
+                              value={value ?? ''}
                             >
                               {value}
                             </MenuItem>
@@ -224,7 +220,7 @@ const StixCoreObjectFileExportComponent = ({
                       </DialogContent>
                     );
                   }
-                  return <Loader variant="inElement" />;
+                  return <Loader variant={LoaderVariant.inElement} />;
                 }}
               />
               <DialogActions>
@@ -249,9 +245,9 @@ const StixCoreObjectFileExportComponent = ({
 };
 
 const StixCoreObjectFileExport = (
-  { id },
+  { id }: { id: string },
 ) => {
-  const queryRef = useQueryLoading(stixCoreObjectFileExportQuery, { id });
+  const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(stixCoreObjectFileExportQuery, { id });
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

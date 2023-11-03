@@ -452,7 +452,7 @@ class StixDomainObjectContentComponent extends Component {
 
     if (onProgressExportFileName) {
       const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
-      if (exportFile && exportFile.uploadStatus === 'complete') {
+      if (exportFile?.uploadStatus === 'complete') {
         this.handleSelectFile(exportFile.id);
         this.setState({
           onProgressExportFileName: undefined,
@@ -739,7 +739,6 @@ const StixDomainObjectContent = createRefetchContainer(
                   }
                 }
               }
-
             }
           }
         }

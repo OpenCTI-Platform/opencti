@@ -198,7 +198,6 @@ class StixDomainObjectContentFiles extends Component {
       settingsMessagesBannerHeight,
       exportFiles,
       handleSelectExportFile,
-
     } = this.props;
     const { deleting, displayCreate } = this.state;
     const textFiles = files.filter((n) => n.metaData.mimetype === 'text/plain');
@@ -540,7 +539,6 @@ StixDomainObjectContentFiles.propTypes = {
   onFileChange: PropTypes.func,
   exportFiles: PropTypes.array,
   handleSelectExportFile: PropTypes.func,
-
 };
 
 export default R.compose(
