@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
 import { ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
-import { FileDelimitedOutline, FilePdfBox } from 'mdi-material-ui';
+import { FileDelimitedOutline, FileExportOutline, FilePdfBox } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
@@ -118,7 +118,7 @@ class ExportButtons extends Component {
       type: workspace.type,
       name: dashboardName,
       manifest: workspace.manifest,
-    });
+    }, null, 2);
     const blob = new Blob([dashboardConfig], { type: 'text/json' });
     const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
     const fileName = `${year}${month}${day}_octi_dashboard_${dashboardName}`;
@@ -207,7 +207,7 @@ class ExportButtons extends Component {
           {isCustomDashBoard && (
             <Tooltip title={t('Export to JSON')}>
               <ToggleButton onClick={this.handleExportJson.bind(this, workspace)}>
-                <GetAppOutlined fontSize="small" color="primary" />
+                <FileExportOutline fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
           )}

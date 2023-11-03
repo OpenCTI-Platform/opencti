@@ -8,7 +8,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { FileDownloadOutlined, InsertChartOutlined } from '@mui/icons-material';
+import { CloudUploadOutlined, InsertChartOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useHistory } from 'react-router-dom';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme) => ({
     bottom: 30,
     right: 30,
     zIndex: 1100,
+  },
+  button: {
+    marginLeft: theme.spacing(2),
   },
   speedDialButton: {
     backgroundColor: theme.palette.secondary.main,
@@ -131,7 +134,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
             >
               <SpeedDialAction
                 title={t('Import dashboard')}
-                icon={<FileDownloadOutlined />}
+                icon={<CloudUploadOutlined />}
                 tooltipTitle={t('Import dashboard')}
                 onClick={() => inputRef.current?.click()}
                 FabProps={{ classes: { root: classes.speedDialButton } }}

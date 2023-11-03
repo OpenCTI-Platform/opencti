@@ -121,6 +121,7 @@ export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
       created_at
       updated_at
       type
+      manifest
       owner {
         id
         name
