@@ -2,7 +2,7 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
+import { adaptFiltersIds, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -60,34 +60,34 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
     const { key, operator, values, mode } = filters[index];
     if (key === TYPE_FILTER) {
       // filter types to keep only the ones that can be handled by background tasks
-      const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
+      const filteredTypes = values.filter((v) => isTaskEnabledEntity(v));
       queryFilters.push({ key, values: filteredTypes, operator, mode });
     } else if (key === 'elementId') {
-      const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
+      const nestedElement = [{ key: 'internal_id', values }];
       queryFilters.push({ key: 'connections', nested: nestedElement });
     } else if (key === 'elementWithTargetTypes') {
-      const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
+      const nestedElementTypes = [{ key: 'types', values }];
       queryFilters.push({ key: 'connections', nested: nestedElementTypes });
     } else if (key === 'fromId') {
-      nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });
+      nestedFrom.push({ key: 'internal_id', values });
       nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
       nestedFromRole = true;
     } else if (key === 'fromTypes') {
-      nestedFrom.push({ key: 'types', values: values.map((v) => v.id) });
+      nestedFrom.push({ key: 'types', values });
       if (!nestedFromRole) {
         nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
       }
     } else if (key === 'toId' || key === 'toSightingId') {
-      nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
+      nestedTo.push({ key: 'internal_id', values });
       nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
       nestedToRole = true;
     } else if (key === 'toTypes') {
-      nestedTo.push({ key: 'types', values: values.map((v) => v.id) });
+      nestedTo.push({ key: 'types', values });
       if (!nestedToRole) {
         nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
       }
     } else {
-      queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, mode });
+      queryFilters.push({ key: GlobalFilters[key] || key, values, operator, mode });
     }
   }
   if (nestedFrom.length > 0) {
@@ -108,7 +108,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
   let adaptedFilterGroup;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
-    adaptedFilterGroup = await convertFiltersFrontendFormat(context, user, filters);
+    adaptedFilterGroup = await adaptFiltersIds(context, user, filters);
   }
   const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   // Avoid empty type which will target internal objects and relationships as well
