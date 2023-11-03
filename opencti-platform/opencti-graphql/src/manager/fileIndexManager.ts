@@ -47,7 +47,7 @@ const indexImportedFiles = async (
   maxFileSize = MAX_FILE_SIZE,
   mimeTypes = ACCEPT_MIME_TYPES,
 ) => {
-  const fileListingOpts = { modifiedSince: fromDate, excludePath: 'import/pending/', mimeTypes, maxFileSize };
+  const fileListingOpts = { modifiedSince: fromDate, excludedPaths: ['import/pending/'], mimeTypes, maxFileSize };
   const files: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
   if (files.length === 0) {
     return;
@@ -138,16 +138,16 @@ const initFileIndexManager = () => {
         // Lock the manager
         lock = await lockResource([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
         running = true;
-        logApp.info('[OPENCTI-MODULE] Running file index manager');
+        logApp.debug('[OPENCTI-MODULE] Running file index manager');
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
         if (managerConfiguration?.manager_running) {
           const startDate = new Date();
           const indexFromDate = managerConfiguration?.last_run_start_date ? moment(managerConfiguration.last_run_start_date).toDate() : null;
-          logApp.info('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
+          logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
           await indexImportedFiles(context, indexFromDate);
           const endDate = new Date();
           await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: startDate, last_run_end_date: endDate });
-          logApp.info('[OPENCTI-MODULE] End of file index manager processing');
+          logApp.debug('[OPENCTI-MODULE] End of file index manager processing');
         }
       } finally {
         running = false;
@@ -182,6 +182,7 @@ const initFileIndexManager = () => {
 
   return {
     start: async () => {
+      logApp.info('[OPENCTI-MODULE] Starting file index manager');
       scheduler = setIntervalAsync(async () => {
         await fileIndexHandler();
       }, SCHEDULE_TIME);

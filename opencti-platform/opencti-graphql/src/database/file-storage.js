@@ -199,7 +199,7 @@ export const isFileObjectExcluded = (id) => {
 };
 
 export const rawFilesListing = async (context, user, directory, recursive = false, opts = {}) => {
-  const { modifiedSince, excludePath } = opts;
+  const { modifiedSince, excludedPaths = [] } = opts;
   const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -223,7 +223,7 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
         && (!modifiedSince || obj.LastModified > modifiedSince)
-        && (!excludePath || !obj.Key.startsWith(excludePath));
+        && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
   });
   // TODO limit loadFile : sort by LastModified and get the first 50 ? => waiting for performance test
   // Load file metadata with 5 // call maximum

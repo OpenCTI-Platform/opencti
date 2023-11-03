@@ -9,9 +9,11 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { READ_INDEX_FILES } from '../database/utils';
 
 export const filesMetrics = async (context, user, args) => {
+  const { excludedPaths = [] } = args;
+  const finalExcludedPaths = ['import/pending/', ...excludedPaths]; // always exclude pending
   const finalArgs = {
-    excludePath: 'import/pending/',
-    ...args
+    ...args,
+    excludedPaths: finalExcludedPaths,
   };
   const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
   return {
