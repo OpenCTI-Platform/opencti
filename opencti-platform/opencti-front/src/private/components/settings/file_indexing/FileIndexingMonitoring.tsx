@@ -21,10 +21,10 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexingConfiguration';
+import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import {
-  FileIndexingConfigurationInformationsQuery,
-} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationInformationsQuery.graphql';
+  FileIndexingMonitoringQuery,
+} from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError } from '../../../../relay/environment';
@@ -58,8 +58,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const fileIndexingConfigurationInformationsQuery = graphql`
-  query FileIndexingConfigurationInformationsQuery {
+const fileIndexingMonitoringQuery = graphql`
+  query FileIndexingMonitoringQuery {
     indexedFilesMetrics {
       globalCount
       globalSize
@@ -67,14 +67,14 @@ const fileIndexingConfigurationInformationsQuery = graphql`
   }
 `;
 
-interface FileIndexingConfigurationInformationsComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationInformationsQuery>
+interface FileIndexingMonitoringComponentProps {
+  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>
   managerConfigurationId: string | undefined
   isStarted: boolean
   totalFiles: number | undefined
 }
 
-const FileIndexingConfigurationInformationsComponent: FunctionComponent<FileIndexingConfigurationInformationsComponentProps> = ({
+const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringComponentProps> = ({
   managerConfigurationId,
   isStarted,
   totalFiles,
@@ -83,7 +83,7 @@ const FileIndexingConfigurationInformationsComponent: FunctionComponent<FileInde
   const { n, t } = useFormatter();
   const classes = useStyles();
 
-  const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingConfigurationInformationsQuery>(fileIndexingConfigurationInformationsQuery, queryRef);
+  const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery, queryRef);
   const indexedFiles = indexedFilesMetrics?.globalCount;
   const volumeIndexed = indexedFilesMetrics?.globalSize;
 
@@ -166,14 +166,14 @@ const FileIndexingConfigurationInformationsComponent: FunctionComponent<FileInde
   );
 };
 
-interface FileIndexingConfigurationInformationsProps {
+interface FileIndexingMonitoringProps {
   managerConfigurationId: string | undefined
   isStarted: boolean
   totalFiles: number | undefined
 }
 
-const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfigurationInformationsProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
-  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationInformationsQuery>(fileIndexingConfigurationInformationsQuery);
+const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
+  const [queryRef, loadQuery] = useQueryLoader<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery);
   useEffect(() => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
   }, []);
@@ -181,7 +181,7 @@ const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfi
       <>
         {queryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-              <FileIndexingConfigurationInformationsComponent
+              <FileIndexingMonitoringComponent
                   queryRef={queryRef}
                   managerConfigurationId={managerConfigurationId}
                   isStarted={isStarted}
@@ -195,4 +195,4 @@ const FileIndexingConfigurationInformations: FunctionComponent<FileIndexingConfi
   );
 };
 
-export default FileIndexingConfigurationInformations;
+export default FileIndexingMonitoring;

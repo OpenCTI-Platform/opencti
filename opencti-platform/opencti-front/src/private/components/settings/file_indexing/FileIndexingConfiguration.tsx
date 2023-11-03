@@ -13,116 +13,77 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, useEffect } from 'react';
-import EnterpriseEdition from '@components/common/EnterpriseEdition';
+import React, { FunctionComponent } from 'react';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import FileIndexingConfigurationRequirements
-  from '@components/settings/file_indexing/FileIndexingConfigurationRequirements';
-import FileIndexingConfigurationAndImpact from '@components/settings/file_indexing/FileIndexingConfigurationAndImpact';
-import FileIndexingConfigurationInformations
-  from '@components/settings/file_indexing/FileIndexingConfigurationInformations';
-import {
-  FileIndexingConfigurationQuery,
-} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
 
-const fileIndexingConfigurationQuery = graphql`
-  query FileIndexingConfigurationQuery($managerId: String!, $mimeTypes: [String]) {
-    managerConfigurationByManagerId(managerId: $managerId) {
-      id
-      manager_id
-      manager_running
-      last_run_start_date
-      last_run_end_date
-    }
-    filesMetrics(mimeTypes: $mimeTypes) {
-      globalCount
-      globalSize
-    }
-  }
-`;
+const useStyles = makeStyles<Theme>((theme) => ({
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: 20,
+    borderRadius: 6,
+  },
+  count: {
+    marginTop: 10,
+    fontSize: 30,
+    color: theme.palette.primary.main,
+    textAlign: 'center',
+  },
+  countText: {
+    textAlign: 'center',
+    marginTop: 5,
+    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: 500,
+    color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+}));
 
-export const fileIndexingConfigurationFieldPatch = graphql`
-  mutation FileIndexingConfigurationFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
-    managerConfigurationFieldPatch(id: $id, input: $input) {
-      id
-      manager_id
-      manager_running
-    }
-  }
-`;
-
-interface FileIndexingConfigurationComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
+interface FileIndexingConfigurationProps {
+  totalFiles: number | undefined // TODO undefined??
+  dataToIndex: number | undefined
 }
 
-const FileIndexingConfigurationComponent: FunctionComponent<FileIndexingConfigurationComponentProps> = ({
-  queryRef,
+const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
+  totalFiles,
+  dataToIndex,
 }) => {
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const { platformModuleHelpers } = useAuth();
-  const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
-
-  const { filesMetrics, managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
-  const isStarted = managerConfigurationByManagerId?.manager_running || false;
-  const managerConfigurationId = managerConfigurationByManagerId?.id;
-  const totalFiles = filesMetrics?.globalCount;
-  const dataToIndex = filesMetrics?.globalSize;
+  const { n, t, b } = useFormatter();
+  const classes = useStyles();
 
   return (
     <div>
-      {!isEnterpriseEdition && (
-        <EnterpriseEdition />
-      )}
-      <FileIndexingConfigurationRequirements
-        isModuleWarning={isModuleWarning}
-      />
-        {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Configuration and impact')}
+      </Typography>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingConfigurationAndImpact
-               totalFiles={totalFiles}
-               dataToIndex={dataToIndex}
-             />
+            <Grid item={true} xs={6}>
+              <div className={classes.count}>
+                {n(totalFiles)}
+              </div>
+              <div className={classes.countText}>
+                {t('Files will be indexed')}
+              </div>
             </Grid>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingConfigurationInformations
-               totalFiles={totalFiles}
-               isStarted={isStarted}
-               managerConfigurationId={managerConfigurationId}
-             />
-            </Grid>
+              <Grid item={true} xs={6}>
+                <div className={classes.count}>
+                  {b(dataToIndex)}
+                </div>
+                <div className={classes.countText}>
+                  {t('Of data will be indexed')}
+                </div>
+              </Grid>
           </Grid>
-        )}
-    </div>
+        </Paper>
+      </div>
   );
 };
 
-const FileIndexingConfiguration = () => {
-  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
-  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-  useEffect(() => {
-    loadQuery({ managerId: FILE_INDEX_MANAGER, mimeTypes: defaultMimeTypes }, { fetchPolicy: 'store-and-network' });
-  }, []);
-  return (
-      <>
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-            <FileIndexingConfigurationComponent
-              queryRef={queryRef}
-            />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.container} />
-        )}
-      </>
-  );
-};
 export default FileIndexingConfiguration;

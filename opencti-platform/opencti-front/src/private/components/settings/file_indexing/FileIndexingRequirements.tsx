@@ -19,11 +19,11 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface FileIndexingConfigurationRequirementsProps {
+interface FileIndexingRequirementsProps {
   isModuleWarning: boolean
 }
 
-const FileIndexingConfigurationRequirements: FunctionComponent<FileIndexingConfigurationRequirementsProps> = ({
+const FileIndexingRequirements: FunctionComponent<FileIndexingRequirementsProps> = ({
   isModuleWarning,
 }) => {
   const { t } = useFormatter();
@@ -53,4 +53,4 @@ const FileIndexingConfigurationRequirements: FunctionComponent<FileIndexingConfi
   );
 };
 
-export default FileIndexingConfigurationRequirements;
+export default FileIndexingRequirements;
