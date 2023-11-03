@@ -133,10 +133,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const handleLogout = () => {
-  window.location.pathname = '/logout';
-};
-
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
     notificationsNumber {
@@ -502,7 +498,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   underline="none"
                   color="secondary"
                   href="/logout"
-                  // user will be redirected to login, but we do not want to keep the referrer url
+                  // user will be logged out automatically, but we do not want to keep the referrer url for next login
                   // on next login, the user might not be the same and might not have access to this url
                   rel="noreferrer"
                 >

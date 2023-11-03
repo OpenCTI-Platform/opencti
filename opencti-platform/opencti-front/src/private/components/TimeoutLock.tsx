@@ -7,7 +7,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../components/i18n';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
-import { handleLogout } from './nav/TopBar';
 import useAuth from '../../utils/hooks/useAuth';
 
 /**
@@ -122,6 +121,14 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
    */
   const lockScreen = () => {
     setDialogOpen(true);
+  };
+
+  /**
+   * Going to /logout disconnects the user from the platform (see backend middleware).
+   * Referrer is kept so user will be redirected there on next login.
+   */
+  const handleLogout = () => {
+    window.location.pathname = '/logout';
   };
 
   /**
