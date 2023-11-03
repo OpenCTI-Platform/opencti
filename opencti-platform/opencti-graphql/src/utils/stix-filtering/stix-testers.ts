@@ -28,6 +28,7 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER
 } from '../filtering';
+import { logApp } from '../../config/conf';
 
 // TODO: changed by Cathia, to integrate properly with her
 // not used: participant > objectParticipant | killChainPhase > killChainPhases
@@ -362,6 +363,7 @@ export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
     case RELATION_TO_TYPES:
       return testRelationToTypes;
     default:
+      logApp.warn(`Unrecognized filter key when matching stix object: [${key}]`);
       return () => false;
   }
 };
