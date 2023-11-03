@@ -142,6 +142,7 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 
 export interface RelationOptions<T extends BasicStoreCommon> extends RelationFilters<T> {
   indices?: Array<string>;
+  baseData?: boolean;
 }
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {

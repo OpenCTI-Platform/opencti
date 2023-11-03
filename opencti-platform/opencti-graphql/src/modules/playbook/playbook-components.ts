@@ -33,7 +33,7 @@ import {
 } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -43,7 +43,7 @@ import {
   INPUT_MARKINGS,
 } from '../../schema/general';
 import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
-import type { BasicStoreRelation, StoreCommon } from '../../types/store';
+import type {BasicStoreRelation, StoreCommon, StoreRelation} from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
@@ -614,6 +614,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
 
 const DATE_SEEN_RULE = 'seen_dates';
 const RESOLVE_CONTAINER = 'resolve_container';
+const RESOLVE_NEIGHBORS = 'resolve_neighbors';
 const RESOLVE_INDICATORS = 'resolve_indicators';
 const RESOLVE_OBSERVABLES = 'resolve_observables';
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
@@ -632,7 +633,8 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
         { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' },
         { const: RESOLVE_INDICATORS, title: 'Resolve indicators based on observables (add in bundle)' },
         { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on (add in bundle)' },
-        { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' }
+        { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' },
+        { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
       ]
     },
   },
@@ -725,6 +727,19 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
             return { output_port: 'out', bundle };
           }
         }
+      }
+    }
+    if (rule === RESOLVE_NEIGHBORS) {
+      const relations = await listAllRelations(context, AUTOMATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { elementId: id, baseData: true }) as StoreRelation[];
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, R.uniq(
+        [
+          ...relations.map((r) => r.id),
+          ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId))
+        ]
+      ));
+      if (elements.length > 0) {
+        bundle.objects.push(...elements);
+        return { output_port: 'out', bundle };
       }
     }
     return { output_port: 'unmodified', bundle };
