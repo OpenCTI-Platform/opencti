@@ -1,0 +1,37 @@
+[
+    {
+    "id": "incident--a731f96e-4d1a-5333-81df-46c93e19abb8",
+    "spec_version": "2.1",
+    "type": "incident",
+    "extensions": {
+      "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+        "extension_type": "new-sdo",
+        "id": "84fdd243-adb4-4a9d-89c9-4e6593d9d7e4",
+        "type": "Incident",
+        "created_at": "2023-10-27T12:48:23.246Z",
+        "updated_at": "2023-11-02T16:45:30.831Z",
+        "is_inferred": false,
+        "creator_ids": [
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ],
+        "assignee_ids": [
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ]
+      }
+    },
+    "created": "2023-10-27T12:48:23.216Z",
+    "modified": "2023-11-02T16:45:30.831Z",
+    "revoked": false,
+    "confidence": 70,
+    "lang": "en",
+    "labels":["test-label"],
+    "external_references": [
+      {
+        "source_name": "cve",
+        "external_id": "CVE-2013-1347"
+      }
+    ],
+    "name": "Incident with High severity",
+    "severity": "medium"
+  }
+]

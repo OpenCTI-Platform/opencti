@@ -98,6 +98,7 @@ describe('Filter Boolean logic engine ', () => {
   describe('testStringFilter', () => {
     it('tests OR mode', () => {
       expect(engine.testStringFilter({ mode: 'OR', operator: 'eq', values: ['aaa', 'bbb'] }, ['ccc', 'bbb'])).toEqual(true);
+      expect(engine.testStringFilter({ mode: 'OR', operator: 'eq', values: ['aaa', 'bbb'] }, ['ccc', 'BbB'])).toEqual(true); // case-insensitive
       expect(engine.testStringFilter({ mode: 'OR', operator: 'eq', values: ['aaa', 'bbb'] }, ['ccc', 'ddd'])).toEqual(false);
       expect(engine.testStringFilter({ mode: 'OR', operator: 'not_eq', values: ['aaa', 'bbb'] }, ['ccc', 'bbb'])).toEqual(true);
       expect(engine.testStringFilter({ mode: 'OR', operator: 'not_eq', values: ['aaa', 'bbb'] }, ['aaa', 'bbb', 'ccc'])).toEqual(false);
@@ -117,6 +118,7 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testStringFilter({ mode: 'AND', operator: 'eq', values: ['aaa', 'bbb'] }, ['aaa'])).toEqual(false); // no real use-case
       expect(engine.testStringFilter({ mode: 'AND', operator: 'not_eq', values: ['aaa', 'bbb'] }, ['ccc'])).toEqual(true);
       expect(engine.testStringFilter({ mode: 'AND', operator: 'not_eq', values: ['aaa', 'bbb'] }, ['bbb'])).toEqual(false);
+      expect(engine.testStringFilter({ mode: 'AND', operator: 'not_eq', values: ['aaa', 'bbb'] }, ['BbB'])).toEqual(false); // case-insensitive
       expect(engine.testStringFilter({ mode: 'AND', operator: 'gt', values: ['aaa', 'bbb'] }, ['bbc'])).toEqual(true);
       expect(engine.testStringFilter({ mode: 'AND', operator: 'gt', values: ['bbb', 'ccc'] }, ['bbz'])).toEqual(false);
       expect(engine.testStringFilter({ mode: 'AND', operator: 'gt', values: ['bbb', 'ccc'] }, ['BBZ'])).toEqual(false); // case-insensitive
