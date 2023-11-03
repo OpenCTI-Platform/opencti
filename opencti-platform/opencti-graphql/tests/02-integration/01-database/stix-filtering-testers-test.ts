@@ -4,12 +4,12 @@ import { describe, expect, it } from 'vitest';
 // import stixBundle from '../../data/DATA-TEST-STIX2_v2.json';
 
 // specific data object that are not covered by the basic set, all recorded from real stream events
-import stixReports from '../../data/stream-event-stix2-reports.json';
-import stixIndicators from '../../data/stream-event-stix2-indicators.json';
-import stixIncidents from '../../data/stream-event-stix2-incidents.json';
-import stixRfis from '../../data/stream-event-stix2-rfis.json';
-import stixSightings from '../../data/stream-event-stix2-sightings.json';
-import stixRelationships from '../../data/stream-event-stix2-relationships.json';
+import stixReports from '../../data/stream-events/stream-event-stix2-reports.json';
+import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
+import stixIncidents from '../../data/stream-events/stream-event-stix2-incidents.json';
+import stixRfis from '../../data/stream-events/stream-event-stix2-rfis.json';
+import stixSightings from '../../data/stream-events/stream-event-stix2-sightings.json';
+import stixRelationships from '../../data/stream-events/stream-event-stix2-relationships.json';
 
 import * as testers from '../../../src/utils/stix-filtering/stix-testers';
 import type { Filter } from '../../../src/utils/stix-filtering/filter-group';
