@@ -763,6 +763,7 @@ const StixRelationshipsMultiHorizontalBars = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -922,9 +923,7 @@ const StixRelationshipsMultiHorizontalBars = ({
             && props.stixRelationshipsDistribution
             && props.stixRelationshipsDistribution.length > 0
           ) {
-            const categories = props.stixRelationshipsDistribution.map(
-              (n) => defaultValue(n.entity),
-            );
+            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity));
             const entitiesMapping = {};
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
@@ -1037,6 +1036,7 @@ const StixRelationshipsMultiHorizontalBars = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

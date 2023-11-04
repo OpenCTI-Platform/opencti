@@ -219,17 +219,17 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
                 definition
               }
               ... on Report {
-                  name
+                name
               }
               ... on Grouping {
-                  name
+                name
               }
               ... on Note {
-                  attribute_abstract
-                  content
+                attribute_abstract
+                content
               }
               ... on Opinion {
-                  opinion
+                opinion
               }
               ... on Label {
                 value
@@ -286,8 +286,8 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
           description
         }
         ... on AdministrativeArea {
-            name
-            description
+          name
+          description
         }
         ... on Country {
           name
@@ -355,17 +355,17 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
           name
         }
         ... on Report {
-            name
+          name
         }
         ... on Grouping {
-            name
+          name
         }
         ... on Note {
-            attribute_abstract
-            content
+          attribute_abstract
+          content
         }
         ... on Opinion {
-            opinion
+          opinion
         }
         ... on Label {
           value
@@ -383,6 +383,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -467,10 +468,9 @@ const stixCoreObjectsMultiHorizontalBars = ({
                     ? t(`entity_${n.label}`)
                     : n.label,
               y: n.value,
-              fillColor:
-                selection.attribute.endsWith('_id')
-                  ? itemColor(n.entity.entity_type)
-                  : itemColor(n.label),
+              fillColor: selection.attribute.endsWith('_id')
+                ? itemColor(n.entity.entity_type)
+                : itemColor(n.label),
             }));
             const chartData = [
               {
@@ -478,13 +478,12 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 data,
               },
             ];
-            const redirectionUtils = (selection.attribute === 'name')
-              ? props.stixCoreObjectsDistribution.map(
-                (n) => ({
-                  id: n.entity.id,
-                  entity_type: n.entity.entity_type,
-                }),
-              ) : null;
+            const redirectionUtils = selection.attribute === 'name'
+              ? props.stixCoreObjectsDistribution.map((n) => ({
+                id: n.entity.id,
+                entity_type: n.entity.entity_type,
+              }))
+              : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -501,6 +500,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

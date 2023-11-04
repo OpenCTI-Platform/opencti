@@ -225,6 +225,7 @@ const StixRelationshipsDonut = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -312,6 +313,7 @@ const StixRelationshipsDonut = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

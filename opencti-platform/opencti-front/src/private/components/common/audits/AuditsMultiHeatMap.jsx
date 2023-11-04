@@ -99,6 +99,7 @@ const AuditsMultiHeatMap = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -210,6 +211,7 @@ const AuditsMultiHeatMap = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

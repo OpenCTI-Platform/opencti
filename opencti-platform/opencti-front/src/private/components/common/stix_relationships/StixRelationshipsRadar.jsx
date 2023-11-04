@@ -228,6 +228,7 @@ const StixRelationshipsRadar = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -322,6 +323,7 @@ const StixRelationshipsRadar = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

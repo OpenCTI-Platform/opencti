@@ -82,6 +82,7 @@ const StixCoreObjectsMultiHeatMap = ({
   dataSelection,
   parameters = {},
   withExportPopover = false,
+  isReadOnly = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -174,6 +175,7 @@ const StixCoreObjectsMultiHeatMap = ({
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
+                isReadOnly={isReadOnly}
               />
             );
           }

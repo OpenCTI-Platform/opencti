@@ -17,6 +17,12 @@ const useStyles = makeStyles<Theme>(() => ({
     right: 32,
     position: 'absolute',
   },
+  containerReadOnly: {
+    margin: 0,
+    top: 0,
+    right: 0,
+    position: 'absolute',
+  },
 }));
 
 interface ChartType extends ReactApexChart {
@@ -26,9 +32,14 @@ interface ChartType extends ReactApexChart {
 interface ExportPopoverProps {
   chartRef: RefObject<ChartType>;
   series?: ApexOptions['series'];
+  isReadOnly?: boolean;
 }
 
-const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
+const ExportPopover = ({
+  isReadOnly,
+  chartRef,
+  series,
+}: ExportPopoverProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -51,7 +62,7 @@ const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
     }
   };
   return (
-    <div className={classes.container}>
+    <div className={isReadOnly ? classes.containerReadOnly : classes.container}>
       <IconButton
         onClick={(event) => {
           event.stopPropagation();
@@ -70,9 +81,9 @@ const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
         onClose={() => setAnchorEl(null)}
         className="noDrag"
       >
-        <MenuItem onClick={handleExportToPng}>{t('Export png')}</MenuItem>
-        <MenuItem onClick={handleExportToSVG}>{t('Export svg')}</MenuItem>
-        <MenuItem onClick={handleExportToCSV}>{t('Export csv')}</MenuItem>
+        <MenuItem onClick={handleExportToPng}>{t('Export PNG')}</MenuItem>
+        <MenuItem onClick={handleExportToSVG}>{t('Export SVG')}</MenuItem>
+        <MenuItem onClick={handleExportToCSV}>{t('Export CSV')}</MenuItem>
       </Menu>
     </div>
   );
@@ -80,6 +91,7 @@ const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
 
 interface OpenCTIChartProps extends Props {
   withExportPopover?: boolean;
+  isReadOnly?: boolean;
 }
 
 const Chart = ({
@@ -89,6 +101,7 @@ const Chart = ({
   width,
   height,
   withExportPopover,
+  isReadOnly,
 }: OpenCTIChartProps) => {
   const chartRef = useRef<ChartType>(null);
   return (
@@ -102,7 +115,11 @@ const Chart = ({
         height={height}
       />
       {withExportPopover === true && (
-        <ExportPopover chartRef={chartRef} series={series} />
+        <ExportPopover
+          chartRef={chartRef}
+          series={series}
+          isReadOnly={isReadOnly}
+        />
       )}
     </>
   );
