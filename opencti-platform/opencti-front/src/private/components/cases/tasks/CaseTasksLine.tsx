@@ -2,13 +2,16 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Skeleton from '@mui/material/Skeleton';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
+import Drawer from '@components/common/drawer/Drawer';
+import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
+import { NorthEastOutlined } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './TasksLine';
@@ -78,6 +81,7 @@ const CaseTaskFragment = graphql`
         color
       }
     }
+    ...CaseTaskOverview_task
   }
 `;
 
@@ -95,40 +99,60 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   const classes = useStyles();
   const { fld } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
+  const [open, setOpen] = useState(false);
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={true}
-      component={Link}
-      to={`/dashboard/cases/tasks/${task.id}`}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Task" />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            {Object.values(tasksDataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                {value.render?.(task, { fld, classes })}
-              </div>
-            ))}
-          </div>
-        }
-      />
-      <ListItemSecondaryAction>
-        <TaskPopover
-          id={task.id}
-          objectId={entityId}
-          paginationOptions={paginationOptions}
+    <>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        onClick={() => setOpen(true)}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type="Task" />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <>
+              {Object.values(tasksDataColumns).map((value) => (
+                <div
+                  key={value.label}
+                  className={classes.bodyItem}
+                  style={{ width: value.width }}
+                >
+                  {value.render?.(task, { fld, classes })}
+                </div>
+              ))}
+            </>
+          }
         />
-      </ListItemSecondaryAction>
-    </ListItem>
+        <ListItemSecondaryAction>
+          <TaskPopover
+            id={task.id}
+            objectId={entityId}
+            paginationOptions={paginationOptions}
+          />
+        </ListItemSecondaryAction>
+      </ListItem>
+      <Drawer
+        open={open}
+        title={task.name}
+        onClose={() => setOpen(false)}
+        header={
+          <IconButton
+            aria-label="Go to"
+            size="small"
+            component={Link}
+            to={`/dashboard/cases/tasks/${task.id}`}
+            style={{ position: 'absolute', right: 10 }}
+          >
+            <NorthEastOutlined />
+          </IconButton>
+        }
+      >
+        <CaseTaskOverview tasksData={task} />
+      </Drawer>
+    </>
   );
 };
 

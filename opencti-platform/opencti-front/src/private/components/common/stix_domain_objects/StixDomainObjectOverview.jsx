@@ -134,7 +134,7 @@ class StixDomainObjectOverview extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               {stixDomainObject.objectMarking && (
-                <div>
+                <>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Marking')}
                   </Typography>
@@ -143,7 +143,7 @@ class StixDomainObjectOverview extends Component {
                       stixDomainObject.objectMarking.edges ?? []
                     }
                   />
-                </div>
+                </>
               )}
               <Typography
                 variant="h3"
@@ -222,12 +222,12 @@ class StixDomainObjectOverview extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (
-                <div>
+                <>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Pattern type')}
                   </Typography>
                   <ItemPatternType label={stixDomainObject.pattern_type} />
-                </div>
+                </>
               )}
               <Typography
                 variant="h3"
@@ -241,7 +241,7 @@ class StixDomainObjectOverview extends Component {
                 disabled={!stixDomainObject.workflowEnabled}
               />
               {displayAssignees && (
-                <div>
+                <>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -254,10 +254,10 @@ class StixDomainObjectOverview extends Component {
                       stixDomainObject.objectAssignee?.edges ?? []
                     }
                   />
-                </div>
+                </>
               )}
               {displayParticipants && (
-                <div>
+                <>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -268,7 +268,7 @@ class StixDomainObjectOverview extends Component {
                   <ItemParticipants
                     participants={stixDomainObject.objectParticipant}
                   />
-                </div>
+                </>
               )}
               <Typography
                 variant="h3"

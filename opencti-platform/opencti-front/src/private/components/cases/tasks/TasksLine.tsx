@@ -8,9 +8,13 @@ import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { TasksLine_node$data, TasksLine_node$key } from './__generated__/TasksLine_node.graphql';
+import {
+  TasksLine_node$data,
+  TasksLine_node$key,
+} from './__generated__/TasksLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -88,13 +92,17 @@ const TaskFragment = graphql`
 export const tasksDataColumns: DataColumns = {
   name: {
     label: 'Title',
-    width: '25%',
+    width: '35%',
     isSortable: true,
-    render: (task: TasksLine_node$data) => task.name,
+    render: (task: TasksLine_node$data) => (
+      <Tooltip title={task.name}>
+        <span>{task.name}</span>
+      </Tooltip>
+    ),
   },
   due_date: {
     label: 'Due Date',
-    width: '15%',
+    width: '12%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (
       <ItemDueDate due_date={task.due_date} variant={'inList'} />
@@ -102,14 +110,14 @@ export const tasksDataColumns: DataColumns = {
   },
   assigneeTo: {
     label: 'Assignees',
-    width: '25%',
+    width: '18%',
     isSortable: true,
     // eslint-disable-next-line @typescript-eslint/no-shadow
     render: (task: TasksLine_node$data) => task.objectAssignee?.edges?.map(({ node }) => node.name).join(', '),
   },
   objectLabel: {
     label: 'Labels',
-    width: '20%',
+    width: '18%',
     isSortable: false,
     render: (task: TasksLine_node$data) => (
       <StixCoreObjectLabels variant="inList" labels={task.objectLabel} />
@@ -135,19 +143,19 @@ interface TasksLineProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    event: React.KeyboardEvent,
   ) => void;
   selectedElements: Record<string, TasksLine_node$data>;
   deSelectedElements: Record<string, TasksLine_node$data>;
   onToggleEntity: (
     entity: TasksLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: TasksLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }

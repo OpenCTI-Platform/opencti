@@ -43,7 +43,7 @@ import {
   INPUT_MARKINGS,
 } from '../../schema/general';
 import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
-import type {BasicStoreRelation, StoreCommon, StoreRelation} from '../../types/store';
+import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';

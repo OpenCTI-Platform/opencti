@@ -35,11 +35,12 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
   types?: string[];
   isSupportParticipation: boolean;
   container: ContainerStixObjectsOrStixRelationships_container$data;
+  variant?: string;
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsComponentProps
-> = ({ container, isSupportParticipation = false, types, title }) => {
+> = ({ container, isSupportParticipation = false, types, title, variant }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -66,7 +67,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     },
     name: {
       label: 'Name',
-      width: '30%',
+      width: '35%',
       isSortable: true,
     },
     createdBy: {
@@ -87,8 +88,41 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     objectMarking: {
       label: 'Marking',
       isSortable: isRuntimeSort,
-      width: '15%',
+      width: '10%',
     },
+  };
+  const renderContent = () => {
+    return (
+      <QueryRenderer
+        query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
+        variables={paginationOptions}
+        render={({
+          props,
+        }: {
+          props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data;
+        }) => {
+          if (props && props.container && props.container.objects) {
+            return (
+              <ContainerStixObjectsOrStixRelationshipsLines
+                container={props.container}
+                dataColumns={dataColumns}
+                paginationOptions={paginationOptions}
+              />
+            );
+          }
+          return (
+            <List>
+              {Array.from(Array(10), (e, i) => (
+                <ContainerStixObjectOrStixRelationshipLineDummy
+                  key={i}
+                  dataColumns={dataColumns}
+                />
+              ))}
+            </List>
+          );
+        }}
+      />
+    );
   };
   return (
     <div style={{ height: '100%' }}>
@@ -118,37 +152,13 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
         </Security>
       )}
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <QueryRenderer
-          query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
-          variables={paginationOptions}
-          render={({
-            props,
-          }: {
-            props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data;
-          }) => {
-            if (props && props.container && props.container.objects) {
-              return (
-                <ContainerStixObjectsOrStixRelationshipsLines
-                  container={props.container}
-                  dataColumns={dataColumns}
-                  paginationOptions={paginationOptions}
-                />
-              );
-            }
-            return (
-              <List>
-                {Array.from(Array(10), (e, i) => (
-                  <ContainerStixObjectOrStixRelationshipLineDummy
-                    key={i}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-              </List>
-            );
-          }}
-        />
-      </Paper>
+      {variant !== 'noPaper' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
     </div>
   );
 };
