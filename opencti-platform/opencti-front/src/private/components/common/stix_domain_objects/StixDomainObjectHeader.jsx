@@ -29,7 +29,9 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -202,6 +204,7 @@ const StixDomainObjectHeader = (props) => {
   const [openCommitDelete, setOpenCommitDelete] = useState(false);
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
@@ -298,7 +301,7 @@ const StixDomainObjectHeader = (props) => {
   );
   const enableReferences = useIsEnforceReference(entityType);
   return (
-    <div>
+    <>
       <Tooltip title={defaultValue(stixDomainObject)}>
         <Typography
           variant="h1"
@@ -308,7 +311,7 @@ const StixDomainObjectHeader = (props) => {
           {truncate(defaultValue(stixDomainObject), 80)}
         </Typography>
       </Tooltip>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {isKnowledgeUpdater && (
         <div className={classes.popover}>
           {/* TODO remove this when all components are pure function without compose() */}
           {!React.isValidElement(PopoverComponent) ? (
@@ -323,7 +326,7 @@ const StixDomainObjectHeader = (props) => {
             })
           )}
         </div>
-      </Security>
+      )}
       {typeof onViewAs === 'function' && (
         <>
           <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
@@ -353,7 +356,10 @@ const StixDomainObjectHeader = (props) => {
       {!noAliases && (
         <div
           className={classes.aliases}
-          style={{ marginLeft: typeof onViewAs === 'function' ? 10 : 0 }}
+          style={{
+            marginLeft:
+              typeof onViewAs === 'function' || !isKnowledgeUpdater ? 10 : 0,
+          }}
         >
           {R.take(5, aliases).map(
             (label) => label.length > 0 && (
@@ -638,7 +644,7 @@ const StixDomainObjectHeader = (props) => {
           )}
         </Formik>
       )}
-    </div>
+    </>
   );
 };
 

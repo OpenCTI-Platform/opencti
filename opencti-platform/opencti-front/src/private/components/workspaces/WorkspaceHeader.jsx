@@ -175,6 +175,7 @@ const WorkspaceHeader = ({
         variant="h1"
         gutterBottom={true}
         classes={{ root: classes.title }}
+        style={{ marginRight: userCanEdit ? 0 : 10 }}
       >
         {workspace.name}
       </Typography>
@@ -189,7 +190,7 @@ const WorkspaceHeader = ({
           hasAccess={userCanEdit}
           placeholder={
             <div
-              style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}
+              style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}
             >
               <FormControl
                 variant="outlined"
@@ -255,7 +256,7 @@ const WorkspaceHeader = ({
           }
         >
           <div
-            style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}
+            style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}
           >
             <FormControl
               size="small"
