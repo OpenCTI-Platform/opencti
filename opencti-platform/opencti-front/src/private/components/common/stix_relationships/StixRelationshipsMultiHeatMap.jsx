@@ -130,15 +130,17 @@ const StixRelationshipsMultiHeatMap = ({
         }}
         render={({ props }) => {
           if (props && props.stixRelationshipsMultiTimeSeries) {
-            const chartdata = dataSelection.map((selection, i) => ({
-              name: selection.label ?? t('Number of relationships'),
-              data: props.stixRelationshipsMultiTimeSeries[i].data.map(
-                (entry) => ({
-                  x: new Date(entry.date),
-                  y: entry.value,
-                }),
-              ),
-            }));
+            const chartdata = dataSelection
+              .map((selection, i) => ({
+                name: selection.label ?? t('Number of relationships'),
+                data: props.stixRelationshipsMultiTimeSeries[i].data.map(
+                  (entry) => ({
+                    x: new Date(entry.date),
+                    y: entry.value,
+                  }),
+                ),
+              }))
+              .sort((a, b) => b.name.localeCompare(a.name));
             const allValues = props.stixRelationshipsMultiTimeSeries
               .map((n) => n.data.map((o) => o.value))
               .flat();

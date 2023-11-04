@@ -125,15 +125,17 @@ const StixCoreObjectsMultiHeatMap = ({
         }}
         render={({ props }) => {
           if (props && props.stixCoreObjectsMultiTimeSeries) {
-            const chartData = dataSelection.map((selection, i) => ({
-              name: selection.label ?? t('Number of entities'),
-              data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
-                (entry) => ({
-                  x: new Date(entry.date),
-                  y: entry.value,
-                }),
-              ),
-            }));
+            const chartData = dataSelection
+              .map((selection, i) => ({
+                name: selection.label ?? t('Number of entities'),
+                data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
+                  (entry) => ({
+                    x: new Date(entry.date),
+                    y: entry.value,
+                  }),
+                ),
+              }))
+              .sort((a, b) => b.name.localeCompare(a.name));
             const allValues = props.stixCoreObjectsMultiTimeSeries
               .map((n) => n.data.map((o) => o.value))
               .flat();

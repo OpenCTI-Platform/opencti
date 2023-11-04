@@ -163,13 +163,15 @@ const AuditsMultiHeatMap = ({
         }}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
-            const chartData = dataSelection.map((selection, i) => ({
-              name: selection.label ?? t('Number of history entries'),
-              data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
-                x: new Date(entry.date),
-                y: entry.value,
-              })),
-            }));
+            const chartData = dataSelection
+              .map((selection, i) => ({
+                name: selection.label ?? t('Number of history entries'),
+                data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
+                  x: new Date(entry.date),
+                  y: entry.value,
+                })),
+              }))
+              .sort((a, b) => b.name.localeCompare(a.name));
             const allValues = props.auditsMultiTimeSeries
               .map((n) => n.data.map((o) => o.value))
               .flat();
