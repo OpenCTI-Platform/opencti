@@ -562,10 +562,6 @@ export const radarChartOptions = (
     axisBorder: {
       show: false,
     },
-    tooltip: {
-      enabled: true,
-      formatter: undefined,
-    },
   },
   yaxis: {
     show: false,
