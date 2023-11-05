@@ -7,7 +7,14 @@ import { DatabaseError, UnsupportedError } from '../config/errors';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
-import { ENTITY_TYPE_ATTACK_PATTERN, isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation, isStixObjectAliased } from './stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_INCIDENT,
+  isStixDomainObject,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  isStixObjectAliased
+} from './stixDomainObject';
 import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
@@ -446,6 +453,9 @@ export const generateAliasesId = (rawAliases, instance = {}) => {
   }
   if (instance.entity_type === ENTITY_TYPE_VOCABULARY) {
     additionalFields.category = instance.category;
+  }
+  if (instance.entity_type === ENTITY_TYPE_INCIDENT && instance.created) {
+    additionalFields.created = instance.created;
   }
   return R.uniq(aliases.map((alias) => {
     const dataUUID = { name: normalizeName(alias), ...additionalFields };
