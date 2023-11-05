@@ -170,15 +170,16 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data = useFragment(
-    CaseIncidentDetailsFragment,
-    caseIncidentData,
-  );
+  const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
-  const responseTypes = (data.response_types ?? []);
+  const responseTypes = data.response_types ?? [];
 
-  const relatedContainers = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-    .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    data.relatedContainers?.edges ?? [],
+  ).filter(
+    (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -217,12 +218,13 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             </Typography>
             {responseTypes.length > 0
               ? (data.response_types ?? []).map((responseType) => (
-                <Chip
-                  key={responseType}
-                  classes={{ root: classes.chip }}
-                  label={responseType}
-                />
-              )) : '-'}
+                  <Chip
+                    key={responseType}
+                    classes={{ root: classes.chip }}
+                    label={responseType}
+                  />
+              ))
+              : '-'}
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
@@ -230,7 +232,9 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             </Typography>
             {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : '-'}
+            ) : (
+              '-'
+            )}
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
@@ -241,42 +245,44 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge?.node;
               return (
-                <ListItem
-                  key={data.id}
-                  dense={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/cases/incidents/${relatedContainer?.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer?.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer?.name}
-                      </div>
-                    }
-                  />
-                  <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div className={classes.itemDate}>
-                    {fsd(relatedContainer?.created)}
-                  </div>
-                  <div className={classes.itemMarking}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitionsEdges={
-                        relatedContainer?.objectMarking?.edges ?? []
+                  <ListItem
+                    key={data.id}
+                    dense={true}
+                    button={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/cases/incidents/${relatedContainer?.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={relatedContainer?.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div className={classes.itemText}>
+                          {relatedContainer?.name}
+                        </div>
                       }
-                      limit={1}
                     />
-                  </div>
-                </ListItem>
+                    <div className={classes.itemAuthor}>
+                      {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    </div>
+                    <div className={classes.itemDate}>
+                      {fsd(relatedContainer?.created)}
+                    </div>
+                    <div className={classes.itemMarking}>
+                      <ItemMarkings
+                        variant="inList"
+                        markingDefinitionsEdges={
+                          relatedContainer?.objectMarking?.edges ?? []
+                        }
+                        limit={1}
+                      />
+                    </div>
+                  </ListItem>
               );
-            }) : '-'}
+            })
+            : '-'}
         </List>
         {expandable && (
           <Button

@@ -170,15 +170,16 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data = useFragment(
-    CaseRftDetailsFragment,
-    caseRftData,
-  );
+  const data = useFragment(CaseRftDetailsFragment, caseRftData);
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
-  const takedownTypes = (data.takedown_types ?? []);
+  const takedownTypes = data.takedown_types ?? [];
 
-  const relatedContainers = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-    .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    data.relatedContainers?.edges ?? [],
+  ).filter(
+    (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -191,15 +192,15 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Takedown type')}
             </Typography>
-            {
-              takedownTypes.length > 0
-                ? takedownTypes.map((takedownType) => (
+            {takedownTypes.length > 0
+              ? takedownTypes.map((takedownType) => (
                   <Chip
                     key={takedownType}
                     classes={{ root: classes.chip }}
                     label={takedownType}
                   />
-                )) : '-'}
+              ))
+              : '-'}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -231,7 +232,9 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             </Typography>
             {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : '-'}
+            ) : (
+              '-'
+            )}
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
@@ -245,6 +248,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                   <ListItem
                     key={data.id}
                     dense={true}
+                    button={true}
                     classes={{ root: classes.item }}
                     divider={true}
                     component={Link}
@@ -277,7 +281,8 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                     </div>
                   </ListItem>
               );
-            }) : '-'}
+            })
+            : '-'}
         </List>
         {expandable && (
           <Button

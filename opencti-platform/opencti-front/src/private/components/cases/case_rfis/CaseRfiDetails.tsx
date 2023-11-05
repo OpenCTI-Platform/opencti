@@ -170,16 +170,15 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data = useFragment(
-    CaseRfiDetailsFragment,
-    caseRfiData,
-  );
+  const data = useFragment(CaseRfiDetailsFragment, caseRfiData);
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
-  const informationTypes = (data.information_types ?? []);
-
-  const relatedContainers = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-    .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
-
+  const informationTypes = data.information_types ?? [];
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    data.relatedContainers?.edges ?? [],
+  ).filter(
+    (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+  );
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -193,12 +192,13 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             </Typography>
             {informationTypes.length > 0
               ? (data.information_types ?? []).map((informationType) => (
-              <Chip
-                key={informationType}
-                classes={{ root: classes.chip }}
-                label={informationType}
-              />
-              )) : '-'}
+                  <Chip
+                    key={informationType}
+                    classes={{ root: classes.chip }}
+                    label={informationType}
+                  />
+              ))
+              : '-'}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -230,7 +230,9 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             </Typography>
             {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : '-'}
+            ) : (
+              '-'
+            )}
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
@@ -241,43 +243,44 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge?.node;
               return (
-                <ListItem
-                  key={data.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer?.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer?.name}
-                      </div>
-                    }
-                  />
-                  <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div className={classes.itemDate}>
-                    {fsd(relatedContainer?.created)}
-                  </div>
-                  <div className={classes.itemMarking}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitionsEdges={
-                        relatedContainer?.objectMarking?.edges ?? []
+                  <ListItem
+                    key={data.id}
+                    dense={true}
+                    button={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={relatedContainer?.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div className={classes.itemText}>
+                          {relatedContainer?.name}
+                        </div>
                       }
-                      limit={1}
                     />
-                  </div>
-                </ListItem>
+                    <div className={classes.itemAuthor}>
+                      {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    </div>
+                    <div className={classes.itemDate}>
+                      {fsd(relatedContainer?.created)}
+                    </div>
+                    <div className={classes.itemMarking}>
+                      <ItemMarkings
+                        variant="inList"
+                        markingDefinitionsEdges={
+                          relatedContainer?.objectMarking?.edges ?? []
+                        }
+                        limit={1}
+                      />
+                    </div>
+                  </ListItem>
               );
-            }) : '-'}
+            })
+            : '-'}
         </List>
         {expandable && (
           <Button
