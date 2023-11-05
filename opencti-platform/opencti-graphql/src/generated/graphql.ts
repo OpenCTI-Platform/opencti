@@ -1227,8 +1227,13 @@ export type BackgroundTaskContext = {
 
 export type BackgroundTaskContextInput = {
   field?: InputMaybe<Scalars['String']['input']>;
+  options?: InputMaybe<BackgroundTaskContextOptionsInput>;
   type?: InputMaybe<BackgroundTaskContextType>;
   values: Array<InputMaybe<Scalars['String']['input']>>;
+};
+
+export type BackgroundTaskContextOptionsInput = {
+  includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum BackgroundTaskContextType {
@@ -29107,6 +29112,7 @@ export type ResolversTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: ResolverTypeWrapper<BackgroundTaskConnectionEdge>;
   BackgroundTaskContext: ResolverTypeWrapper<BackgroundTaskContext>;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskContextType: BackgroundTaskContextType;
   BackgroundTaskError: ResolverTypeWrapper<BackgroundTaskError>;
   BackgroundTaskScope: BackgroundTaskScope;
@@ -29979,6 +29985,7 @@ export type ResolversParentTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: BackgroundTaskConnectionEdge;
   BackgroundTaskContext: BackgroundTaskContext;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskError: BackgroundTaskError;
   BackgroundTasksFiltering: BackgroundTasksFiltering;
   BankAccount: Omit<BankAccount, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };

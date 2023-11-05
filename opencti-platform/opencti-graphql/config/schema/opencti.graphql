@@ -987,10 +987,15 @@ type BackgroundTaskConnection {
   edges: [BackgroundTaskConnectionEdge]
 }
 
+input BackgroundTaskContextOptionsInput {
+  includeNeighbours: Boolean
+}
+
 input BackgroundTaskContextInput {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptionsInput
 }
 input BackgroundTaskActionInput {
   type: BackgroundTaskActionType!

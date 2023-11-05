@@ -1,6 +1,5 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
-import { truncate } from './String';
 
 const colors = (temp) => [
   C.red[temp],

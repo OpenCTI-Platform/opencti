@@ -188,7 +188,7 @@ CaseIncidentLineComponentProps
               <ItemPriority
                 variant="inList"
                 priority={data.priority}
-                label={data.priority ?? t('Unknown')}
+                label={data.priority || t('Unknown')}
               />
             </div>
             <div
@@ -198,7 +198,7 @@ CaseIncidentLineComponentProps
               <ItemSeverity
                 variant="inList"
                 severity={data.severity}
-                label={data.severity ?? t('Unknown')}
+                label={data.severity || t('Unknown')}
               />
             </div>
             <div

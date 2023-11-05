@@ -1,19 +1,23 @@
 import React, { FunctionComponent } from 'react';
+import ToggleButton from '@mui/material/ToggleButton';
+import { NotificationsOutlined } from '@mui/icons-material';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import {
-  StixCoreObjectQuickSubscriptionContentPaginationQuery, TriggerFilter,
+  StixCoreObjectQuickSubscriptionContentPaginationQuery,
+  TriggerFilter,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import StixCoreObjectQuickSubscriptionContent, {
   stixCoreObjectQuickSubscriptionContentQuery,
 } from './StixCoreObjectQuickSubscriptionContent';
 
 interface StixCoreObjectQuickSubscriptionProps {
-  instanceId: string,
-  instanceName: string,
+  instanceId: string;
+  instanceName: string;
 }
 
-const StixCoreObjectQuickSubscription: FunctionComponent<StixCoreObjectQuickSubscriptionProps> = ({ instanceId, instanceName }) => {
+const StixCoreObjectQuickSubscription: FunctionComponent<
+StixCoreObjectQuickSubscriptionProps
+> = ({ instanceId, instanceName }) => {
   const paginationOptions = {
     filters: [
       {
@@ -32,15 +36,30 @@ const StixCoreObjectQuickSubscription: FunctionComponent<StixCoreObjectQuickSubs
     stixCoreObjectQuickSubscriptionContentQuery,
     paginationOptions,
   );
-
   return (
-    <div>
-      {queryRef
-        && <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-          <StixCoreObjectQuickSubscriptionContent queryRef={queryRef} paginationOptions={paginationOptions} instanceId={instanceId} instanceName={instanceName} />
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={
+            <ToggleButton
+              value="quick-subscription"
+              size="small"
+              style={{ marginRight: 3 }}
+              disabled={true}
+            >
+              <NotificationsOutlined fontSize="small" />
+            </ToggleButton>
+          }
+        >
+          <StixCoreObjectQuickSubscriptionContent
+            queryRef={queryRef}
+            paginationOptions={paginationOptions}
+            instanceId={instanceId}
+            instanceName={instanceName}
+          />
         </React.Suspense>
-      }
-    </div>
+      )}
+    </>
   );
 };
 

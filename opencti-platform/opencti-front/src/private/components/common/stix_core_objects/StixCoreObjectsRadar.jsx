@@ -11,7 +11,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
@@ -255,15 +254,16 @@ const StixCoreObjectsRadar = ({
                 data,
               },
             ];
-            const labels = props.stixCoreObjectsDistribution.map((n) => truncate(
-              // eslint-disable-next-line no-nested-ternary
-              selection.attribute.endsWith('_id')
-                ? defaultValue(n.entity)
-                : selection.attribute === 'entity_type'
-                  ? t(`entity_${n.label}`)
-                  : n.label,
+            const labels = props.stixCoreObjectsDistribution.map(
+              (n) =>
+                // eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak
+                (selection.attribute.endsWith('_id')
+                  ? defaultValue(n.entity)
+                  : selection.attribute === 'entity_type'
+                    ? t(`entity_${n.label}`)
+                    : n.label),
               20,
-            ));
+            );
             return (
               <Chart
                 options={radarChartOptions(theme, labels, [], true, false)}

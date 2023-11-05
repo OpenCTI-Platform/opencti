@@ -56,6 +56,8 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
 import {
@@ -401,6 +403,7 @@ class ToolBar extends Component {
           field: n.field,
           type: n.fieldType,
           values: n.values,
+          options: n.options,
         },
       }),
       actionsInputs,
@@ -449,6 +452,16 @@ class ToolBar extends Component {
     actionsInputs[i] = R.assoc(
       'values',
       Array.isArray(value) ? value : [value],
+      actionsInputs[i] || {},
+    );
+    this.setState({ actionsInputs });
+  }
+
+  handleChangeActionInputOptions(i, key, event) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'options',
+      R.assoc(key, event.target.checked, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
@@ -2260,6 +2273,22 @@ class ToolBar extends Component {
                     </li>
                   )}
                   disableClearable
+                />
+                <FormControlLabel
+                  style={{ marginTop: 20 }}
+                  control={
+                    <Checkbox
+                      checked={
+                        actionsInputs[0]?.options?.includeNeighbours || false
+                      }
+                      onChange={this.handleChangeActionInputOptions.bind(
+                        this,
+                        0,
+                        'includeNeighbours',
+                      )}
+                    />
+                  }
+                  label={t('Also include first neighbours')}
                 />
                 <IconButton
                   onClick={() => this.setState({ containerCreation: true })}

@@ -25,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -39,11 +40,7 @@ import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { defaultValue } from '../../../../utils/Graph';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -478,6 +475,9 @@ const StixDomainObjectHeader = (props) => {
               elementId={stixDomainObject.id}
               variant="header"
             />
+          )}
+          {isKnowledgeUpdater && (
+            <StixCoreObjectContainer elementId={stixDomainObject.id} />
           )}
           {enableQuickSubscription && (
             <StixCoreObjectQuickSubscription

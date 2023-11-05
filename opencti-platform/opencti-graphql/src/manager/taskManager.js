@@ -41,7 +41,7 @@ import {
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
@@ -333,7 +333,7 @@ const executeProcessing = async (context, user, job) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
     const { type, context: actionContext } = job.actions[index];
-    const { field, values } = actionContext ?? {};
+    const { field, values, options } = actionContext ?? {};
     // Containers specific operations
     // Can be done in one shot patch modification.
     if (field === ACTION_ON_CONTAINER_FIELD) {
@@ -341,7 +341,33 @@ const executeProcessing = async (context, user, job) => {
         const value = values[valueIndex];
         try {
           const objects = job.elements.map((e) => e.element.internal_id).filter((id) => value !== id);
-          const patch = { [INPUT_OBJECTS]: objects };
+          let finalObjects = objects;
+          if (options?.includeNeighbours) {
+            // For relationships, include fromId and toId
+            finalObjects = R.uniq([
+              ...finalObjects,
+              ...job.elements
+                .filter((e) => e.element.fromId && e.element.toId)
+                .filter((e) => value !== e.element.internal_id)
+                .map((e) => [e.element.fromId, e.element.toId])
+                .flat()
+            ]);
+            // For all objects, resolve stix core
+            for (let objectIndex = 0; objectIndex < objects.length; objectIndex += 1) {
+              const relations = await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+                elementId: objects[objectIndex],
+                baseData: true
+              });
+              finalObjects = R.uniq(
+                [
+                  ...finalObjects,
+                  ...relations.map((r) => r.id),
+                  ...relations.map((r) => (objects[objectIndex] === r.fromId ? r.toId : r.fromId))
+                ]
+              );
+            }
+          }
+          const patch = { [INPUT_OBJECTS]: finalObjects };
           const operations = { [INPUT_OBJECTS]: type.toLowerCase() }; // add, remove, replace
           await patchAttribute(context, user, value, ENTITY_TYPE_CONTAINER, patch, { operations });
         } catch (err) {

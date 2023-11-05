@@ -355,12 +355,26 @@ const checksumFile = async (hashName, stream) => {
   });
 };
 
+/* const extractInfectedZipFile = async (file) => {
+  const resultStream = await file.createReadStream()
+    .pipe(unzipper.ParseOne())
+    .on('entry', async (entry) => {
+      console.log(entry);
+      const buffer = await entry.buffer('infected');
+      console.log(buffer);
+    });
+}; */
+
 export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
-  const { createReadStream, filename, mimetype } = await file;
+  const resolvedFile = await file;
+  // Checking infected ZIP files
+  // extractInfectedZipFile(resolvedFile);
+  const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
   const version = now();
+
   const artifactData = {
     internal_id: targetId,
     type: ENTITY_HASHED_OBSERVABLE_ARTIFACT,

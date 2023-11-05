@@ -12,7 +12,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
-import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles(() => ({
   paper: {
