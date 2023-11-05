@@ -176,6 +176,10 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   );
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   const takedownTypes = (data.takedown_types ?? []);
+
+  const relatedContainers = R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
+    .filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -234,14 +238,10 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
           {t('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
-          {expandable
-            ? R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-              .filter(
-                (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
-              )
-              .map((relatedContainerEdge) => {
-                const relatedContainer = relatedContainerEdge?.node;
-                return (
+          {relatedContainers.length > 0
+            ? relatedContainers.map((relatedContainerEdge) => {
+              const relatedContainer = relatedContainerEdge?.node;
+              return (
                   <ListItem
                     key={data.id}
                     dense={true}
@@ -276,8 +276,8 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                       />
                     </div>
                   </ListItem>
-                );
-              }) : '-'}
+              );
+            }) : '-'}
         </List>
         {expandable && (
           <Button
