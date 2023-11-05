@@ -88,24 +88,26 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
   },
   sortIcon: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
+    margin: '-3px 0 0 2px',
   },
   headerItem: {
     float: 'left',
+    display: 'flex',
     fontSize: 12,
     fontWeight: 700,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
   },
   sortableHeaderItem: {
     float: 'left',
+    display: 'flex',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
+    paddingRight: 10,
+  },
+  headerItemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   info: {
     paddingTop: 10,
@@ -134,31 +136,25 @@ class ListLines extends Component {
     const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
-        <ArrowDropDown
-          classes={{ root: classes.sortIcon }}
-          style={{ top: handleToggleSelectAll ? 7 : 0 }}
-        />
+        <ArrowDropDown classes={{ root: classes.sortIcon }} />
       ) : (
-        <ArrowDropUp
-          classes={{ root: classes.sortIcon }}
-          style={{ top: handleToggleSelectAll ? 7 : 0 }}
-        />
+        <ArrowDropUp classes={{ root: classes.sortIcon }} />
       );
       return (
         <div
           key={field}
           className={classes.sortableHeaderItem}
-          style={{ width }}
+          style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
           onClick={this.reverseBy.bind(this, field)}
         >
-          <span>{t(label)}</span>
+          <div className={classes.headerItemText}>{t(label)}</div>
           {sortBy === field ? orderComponent : ''}
         </div>
       );
     }
     return (
       <div className={classes.headerItem} style={{ width }} key={field}>
-        <span>{t(label)}</span>
+        <div className={classes.headerItemText}>{t(label)}</div>
       </div>
     );
   }

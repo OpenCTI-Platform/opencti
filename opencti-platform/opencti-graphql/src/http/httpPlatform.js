@@ -9,6 +9,8 @@ import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
+import archiver from 'archiver';
+import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
@@ -136,6 +138,9 @@ const createApp = async (app) => {
   // -- Init rolling feeds rest api
   initHttpRollingFeeds(app);
 
+  // -- Register the encryption module
+  archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
+
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
@@ -209,6 +214,29 @@ const createApp = async (app) => {
       } else {
         res.send('Unsupported file type');
       }
+    } catch (e) {
+      setCookieError(res, e?.message);
+      next(e);
+    }
+  });
+
+  // -- Encrypted view
+  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res, next) => {
+    try {
+      const executeContext = executionContext('storage_encrypted');
+      const auth = await authenticateUserFromRequest(executeContext, req, res);
+      if (!auth) {
+        res.sendStatus(403);
+        return;
+      }
+      const { file } = req.params;
+      const data = await loadFile(auth, file);
+      const { filename } = data.metaData;
+      const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
+      archive.append(await downloadFile(file), { name: `${filename}.zip` });
+      archive.finalize();
+      res.attachment(`${filename}.zip`);
+      archive.pipe(res);
     } catch (e) {
       setCookieError(res, e?.message);
       next(e);

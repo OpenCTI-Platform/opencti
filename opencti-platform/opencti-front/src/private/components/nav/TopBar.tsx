@@ -5,14 +5,24 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, ContentPasteSearchOutlined, ExploreOutlined, InsertChartOutlined, NotificationsOutlined } from '@mui/icons-material';
+import {
+  AccountCircleOutlined,
+  ContentPasteSearchOutlined,
+  ExploreOutlined,
+  InsertChartOutlined,
+  NotificationsOutlined,
+} from '@mui/icons-material';
 import { DatabaseCogOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import MuiLink from '@mui/material/Link';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useSubscription,
+} from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -76,11 +86,18 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 import TopMenuMalwareAnalysis from './TopMenuMalwareAnalysis';
 import { Theme } from '../../../components/Theme';
-import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import {
+  EXPLORE,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+} from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { TopBarNotificationNumberSubscription, TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import {
+  TopBarNotificationNumberSubscription,
+  TopBarNotificationNumberSubscription$data,
+} from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
@@ -157,69 +174,115 @@ const routes = {
   '/dashboard/profile/me': () => <TopMenuProfile />,
   '/dashboard/profile/': () => <TopMenuNotifications />,
   // CASES
-  '/dashboard/cases/feedbacks/': (id: string) => <TopMenuCaseFeedback id={id} />,
+  '/dashboard/cases/feedbacks/': (id: string) => (
+    <TopMenuCaseFeedback id={id} />
+  ),
   '/dashboard/cases/tasks/': (id: string) => <TopMenuTask id={id} />,
   '/dashboard/cases/rfts/': (id: string) => <TopMenuCaseRft id={id} />,
   '/dashboard/cases/rfis/': (id: string) => <TopMenuCaseRfi id={id} />,
-  '/dashboard/cases/incidents/': (id: string) => <TopMenuCaseIncident id={id} />,
+  '/dashboard/cases/incidents/': (id: string) => (
+    <TopMenuCaseIncident id={id} />
+  ),
   '/dashboard/cases': () => <TopMenuCases />,
   // ANALYSIS
   '/dashboard/analyses/reports/': (id: string) => <TopMenuReport id={id} />,
   '/dashboard/analyses/groupings/': (id: string) => <TopMenuGrouping id={id} />,
-  '/dashboard/analyses/malware_analyses/': (id: string) => <TopMenuMalwareAnalysis id={id} />,
+  '/dashboard/analyses/malware_analyses/': (id: string) => (
+    <TopMenuMalwareAnalysis id={id} />
+  ),
   '/dashboard/analyses/notes/': (id: string) => <TopMenuNote id={id} />,
   '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id} />,
-  '/dashboard/analyses/external_references/': (id: string) => <TopMenuExternalReference id={id} />,
+  '/dashboard/analyses/external_references/': (id: string) => (
+    <TopMenuExternalReference id={id} />
+  ),
   '/dashboard/analyses': () => <TopMenuAnalyses />,
   // EVENTS
   '/dashboard/events/sightings/': () => <TopMenuEvents />,
-  '/dashboard/events/observed_data/': (id: string) => <TopMenuObservedData id={id} />,
+  '/dashboard/events/observed_data/': (id: string) => (
+    <TopMenuObservedData id={id} />
+  ),
   '/dashboard/events/incidents/': (id: string) => <TopMenuIncident id={id} />,
   '/dashboard/events': () => <TopMenuEvents />,
   // OBSERVATIONS
-  '/dashboard/observations/indicators/': (id: string) => <TopMenuIndicator id={id} />,
-  '/dashboard/observations/infrastructures/': (id: string) => <TopMenuInfrastructure id={id} />,
-  '/dashboard/observations/observables/': (id: string) => <TopMenuStixCyberObservable id={id} />,
-  '/dashboard/observations/artifacts/': (id: string) => <TopMenuArtifact id={id} />,
+  '/dashboard/observations/indicators/': (id: string) => (
+    <TopMenuIndicator id={id} />
+  ),
+  '/dashboard/observations/infrastructures/': (id: string) => (
+    <TopMenuInfrastructure id={id} />
+  ),
+  '/dashboard/observations/observables/': (id: string) => (
+    <TopMenuStixCyberObservable id={id} />
+  ),
+  '/dashboard/observations/artifacts/': (id: string) => (
+    <TopMenuArtifact id={id} />
+  ),
   '/dashboard/observations': () => <TopMenuObservations />,
   // THREATS
-  '/dashboard/threats/threat_actors_group/': (id: string) => <TopMenuThreatActorGroup id={id} />,
-  '/dashboard/threats/threat_actors_individual/': (id: string) => <TopMenuThreatActorIndividual id={id} />,
-  '/dashboard/threats/intrusion_sets/': (id: string) => <TopMenuIntrusionSet id={id} />,
+  '/dashboard/threats/threat_actors_group/': (id: string) => (
+    <TopMenuThreatActorGroup id={id} />
+  ),
+  '/dashboard/threats/threat_actors_individual/': (id: string) => (
+    <TopMenuThreatActorIndividual id={id} />
+  ),
+  '/dashboard/threats/intrusion_sets/': (id: string) => (
+    <TopMenuIntrusionSet id={id} />
+  ),
   '/dashboard/threats/campaigns/': (id: string) => <TopMenuCampaign id={id} />,
   '/dashboard/threats': () => <TopMenuThreats />,
   // ARSENAL
   '/dashboard/arsenal/malwares/': (id: string) => <TopMenuMalware id={id} />,
   '/dashboard/arsenal/tools/': (id: string) => <TopMenuTool id={id} />,
   '/dashboard/arsenal/channels/': (id: string) => <TopMenuChannel id={id} />,
-  '/dashboard/arsenal/vulnerabilities/': (id: string) => <TopMenuVulnerability id={id} />,
+  '/dashboard/arsenal/vulnerabilities/': (id: string) => (
+    <TopMenuVulnerability id={id} />
+  ),
   '/dashboard/arsenal': () => <TopMenuArsenal />,
   // ENTITIES
   '/dashboard/entities/sectors/': (id: string) => <TopMenuSector id={id} />,
   '/dashboard/entities/systems/': (id: string) => <TopMenuSystem id={id} />,
   '/dashboard/entities/events/': (id: string) => <TopMenuEvent id={id} />,
-  '/dashboard/entities/organizations/': (id: string) => <TopMenuOrganization id={id} />,
-  '/dashboard/entities/individuals/': (id: string) => <TopMenuIndividual id={id} />,
+  '/dashboard/entities/organizations/': (id: string) => (
+    <TopMenuOrganization id={id} />
+  ),
+  '/dashboard/entities/individuals/': (id: string) => (
+    <TopMenuIndividual id={id} />
+  ),
   '/dashboard/entities': () => <TopMenuEntities />,
   // LOCATIONS
   '/dashboard/locations/countries/': (id: string) => <TopMenuCountry id={id} />,
   '/dashboard/locations/regions/': (id: string) => <TopMenuRegion id={id} />,
-  '/dashboard/locations/administrative_areas/': (id: string) => <TopMenuAdministrativeArea id={id} />,
+  '/dashboard/locations/administrative_areas/': (id: string) => (
+    <TopMenuAdministrativeArea id={id} />
+  ),
   '/dashboard/locations/cities/': (id: string) => <TopMenuCity id={id} />,
-  '/dashboard/locations/positions/': (id: string) => <TopMenuPosition id={id} />,
+  '/dashboard/locations/positions/': (id: string) => (
+    <TopMenuPosition id={id} />
+  ),
   '/dashboard/locations': () => <TopMenuLocation />,
   // TECHNIQUES
-  '/dashboard/techniques/attack_patterns/': (id: string) => <TopMenuAttackPattern id={id} />,
-  '/dashboard/techniques/narratives/': (id: string) => <TopMenuNarrative id={id} />,
-  '/dashboard/techniques/courses_of_action/': (id: string) => <TopMenuCourseOfAction id={id} />,
-  '/dashboard/techniques/data_components/': (id: string) => <TopMenuDataComponent id={id} />,
-  '/dashboard/techniques/data_sources/': (id: string) => <TopMenuDataSource id={id} />,
+  '/dashboard/techniques/attack_patterns/': (id: string) => (
+    <TopMenuAttackPattern id={id} />
+  ),
+  '/dashboard/techniques/narratives/': (id: string) => (
+    <TopMenuNarrative id={id} />
+  ),
+  '/dashboard/techniques/courses_of_action/': (id: string) => (
+    <TopMenuCourseOfAction id={id} />
+  ),
+  '/dashboard/techniques/data_components/': (id: string) => (
+    <TopMenuDataComponent id={id} />
+  ),
+  '/dashboard/techniques/data_sources/': (id: string) => (
+    <TopMenuDataSource id={id} />
+  ),
   '/dashboard/techniques': () => <TopMenuTechniques />,
   '/dashboard/data': () => <TopMenuData />,
   '/dashboard/activity': () => <TopMenuAudits />,
   '/dashboard/settings': () => <TopMenuSettings />,
   '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards />,
-  '/dashboard/workspaces/investigations': () => <TopMenuWorkspacesInvestigations />,
+  '/dashboard/workspaces/investigations': () => (
+    <TopMenuWorkspacesInvestigations />
+  ),
   '/dashboard/search': () => <TopMenuSearch />,
   '/dashboard/import': () => <TopMenuImport />,
   '/dashboard': () => <TopMenuDashboard />,
@@ -251,7 +314,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
+  >(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
@@ -307,7 +372,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
 
   const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
-  const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path)) ?? [];
+  const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
+    ?? [];
   return (
     <AppBar
       position="fixed"
@@ -449,7 +515,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   component={Link}
                   to="/dashboard/profile/notifications"
                   color={
-                    ['/dashboard/profile/notifications', '/dashboard/profile/triggers'].includes(location.pathname)
+                    [
+                      '/dashboard/profile/notifications',
+                      '/dashboard/profile/triggers',
+                    ].includes(location.pathname)
                       ? 'secondary'
                       : 'default'
                   }
@@ -493,17 +562,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t('Profile')}
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
-              <MenuItem id="logout-button">
-                <MuiLink
-                  underline="none"
-                  color="secondary"
-                  href="/logout"
-                  // user will be logged out automatically, but we do not want to keep the referrer url for next login
-                  // on next login, the user might not be the same and might not have access to this url
-                  rel="noreferrer"
-                >
-                  {t('Logout')}
-                </MuiLink>
+              <MenuItem
+                id="logout-button"
+                component="a"
+                href="/logout"
+                rel="noreferrer"
+              >
+                {t('Logout')}
               </MenuItem>
             </Menu>
           </div>
@@ -517,7 +582,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   );
 };
 
-const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = ({ keyword }) => {
+const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = ({
+  keyword,
+}) => {
   const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
   const classes = useStyles();
   return (

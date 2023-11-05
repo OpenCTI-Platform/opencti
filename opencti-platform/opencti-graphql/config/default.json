@@ -74,6 +74,7 @@
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light/{z}/{x}/{y}.png",
     "reference_attachment": false,
     "python_execution": "native",
+    "artifact_zip_password": "infected",
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",

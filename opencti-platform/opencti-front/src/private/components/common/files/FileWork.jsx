@@ -14,7 +14,6 @@ import {
   DeleteOutlined,
   WarningOutlined,
 } from '@mui/icons-material';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
@@ -41,6 +40,12 @@ const styles = (theme) => ({
   },
   tooltip: {
     maxWidth: 600,
+  },
+  itemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginRight: 10,
   },
 });
 
@@ -89,7 +94,7 @@ const FileWorkComponent = (props) => {
             ...work.errors,
           ]);
           const messageToDisplay = (
-            <div>
+            <>
               {messages.length > 0
                 ? R.map(
                   (message) => (
@@ -100,7 +105,7 @@ const FileWorkComponent = (props) => {
                   messages,
                 )
                 : t(work.status)}
-            </div>
+            </>
           );
           const numberOfError = work.errors.length;
           const secondaryLabel = `${nsdt(work.timestamp)} `;
@@ -160,23 +165,25 @@ const FileWorkComponent = (props) => {
                   )}
                 </ListItemIcon>
                 <ListItemText
-                  primary={computeLabel()}
-                  secondary={secondaryLabel}
+                  primary={
+                    <div className={classes.itemText}>{computeLabel()}</div>
+                  }
+                  secondary={
+                    <div className={classes.itemText}>{secondaryLabel}</div>
+                  }
                 />
-                <ListItemSecondaryAction>
-                  <Tooltip title={t('Delete')}>
-                    <span>
-                      <IconButton
-                        color="primary"
-                        onClick={() => setDisplayDelete(work.id)}
-                        disabled={work.status === 'deleting'}
-                        size="large"
-                      >
-                        <DeleteOutlined />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </ListItemSecondaryAction>
+                <Tooltip title={t('Delete')}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      onClick={() => setDisplayDelete(work.id)}
+                      disabled={work.status === 'deleting'}
+                      size="small"
+                    >
+                      <DeleteOutlined fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
               </ListItem>
             </Tooltip>
           );

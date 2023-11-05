@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto';
+import { Readable } from 'stream';
+import nconf from 'nconf';
 import { dissoc, filter } from 'ramda';
+import unzipper from 'unzipper';
+import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
+import { fileTypeFromBuffer } from 'file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -355,26 +360,28 @@ const checksumFile = async (hashName, stream) => {
   });
 };
 
-/* const extractInfectedZipFile = async (file) => {
-  const resultStream = await file.createReadStream()
-    .pipe(unzipper.ParseOne())
-    .on('entry', async (entry) => {
-      console.log(entry);
-      const buffer = await entry.buffer('infected');
-      console.log(buffer);
-    });
-}; */
+const extractInfectedZipFile = async (file) => {
+  const buffer = await streamToBuffer(file.createReadStream());
+  const directory = await unzipper.Open.buffer(buffer);
+  const newFile = directory.files[0];
+  const extracted = await newFile.buffer(nconf.get('app:artifact_zip_password'));
+  const mimetype = await fileTypeFromBuffer(extracted);
+  return { createReadStream: () => Readable.from(extracted), filename: newFile.path, mimetype: mimetype.mime };
+};
 
 export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
-  const resolvedFile = await file;
+  let resolvedFile = await file;
   // Checking infected ZIP files
-  // extractInfectedZipFile(resolvedFile);
+  try {
+    resolvedFile = await extractInfectedZipFile(resolvedFile);
+  } catch {
+    // do nothing
+  }
   const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
   const version = now();
-
   const artifactData = {
     internal_id: targetId,
     type: ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -401,7 +408,7 @@ export const artifactImport = async (context, user, args) => {
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
   const meta = { version };
-  await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity: artifact, meta });
+  await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
   return artifact;
 };
 

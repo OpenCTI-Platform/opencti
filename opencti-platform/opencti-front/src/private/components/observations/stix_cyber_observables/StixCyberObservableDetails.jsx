@@ -72,7 +72,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 {t('File')}
               </Typography>
               <Button
-                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                href={`${APP_BASE_PATH}/storage/encrypted/${encodeURIComponent(
                   file.id,
                 )}`}
                 variant="outlined"
