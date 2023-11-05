@@ -296,11 +296,10 @@ const StixRelationshipsRadar = ({
                   'label',
                   `${
                     finalToTypes && finalToTypes.length > 1
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${truncate(
-                        defaultValue(n.entity),
-                        20,
-                      )}`
-                      : `${truncate(defaultValue(n.entity), 20)}`
+                      ? `[${t(
+                        `entity_${n.entity.entity_type}`,
+                      )}] ${defaultValue(n.entity)}`
+                      : `${defaultValue(n.entity)}`
                   }`,
                   n,
                 ),

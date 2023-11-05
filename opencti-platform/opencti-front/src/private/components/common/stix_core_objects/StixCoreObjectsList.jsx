@@ -18,6 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const useStyles = makeStyles({
   container: {
@@ -236,6 +237,17 @@ const stixCoreObjectsListQuery = graphql`
               }
             }
           }
+          ... on StixDomainObject {
+            status {
+              id
+              order
+              template {
+                name
+                color
+              }
+            }
+            workflowEnabled
+          }
         }
       }
     }
@@ -330,7 +342,7 @@ const StixCoreObjectsList = ({
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '15%' }}
+                                style={{ width: '10%' }}
                               >
                                 {fsd(stixCoreObject[dateAttribute])}
                               </div>
@@ -351,6 +363,16 @@ const StixCoreObjectsList = ({
                                 <StixCoreObjectLabels
                                   variant="inList"
                                   labels={stixCoreObject.objectLabel}
+                                />
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '15%' }}
+                              >
+                                <ItemStatus
+                                  status={stixCoreObject.status}
+                                  variant="inList"
+                                  disabled={!stixCoreObject.workflowEnabled}
                                 />
                               </div>
                               <div

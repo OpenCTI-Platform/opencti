@@ -161,7 +161,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -237,7 +237,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
                 limit={1}
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

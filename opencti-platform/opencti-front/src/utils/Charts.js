@@ -1,5 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
+import { truncate } from './String';
 
 const colors = (temp) => [
   C.red[temp],
@@ -528,6 +529,9 @@ export const radarChartOptions = (
   },
   tooltip: {
     theme: theme.palette.mode,
+    x: {
+      formatter: (value) => value,
+    },
   },
   fill: {
     opacity: 0.2,
@@ -551,9 +555,17 @@ export const radarChartOptions = (
         fontFamily: '"IBM Plex Sans", sans-serif',
         colors: chartColors,
       },
+      formatter: (value) => {
+        const len = value.length;
+        return len > 20 ? `${value.substring(0, 22)}...` : value;
+      },
     },
     axisBorder: {
       show: false,
+    },
+    tooltip: {
+      enabled: true,
+      formatter: undefined,
     },
   },
   yaxis: {

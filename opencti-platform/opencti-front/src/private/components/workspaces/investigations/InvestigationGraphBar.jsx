@@ -708,7 +708,7 @@ class InvestigationGraphBar extends Component {
                             />
                           </ListItemIcon>
                           <ListItemText
-                            primary={truncate(markingDefinition.definition, 20)}
+                            primary={truncate(markingDefinition.definition, 20, false)}
                           />
                         </ListItem>
                       ))}

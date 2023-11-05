@@ -86,7 +86,11 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
     <>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
-          <Typography variant="h3" gutterBottom={true}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
           <ExpandableMarkdown source={data.description} limit={300} />
@@ -108,7 +112,11 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
           {fldt(data.created)}
         </Grid>
         <Grid item={true} xs={6}>
-          <Typography variant="h3" gutterBottom={true}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Due Date')}
           </Typography>
           <ItemDueDate due_date={data.due_date} variant="inElement" />

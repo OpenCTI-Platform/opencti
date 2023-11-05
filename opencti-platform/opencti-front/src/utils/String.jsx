@@ -5,12 +5,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
 
-export const truncate = (str, limit) => {
+export const truncate = (str, limit, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;
   }
   const trimmedStr = str.substring(0, limit);
-  if (!trimmedStr.includes(' ')) {
+  if (!truncateSpaces || !trimmedStr.includes(' ')) {
     return `${trimmedStr}...`;
   }
   return `${trimmedStr.substring(
