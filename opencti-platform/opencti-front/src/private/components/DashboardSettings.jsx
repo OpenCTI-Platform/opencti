@@ -14,6 +14,8 @@ import Slide from '@mui/material/Slide';
 import React, { useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import useAuth from '../../utils/hooks/useAuth';
@@ -25,6 +27,16 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
+
+const useStyles = makeStyles({
+  muiSelect: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  muiSelectIcon: {
+    minWidth: 36,
+  },
+});
 
 export const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
@@ -58,6 +70,7 @@ const dashboardSettingsMutation = graphql`
 `;
 
 const DashboardSettings = () => {
+  const classes = useStyles();
   const { t } = useFormatter();
   const {
     me: {
@@ -160,6 +173,9 @@ const DashboardSettings = () => {
                           )
                           }
                           fullWidth={true}
+                          classes={{
+                            select: classes.muiSelect,
+                          }}
                         >
                           <MenuItem value="default">
                             <em>{t('Automatic')}</em>
@@ -171,10 +187,12 @@ const DashboardSettings = () => {
                           )}
                           {dashboards?.map(({ id, name }) => (
                             <MenuItem key={id} value={id}>
-                              <ListItemIcon>
+                              <ListItemIcon classes={{
+                                root: classes.muiSelectIcon,
+                              }}>
                                 <ItemIcon type="Dashboard" variant="inline" />
                               </ListItemIcon>
-                              {name}
+                              <ListItemText>{name}</ListItemText>
                             </MenuItem>
                           ))}
                           {workspaces?.length > 0 && (
@@ -182,10 +200,12 @@ const DashboardSettings = () => {
                           )}
                           {workspaces?.map(({ node }) => (
                             <MenuItem key={node.id} value={node.id}>
-                              <ListItemIcon>
+                              <ListItemIcon classes={{
+                                root: classes.muiSelectIcon,
+                              }}>
                                 <ItemIcon type="Dashboard" />
                               </ListItemIcon>
-                              {node.name}
+                              <ListItemText>{node.name}</ListItemText>
                             </MenuItem>
                           ))}
                         </Select>
