@@ -51,6 +51,11 @@ export const lineChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -144,6 +149,11 @@ export const areaChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
+    events: {
+      animationEnd: (chart) => {
+        chart.windowResizeHandler();
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
