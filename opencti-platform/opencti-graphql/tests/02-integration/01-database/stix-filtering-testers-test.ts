@@ -15,13 +15,13 @@ import * as testers from '../../../src/utils/stix-filtering/stix-testers';
 import type { Filter } from '../../../src/utils/stix-filtering/filter-group';
 
 describe('Stix filter testers', () => {
-  describe('by Markings (key=markedBy)', () => {
+  describe('by Markings (key=objectMarking)', () => {
     const stixWithMarkings = stixIndicators[0];
     const stixWithoutMarkings = stixReports[0];
 
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
-        key: ['markedBy'],
+        key: ['objectMarking'],
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9']
@@ -30,7 +30,7 @@ describe('Stix filter testers', () => {
       expect(testers.testMarkingFilter(stixWithoutMarkings, filter)).toEqual(false);
 
       filter = {
-        key: ['markedBy'],
+        key: ['objectMarking'],
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>']

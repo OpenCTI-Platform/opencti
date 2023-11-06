@@ -31,12 +31,21 @@ import {
 import { logApp } from '../../config/conf';
 
 // TODO: changed by Cathia, to integrate properly with her
-// not used: participant > objectParticipant | killChainPhase > killChainPhases
 const ASSIGNEE_FILTER = 'objectAssignee';
 const CREATOR_FILTER = 'creator_id';
 const LABEL_FILTER = 'objectLabel';
 const MARKING_FILTER = 'objectMarking';
 const OBJECT_CONTAINS_FILTER = 'objects';
+
+/*
+  ['killChainPhase', 'killChainPhases'],
+  ['participant', 'objectParticipant'],
+  ['hasExternalReference', 'externalReferences'],
+  ['hashes_MD5', 'hashes.MD5'],
+  ['hashes_SHA1', 'hashes.SHA-1'],
+  ['hashes_SHA256', 'hashes.SHA-256'],
+  ['hashes_SHA512', 'hashes.SHA-512'],
+*/
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -46,7 +55,7 @@ const OBJECT_CONTAINS_FILTER = 'objects';
 
 /**
  * MARKINGS
- * - markedBy is object_marking_refs in stix
+ * - objectMarking is object_marking_refs in stix
  */
 export const testMarkingFilter = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.object_marking_refs ?? [];
