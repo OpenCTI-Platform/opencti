@@ -16,7 +16,7 @@ import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
 import { resolveLink } from '../../../utils/Entity';
 import { defaultValue } from '../../../utils/Graph';
-import { hexToRGB, itemColor } from '../../../utils/Colors';
+import ItemEntityType from '../../../components/ItemEntityType';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -60,14 +60,6 @@ const useStyles = makeStyles((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: '0',
-  },
 }));
 
 const SearchStixCoreObjectLineComponent = ({
@@ -82,7 +74,7 @@ const SearchStixCoreObjectLineComponent = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t, fd, n } = useFormatter();
+  const { fd, n } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   const linkAnalyses = `${link}/analyses`;
   return (
@@ -120,15 +112,7 @@ const SearchStixCoreObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
-                  color: itemColor(node.entity_type),
-                  border: `1px solid ${itemColor(node.entity_type)}`,
-                }}
-                label={t(`entity_${node.entity_type}`)}
-              />
+              <ItemEntityType entityType={node.entity_type} />
             </div>
             <div
               className={classes.bodyItem}

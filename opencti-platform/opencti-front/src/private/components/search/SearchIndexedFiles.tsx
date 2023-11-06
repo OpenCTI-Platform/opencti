@@ -4,11 +4,15 @@ import {
   SearchIndexedFilesLinesPaginationQuery,
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
+import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { useFormatter } from '../../../components/i18n';
+import ItemEntityType from '../../../components/ItemEntityType';
+import ItemMarkings from '../../../components/ItemMarkings';
 
 interface SearchIndexedFilesProps {
   search: string;
@@ -39,6 +43,7 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
     searchIndexedFilesLinesQuery,
     { ...paginationOptions, search },
   );
+  const { fd } = useFormatter();
 
   const renderLines = () => {
     const dataColumns = {
@@ -46,31 +51,61 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
         label: 'Filename',
         width: '25%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => node.name,
       },
       uploaded_at: {
         label: 'Upload date',
         width: '10%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => fd(node.uploaded_at),
       },
       occurrences: {
         label: 'Occurrences',
         width: '10%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => {
+          return (node.searchOccurrences && node.searchOccurrences > 99) ? '99+' : node.searchOccurrences;
+        },
       },
       entity_type: {
         label: 'Attached entity type',
         width: '15%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => (
+          <>
+            {node.entity && (
+              <ItemEntityType entityType={node.entity.entity_type} />
+            )}
+          </>
+        ),
       },
       entity_name: {
         label: 'Attached entity name',
         width: '25%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => (
+          <>
+            {node.entity && (
+              <span>{node.entity?.representative.main}</span>
+            )}
+          </>
+        ),
       },
       objectMarking: {
         label: 'Attached entity marking',
         width: '10%',
         isSortable: false,
+        render: (node: SearchIndexedFileLine_node$data) => (
+          <>
+            {node.entity && (
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={node.entity.objectMarking?.edges ?? []}
+                limit={1}
+              />
+            )}
+          </>
+        ),
       },
     };
 
