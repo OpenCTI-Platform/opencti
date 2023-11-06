@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import { assoc } from 'ramda';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -98,7 +97,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     commitMutation({
       mutation: workspaceMutation,
       variables: {
-        input: assoc('type', type, values),
+        input: {
+          ...values,
+          type,
+        },
       },
       updater: (store) => {
         const payload = store.getRootField('workspaceAdd');
