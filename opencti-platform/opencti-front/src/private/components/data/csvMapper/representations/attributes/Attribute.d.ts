@@ -7,10 +7,7 @@ export interface Attribute {
   } | null;
   column: {
     column_name: string | null;
-    configuration?: {
-      separator?: string;
-      pattern_date?: string;
-    };
+    configuration?: AttributeConfiguration;
   } | null;
 }
 
@@ -19,4 +16,9 @@ export interface AttributeWithMetadata extends Attribute {
   mandatory?: boolean;
   multiple?: boolean | null;
   type?: string;
+}
+
+export interface AttributeConfiguration {
+  separator?: string;
+  pattern_date?: string;
 }

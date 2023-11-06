@@ -11,6 +11,10 @@ import {
 } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormikContext } from 'formik';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import CsvMapperRepresentationDialogOption
+  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
+import CsvMapperRepresentionAttributeSelectedConfigurations
+  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 
@@ -21,6 +25,7 @@ const useStyles = makeStyles(() => ({
     gridTemplateColumns: '1fr 1fr 1fr',
     alignItems: 'center',
     marginTop: '10px',
+    gap: '10px',
   },
   inputError: {
     '& fieldset': {
@@ -138,11 +143,21 @@ CsvMapperRepresentationAttributeFormProps
         />
       </div>
       <div>
-        <CsvMapperRepresentationAttributeOptions
-          attribute={attribute}
-          indexRepresentation={indexRepresentation}
-        />
+        {
+          (attribute.type === 'date' || attribute.multiple)
+          && <CsvMapperRepresentationDialogOption attribute={attribute}>
+            <CsvMapperRepresentationAttributeOptions
+                attribute={attribute}
+                indexRepresentation={indexRepresentation}
+            />
+          </CsvMapperRepresentationDialogOption>
+        }
       </div>
+        <CsvMapperRepresentionAttributeSelectedConfigurations
+          configuration={ formikContext.values.representations[indexRepresentation]
+            .attributes[indexAttribute]?.column?.configuration}
+        />
+
     </div>
   );
 };
