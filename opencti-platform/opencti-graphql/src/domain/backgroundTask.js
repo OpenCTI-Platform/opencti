@@ -2,7 +2,7 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { adaptFiltersIds, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
+import { adaptFiltersIds, checkedAndConvertedFilters, TYPE_FILTER } from '../utils/filtering';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -44,7 +44,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
       filterGroups: [],
     };
   }
-  const { filters, filterGroups = [] } = adaptedFiltersGroup;
+  const { filters, filterGroups = [] } = checkedAndConvertedFilters(adaptedFiltersGroup);
   const queryFilterGroups = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const currentGroup = filterGroups[index];
@@ -87,7 +87,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
         nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
       }
     } else {
-      queryFilters.push({ key: GlobalFilters[key] || key, values, operator, mode });
+      queryFilters.push({ key, values, operator, mode });
     }
   }
   if (nestedFrom.length > 0) {
