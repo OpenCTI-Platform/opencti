@@ -93,6 +93,8 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         displayImport={true}
