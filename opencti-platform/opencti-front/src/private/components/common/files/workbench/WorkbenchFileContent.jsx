@@ -1282,8 +1282,8 @@ const WorkbenchFileContentComponent = ({
       }),
     );
     const hashes = {};
-    if (values.hashes_MD5 && values.hashes_MD5.length > 0) {
-      hashes.MD5 = values.hashes_MD5;
+    if (values['hashes.MD5'] && values['hashes.MD5'].length > 0) {
+      hashes.MD5 = values['hashes.MD5'];
     }
     if (values['hashes_SHA-1'] && values['hashes_SHA-1'].length > 0) {
       hashes['SHA-1'] = values['hashes_SHA-1'];
@@ -1308,7 +1308,7 @@ const WorkbenchFileContentComponent = ({
           'objectMarking',
           'createdBy',
           'externalReferences',
-          'hashes_MD5',
+          'hashes.MD5',
           'hashes_SHA-1',
           'hashes_SHA-256',
           'hashes_SHA-512',
@@ -2389,7 +2389,7 @@ const WorkbenchFileContentComponent = ({
                   ? observable[attribute].join(',')
                   : observable[attribute];
               } else if (attribute === 'hashes') {
-                initialValues.hashes_MD5 = observable[attribute]
+                initialValues['hashes.MD5'] = observable[attribute]
                   ? observable[attribute].MD5 ?? ''
                   : '';
                 initialValues['hashes_SHA-1'] = observable[attribute]
@@ -2445,7 +2445,7 @@ const WorkbenchFileContentComponent = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                name="hashes_MD5"
+                                name="hashes.MD5"
                                 label={t('hash_md5')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
@@ -3405,9 +3405,9 @@ const WorkbenchFileContentComponent = ({
                                   key: [
                                     'name',
                                     'value',
-                                    'hashes_MD5',
-                                    'hashes_SHA1',
-                                    'hashes_SHA256',
+                                    'hashes.MD5',
+                                    'hashes.SHA-1',
+                                    'hashes.SHA-256',
                                   ],
                                   values: [object.default_value],
                                 },
