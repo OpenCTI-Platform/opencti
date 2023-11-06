@@ -723,9 +723,11 @@ const convertFilterKeys = (inputFilters) => {
 
 export const checkedAndConvertedFilters = (filters) => {
   // 01. check filters keys exist in schema
-  // TODO check filters keys correspond to the entity types
+  // TODO improvement: check filters keys correspond to the entity types if types is given
   if (isNotEmptyFilters(filters)) {
-    const keys = extractFilterKeys(filters);
+    const keys = extractFilterKeys(filters)
+      .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
+    // TODO improvement: handle composed keys only for attributes of type json, and if so, check the second part of the key exists for the json
     if (keys.length > 0) {
       let incorrectKeys = keys;
       // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
