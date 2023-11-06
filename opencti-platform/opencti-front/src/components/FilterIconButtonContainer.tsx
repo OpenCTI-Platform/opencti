@@ -93,7 +93,8 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
   const classes = useStyles();
 
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, filtersRepresentativesQueryRef);
-  const filtersRepresentativesMap = new Map((filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]));
+  const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
+  console.log('filtersRepresentatives', filtersRepresentatives);
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
@@ -128,16 +129,17 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
               {isOperatorNil
                 ? <span>{t('No value')}</span>
                 : filterValues.map((id) => {
-                  const value = filtersRepresentativesMap.get(id);
                   return (
                   <span key={id}>
-                    <FilterIconButtonContent
-                      redirection={tooltip ? false : redirection}
-                      isFilterTooltip={!!tooltip}
-                      filterKey={filterKey}
-                      id={id}
-                      value={value}
-                    ></FilterIconButtonContent>
+                    {filtersRepresentativesMap.has(id)
+                      && (<FilterIconButtonContent
+                        redirection={tooltip ? false : redirection}
+                        isFilterTooltip={!!tooltip}
+                        filterKey={filterKey}
+                        id={id}
+                        value={filtersRepresentativesMap.get(id)}
+                      ></FilterIconButtonContent>)
+                    }
                     {last(filterValues) !== id && (
                       <Chip
                         className={classes.inlineOperator}
