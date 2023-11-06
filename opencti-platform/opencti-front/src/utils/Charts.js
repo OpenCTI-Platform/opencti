@@ -51,11 +51,8 @@ export const lineChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
-    events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
+    width: '100%',
+    height: '100%',
   },
   theme: {
     mode: theme.palette.mode,
@@ -149,11 +146,8 @@ export const areaChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
-    events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
+    width: '100%',
+    height: '100%',
   },
   theme: {
     mode: theme.palette.mode,
@@ -252,11 +246,8 @@ export const verticalBarsChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
-    events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
+    width: '100%',
+    height: '100%',
   },
   theme: {
     mode: theme.palette.mode,
@@ -351,10 +342,9 @@ export const horizontalBarsChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
+    width: '100%',
+    height: '100%',
     events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
           const { labelIndex } = config;
@@ -511,11 +501,8 @@ export const radarChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     offsetY: offset ? -20 : 0,
-    events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
+    width: '100%',
+    height: '100%',
   },
   theme: {
     mode: theme.palette.mode,
@@ -604,11 +591,8 @@ export const polarAreaChartOptions = (
     background: 'transparent',
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
-    events: {
-      animationEnd: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
+    width: '100%',
+    height: '100%',
   },
   theme: {
     mode: theme.palette.mode,
@@ -693,11 +677,8 @@ export const donutChartOptions = (
       background: 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
-      events: {
-        animationEnd: (chart) => {
-          chart.windowResizeHandler();
-        },
-      },
+      width: '100%',
+      height: '100%',
     },
     theme: {
       mode: theme.palette.mode,
@@ -757,15 +738,12 @@ export const treeMapOptions = (
 ) => {
   return {
     chart: {
-      type: 'donut',
+      type: 'treemap',
       background: 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
-      events: {
-        animationEnd: (chart) => {
-          chart.windowResizeHandler();
-        },
-      },
+      width: '100%',
+      height: '100%',
     },
     theme: {
       mode: theme.palette.mode,
@@ -800,7 +778,6 @@ export const treeMapOptions = (
     },
     dataLabels: {
       style: {
-        fontSize: '12px',
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
         colors: [theme.palette.text.primary],
@@ -835,11 +812,6 @@ export const heatMapOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
-    events: {
-      mounted: (chart) => {
-        chart.windowResizeHandler();
-      },
-    },
   },
   theme: {
     mode: theme.palette.mode,

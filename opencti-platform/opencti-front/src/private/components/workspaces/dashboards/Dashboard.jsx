@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';
@@ -82,6 +82,14 @@ const COL_WIDTH = 30;
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const classes = useStyles();
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 1200);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
   const manifest = workspace.manifest && workspace.manifest.length > 0
     ? JSON.parse(fromB64(workspace.manifest))
     : { widgets: {}, config: {} };
