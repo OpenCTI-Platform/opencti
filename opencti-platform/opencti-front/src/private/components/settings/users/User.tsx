@@ -571,7 +571,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={user.id} filterKey="user_ids" />
+        <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}

@@ -15,9 +15,6 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   trigger_scope: string
   event_types: string[]
   notifiers: string[]
-  user_ids: string[]
-  group_ids: string[]
-  organization_ids: string[]
   trigger_ids: string[]
   authorized_members: Array<AuthorizedMember>;
   instance_trigger: boolean
@@ -42,9 +39,6 @@ export interface StoreEntityTrigger extends StoreEntity {
   trigger_type: string
   event_types: string[]
   notifiers: string[]
-  user_ids: string[]
-  group_ids: string[]
-  organization_ids: string[]
   authorized_members: Array<AuthorizedMember>;
   instance_trigger: boolean
 }
