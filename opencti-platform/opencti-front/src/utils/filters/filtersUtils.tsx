@@ -339,6 +339,10 @@ export const convertOldFilters = (filters: string) => {
     ['participant', 'objectParticipant'],
     ['creator', 'creator_id'],
     ['hasExternalReference', 'externalReferences'],
+    ['hashes_MD5', 'hashes.MD5'],
+    ['hashes_SHA1', 'hashes.SHA-1'],
+    ['hashes_SHA256', 'hashes.SHA-256'],
+    ['hashes_SHA512', 'hashes.SHA-512'],
   ]);
   if (JSON.parse(filters).mode) { // filters already in new format are not converted again (protection)
     return filters;
