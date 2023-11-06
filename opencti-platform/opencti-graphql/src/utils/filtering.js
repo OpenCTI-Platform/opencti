@@ -1,12 +1,5 @@
 import { uniq } from 'ramda';
 import { buildRefRelationKey, INPUT_LABELS, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixRefRelationship';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
@@ -64,14 +57,6 @@ export const PATTERN_FILTER = 'pattern_type';
 export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const RELATION_FROM_TYPES = 'fromTypes';
 export const RELATION_TO_TYPES = 'toTypes';
-
-export const GlobalFilters = {
-  createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-  markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-  objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
-  indicates: buildRefRelationKey(RELATION_INDICATES),
-  objects: buildRefRelationKey(RELATION_OBJECT),
-};
 
 export const extractFilterIdsToResolve = (filters) => {
   const filterEntries = Object.entries(filters);
@@ -151,42 +136,6 @@ export const adaptFiltersIds = async (context, user, filterGroup) => {
   return adaptedFilterGroup;
 };
 
-const convertFiltersToQueryOptionsContent = (adaptedFilters, field = 'updated_at', after = undefined, before = undefined) => {
-  if (!adaptedFilters) {
-    return {
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    };
-  }
-  const queryFilters = [];
-  const queryFilterGroups = [];
-  const { filters, filterGroups } = adaptedFilters;
-  if (filterGroups && filterGroups.length > 0) {
-    for (let index = 0; index < filterGroups.length; index += 1) {
-      const currentGroup = filterGroups[index];
-      const newFilters = convertFiltersToQueryOptionsContent(currentGroup);
-      queryFilterGroups.push(newFilters);
-    }
-  }
-  for (let index = 0; index < filters.length; index += 1) {
-    // eslint-disable-next-line prefer-const
-    let { key, operator, values, mode } = filters[index];
-    queryFilters.push({ key: GlobalFilters[key] || key, values, operator, mode });
-  }
-  if (after) {
-    queryFilters.push({ key: field, values: [after], operator: 'gte' });
-  }
-  if (before) {
-    queryFilters.push({ key: field, values: [before], operator: 'lte' });
-  }
-  return {
-    mode: adaptedFilters.mode,
-    filters: queryFilters,
-    filterGroups: queryFilterGroups,
-  };
-};
-
 export const convertFiltersToQueryOptions = async (context, user, filters, opts = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
@@ -194,7 +143,13 @@ export const convertFiltersToQueryOptions = async (context, user, filters, opts 
   if (filters) {
     adaptedFilters = await adaptFiltersIds(context, user, filters);
   }
-  const finalFilters = convertFiltersToQueryOptionsContent(adaptedFilters, field, after, before);
+  const finalFilters = checkedAndConvertedFilters(adaptedFilters);
+  if (after) {
+    finalFilters.filters.push({ key: field, values: [after], operator: 'gte' });
+  }
+  if (before) {
+    finalFilters.filters.push({ key: field, values: [before], operator: 'lte' });
+  }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
 };
 
