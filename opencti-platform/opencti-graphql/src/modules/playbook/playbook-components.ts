@@ -294,7 +294,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   icon: 'connector',
   is_entry_point: false,
   is_internal: false,
-  ports: [{ id: 'out', type: 'out' }], // { id: 'not-impacted', type: 'out' }]
+  ports: [{ id: 'out', type: 'out' }], // { id: 'unmodified', type: 'out' }]
   configuration_schema: PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA,
   schema: async () => {
     const context = executionContext('playbook_components');
@@ -331,7 +331,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     // if (previousStepBundle) {
     //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
     //   if (diffOperations.length === 0) {
-    //     return { output_port: 'not-impacted', bundle };
+    //     return { output_port: 'unmodified', bundle };
     //   }
     // }
     return { output_port: 'out', bundle };
@@ -647,7 +647,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   icon: 'memory',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'not-impacted', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_RULE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_RULE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
