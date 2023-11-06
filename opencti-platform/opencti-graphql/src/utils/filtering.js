@@ -14,7 +14,6 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
-import { extractStixRepresentative } from '../database/stix-representative';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';

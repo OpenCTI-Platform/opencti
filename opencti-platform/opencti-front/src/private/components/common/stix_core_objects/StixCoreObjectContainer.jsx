@@ -51,7 +51,7 @@ const stixCoreObjectContainerContainersQuery = graphql`
   query StixCoreObjectContainerContainersQuery($search: String) {
     containers(
       search: $search
-      filters: [{ key: entity_type, values: ["Container"] }]
+      filters: { mode: and, filters: [{ key: "entity_type", values: ["Container"] }], filterGroups: [] }
     ) {
       edges {
         node {

@@ -106,7 +106,7 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filters = [{ key: 'trigger_type', values: ['live'] }];
     if (recipientId) {
-      filters.push({ key: 'user_ids', values: [recipientId] });
+      filters.push({ key: 'authorized_members.id', values: [recipientId] });
     }
     fetchQuery(triggersQueriesKnowledgeSearchQuery, {
       search: event && event.target.value,
