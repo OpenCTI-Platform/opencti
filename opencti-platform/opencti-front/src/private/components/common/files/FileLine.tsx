@@ -112,8 +112,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const [deleting, setDeleting] = useState(false);
 
   const handleOpen = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
@@ -146,9 +144,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     .filter((s) => !isEmpty(s))
     .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
-  const listClick = `${APP_BASE_PATH}/storage/${
-    directDownload ? 'get' : 'view'
-  }/${encodedFilePath}`;
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -234,10 +229,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense}
         classes={{ root: nested ? classes.itemNested : classes.item }}
-        button={true}
-        component="a"
-        disabled={isProgress || isOutdated}
-        href={listClick}
         rel="noopener noreferrer"
       >
         <ListItemIcon>
@@ -268,95 +259,99 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             }
           />
         </Tooltip>
-        {!disableImport && (
-          <Tooltip title={t('Launch an import of this file')}>
-            <span>
-              <IconButton
-                disabled={isProgress || !isImportActive()}
-                onClick={() => {
-                  if (handleOpenImport && file) {
-                    handleOpenImport(file);
-                  }
-                }}
-                aria-haspopup="true"
-                color={nested ? 'inherit' : 'primary'}
-                size="small"
-              >
-                <ProgressUpload fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-        )}
-        {!directDownload && !isFail && (
-          <>
-            <Tooltip title={t('Download this file')}>
+        <>
+          {!disableImport && (
+            <Tooltip title={t('Launch an import of this file')}>
               <span>
                 <IconButton
-                  disabled={isProgress}
-                  onClick={handleOpen}
+                  disabled={isProgress || !isImportActive()}
+                  onClick={() => {
+                    if (handleOpenImport && file) {
+                      handleOpenImport(file);
+                    }
+                  }}
                   aria-haspopup="true"
                   color={nested ? 'inherit' : 'primary'}
                   size="small"
                 >
-                  <GetAppOutlined fontSize="small" />
+                  <ProgressUpload fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem
-                dense={true}
-                onClick={() => handleLink(
-                  `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                )
-                }
-              >
-                {t('Encrypted archive')}
-              </MenuItem>
-              <MenuItem
-                dense={true}
-                onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
-                }
-              >
-                {t('Raw file')}
-              </MenuItem>
-            </Menu>
-          </>
-        )}
-        {!isExternalReferenceAttachment && (
-          <>
-            {isFail || isOutdated ? (
-              <Tooltip title={t('Delete this file')}>
+          )}
+          {!directDownload && !isFail && (
+            <>
+              <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
                     disabled={isProgress}
+                    onClick={handleOpen}
+                    aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    onClick={handleOpenRemove}
                     size="small"
                   >
-                    <DeleteOutlined fontSize="small" />
+                    <GetAppOutlined fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              <Tooltip title={t('Delete this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={handleOpenDelete}
-                    size="small"
-                  >
-                    <DeleteOutlined fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
-          </>
-        )}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem
+                  dense={true}
+                  onClick={() => handleLink(
+                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+                  )
+                  }
+                >
+                  {t('Encrypted archive')}
+                </MenuItem>
+                <MenuItem
+                  dense={true}
+                  onClick={() => handleLink(
+                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                  )
+                  }
+                >
+                  {t('Raw file')}
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+          {!isExternalReferenceAttachment && (
+            <>
+              {isFail || isOutdated ? (
+                <Tooltip title={t('Delete this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      color={nested ? 'inherit' : 'primary'}
+                      onClick={handleOpenRemove}
+                      size="small"
+                    >
+                      <DeleteOutlined fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Tooltip title={t('Delete this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      color={nested ? 'inherit' : 'primary'}
+                      onClick={handleOpenDelete}
+                      size="small"
+                    >
+                      <DeleteOutlined fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
+            </>
+          )}
+        </>
       </ListItem>
       <FileWork file={file} nested={workNested} />
       <Dialog

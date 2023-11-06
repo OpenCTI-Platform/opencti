@@ -136,7 +136,6 @@ const FileWorkComponent = (props) => {
             >
               <ListItem
                 dense={true}
-                button={true}
                 divider={true}
                 classes={{
                   root: nested ? classes.nestedNested : classes.nested,
