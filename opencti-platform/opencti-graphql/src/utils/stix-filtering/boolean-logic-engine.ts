@@ -43,7 +43,7 @@ export const testGenericFilter = <T extends string | number | boolean>({ mode, o
   if (adaptedFilterValues.length === 0) {
     return false;
   }
-  if (mode === 'AND') {
+  if (mode === 'and') {
     // we need to find all of them or none of them
     return (operator === 'eq' && adaptedFilterValues.every((v) => stixCandidates.includes(v)))
       || (operator === 'not_eq' && adaptedFilterValues.every((v) => !stixCandidates.includes(v)))
@@ -55,7 +55,7 @@ export const testGenericFilter = <T extends string | number | boolean>({ mode, o
       || (operator === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
   }
 
-  if (mode === 'OR') {
+  if (mode === 'or') {
     // we need to find one of them or at least one is not found
     return (operator === 'eq' && adaptedFilterValues.some((v) => stixCandidates.includes(v)))
       || (operator === 'not_eq' && adaptedFilterValues.some((v) => !stixCandidates.includes(v)))
@@ -124,7 +124,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
     return false;
   }
 
-  if (mode === 'AND') {
+  if (mode === 'and') {
     // NOTE: equality is very strict (milliseconds)
     return (operator === 'eq' && filterValuesAsDates.every((v) => stixDate.isSame(v)))
       || (operator === 'not_eq' && filterValuesAsDates.every((v) => !stixDate.isSame(v)))
@@ -133,7 +133,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
       || (operator === 'gt' && filterValuesAsDates.every((v) => stixDate.isAfter(v)))
       || (operator === 'gte' && filterValuesAsDates.every((v) => stixDate.isSameOrAfter(v)));
   }
-  if (mode === 'OR') {
+  if (mode === 'or') {
     // value must compare to at least one of the candidates according to operator
     return (operator === 'eq' && filterValuesAsDates.some((v) => stixDate.isSame(v)))
       || (operator === 'not_eq' && filterValuesAsDates.some((v) => !stixDate.isSame(v)))
@@ -162,7 +162,7 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  *                               see unit tests for an example.
  */
 export const testFilterGroup = (data: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
-  if (filterGroup.mode === 'AND') {
+  if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
       // note that we are not compatible with multiple keys yet, so we'll always check the first one only
@@ -174,7 +174,7 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, getTesterFr
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
 
-  if (filterGroup.mode === 'OR') {
+  if (filterGroup.mode === 'or') {
     if (filterGroup.filters.length > 0) {
       return filterGroup.filters.some((filter) => getTesterFromFilterKey(filter.key[0])(data, filter));
     }

@@ -22,7 +22,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['markedBy'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9']
       };
@@ -31,7 +31,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['markedBy'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
       };
@@ -47,7 +47,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter, using generated internal type', () => {
       let filter: Filter = {
         key: ['entity_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Report', 'Note']
       };
@@ -55,7 +55,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['entity_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['Report', 'Note']
       };
@@ -65,7 +65,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter, using type in extension', () => {
       let filter: Filter = {
         key: ['entity_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['Indicator']
       };
@@ -73,7 +73,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['entity_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Note', 'Report']
       };
@@ -83,7 +83,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter, using parent types', () => {
       let filter: Filter = {
         key: ['entity_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Report']
       };
@@ -91,7 +91,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['entity_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['Stix-Object', 'Stix-Cyber-Observable', 'Report']
       };
@@ -106,7 +106,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['indicator_types'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['unknown']
       };
@@ -115,7 +115,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['indicator_types'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
@@ -131,7 +131,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['x_opencti_workflow_id'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'bd156107-1f9a-43df-9595-574c467e9e21']
       };
@@ -140,7 +140,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['createdBy'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
@@ -156,7 +156,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['createdBy'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'identity--4f347cc9-4658-59ee-9707-134f434f9d1c']
       };
@@ -165,7 +165,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['createdBy'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
@@ -180,7 +180,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['creator'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', '88ec0c6a-13ce-5e39-b486-354fe4a7084f']
       };
@@ -188,7 +188,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['creator'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
@@ -204,7 +204,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['objectAssignee'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f']
       };
@@ -213,7 +213,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['indicator_types'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
@@ -229,7 +229,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['labelledBy'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-label>', 'test-label']
       };
@@ -238,7 +238,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['labelledBy'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-label>', '<some-other-label>']
       };
@@ -253,7 +253,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['revoked'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['true']
       };
@@ -261,7 +261,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['revoked'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['false']
       };
@@ -276,7 +276,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['x_opencti_detection'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['true']
       };
@@ -285,7 +285,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['x_opencti_detection'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['false']
       };
@@ -301,7 +301,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['x_opencti_score'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'lt',
         values: ['75']
       };
@@ -310,7 +310,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['x_opencti_score'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'lt',
         values: ['25']
       };
@@ -326,7 +326,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['confidence'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'gt',
         values: ['50']
       };
@@ -335,7 +335,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['confidence'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'lt',
         values: ['50']
       };
@@ -351,7 +351,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['pattern_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['stix']
       };
@@ -360,7 +360,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['pattern_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['not-stix']
       };
@@ -376,7 +376,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['x_opencti_main_observable_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Unknown']
       };
@@ -385,7 +385,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['x_opencti_main_observable_type'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['IPv4']
       };
@@ -401,7 +401,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['objectContains'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'incident--572ee294-04a6-548f-a091-a4502a44c342']
       };
@@ -410,7 +410,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['objectContains'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
       };
@@ -426,7 +426,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['severity'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['medium']
       };
@@ -435,7 +435,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['severity'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['low']
       };
@@ -451,7 +451,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['priority'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['p3', 'p4']
       };
@@ -460,7 +460,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['priority'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'lt',
         values: ['p3']
       };
@@ -476,7 +476,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['fromId'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
         };
@@ -484,7 +484,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['fromId'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -496,7 +496,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['toId'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'grouping--e09ce86e-0bd0-5a09-a5e9-4ebd76b79bd4']
         };
@@ -504,7 +504,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['toId'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -516,7 +516,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['fromTypes'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Threat-Actor-Group']
         };
@@ -524,7 +524,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['fromTypes'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -536,7 +536,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['toTypes'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Grouping']
         };
@@ -544,7 +544,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['toTypes'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -560,7 +560,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['fromId'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b']
         };
@@ -568,7 +568,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['fromId'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -580,7 +580,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['toId'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
         };
@@ -588,7 +588,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['toId'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -600,7 +600,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['fromTypes'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Indicator']
         };
@@ -608,7 +608,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['fromTypes'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -620,7 +620,7 @@ describe('Stix filter testers', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['toTypes'],
-          mode: 'OR',
+          mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Country']
         };
@@ -628,7 +628,7 @@ describe('Stix filter testers', () => {
 
         filter = {
           key: ['toTypes'],
-          mode: 'AND',
+          mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
         };
@@ -643,7 +643,7 @@ describe('Stix filter testers', () => {
     it('should test positive for a stix object with matching filter', () => {
       let filter: Filter = {
         key: ['elementId'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['<some-id>', '679a695e-0b00-41e0-b78f-8c36bfbd9d57']
       };
@@ -660,7 +660,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['elementId'],
-        mode: 'AND',
+        mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
       };

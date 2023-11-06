@@ -1,6 +1,6 @@
 //  TODO: remove them from here and use the one defined for #2686
 
-export type FilterMode = 'AND' | 'OR';
+export type FilterMode = 'and' | 'or';
 export type FilterOperator = 'eq' | 'not_eq' | 'lt' | 'lte' | 'gt' | 'gte' | 'nil' | 'not_nil';
 
 export type Filter = {

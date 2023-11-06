@@ -16,10 +16,10 @@ const WHITE_TLP = { standard_id: TLP_CLEAR_ID, internal_id: '' };
 describe('Stix Filtering', () => {
   it('matches stix objects with basic filter groups', async () => {
     let filterGroup: FilterGroup = {
-      mode: 'AND',
+      mode: 'and',
       filters: [{
         key: ['entity_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Report']
       }],
@@ -29,10 +29,10 @@ describe('Stix Filtering', () => {
     expect(await isStixMatchFilterGroup(testContext, ADMIN_USER, stixIndicator, filterGroup)).toEqual(false);
 
     filterGroup = {
-      mode: 'AND',
+      mode: 'and',
       filters: [{
         key: ['entity_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Report', 'Indicator']
       }],
@@ -45,10 +45,10 @@ describe('Stix Filtering', () => {
 
   it('prevent access to stix object according to marking', async () => {
     const filterGroup: FilterGroup = {
-      mode: 'AND',
+      mode: 'and',
       filters: [{
         key: ['entity_type'],
-        mode: 'OR',
+        mode: 'or',
         operator: 'eq',
         values: ['Report']
       }],
@@ -63,34 +63,34 @@ describe('Stix Filtering', () => {
 
   it('matches stix objects with complex filter groups', async () => {
     const filterGroup: FilterGroup = {
-      mode: 'AND',
+      mode: 'and',
       filters: [],
       filterGroups: [
         {
-          mode: 'AND',
+          mode: 'and',
           filters: [{
             key: ['entity_type'],
-            mode: 'OR',
+            mode: 'or',
             operator: 'eq',
             values: ['Report', 'Indicator']
           }, {
             key: ['confidence'],
-            mode: 'AND',
+            mode: 'and',
             operator: 'gt',
             values: ['25']
           }],
           filterGroups: [],
         },
         {
-          mode: 'AND',
+          mode: 'and',
           filters: [{
             key: ['revoked'],
-            mode: 'OR',
+            mode: 'or',
             operator: 'eq',
             values: ['true']
           }, {
             key: ['objectLabel'],
-            mode: 'OR',
+            mode: 'or',
             operator: 'not_nil',
             values: []
           }],
