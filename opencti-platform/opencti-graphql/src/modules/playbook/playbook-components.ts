@@ -731,12 +731,18 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     }
     if (rule === RESOLVE_NEIGHBORS) {
       const relations = await listAllRelations(context, AUTOMATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { elementId: id, baseData: true }) as StoreRelation[];
-      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, R.uniq(
+      let idsToResolve = R.uniq(
         [
           ...relations.map((r) => r.id),
           ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId))
         ]
-      ));
+      );
+      // In case of relation, we also resolve the from and to
+      const baseDataRelation = baseData as StixRelation;
+      if (baseDataRelation.source_ref && baseDataRelation.target_ref) {
+        idsToResolve = R.uniq([...idsToResolve, baseDataRelation.source_ref, baseDataRelation.target_ref]);
+      }
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
       if (elements.length > 0) {
         bundle.objects.push(...elements);
         return { output_port: 'out', bundle };
