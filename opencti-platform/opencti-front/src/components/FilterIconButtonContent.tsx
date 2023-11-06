@@ -33,8 +33,8 @@ const FilterIconButtonContent: FunctionComponent<FilterIconButtonContentProps> =
   const { t } = useFormatter();
 
   const displayedValue = isFilterTooltip
-    ? filterValue(filterKey, id, value)
-    : truncate(filterValue(filterKey, id, value), 15);
+    ? filterValue(filterKey, value)
+    : truncate(filterValue(filterKey, value), 15);
 
   console.log('displayedValue', displayedValue);
 
