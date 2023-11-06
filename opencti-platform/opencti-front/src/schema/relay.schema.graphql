@@ -7176,7 +7176,7 @@ type Query {
   stixCoreObjectsMultiNumber(startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId]
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, relationship_type: [String], elementId: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection

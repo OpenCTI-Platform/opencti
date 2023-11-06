@@ -523,27 +523,28 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // endregion
 
 // region filters representatives
+// return an array of the value of the ids existing in inputFilters:
+// the entity representative for entities, null for deleted or restricted entities, undefined for ids not corresponding to an entity
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
+  const filtersRepresentatives = [];
   // extract the ids to resolve from inputFilters
   const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id', 'sightedBy']);
   const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
+  const otherIds = extractFilterIds(inputFilters, refsInputNames, true);
   // resolve the ids
   const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
   // resolve status ids differently
   for (let index = 0; index < resolvedEntities.length; index += 1) {
-    const entity = resolvedEntities[index];
+    let entity = resolvedEntities[index];
     if (entity?.entity_type === 'Status') {
-      // complete the result of type status with cache
-      const newEntity = await findStatusById(context, user, entity.id);
-      resolvedEntities[index] = newEntity;
+      // complete the result with the cache for statuses to have all the infos to fetch the representative
+      entity = await findStatusById(context, user, entity.id);
     }
+    // add the entity representative in 'value', or null for deleted/restricted entities
+    filtersRepresentatives.push({ id: idsToResolve[index], value: (entity ? extractEntityRepresentativeName(entity) : null) });
   }
-  // create the representatives array
-  const filtersRepresentatives = R.flatten(
-    resolvedEntities
-      .filter((e) => e)
-      .map((e) => ({ id: e.id, value: extractEntityRepresentativeName(e) }))
-  );
+  // add undefined as value for ids that don't require a resolution
+  filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: undefined })));
   return filtersRepresentatives;
 };
 

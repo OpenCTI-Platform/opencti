@@ -16920,7 +16920,7 @@ export type Query = {
   feeds?: Maybe<FeedConnection>;
   file?: Maybe<File>;
   filesMetrics?: Maybe<FilesMetrics>;
-  filtersRepresentatives?: Maybe<Array<Maybe<RepresentativeWithId>>>;
+  filtersRepresentatives: Array<RepresentativeWithId>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -33766,7 +33766,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
   filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType, Partial<QueryFilesMetricsArgs>>;
-  filtersRepresentatives?: Resolver<Maybe<Array<Maybe<ResolversTypes['RepresentativeWithId']>>>, ParentType, ContextType, RequireFields<QueryFiltersRepresentativesArgs, 'filters'>>;
+  filtersRepresentatives?: Resolver<Array<ResolversTypes['RepresentativeWithId']>, ParentType, ContextType, RequireFields<QueryFiltersRepresentativesArgs, 'filters'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
