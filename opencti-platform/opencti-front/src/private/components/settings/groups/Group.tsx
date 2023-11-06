@@ -309,7 +309,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 10, marginLeft: 0 }}
         >
-          <Triggers recipientId={group.id} filterKey="group_ids" />
+          <Triggers recipientId={group.id} filterKey="authorized_members.id" />
           <GroupUsers groupId={group.id} />
         </Grid>
       </Grid>
