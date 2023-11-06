@@ -148,7 +148,7 @@ describe('Trigger resolver standard behavior', () => {
       includeAuthorities: true,
       filters: {
         mode: 'and',
-        filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }],
+        filters: [{ key: 'authorized_members.id', values: [ADMIN_USER.id] }],
         filterGroups: [],
       }
     };
