@@ -215,6 +215,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
+  const handleLink = (url: string) => {
+    handleClose();
+    window.location.pathname = url;
+  };
+
   const generateIcon = () => {
     return isExternalReferenceAttachment || isContainsReference ? (
       <DocumentScannerOutlined color="primary" />
@@ -304,14 +309,17 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             >
               <MenuItem
                 dense={true}
-                href={`${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`}
+                onClick={() => handleLink(
+                  `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+                )
+                }
               >
                 {t('Encrypted archive')}
               </MenuItem>
               <MenuItem
                 dense={true}
-                href={`${APP_BASE_PATH}/storage/get/${encodedFilePath}`}
-                color="warning"
+                onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
+                }
               >
                 {t('Raw file')}
               </MenuItem>
