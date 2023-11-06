@@ -14,6 +14,7 @@ interface SecurityProps {
   needs: string[];
   hasAccess?: boolean;
   matchAll?: boolean;
+  overrideEntity?: string;
   placeholder?: ReactElement;
 }
 
@@ -51,11 +52,12 @@ export const granted = (
 const Security: FunctionComponent<SecurityProps> = ({
   needs,
   matchAll = false,
+  overrideEntity = null,
   hasAccess = true,
   children,
   placeholder = <span />,
 }) => {
-  const isGranted = useGranted(needs, matchAll);
+  const isGranted = useGranted(needs, matchAll, overrideEntity);
   return isGranted && hasAccess ? children : placeholder;
 };
 

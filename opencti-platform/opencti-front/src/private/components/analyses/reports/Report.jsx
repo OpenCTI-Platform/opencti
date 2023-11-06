@@ -49,7 +49,7 @@ class ReportComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={report.id}
           defaultMarkings={report.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} overrideEntity='Reports'>
           <ReportEdition reportId={report.id} />
         </Security>
       </>

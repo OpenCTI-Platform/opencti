@@ -182,7 +182,7 @@ const Reports: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]} overrideEntity='Reports'>
         <ReportCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>

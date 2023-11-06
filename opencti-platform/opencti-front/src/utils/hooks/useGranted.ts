@@ -35,10 +35,26 @@ export const isOnlyOrganizationAdmin = () => {
   return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS);
 };
 
-const useGranted = (capabilities: string[], matchAll = false): boolean => {
+const useGranted = (
+  capabilities: string[],
+  matchAll = false,
+  overrideEntity: string | null = null,
+): boolean => {
   const { me } = useAuth();
+  const groups = me.groups?.edges?.map(e => e?.node) ?? [];
+  const roles = groups.flatMap(g => g?.roles);
+  const overrides = roles.flatMap(r => r?.overrides)?.filter(o => o);
 
-  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
+  let userCapabilities = (me.capabilities ?? []).map((c) => c.name);
+  if (overrideEntity) {
+    const override = overrides.filter(o => o?.entity === overrideEntity);
+    if (override?.[0]?.capabilities) {
+      const overrideCapabilities = [];
+      for (const capability of override[0].capabilities)
+        capability && overrideCapabilities.push(capability.name)
+      userCapabilities = overrideCapabilities;
+    }
+  }
   if (userCapabilities.includes(BYPASS)) {
     return true;
   }
