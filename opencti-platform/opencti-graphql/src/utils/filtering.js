@@ -664,13 +664,21 @@ export const extractFilterKeys = (filters) => {
   return keys;
 };
 
-// extract all the ids from a filter group / all the ids corresponding to the specific keys if key is specified
-export const extractFilterIds = (inputFilters, key = []) => {
+// extract all the ids from a filter group
+// if key is specified: extract all the ids corresponding to the specified keys
+// if key is specified and reverse=true: extract all the ids NOT corresponding to any key
+export const extractFilterIds = (inputFilters, key = null, reverse = false) => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
-  let ids = key
-    ? filters.filter((f) => f.key.some((k) => keysToKeep.includes(k))).map((f) => f.values).flat() ?? []
-    : filters.map((f) => f.values).flat() ?? [];
+  let filteredFilters = [];
+  if (key) {
+    filteredFilters = reverse
+      ? filters.filter((f) => f.key.every((k) => !keysToKeep.includes(k)))
+      : filters.filter((f) => f.key.some((k) => keysToKeep.includes(k)));
+  } else {
+    filteredFilters = filters;
+  }
+  let ids = filteredFilters.map((f) => f.values).flat() ?? [];
   if (filterGroups.length > 0) {
     ids = ids.concat(filterGroups.map((group) => extractFilterIds(group, key)).flat());
   }

@@ -109,22 +109,21 @@ export const entityFilters = [
   'targets',
 ];
 
-export const vocabularyFiltersWithTranslation = [
+export const booleanFilters = [
   'x_opencti_detection',
   'revoked',
   'is_read',
   'x_opencti_reliability',
-  'source_reliability',
-  'indicator_types',
-  'incident_type',
-  'report_types',
-  'channel_types',
-  'event_types',
-  'context',
-  'note_types',
 ];
 
-export const entityTypesFilters = ['entity_type', 'entity_types', 'fromTypes', 'toTypes', 'relationship_types', 'container_type'];
+export const entityTypesFilters = [
+  'entity_type',
+  'entity_types',
+  'fromTypes',
+  'toTypes',
+  'relationship_types',
+  'container_type',
+];
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
@@ -195,12 +194,13 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
   return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
 };
 
-export const filterValue = (filterKey: string, id: string | null, value?: string | null) => { // TODO do this in back with the schema
+export const filterValue = (filterKey: string, id: string | null, value?: string | null) => {
   const { t, nsd } = useFormatter();
   if (value || value === null) { // resolved value or deleted entity
     return value;
   }
-  if (vocabularyFiltersWithTranslation.includes(filterKey) || inlineFilters.includes(filterKey)) {
+  // else: value = undefined (= filters that don't target an entity)
+  if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) { // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(id);
   }
   if (filterKey === 'basedOn') {
@@ -218,7 +218,7 @@ export const filterValue = (filterKey: string, id: string | null, value?: string
           : `relationship_${id.toString()}`,
       );
   }
-  if (dateFilters.includes(filterKey)) {
+  if (dateFilters.includes(filterKey)) { // TODO: improvement: date filters based on schema definition (not an enum)
     return nsd(id);
   }
   return id;
