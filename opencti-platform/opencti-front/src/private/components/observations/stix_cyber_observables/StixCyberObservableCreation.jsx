@@ -262,16 +262,16 @@ const StixCyberObservableCreation = ({
     let adaptedValues = values;
     // Potential dicts
     if (
-      adaptedValues.hashes_MD5
+      adaptedValues['hashes.MD5']
       || adaptedValues['hashes_SHA-1']
       || adaptedValues['hashes_SHA-256']
       || adaptedValues['hashes_SHA-512']
     ) {
       adaptedValues.hashes = [];
-      if (adaptedValues.hashes_MD5.length > 0) {
+      if (adaptedValues['hashes.MD5'].length > 0) {
         adaptedValues.hashes.push({
           algorithm: 'MD5',
-          hash: adaptedValues.hashes_MD5,
+          hash: adaptedValues['hashes.MD5'],
         });
       }
       if (adaptedValues['hashes_SHA-1'].length > 0) {
@@ -301,7 +301,7 @@ const StixCyberObservableCreation = ({
       dissoc('objectLabel'),
       dissoc('externalReferences'),
       dissoc('createIndicator'),
-      dissoc('hashes_MD5'),
+      dissoc('hashes.MD5'),
       dissoc('hashes_SHA-1'),
       dissoc('hashes_SHA-256'),
       dissoc('hashes_SHA-512'),
@@ -440,7 +440,7 @@ const StixCyberObservableCreation = ({
               } else if (includes(attribute.value, booleanAttributes)) {
                 initialValues[attribute.value] = false;
               } else if (attribute.value === 'hashes') {
-                initialValues.hashes_MD5 = '';
+                initialValues['hashes.MD5'] = '';
                 initialValues['hashes_SHA-1'] = '';
                 initialValues['hashes_SHA-256'] = '';
                 initialValues['hashes_SHA-512'] = '';
@@ -494,7 +494,7 @@ const StixCyberObservableCreation = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                name="hashes_MD5"
+                                name="hashes.MD5"
                                 label={t('hash_md5')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
