@@ -524,11 +524,11 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 
 // region filters representatives
 // return an array of the value of the ids existing in inputFilters:
-// the entity representative for entities, null for deleted or restricted entities, undefined for ids not corresponding to an entity
+// the entity representative for entities, null for deleted or restricted entities, the id for ids not corresponding to an entity
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
   const filtersRepresentatives = [];
   // extract the ids to resolve from inputFilters
-  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id', 'sightedBy']);
+  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(['creator_id', 'sightedBy', 'fromId', 'toId', 'elementId']);
   const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
   const otherIds = extractFilterIds(inputFilters, refsInputNames, true);
   // resolve the ids
@@ -543,9 +543,8 @@ export const findFiltersRepresentatives = async (context, user, inputFilters) =>
     // add the entity representative in 'value', or null for deleted/restricted entities
     filtersRepresentatives.push({ id: idsToResolve[index], value: (entity ? extractEntityRepresentativeName(entity) : null) });
   }
-  // add undefined as value for ids that don't require a resolution
-  filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: undefined })));
-  return filtersRepresentatives;
+  // add ids that don't require a resolution
+  return filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: id })));
 };
 
 // endregion

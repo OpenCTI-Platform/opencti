@@ -196,34 +196,30 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
   return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
 };
 
-export const filterValue = (filterKey: string, id: string | null, value?: string | null) => {
+export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
-  if (value || value === null) { // resolved value or deleted entity
-    return value;
-  }
-  // else: value = undefined (= filters that don't target an entity)
   if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) { // TODO: improvement: boolean filters based on schema definition (not an enum)
-    return t(id);
+    return t(value);
   }
   if (filterKey === 'basedOn') {
-    return id === 'EXISTS' ? t('Yes') : t('No');
+    return value === 'EXISTS' ? t('Yes') : t('No');
   }
   if (filterKey === 'x_opencti_negative') {
-    return t(id === 'true' ? 'False positive' : 'True positive');
+    return t(value === 'true' ? 'False positive' : 'True positive');
   }
-  if (id && entityTypesFilters.includes(filterKey)) {
-    return id === 'all'
+  if (value && entityTypesFilters.includes(filterKey)) {
+    return value === 'all'
       ? t('entity_All')
       : t(
-        id.toString()[0] === id.toString()[0].toUpperCase()
-          ? `entity_${id.toString()}`
-          : `relationship_${id.toString()}`,
+        value.toString()[0] === value.toString()[0].toUpperCase()
+          ? `entity_${value.toString()}`
+          : `relationship_${value.toString()}`,
       );
   }
   if (dateFilters.includes(filterKey)) { // TODO: improvement: date filters based on schema definition (not an enum)
-    return nsd(id);
+    return nsd(value);
   }
-  return id;
+  return value;
 };
 
 export const addFilter = (filters: FilterGroup, key: string, value: string | string[], operator = 'eq', mode = 'or') => {
