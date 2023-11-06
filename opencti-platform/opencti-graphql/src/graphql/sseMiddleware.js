@@ -6,14 +6,14 @@ import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
+import { elList } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
-  EVENT_TYPE_UPDATE,
+  EVENT_TYPE_UPDATE, extractIdsFromStoreObject,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INFERRED_ENTITIES,
@@ -198,20 +198,11 @@ const createSseMiddleware = () => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
-      // Resolve missing element standard ids
-      const missingIds = [];
-      const groupsOfRefsToResolve = R.splitEvery(MAX_BULK_OPERATIONS, refsToResolve);
-      const missingRefsResolver = async (refs) => {
-        const idsOpts = { ids: refs, connectionFormat: false };
-        const findMissing = await elList(context, req.user, queryIndices, idsOpts);
-        missingIds.push(...R.uniq(findMissing.map((f) => f.standard_id)));
-      };
-      await Promise.map(groupsOfRefsToResolve, missingRefsResolver, { concurrency: ES_MAX_CONCURRENCY });
-      missingElements.push(...missingIds);
-      // Resolve every missing element
-      const uniqueIds = R.uniq(missingIds);
-      const resolvedElements = await stixLoadByIds(context, req.user, uniqueIds);
-      const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
+      const resolvedStoreElements = await storeLoadByIdsWithRefs(context, req.user, refsToResolve);
+      missingElements.push(...resolvedStoreElements);
+      const resolvedMissingIds = R.uniq(missingElements.map((elem) => extractIdsFromStoreObject(elem)).flat());
+      const parentRefs = resolvedStoreElements.map((r) => stixRefsExtractor(convertStoreToStix(r), generateStandardId))
+        .flat().filter((parentId) => !resolvedMissingIds.includes(parentId));
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(context, req, parentRefs, cache);
         missingElements.unshift(...newMissing);
@@ -353,11 +344,11 @@ const createSseMiddleware = () => {
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
-    const missingElements = await resolveMissingReferences(context, req, refs, cache);
-    const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
-    const missingAllPerIds = missingInstances.map((m) => [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
-    const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
+    const missingInstances = await resolveMissingReferences(context, req, refs, cache);
+    // const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
+      const missingAllPerIds = missingInstances.map((m) => [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
+      const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
       const toId = stixData.target_ref ?? stixData.where_sighted_refs[0];
@@ -367,9 +358,8 @@ const createSseMiddleware = () => {
         return false;
       }
     }
-    for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
-      const missingElementId = missingElements[missingIndex];
-      const missingInstance = missingMap.get(missingElementId);
+    for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
+      const missingInstance = missingInstances[missingIndex];
       if (!cache.has(missingInstance.standard_id) && channel.connected()) {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
