@@ -692,17 +692,9 @@ const convertFilterKeys = (inputFilters) => {
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
       const convertedFilterKeys = filterKeys
-        .map((key) => { // 1. convert special keys
-          if (key === 'elementId') {
+        .map((key) => { // 1. convert special keys // TODO improvement with a map containing special keys
+          if (key === 'elementId') { // TODO check if necessary (or if already converted in nested)
             return buildRefRelationKey('*');
-          } if (key === 'hashes_MD5') {
-            return 'hashes.MD5';
-          } if (key === 'hashes_SHA1') {
-            return 'hashes.SHA-1';
-          } if (key === 'hashes_SHA256') {
-            return 'hashes.SHA-256';
-          } if (key === 'hashes_SHA512') {
-            return 'hashes.SHA-512';
           } if (key === 'sightedBy') {
             return buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP);
           }
@@ -727,7 +719,7 @@ export const checkedAndConvertedFilters = (filters) => {
   if (isNotEmptyFilters(filters)) {
     const keys = extractFilterKeys(filters)
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-    // TODO improvement: handle composed keys only for attributes of type json, and if so, check the second part of the key exists for the json
+    // TODO improvement: for attributes of type json/dictionnary: check the second part of the key exists for the attribute
     if (keys.length > 0) {
       let incorrectKeys = keys;
       // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
