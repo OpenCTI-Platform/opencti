@@ -84,6 +84,26 @@ const rootPrivateQuery = graphql`
       capabilities {
         name
       }
+      groups {
+        edges {
+          node {
+            name
+            roles {
+              edges {
+                node {
+                  name
+                  overrides {
+                    entity
+                    capabilities {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       unit_system
       submenu_show_icons
       submenu_auto_collapse
