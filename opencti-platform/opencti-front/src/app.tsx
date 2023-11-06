@@ -18,12 +18,13 @@ const App = () => (
       <AuthBoundaryComponent>
         <RedirectManager>
           <Routes>
-            <Route
-              path="/"
-              element={<Navigate to="/dashboard" replace={true} />}
-            />
             <Route path="/dashboard/*" element={<PrivateRoot />} />
             <Route path="/public/*" element={<PublicRoot />} />
+            {/* By default, redirect to dashboard */}
+            <Route
+              path="/*"
+              element={<Navigate to="/dashboard" replace={true} />}
+            />
           </Routes>
         </RedirectManager>
       </AuthBoundaryComponent>
