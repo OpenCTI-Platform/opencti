@@ -718,6 +718,10 @@ const i18n = {
       'Volume indexed': 'Volumen indexado',
       Requirements: 'Requisitos',
       'File indexing needs one of these requirements': 'La indexación de archivos necesita uno de estos requisitos',
+      'Upload date': 'Fecha de carga',
+      Occurrences: 'Ocurrencias',
+      'Attached entity type': 'Tipo de entidad adjunta',
+      'Attached entity name': 'Nombre de entidad adjunta',
       // Csv Mappers
       'Create a csv mapper': 'Crear un mapeador de CSV',
       'Csv Mapper edition': 'Edición del mapeador de CSV',
@@ -2946,6 +2950,10 @@ const i18n = {
       'Volume indexed': 'Volume indexé',
       Requirements: 'Configuration requise',
       'File indexing needs one of these requirements': 'L\'indexation des fichiers nécessite l\'une des configurations suivantes',
+      'Upload date': 'Date de téléchargement',
+      Occurrences: 'Occurrences',
+      'Attached entity type': 'Type de l\'entité attachée',
+      'Attached entity name': 'Nom de l\'entité attachée',
       // Csv Mappers
       'Create a csv mapper': 'Créer un mapping CSV',
       'Csv Mapper edition': 'Édition du mapping CSV',

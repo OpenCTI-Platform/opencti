@@ -48,7 +48,7 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
   const renderLines = () => {
     const dataColumns = {
       name: {
-        label: 'Filename',
+        label: 'File name',
         width: '25%',
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => node.name,
@@ -92,7 +92,7 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
         ),
       },
       objectMarking: {
-        label: 'Attached entity marking',
+        label: 'Marking',
         width: '10%',
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => (
