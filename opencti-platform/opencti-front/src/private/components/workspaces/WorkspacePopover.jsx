@@ -12,7 +12,6 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import fileDownload from 'js-file-download';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
@@ -20,6 +19,7 @@ import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
+import handleExportJson from './workspaceExportHandler';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -88,19 +88,6 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   if (!userCanEdit) {
     return <></>;
   }
-  const handleExportJson = () => {
-    const dashboardConfig = JSON.stringify({
-      version: '1.0.0',
-      type: workspace.type,
-      name: workspace.name,
-      manifest: workspace.manifest,
-    }, null, 2);
-    const blob = new Blob([dashboardConfig], { type: 'text/json' });
-    const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
-    const fileName = `${year}${month}${day}_octi_dashboard_${workspace.name}`;
-
-    fileDownload(blob, fileName, 'application/json');
-  };
   return (
     <div className={classes.container}>
       <IconButton
@@ -113,7 +100,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleExportJson}>{t('Export')}</MenuItem>
+        <MenuItem onClick={() => handleExportJson(workspace)}>{t('Export')}</MenuItem>
         <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
