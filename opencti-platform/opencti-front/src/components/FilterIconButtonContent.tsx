@@ -17,7 +17,7 @@ export const filterIconButtonContentQuery = graphql`
 `;
 interface FilterIconButtonContentProps {
   redirection?: boolean;
-  filterTooltip?: boolean;
+  isFilterTooltip?: boolean;
   filterKey: string;
   id: string | null;
   value?: string | null;
@@ -25,14 +25,14 @@ interface FilterIconButtonContentProps {
 
 const FilterIconButtonContent: FunctionComponent<FilterIconButtonContentProps> = ({
   redirection,
-  filterTooltip,
+  isFilterTooltip,
   filterKey,
   id,
   value,
 }) => {
   const { t } = useFormatter();
 
-  const displayedValue = filterTooltip
+  const displayedValue = isFilterTooltip
     ? filterValue(filterKey, id, value)
     : truncate(filterValue(filterKey, id, value), 15);
 
