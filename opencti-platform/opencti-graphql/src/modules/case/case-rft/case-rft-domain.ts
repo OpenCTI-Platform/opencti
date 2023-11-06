@@ -6,7 +6,7 @@ import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
-import { userAddIndividual, userSessionRefresh } from '../../../domain/user';
+import { userAddIndividual } from '../../../domain/user';
 import { isEmptyField } from '../../../database/utils';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { isStixId } from '../../../schema/schemaUtils';
@@ -31,7 +31,6 @@ export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAd
     if (individualId === undefined) {
       const individual = await userAddIndividual(context, user);
       individualId = individual.id;
-      await userSessionRefresh(user.internal_id);
     }
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }

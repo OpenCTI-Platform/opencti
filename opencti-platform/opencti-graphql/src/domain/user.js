@@ -1173,7 +1173,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
       const refreshOpts = { token, previousSession: auth, isSessionRefresh: true };
-      const user = await internalLoadById(context, SYSTEM_USER, auth.id);
+      const user = await internalLoadById(context, SYSTEM_USER, auth.impersonate_user_id ?? auth.id);
       return await internalAuthenticateUser(context, req, user, provider, refreshOpts);
     }
     // If everything ok, return the authenticated user.
