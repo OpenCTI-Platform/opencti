@@ -429,7 +429,6 @@ class StixDomainObjectContentComponent extends Component {
       const pdfData = {
         content: ret.content,
         images,
-        pageSize: 'A2',
       };
       const { protocol, hostname, port } = window.location;
       const url = `${protocol}//${hostname}:${port || ''}`;
