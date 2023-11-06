@@ -171,6 +171,7 @@ const StixCoreObjectFileExportComponent = ({
                           label={t('Export format')}
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
+                          disabled
                         >
                           {exportScopes.map((value, i) => (
                             <MenuItem
