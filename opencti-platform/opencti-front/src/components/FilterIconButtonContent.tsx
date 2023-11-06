@@ -36,6 +36,8 @@ const FilterIconButtonContent: FunctionComponent<FilterIconButtonContentProps> =
     ? filterValue(filterKey, id, value)
     : truncate(filterValue(filterKey, id, value), 15);
 
+  console.log('displayedValue', displayedValue);
+
   if (displayedValue === null) {
     return (
       <>
