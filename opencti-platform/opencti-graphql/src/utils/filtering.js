@@ -731,7 +731,7 @@ export const checkedAndConvertedFilters = (filters) => {
     if (keys.length > 0) {
       let incorrectKeys = keys;
       // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
-      const availableSpecialKeys = ['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*', 'connections'];
+      const availableSpecialKeys = ['rel_object', 'rel_related-to', 'connections'];
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableStixCoreRelations = availableStixCoreRelationships().concat('sightedBy');
