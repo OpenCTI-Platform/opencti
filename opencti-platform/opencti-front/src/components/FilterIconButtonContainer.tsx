@@ -114,28 +114,26 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
         .map((currentFilter) => {
           const filterKey = currentFilter.key;
           const filterValues = currentFilter.values;
-          const negative = currentFilter.operator === 'not_eq' || currentFilter.operator === 'not_nil';
-          const operatorDisplay = !['eq', 'not_eq', 'nil', 'not_nil'].includes(currentFilter.operator);
-          const keyLabel = operatorDisplay
-            ? truncate(t(`filter_${filterKey}_${currentFilter.operator}`), 20)
+          const filterOperator = currentFilter.operator;
+          const isOperatorNegative = filterOperator.startsWith('not_');
+          const isOperatorDisplayed = !['eq', 'not_eq', 'nil', 'not_nil'].includes(filterOperator);
+          const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
+          const keyLabel = isOperatorDisplayed
+            ? truncate(t(`filter_${filterKey}_${filterOperator}`), 20)
             : truncate(t(`filter_${filterKey}`), 20);
-          const label = `${negative ? `${t('NOT')} ` : ''}${keyLabel}`;
-          const isNotLastFilter = lastKey !== filterKey || lastOperator !== currentFilter.operator;
+          const label = `${isOperatorNegative ? `${t('NOT')} ` : ''}${keyLabel}`;
+          const isNotLastFilter = lastKey !== filterKey || lastOperator !== filterOperator;
           const values = (tooltip: boolean) => (
             <>
-              {filterValues.map((id) => {
-                const value = filtersRepresentativesMap.get(id);
-                const dissocCurrentFilter = {
-                  key: currentFilter.key,
-                  values: currentFilter.values,
-                  operator: currentFilter.operator,
-                  mode: currentFilter.mode,
-                };
-                return (
+              {isOperatorNil
+                ? <span>{t('No value')}</span>
+                : filterValues.map((id) => {
+                  const value = filtersRepresentativesMap.get(id);
+                  return (
                   <span key={id}>
                     <FilterIconButtonContent
                       redirection={tooltip ? false : redirection}
-                      filterTooltip={!!tooltip}
+                      isFilterTooltip={!!tooltip}
                       filterKey={filterKey}
                       id={id}
                       value={value}
@@ -144,12 +142,12 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
                       <Chip
                         className={classes.inlineOperator}
                         label={t((currentFilter.mode ?? 'or').toUpperCase())}
-                        onClick={() => handleSwitchLocalMode?.(dissocCurrentFilter)}
+                        onClick={() => handleSwitchLocalMode?.(currentFilter)}
                       />
                     )}{' '}
                   </span>
-                );
-              })}
+                  );
+                })}
             </>
           );
           return (
@@ -176,7 +174,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
                   }
                   onDelete={
                     handleRemoveFilter
-                      ? () => handleRemoveFilter(filterKey, currentFilter.operator ?? undefined)
+                      ? () => handleRemoveFilter(filterKey, filterOperator ?? undefined)
                       : undefined
                   }
                 />

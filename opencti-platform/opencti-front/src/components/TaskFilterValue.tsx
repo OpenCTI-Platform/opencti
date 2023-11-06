@@ -44,16 +44,19 @@ const TaskFilterValue = ({ filters, queryRef }:
             : t(`filter_${currentFilter.key}`),
           20,
         )}`;
+        const isOperatorNil = ['nil', 'not_nil'].includes(currentFilter.operator);
         return (
           <span key={currentFilter.key}>
             <Chip
               classes={{ root: classes.filter }}
               label={
                 <div>
-                  <strong>{label}</strong>: {currentFilter.values.map(
-                    (o) => {
-                      const localFilterMode = t(currentFilter.mode.toUpperCase());
-                      return (
+                  <strong>{label}</strong>: {isOperatorNil
+                    ? <span>{t('No value')}</span>
+                    : currentFilter.values.map(
+                      (o) => {
+                        const localFilterMode = t(currentFilter.mode.toUpperCase());
+                        return (
                       <span key={o}>
                         <FilterIconButtonContent
                           filterKey={currentFilter.key}
@@ -64,9 +67,9 @@ const TaskFilterValue = ({ filters, queryRef }:
                           && (<code>{localFilterMode}</code>)
                         }{' '}
                       </span>
-                      );
-                    },
-                  )}
+                        );
+                      },
+                    )}
                 </div>
               }
             />
