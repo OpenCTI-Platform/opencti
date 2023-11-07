@@ -16,6 +16,7 @@ config/tanium.json
 config/test.json
 config/local.json
 config/sync.json
+config/prod-*.json
 coverage
 test-results
 logs

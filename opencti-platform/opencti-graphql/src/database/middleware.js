@@ -433,7 +433,15 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
-        data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation).internal_id : resolvedElementsWithRelation.map((r) => r.internal_id);
+        const invalidRelations = values.filter((v) => toResolvedElements[v.toId] === undefined);
+        if (invalidRelations.length > 0) {
+          // Some targets can be unresolved in case of potential inconsistency between relation and target
+          // This kind of situation can happen if:
+          // - Access rights are asymmetric, should not happen for meta relationships.
+          // - Relations is invalid, should not happen in platform data consistency.
+          logApp.warn('Targets of loadElementMetaDependencies not found', { relations: values.map((v) => ({ id: v.id, target: v.toId })) });
+        }
+        data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation)?.internal_id : resolvedElementsWithRelation.map((r) => r.internal_id);
         data[inputKey] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
       }
       loadedElementMap.set(elementId, data);
