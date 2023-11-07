@@ -1859,13 +1859,32 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       throw DatabaseError('[SEARCH] Aggregation fail', { error: err, query });
     });
 };
+
+const extractNestedQueriesFromBool = (boolQueryArray) => {
+  let result = [];
+  for (let i = 0; i < boolQueryArray.length; i += 1) {
+    const boolQuery = boolQueryArray[i];
+    const shouldArray = boolQuery.bool?.should ?? [];
+    const nestedQueries = [];
+    for (let j = 0; j < shouldArray.length; j += 1) {
+      const queryElement = shouldArray[j];
+      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
+        nestedQueries.push(extractNestedQueriesFromBool([queryElement]));
+      }
+    }
+    if (nestedQueries.length > 0) result = result.concat(nestedQueries);
+  }
+  return result;
+};
+
 // field can be "entity_type" or "internal_id"
 const buildAggregationRelationFilters = async (context, user, aggregationFilters) => {
   const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
   return {
     bool: {
-      must: (aggBody.query.bool.must ?? []).filter((m) => m.nested).map((m) => m.nested.query),
-      must_not: (aggBody.query.bool.must_not ?? []).filter((m) => m.nested).map((m) => m.nested.query)
+      must: extractNestedQueriesFromBool(aggBody.query.bool.must ?? []),
+      must_not: extractNestedQueriesFromBool(aggBody.query.bool.must_not ?? []),
     },
   };
 };
