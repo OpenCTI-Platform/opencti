@@ -73,11 +73,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
           label: n?.node.name,
           value: n?.node.id,
         }));
-        const emptyValue = {
-          label: '',
-          value: '',
-        };
-        const templateValues = [emptyValue, ...creators, ...NewCreators];
+        const templateValues = [...creators, ...NewCreators];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
           return (
