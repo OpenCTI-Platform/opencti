@@ -4,6 +4,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
+import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-cjs/defaultProvider';
 import mime from 'mime-types';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -26,6 +27,7 @@ const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
+const isDefaultAwsProvider = booleanConf('minio:use_aws_default_provider', false);
 
 const credentialProvider = (init) => memoize(
   chain(
@@ -39,7 +41,7 @@ const credentialProvider = (init) => memoize(
       }
       throw new CredentialsProviderError('Unable to load credentials from OpenCTI config');
     },
-    remoteProvider(init),
+    isDefaultAwsProvider ? defaultProvider(init) : remoteProvider(init),
     async () => {
       throw new CredentialsProviderError('Could not load credentials from any providers', false);
     }
