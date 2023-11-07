@@ -58,6 +58,9 @@ export const addExternalReference = async (context, user, externalReference) => 
 
 export const externalReferenceDelete = async (context, user, externalReferenceId) => {
   const reference = await internalLoadById(context, user, externalReferenceId);
+  if (!reference) {
+    throw FunctionalError('Cannot delete, External-Reference cannot be found.');
+  }
   // If case of linked file reference
   // Call the deletion of file that will also handle the external reference deletion
   if (reference.fileId) {

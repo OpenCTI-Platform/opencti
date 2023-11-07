@@ -78,6 +78,8 @@ import { extractStixRepresentative } from '../../database/stix-representative';
 import {
   isEmptyField,
   isNotEmptyField,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -453,7 +455,12 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   configuration_schema: PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   schema: async () => {
     const context = executionContext('playbook_components');
-    const organizations = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { connectionFormat: false });
+    const organizations = await listAllEntities(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      { connectionFormat: false, indices: READ_ENTITIES_INDICES_WITHOUT_INFERRED }
+    );
     const elements = organizations.map((c) => ({ const: c.id, title: c.name }));
     const schemaElement = { properties: { organizations: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<SharingConfiguration>, any>(PLAYBOOK_SHARING_COMPONENT_SCHEMA, schemaElement);
@@ -659,7 +666,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // RESOLVE_INDICATORS is for now only triggered on observable creation / update
       if (isStixCyberObservable(type)) {
         // Observable <-- (based on) -- Indicator
-        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR] };
+        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR], indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
         const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
@@ -673,7 +680,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // RESOLVE_OBSERVABLES is for now only triggered on indicator creation / update
       if (type === ENTITY_TYPE_INDICATOR) {
         // Indicator (based on) --> Observable
-        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] };
+        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
         const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
@@ -730,7 +737,12 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       }
     }
     if (rule === RESOLVE_NEIGHBORS) {
-      const relations = await listAllRelations(context, AUTOMATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { elementId: id, baseData: true }) as StoreRelation[];
+      const relations = await listAllRelations(
+        context,
+        AUTOMATION_MANAGER_USER,
+        ABSTRACT_STIX_CORE_RELATIONSHIP,
+        { elementId: id, baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
+      ) as StoreRelation[];
       let idsToResolve = R.uniq(
         [
           ...relations.map((r) => r.id),
