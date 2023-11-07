@@ -1625,13 +1625,12 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     }
   }
   if (localMustFilters.length > 0) {
-    const query = {
+    return {
       bool: {
         should: localMustFilters,
         minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
       }
     };
-    return query;
   }
   return null;
 };

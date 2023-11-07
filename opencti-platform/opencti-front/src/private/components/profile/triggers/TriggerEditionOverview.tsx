@@ -109,14 +109,12 @@ TriggerEditionOverviewProps
     op = 'eq',
   ) => {
     const newBaseFilters = constructHandleAddFilter(filters, k, id, op);
-    if (newBaseFilters) {
-      commitFieldPatch({
-        variables: {
-          id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
-        },
-      });
-    }
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+      },
+    });
   };
   const handleRemoveFilter = (k: string, op = 'eq') => {
     const newBaseFilters = constructHandleRemoveFilter(filters, k, op);

@@ -25,8 +25,8 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
 import { buildDate, formatDate } from '../../../../utils/Time';
-import { TasksFiltering } from './__generated__/TasksRefetch.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import { FilterGroup } from '../../../../utils/filters/filtersUtils';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -150,7 +150,7 @@ interface TasksEditionOverviewProps {
   }> | null;
   enableReferences?: boolean;
   handleClose: () => void;
-  tasksPaginationOptions?: { filters: TasksFiltering[] };
+  tasksPaginationOptions?: { filters: FilterGroup };
 }
 
 interface TasksEditionFormValues {
