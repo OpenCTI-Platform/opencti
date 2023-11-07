@@ -1942,7 +1942,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // region metas
     const relationsToCreate = [];
     const relationsToDelete = [];
-    const buildInstanceRelTo = (to, relType) => R.head(buildInnerRelation(initial, to, relType));
+    const buildInstanceRelTo = (to, relType) => buildInnerRelation(initial, to, relType);
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
       const key = schemaRelationsRefDefinition.convertStixNameToInputName(updatedInstance.entity_type, metaKey) || metaKey;
@@ -1963,7 +1963,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           }
           // Create the new one
           if (isNotEmptyField(targetCreated)) {
-            relationsToCreate.push(buildInstanceRelTo(targetCreated, relType));
+            relationsToCreate.push(...buildInstanceRelTo(targetCreated, relType));
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [targetCreated], previous });
             updatedInstance[key] = targetCreated;
@@ -1996,7 +1996,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             }
             // 02. Create the new relations
             if (refs.length > 0) {
-              const newRelations = refs.map((to) => buildInstanceRelTo(to, relType));
+              const newRelations = buildInstanceRelTo(refs, relType);
               relationsToCreate.push(...newRelations);
             }
             updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
@@ -2008,7 +2008,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           const currentIds = (updatedInstance[key] || []).map((o) => [o.id, o.standard_id]).flat();
           const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
-            const newRelations = refsToCreate.map((to) => buildInstanceRelTo(to, relType));
+            const newRelations = buildInstanceRelTo(refsToCreate, relType);
             relationsToCreate.push(...newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
@@ -2316,28 +2316,32 @@ const buildRelationInput = (input) => {
 };
 const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
-
-  if (!to || R.isEmpty(targets)) return [];
+  if (!to || R.isEmpty(targets)) {
+    return [];
+  }
   const relations = [];
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
     const input = { from, to: target, relationship_type: type };
     const { relation } = buildRelationInput(input);
-    const basicRelation = {
-      id: relation.internal_id,
-      from,
-      fromId: from.internal_id,
-      fromRole: `${type}_from`,
-      fromType: from.entity_type,
-      to: target,
-      toId: target.internal_id,
-      toRole: `${type}_to`,
-      toType: target.entity_type,
-      base_type: BASE_TYPE_RELATION,
-      parent_types: getParentTypes(relation.entity_type),
-      ...relation,
-    };
-    relations.push(basicRelation);
+    // Ignore self relationships
+    if (from.internal_id !== target.internal_id) {
+      const basicRelation = {
+        id: relation.internal_id,
+        from,
+        fromId: from.internal_id,
+        fromRole: `${type}_from`,
+        fromType: from.entity_type,
+        to: target,
+        toId: target.internal_id,
+        toRole: `${type}_to`,
+        toType: target.entity_type,
+        base_type: BASE_TYPE_RELATION,
+        parent_types: getParentTypes(relation.entity_type),
+        ...relation,
+      };
+      relations.push(basicRelation);
+    }
   }
   return relations;
 };
