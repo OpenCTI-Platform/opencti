@@ -22,7 +22,7 @@ import {
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/engine';
-import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { FunctionalError } from '../config/errors';
@@ -198,6 +198,9 @@ export const addStixCyberObservable = async (context, user, input) => {
   const graphQLType = type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
+  }
+  if (type === 'Artifact' && input[graphQLType].file && isEmptyField(payload_bin)) {
+    return artifactImport(context, user, { ...input, ...input[graphQLType] });
   }
   const observableInput = {
     stix_id,
