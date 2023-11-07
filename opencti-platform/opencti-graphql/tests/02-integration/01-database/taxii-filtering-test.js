@@ -43,7 +43,7 @@ const READ_MARKING_QUERY = gql`
     }
 `;
 
-describe('Complex filters combinations, behavior tested on feeds', () => {
+describe('Complex filters combinations, behavior tested on taxii collections', () => {
   let taxiiInternalId;
   const taxiiStixId = 'taxii--994491f0-f114-4e41-bcf0-3288c0324f01';
   let marking1StixId;
@@ -137,6 +137,7 @@ describe('Complex filters combinations, behavior tested on feeds', () => {
         stix_id: city1StixId,
         name: 'City1',
         description: 'City1 description',
+        objectMarking: ['XXX'],
         confidence: 10,
       },
     };
@@ -153,6 +154,7 @@ describe('Complex filters combinations, behavior tested on feeds', () => {
         stix_id: city2StixId,
         name: 'City2',
         description: 'City2 description',
+        objectMarking: [],
         confidence: 20,
       },
     };
@@ -365,6 +367,21 @@ describe('Complex filters combinations, behavior tested on feeds', () => {
     edgeIds = results6.map((e) => e.node.internal_id);
     expect(edgeIds.length).toEqual(1);
     expect(edgeIds[0]).toEqual(city3InternalId);
+    // --- 07. filters with keys that require a conversion --- //
+    // objectMarking = marking1
+    await changeTaxiiFilters({
+      mode: 'and',
+      filters: [{
+        key: 'objectMarking',
+        values: [marking1Id],
+      }],
+      filterGroups: [],
+    });
+    taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
+    const { edges: results7 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
+    edgeIds = results7.map((e) => e.node.internal_id);
+    expect(edgeIds.length).toEqual(1);
+    expect(edgeIds[0]).toEqual(reportInternalId);
   });
   it('should test environnement deleted', async () => {
     const DELETE_TAXII_QUERY = gql`
