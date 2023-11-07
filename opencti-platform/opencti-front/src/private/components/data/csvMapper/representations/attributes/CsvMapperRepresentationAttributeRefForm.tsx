@@ -80,25 +80,11 @@ CsvMapperRepresentationAttributeRefFormProps
 
   const { schema } = useAuth();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
-  const relationshipTypes = resolveTypesForRelationship(
-    schemaRelationsTypesMapping,
-    entityType,
-    attribute.key,
-    fromType,
-    toType,
-  );
-  const relationshipRefTypes = resolveTypesForRelationshipRef(
-    schemaRelationsRefTypesMapping,
-    entityType,
-    attribute.key,
-  );
-  const options = representations
+
+  const filteredOptions = ((representationsOptions: Representation[]) => representationsOptions
     .filter((r) => {
-      return [...relationshipTypes, ...relationshipRefTypes].includes(
-        r.target.entity_type,
-      );
+      return r.id !== representation.id;
     })
-    .filter((r) => r.id !== representation.id)
     .filter((r) => {
       if (attribute.key === 'from' && toId) {
         return r.id !== toId;
@@ -107,7 +93,34 @@ CsvMapperRepresentationAttributeRefFormProps
         return r.id !== fromId;
       }
       return true;
-    });
+    }));
+
+  let options;
+
+  // For both entity types, whether they are related-to or revoked-by,
+  // we don't need to resolve the different types, as they can link any entity between them.
+  if (entityType === 'related-to' || entityType === 'revoked-by') {
+    options = filteredOptions(representations);
+  } else {
+    const relationshipTypes = resolveTypesForRelationship(
+      schemaRelationsTypesMapping,
+      entityType,
+      attribute.key,
+      fromType,
+      toType,
+    );
+    const relationshipRefTypes = resolveTypesForRelationshipRef(
+      schemaRelationsRefTypesMapping,
+      entityType,
+      attribute.key,
+    );
+    options = filteredOptions(representations
+      .filter((r) => {
+        return [...relationshipTypes, ...relationshipRefTypes].includes(
+          r.target.entity_type,
+        );
+      }));
+  }
 
   // -- ERRORS --
 
