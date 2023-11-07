@@ -21,7 +21,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { FilterGroup, initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {

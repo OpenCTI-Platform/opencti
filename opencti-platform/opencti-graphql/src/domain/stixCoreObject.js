@@ -341,9 +341,8 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
   const argsFilters = { search, orderBy, orderMode, filters, relationship_type, elementId };
-  const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const listParams = exportTransformFilters(argsFilters, ordersOpts);
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };

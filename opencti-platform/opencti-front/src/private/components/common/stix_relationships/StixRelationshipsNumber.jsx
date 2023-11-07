@@ -80,7 +80,7 @@ const StixRelationshipsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters.filters;
+    let filtersContent = selection.filters?.filters ?? [];
     const relationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
       ?.values || null;
     const elementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;

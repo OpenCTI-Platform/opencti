@@ -98,7 +98,7 @@ const AuditsNumber = ({
     }
     const selection = dataSelection[0];
     let types = ['History', 'Activity'];
-    const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
+    const entityTypeFilter = selection.filters?.filters ? findFilterFromKey(selection.filters.filters, 'entity_type') : undefined;
     if (
       entityTypeFilter
       && entityTypeFilter.values.length > 0
@@ -112,17 +112,17 @@ const AuditsNumber = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'timestamp';
-    const filtersContent = selection.filters.filters((f) => f.key !== 'entity_type');
+    const filtersContent = (selection.filters?.filters ?? []).filter((f) => f.key !== 'entity_type');
     if (startDate) {
       filtersContent.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
     }
     if (endDate) {
       filtersContent.push({ key: dateAttribute, values: [endDate], operator: 'lt' });
     }
-    const filters = {
+    const filters = selection.filters ? {
       ...selection.filters,
       filters: filtersContent,
-    };
+    } : undefined;
     return (
       <QueryRenderer
         query={auditsNumberNumberQuery}

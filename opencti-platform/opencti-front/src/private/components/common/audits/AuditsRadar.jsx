@@ -228,7 +228,7 @@ const AuditsRadar = ({
       );
     }
     const selection = dataSelection[0];
-    let filtersContent = selection.filters.filters;
+    let filtersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = R.head(
       filtersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['History', 'Activity'];

@@ -208,7 +208,7 @@ const StixCoreObjectsDonut = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFiltersContent = selection.filters.filters;
+    let finalFiltersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = R.head(
       finalFiltersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
