@@ -23,7 +23,6 @@ export const IDS_FILTER = 'ids';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const INSTANCE_FILTER = 'elementId';
-export const NEGATION_FILTER_SUFFIX = '_not_eq';
 export const RESOLUTION_FILTERS = [
   LABEL_FILTER,
   MARKING_FILTER,
@@ -34,13 +33,6 @@ export const RESOLUTION_FILTERS = [
   RELATION_FROM,
   RELATION_TO,
   INSTANCE_FILTER,
-];
-export const ENTITY_FILTERS = [
-  INSTANCE_FILTER,
-  RELATION_FROM,
-  RELATION_TO,
-  CREATED_BY_FILTER,
-  OBJECT_CONTAINS_FILTER,
 ];
 // Values
 export const LABEL_FILTER = INPUT_LABELS;
@@ -58,13 +50,23 @@ export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const RELATION_FROM_TYPES = 'fromTypes';
 export const RELATION_TO_TYPES = 'toTypes';
 
-export const extractFilterIdsToResolve = (filters) => {
+// list of the special filtering keys (= key with a complex behavior)
+// the first element of the map is the frontend key
+// the second element is the converted key used in backend if different from the first element
+export const specialFilterKeysMap = new Map([
+  ['sightedBy', buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
+  ['elementId', buildRefRelationKey('*')],
+  ['connections', 'connections'], // for nested filters
+  ['rel_object', 'rel_object'],
+  ['creator_id', 'creator_id'],
+  ['fromId', 'fromId'], // nested relation for the from of a relationship
+  ['toId', 'toId'], // nested relation for the to of a relationship
+]);
+
+export const extractFilterIdsToResolveForCache = (filters) => {
   const filterEntries = Object.entries(filters);
   return filterEntries
-    .filter(([key]) => RESOLUTION_FILTERS
-      .map((r) => [r, r + NEGATION_FILTER_SUFFIX])
-      .flat()
-      .includes(key))
+    .filter(([key]) => RESOLUTION_FILTERS.includes(key))
     .map(([, values]) => values.map((v) => v.id))
     .flat();
 };
@@ -655,11 +657,9 @@ const convertFilterKeys = (inputFilters) => {
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
       const convertedFilterKeys = filterKeys
-        .map((key) => { // 1. convert special keys // TODO improvement with a map containing special keys
-          if (key === 'elementId') { // TODO check if necessary (or if already converted in nested)
-            return buildRefRelationKey('*');
-          } if (key === 'sightedBy') {
-            return buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP);
+        .map((key) => { // 1. convert special keys
+          if (specialFilterKeysMap.has(key)) {
+            return specialFilterKeysMap.get(key);
           }
           return key;
         })
@@ -682,19 +682,18 @@ export const checkedAndConvertedFilters = (filters) => {
   if (isNotEmptyFilters(filters)) {
     const keys = extractFilterKeys(filters)
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-    // TODO improvement: for attributes of type json/dictionnary: check the second part of the key exists for the attribute
     if (keys.length > 0) {
       let incorrectKeys = keys;
       // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
-      const availableSpecialKeys = ['rel_object', 'rel_related-to', 'connections', 'sightedBy'];
+      const specialKeys = Array.from(specialFilterKeysMap.keys());
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableStixCoreRelations = availableStixCoreRelationships();
-      const extendedAvailableStixCoreRelations = availableStixCoreRelations.concat(availableStixCoreRelations.map((relationName) => `rel_${relationName}.internal_id`));
+      const extendedAvailableStixCoreRelations = availableStixCoreRelations.concat(availableStixCoreRelations.map((relationName) => `rel_${relationName}`)); // for relations entity ids contained in an entity
       const availableKeys = availableAttributes
         .concat(availableRelations)
         .concat(extendedAvailableStixCoreRelations)
-        .concat(availableSpecialKeys);
+        .concat(specialKeys);
       keys.forEach((k) => {
         if (availableKeys.includes(k)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
