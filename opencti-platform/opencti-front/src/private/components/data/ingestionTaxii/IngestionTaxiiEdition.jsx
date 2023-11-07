@@ -82,7 +82,7 @@ const IngestionTaxiiEditionContainer = ({
           finalName = 'authentication_value';
           finalValue = `${
             ingestionTaxii.authentication_value.split(':')[0]
-          }:${value}:${ingestionTaxii.authentication_value.split(':')[2]}}`;
+          }:${value}:${ingestionTaxii.authentication_value.split(':')[2]}`;
         }
         if (name === 'ca') {
           finalName = 'authentication_value';
