@@ -249,7 +249,7 @@ const StixRelationshipsHorizontalBars = ({
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       console.log('selection', selection);
-      filtersContent = selection.filters.filters;
+      filtersContent = selection.filters?.filters ?? [];
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';

@@ -240,7 +240,7 @@ const StixRelationshipsRadar = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersContent = selection.filters.filters;
+      filtersContent = selection.filters?.filters ?? [];
       dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
         ?.values || null;
       dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;

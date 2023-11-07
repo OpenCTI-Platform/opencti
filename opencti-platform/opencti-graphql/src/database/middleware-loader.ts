@@ -229,7 +229,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     filters: filters ?? [] as Filter[],
     filterGroups: [],
   } : filters as FilterGroup;
-  const filtersContent = finalFilters?.filters ?? [];
+  const filtersContent = finalFilters.filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
     filtersContent.push({ key: buildRefRelationKey(relation), values: [id] });
@@ -327,9 +327,9 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     ...cleanedArgs,
     types: relationsToGet,
     filters: {
-      mode: finalFilters?.mode ?? 'and',
+      mode: finalFilters.mode ?? 'and',
       filters: filtersContent,
-      filterGroups: finalFilters?.filterGroups ?? [],
+      filterGroups: finalFilters.filterGroups ?? [],
     }
   };
 };
@@ -445,9 +445,9 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   // Override some special filters
   builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
   const customFilters = {
-    mode: newFilters?.mode ?? 'and',
+    mode: newFilters.mode ?? 'and',
     filters: customFiltersContent,
-    filterGroups: newFilters?.filterGroups ?? [],
+    filterGroups: newFilters.filterGroups ?? [],
   };
   return { ...builtArgs, filters: customFilters };
 };
