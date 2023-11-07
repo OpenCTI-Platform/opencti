@@ -375,6 +375,7 @@ class IncidentTest(EntityTest):
             "description": "Incident by Green Group against a targets in the financial services sector.",
             "aliases": ["GREENEVIL", "GREVIL"],
             "confidence": 60,
+            "created": get_incident_start_date(),
             "first_seen": get_incident_start_date(),
             "last_seen": get_incident_end_date(),
             "objective": "World dominance",
@@ -682,6 +683,7 @@ class StixCoreRelationshipTest(EntityTest):
     def setup(self):
         self.incident = self.api_client.incident.create(
             name="My new incident",
+            created=get_incident_start_date(),
             description="We have been compromised",
             objective="Espionage",
         )

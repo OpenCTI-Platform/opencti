@@ -3,7 +3,7 @@
 """
 from enum import Enum
 
-from stix2 import CustomObject, CustomObservable
+from stix2 import CustomObject, CustomObservable, ExternalReference
 from stix2.properties import (
     ListProperty,
     ReferenceProperty,
@@ -150,6 +150,7 @@ class MultipleRefRelationship(Enum):
         ("response_types", ListProperty(StringProperty)),
         ("x_opencti_workflow_id", StringProperty()),
         ("x_opencti_assignee_ids", ListProperty(StringProperty)),
+        ("external_references", ListProperty(ExternalReference)),
         (
             "object_refs",
             ListProperty(
@@ -175,6 +176,7 @@ class CustomObjectCaseIncident:
         ("information_types", ListProperty(StringProperty)),
         ("x_opencti_workflow_id", StringProperty()),
         ("x_opencti_assignee_ids", ListProperty(StringProperty)),
+        ("external_references", ListProperty(ExternalReference)),
         (
             "object_refs",
             ListProperty(
