@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
+import InputLabel from '@mui/material/InputLabel';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 
@@ -21,16 +22,15 @@ const VisuallyHiddenInput = styled('input')`
 `;
 
 interface CustomFileUploadProps {
-  setFieldValue:
-  (
+  setFieldValue: (
     field: string,
     value: File | string | undefined,
-    shouldValidate?: boolean | undefined
+    shouldValidate?: boolean | undefined,
   ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
   acceptMimeTypes?: string; // html input "accept" with MIME types only
-  sizeLimit?: number // in bytes
+  sizeLimit?: number; // in bytes
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -54,10 +54,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     lineHeight: '0.65rem',
   },
   div: {
+    marginTop: 20,
     width: '100%',
-  },
-  label: {
-    color: theme.palette.grey['400'],
   },
   error: {
     color: theme.palette.error.main,
@@ -81,19 +79,25 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   const [errorText, setErrorText] = useState('');
 
   const onChange = async (event: FormEvent) => {
-    const inputElement = (event.target as HTMLInputElement);
+    const inputElement = event.target as HTMLInputElement;
     const eventTargetValue = inputElement.value as string;
     const file = inputElement.files?.[0];
     const fileSize = file?.size || 0;
 
-    const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
+    const newFileName = eventTargetValue.substring(
+      eventTargetValue.lastIndexOf('\\') + 1,
+    );
     setFileNameForDisplay(truncate(newFileName, 60));
     setErrorText('');
 
     // check the file type; user might still provide something bypassing 'accept'
     // this will work only if accept is using MIME types only
     const acceptedList = acceptMimeTypes?.split(',').map((a) => a.trim()) || [];
-    if (acceptedList.length > 0 && !!file?.type && !acceptedList.includes(file?.type)) {
+    if (
+      acceptedList.length > 0
+      && !!file?.type
+      && !acceptedList.includes(file?.type)
+    ) {
       setErrorText(t('This file is not in the specified format'));
       return;
     }
@@ -106,7 +110,9 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
     await setFieldValue('file', inputElement.files?.[0]);
     if (isEmbeddedInExternalReferenceCreation) {
-      const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+      const externalIdValue = (
+        document.getElementById('external_id') as HTMLInputElement
+      ).value;
       if (!externalIdValue) {
         await setFieldValue('external_id', truncate(newFileName, 60));
       }
@@ -114,21 +120,16 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   };
 
   return (
-    <div
-      className={classes.div}
-    >
-      <label
-        htmlFor="label"
-        className={classes.label}
-      >
+    <div className={classes.div}>
+      <InputLabel shrink={true} variant="standard">
         {label ? t(label) : t('Associated file')}
-      </label>
-      <br/>
+      </InputLabel>
       <Box
         className={classNames({
           [classes.box]: true,
           [classes.boxError]: !!errorText,
-        })}>
+        })}
+      >
         <Button
           component="label"
           variant="contained"

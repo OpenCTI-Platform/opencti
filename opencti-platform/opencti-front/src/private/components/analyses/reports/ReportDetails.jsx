@@ -101,6 +101,9 @@ const styles = (theme) => ({
     width: 110,
     paddingRight: 20,
   },
+  relatedContainers: {
+    paddingTop: 0,
+  },
 });
 
 const ReportDetailsComponent = (props) => {
@@ -113,8 +116,12 @@ const ReportDetailsComponent = (props) => {
   });
   const expandable = report.relatedContainers.edges.length > 5;
 
-  const relatedContainers = R.take(expanded ? 200 : 5, report.relatedContainers.edges)
-    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== report.id);
+  const relatedContainers = R.take(
+    expanded ? 200 : 5,
+    report.relatedContainers.edges,
+  ).filter(
+    (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -171,48 +178,49 @@ const ReportDetailsComponent = (props) => {
         <Typography variant="h3" gutterBottom={true}>
           {t('Correlated reports')}
         </Typography>
-        <List>
+        <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
-                <ListItem
-                  key={report.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/analyses/reports/${relatedContainer.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer.name}
-                      </div>
-                    }
-                  />
-                  <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div className={classes.itemDate}>
-                    {fsd(relatedContainer.published)}
-                  </div>
-                  <div className={classes.itemMarking}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitionsEdges={
-                        relatedContainer.objectMarking.edges
+                  <ListItem
+                    key={report.id}
+                    dense={true}
+                    button={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/analyses/reports/${relatedContainer.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={relatedContainer.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div className={classes.itemText}>
+                          {relatedContainer.name}
+                        </div>
                       }
-                      limit={1}
                     />
-                  </div>
-                </ListItem>
+                    <div className={classes.itemAuthor}>
+                      {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    </div>
+                    <div className={classes.itemDate}>
+                      {fsd(relatedContainer.published)}
+                    </div>
+                    <div className={classes.itemMarking}>
+                      <ItemMarkings
+                        variant="inList"
+                        markingDefinitionsEdges={
+                          relatedContainer.objectMarking.edges
+                        }
+                        limit={1}
+                      />
+                    </div>
+                  </ListItem>
               );
-            }) : '-'}
+            })
+            : '-'}
         </List>
         {expandable && (
           <Button

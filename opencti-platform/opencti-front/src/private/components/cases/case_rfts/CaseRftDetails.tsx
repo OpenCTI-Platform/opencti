@@ -28,6 +28,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    position: 'relative',
+  },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text?.primary,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
   },
   item: {
     height: 50,
