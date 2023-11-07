@@ -11,6 +11,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { availableStixCoreRelationships } from '../database/stix';
+import { RELATION_OBJECT } from "../schema/stixRefRelationship";
 
 // Resolutions
 export const MARKING_FILTER = 'objectMarking';
@@ -57,7 +58,7 @@ export const specialFilterKeysMap = new Map([
   ['sightedBy', buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
   ['elementId', buildRefRelationKey('*')],
   ['connections', 'connections'], // for nested filters
-  ['rel_object', 'rel_object'],
+  [`rel_${RELATION_OBJECT}`, `rel_${RELATION_OBJECT}`],
   ['creator_id', 'creator_id'],
   ['fromId', 'fromId'], // nested relation for the from of a relationship
   ['toId', 'toId'], // nested relation for the to of a relationship
