@@ -32,6 +32,7 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { streamToString } from '../../database/file-storage';
 
 export const WORKSPACE_VERSION = '1.0.0';
 
@@ -143,32 +144,21 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
 
-function checkDashboardConfigurationImport(parsedData: any) {
+const checkDashboardConfigurationImport = (parsedData: any) => {
   if (parsedData.type !== 'dashboard') {
     throw FunctionalError('Invalid type. Please import OpenCTI dashboard-type only', { reason: parsedData.type });
   }
 
   if (parsedData.version !== WORKSPACE_VERSION) {
-    throw FunctionalError(`Invalid version. Your workspace version must match the current one. Actual version : ${WORKSPACE_VERSION}`);
+    throw FunctionalError(`Invalid version. Your workspace version must match the current one. Actual version : ${WORKSPACE_VERSION}`, { reason: parsedData.version });
   }
-}
+};
 
 export const workspaceImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const uploadedFile = await file;
   const readStream = uploadedFile.createReadStream();
-  let fileContent = '';
-  await new Promise<void>((resolve, reject) => {
-    readStream.on('data', (chunk) => {
-      fileContent += chunk.toString();
-    });
-    readStream.on('end', () => {
-      resolve();
-    });
-    readStream.on('error', (error) => {
-      reject(error);
-    });
-  });
-  const parsedData = JSON.parse(fileContent);
+  const fileContent = await streamToString(readStream);
+  const parsedData = JSON.parse(fileContent.toString());
   checkDashboardConfigurationImport(parsedData);
 
   const importWorkspaceCreation = await createEntity(context, user, parsedData, ENTITY_TYPE_WORKSPACE);
