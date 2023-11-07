@@ -11,7 +11,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { availableStixCoreRelationships } from '../database/stix';
-import { RELATION_OBJECT } from "../schema/stixRefRelationship";
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 
 // Resolutions
 export const MARKING_FILTER = 'objectMarking';
@@ -94,6 +94,9 @@ export const resolvedFiltersMapForUser = async (context, user, filters) => {
 };
 
 const adaptFiltersIdsContent = async (context, user, mainFilterGroup, resolvedMap) => {
+  if (!mainFilterGroup) {
+    return undefined;
+  }
   const adaptedFilters = [];
   const adaptedFilterGroups = [];
   const { filters = [] } = mainFilterGroup;
@@ -123,13 +126,11 @@ const adaptFiltersIdsContent = async (context, user, mainFilterGroup, resolvedMa
     }
     adaptedFilters.push({ ...filter, values });
   }
-  return (mainFilterGroup
-    ? {
-      mode: mainFilterGroup.mode,
-      filters: adaptedFilters,
-      filterGroups: adaptedFilterGroups,
-    }
-    : undefined);
+  return {
+    mode: mainFilterGroup.mode,
+    filters: adaptedFilters,
+    filterGroups: adaptedFilterGroups,
+  };
 };
 
 export const adaptFiltersIds = async (context, user, filterGroup) => {

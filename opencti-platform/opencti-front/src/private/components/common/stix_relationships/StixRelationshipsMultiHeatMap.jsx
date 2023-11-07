@@ -88,7 +88,7 @@ const StixRelationshipsMultiHeatMap = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filtersContent = selection.filters.filters;
+      let filtersContent = selection.filters?.filters ?? [];
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
@@ -98,7 +98,7 @@ const StixRelationshipsMultiHeatMap = ({
       const dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
       const dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
       const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      const finalFilters = filtersContent.filter(
+      filtersContent = filtersContent.filter(
         (n) => ![
           'relationship_type',
           'fromId',

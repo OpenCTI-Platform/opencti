@@ -61,7 +61,7 @@ const StixRelationshipsMultiVerticalBars = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filtersContent = selection.filters.filters;
+      const filtersContent = selection.filters?.filters ?? [];
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
@@ -87,7 +87,7 @@ const StixRelationshipsMultiVerticalBars = ({
         fromTypes: dataSelectionFromTypes,
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
-        filters: { ...selection.filters, filters: finalFilters },
+        filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
         dynamicFrom: selection.dynamicFrom,
         dynamicTo: selection.dynamicTo,
       };

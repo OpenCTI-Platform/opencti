@@ -1,8 +1,5 @@
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE, buildRefRelationKey, } from './general';
-import { RELATION_RELATED_TO } from './stixCoreRelationship';
-import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE, } from './general';
 import { schemaTypesDefinition } from './schema-types';
-import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from './stixRefRelationship';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
 export const ENTITY_DIRECTORY = 'Directory';

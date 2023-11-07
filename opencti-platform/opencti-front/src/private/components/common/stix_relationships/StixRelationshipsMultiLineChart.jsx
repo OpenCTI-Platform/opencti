@@ -61,7 +61,7 @@ const StixRelationshipsMultiLineChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filtersContent = selection.filters.filters;
+      const filtersContent = selection.filters?.filters ?? [];
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';

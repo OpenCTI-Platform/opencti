@@ -1260,7 +1260,7 @@ const StixRelationshipsTimeline = ({
   const { t, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters.filters;
+    let filtersContent = selection.filters?.filters ?? [];
     const relationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
     const fromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
