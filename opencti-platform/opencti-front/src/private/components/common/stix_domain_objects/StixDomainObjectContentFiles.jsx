@@ -251,9 +251,9 @@ class StixDomainObjectContentFiles extends Component {
                 secondaryAction={
                   <IconButton
                     onClick={this.submitDelete.bind(this, file.id)}
-                    size="large"
+                    size="small"
                   >
-                    <DeleteOutlined color="primary" />
+                    <DeleteOutlined color="primary" fontSize="small" />
                   </IconButton>
                 }
               >
@@ -346,9 +346,9 @@ class StixDomainObjectContentFiles extends Component {
                 secondaryAction={
                   <IconButton
                     onClick={this.submitDelete.bind(this, file.id)}
-                    size="large"
+                    size="small"
                   >
-                    <DeleteOutlined color="primary" />
+                    <DeleteOutlined color="primary" fontSize="small" />
                   </IconButton>
                 }
               >
@@ -406,9 +406,9 @@ class StixDomainObjectContentFiles extends Component {
                 secondaryAction={
                   <IconButton
                     onClick={this.submitDelete.bind(this, file.id)}
-                    size="large"
+                    size="small"
                   >
-                    <DeleteOutlined color="primary" />
+                    <DeleteOutlined color="primary" fontSize="small"/>
                   </IconButton>
                 }
               >
@@ -466,9 +466,9 @@ class StixDomainObjectContentFiles extends Component {
                 secondaryAction={
                   <IconButton
                     onClick={this.submitDelete.bind(this, file.id)}
-                    size="large"
+                    size="small"
                   >
-                    <DeleteOutlined color="primary" />
+                    <DeleteOutlined color="primary" fontSize="small"/>
                   </IconButton>
                 }
               >
