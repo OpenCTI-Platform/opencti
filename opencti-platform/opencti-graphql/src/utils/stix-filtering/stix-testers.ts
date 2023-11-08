@@ -30,6 +30,9 @@ import {
 } from '../filtering';
 import { logApp } from '../../config/conf';
 
+const PRIORITY_FILTER = 'priority';
+const SEVERITY_FILTER = 'severity';
+
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';
 const CREATOR_FILTER = 'creator_id';
@@ -96,7 +99,7 @@ export const testWorkflow = (stix: any, filter: Filter) => {
  * - createdBy is created_by_ref in stix (in first level or in extension)
  */
 export const testCreatedBy = (stix: any, filter: Filter) => {
-  const stixValues = [...toValidArray(stix.created_by_ref), ...toValidArray(stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref)];
+  const stixValues: string[] = [...toValidArray(stix.created_by_ref), ...toValidArray(stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref)];
   return testStringFilter(filter, stixValues);
 };
 
@@ -363,6 +366,10 @@ export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
       return testMainObservableType;
     case OBJECT_CONTAINS_FILTER:
       return testObjectContains;
+    case PRIORITY_FILTER:
+      return testPriority;
+    case SEVERITY_FILTER:
+      return testSeverity;
     case RELATION_FROM:
       return testRelationFrom;
     case RELATION_TO:
