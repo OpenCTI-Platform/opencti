@@ -82,6 +82,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   entityTypes?: Array<string>;
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
+  filters?: FilterGroup | null;
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
@@ -360,21 +361,6 @@ export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relat
 };
 
 // entities
-interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
-  connectionFormat?: boolean;
-  elementId?: string | Array<string>;
-  fromId?: string | Array<string>;
-  fromRole?: string;
-  toId?: string | Array<string>;
-  toRole?: string;
-  fromTypes?: Array<string>;
-  toTypes?: Array<string>;
-  types?: Array<string>;
-  entityTypes?: Array<string>;
-  relationshipTypes?: Array<string>;
-  elementWithTargetTypes?: Array<string>;
-}
-
 export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
   const { elementId, elementWithTargetTypes = [] } = args;

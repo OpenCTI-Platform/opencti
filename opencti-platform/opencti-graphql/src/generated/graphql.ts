@@ -7041,7 +7041,7 @@ export type Filter = {
 };
 
 export type FilterGroup = {
-  filterGroups: Array<InputMaybe<FilterGroup>>;
+  filterGroups: Array<FilterGroup>;
   filters: Array<Filter>;
   mode: FilterMode;
 };
