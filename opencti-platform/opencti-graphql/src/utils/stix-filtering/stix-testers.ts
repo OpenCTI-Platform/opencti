@@ -327,59 +327,46 @@ export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching
 };
 
 /**
+ * TODO: This mapping could be given by the schema, like we do with stix converters
+ */
+export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
+  // basic keys
+  [ASSIGNEE_FILTER]: testAssignee,
+  [CONFIDENCE_FILTER]: testConfidence,
+  [CREATED_BY_FILTER]: testCreatedBy,
+  [CREATOR_FILTER]: testCreator,
+  [DETECTION_FILTER]: testDetection,
+  [INDICATOR_FILTER]: testIndicator,
+  [LABEL_FILTER]: testLabel,
+  [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
+  [MARKING_FILTER]: testMarkingFilter,
+  [OBJECT_CONTAINS_FILTER]: testObjectContains,
+  [PATTERN_FILTER]: testPattern,
+  [PRIORITY_FILTER]: testPriority,
+  [REVOKED_FILTER]: testRevoked,
+  [SEVERITY_FILTER]: testSeverity,
+  [SCORE_FILTER]: testScore,
+  [TYPE_FILTER]: testEntityType,
+  [WORKFLOW_FILTER]: testWorkflow,
+
+  // special keys (more complex behavior)
+  [INSTANCE_FILTER]: testInstanceType,
+  [RELATION_FROM]: testRelationFrom,
+  [RELATION_FROM_TYPES]: testRelationFromTypes,
+  [RELATION_TO]: testRelationTo,
+  [RELATION_TO_TYPES]: testRelationToTypes,
+};
+
+/**
  * Gives the right tester function according to the filter key.
  * If the key is not handled, returns a function that always return false.
- * TODO: make it dependent on the schema.
  * @param key
  */
 export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
-  switch (key) {
-    case MARKING_FILTER:
-      return testMarkingFilter;
-    case TYPE_FILTER:
-      return testEntityType;
-    case INSTANCE_FILTER:
-      return testInstanceType;
-    case INDICATOR_FILTER:
-      return testIndicator;
-    case WORKFLOW_FILTER:
-      return testWorkflow;
-    case CREATED_BY_FILTER:
-      return testCreatedBy;
-    case CREATOR_FILTER:
-      return testCreator;
-    case ASSIGNEE_FILTER:
-      return testAssignee;
-    case LABEL_FILTER:
-      return testLabel;
-    case REVOKED_FILTER:
-      return testRevoked;
-    case DETECTION_FILTER:
-      return testDetection;
-    case SCORE_FILTER:
-      return testScore;
-    case CONFIDENCE_FILTER:
-      return testConfidence;
-    case PATTERN_FILTER:
-      return testPattern;
-    case MAIN_OBSERVABLE_TYPE_FILTER:
-      return testMainObservableType;
-    case OBJECT_CONTAINS_FILTER:
-      return testObjectContains;
-    case PRIORITY_FILTER:
-      return testPriority;
-    case SEVERITY_FILTER:
-      return testSeverity;
-    case RELATION_FROM:
-      return testRelationFrom;
-    case RELATION_TO:
-      return testRelationTo;
-    case RELATION_FROM_TYPES:
-      return testRelationFromTypes;
-    case RELATION_TO_TYPES:
-      return testRelationToTypes;
-    default:
-      logApp.warn(`Unrecognized filter key when matching stix object: [${key}]`);
-      return () => false;
+  if (!FILTER_KEY_TESTERS_MAP[key]) {
+    logApp.warn(`Unrecognized filter key when matching stix object: [${key}]`);
+    return () => false;
   }
+
+  return FILTER_KEY_TESTERS_MAP[key];
 };
