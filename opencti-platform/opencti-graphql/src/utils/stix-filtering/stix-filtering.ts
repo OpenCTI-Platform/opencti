@@ -1,5 +1,5 @@
 import { INDICATOR_FILTER, } from '../filtering';
-import { FILTER_KEY_TESTERS_MAP, getStixTesterFromFilterKey } from './stix-testers';
+import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
 import { testFilterGroup } from './boolean-logic-engine';
 import type { Filter, FilterGroup } from './filter-group';
 import { getEntitiesMapFromCache } from '../../database/cache';
@@ -8,7 +8,6 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixId, StixObject } from '../../types/stix-common';
 import { extractStixRepresentative } from '../../database/stix-representative';
-import { logApp } from '../../config/conf';
 
 // TODO: changed by Cathia for #2686, to integrate properly next
 const LABEL_FILTER = 'objectLabel';

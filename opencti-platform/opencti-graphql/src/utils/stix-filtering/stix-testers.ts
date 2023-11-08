@@ -28,7 +28,6 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER
 } from '../filtering';
-import { logApp } from '../../config/conf';
 
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';
