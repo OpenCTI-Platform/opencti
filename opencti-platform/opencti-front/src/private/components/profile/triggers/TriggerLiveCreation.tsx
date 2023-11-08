@@ -140,6 +140,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const onReset = () => {
     handleClose?.();
     setFilters({});
+    setInstanceTrigger(false);
+    setInstanceFilters({});
   };
   const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
     setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
@@ -224,8 +226,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           name="instance_trigger"
           label={t('Instance trigger')}
           tooltip={instanceTriggerDescription}
-        containerstyle={{ marginTop: 20 }}
-        onChange={() => onChangeInstanceTrigger(setFieldValue)}
+          containerstyle={{ marginTop: 20 }}
+          onChange={() => onChangeInstanceTrigger(setFieldValue)}
       />
       <Field
           component={AutocompleteField}
@@ -264,7 +266,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             />
           </div>)
         : (
-              <span>
+          <span>
             <div style={{ marginTop: 35 }}>
               <Filters
                   variant="text"
@@ -304,8 +306,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   availableRelationFilterTypes={undefined}
               />
             </div>
-          <div className="clearfix" />
-        </span>
+            <div className="clearfix" />
+          </span>
         )
       }
       </>;
