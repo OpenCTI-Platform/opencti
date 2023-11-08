@@ -37,7 +37,7 @@ import {
 } from '../database/engine';
 import { fileListingForIndexing, getFileContent } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
-import { generateInternalId } from '../schema/identifier';
+import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -88,18 +88,8 @@ const indexImportedFiles = async (
     const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
     if (managerConfiguration?.manager_running) {
       const files = filesBulk[index];
-      // search documents by file id (to update if already indexed)
-      const searchOptions = {
-        first: files.length,
-        connectionFormat: false,
-        highlight: false,
-        fileIds: files.map((f) => f.id),
-        fields: ['internal_id', 'file_id'],
-      };
-      const existingFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
       const filesToLoad = files.map((file) => {
-        const existingFile = existingFiles.find((e: { file_id: string, internal_id: string }) => e.file_id === file.id);
-        const internalId = existingFile ? existingFile.internal_id : generateInternalId();
+        const internalId = generateFileIndexId(file.id);
         const entityId = file.metaData.entity_id;
         return {
           id: file.id,
