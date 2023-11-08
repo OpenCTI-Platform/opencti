@@ -100,7 +100,7 @@ enum FilterOperator {
 input FilterGroup {
   mode: FilterMode!
   filters: [Filter!]!
-  filterGroups: [FilterGroup]!
+  filterGroups: [FilterGroup!]!
 }
 input Filter {
   key: [String!]!

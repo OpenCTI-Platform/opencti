@@ -7,7 +7,7 @@ import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import {
   type EditContext,
-  type EditInput,
+  type EditInput, FilterMode,
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,
@@ -51,7 +51,7 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
-        mode: 'and',
+        mode: 'and' as FilterMode,
         filters: [{ key: ['type'], values: [type] }],
         filterGroups: [],
       },
