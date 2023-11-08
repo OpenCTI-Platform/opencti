@@ -236,7 +236,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can not import workspace configuration, given invalid dashboard version import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_version.json'));
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_5.11.0_version.json'));
     const upload = new Upload();
     const fileUpload = {
       fieldName: 'fieldName',

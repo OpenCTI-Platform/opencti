@@ -144,13 +144,20 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
 
-const checkDashboardConfigurationImport = (parsedData: any) => {
+export const checkDashboardConfigurationImport = (parsedData: any) => {
   if (parsedData.type !== 'dashboard') {
     throw FunctionalError('Invalid type. Please import OpenCTI dashboard-type only', { reason: parsedData.type });
   }
 
-  if (parsedData.version !== WORKSPACE_VERSION) {
-    throw FunctionalError(`Invalid version. Your workspace version must match the current one. Actual version : ${WORKSPACE_VERSION}`, { reason: parsedData.version });
+  const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
+  const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
+    const [major, minor, patch] = openCtiVersion.split('.').map((number) => parseInt(number, 10));
+    const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10));
+    return major >= openCtiMajor && minor >= openCtiMinor && patch >= openCtiPatch;
+  };
+
+  if (!isCompatibleOpenCtiVersion(parsedData.openCTI_version)) {
+    throw FunctionalError(`Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`, { reason: parsedData.openCTI_version });
   }
 };
 
