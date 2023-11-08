@@ -193,7 +193,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       filters: JSON.stringify({
         mode: 'and',
         filters: [{
-          key: 'elementId',
+          key: 'connectedToId',
           values: [instanceId],
           operator: 'eq',
           mode: 'or',
@@ -266,14 +266,14 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
     const filterGroup = JSON.parse(filters ?? '') as FilterGroup || undefined;
-    const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'elementId')?.values?.filter((id) => id !== instanceId) ?? [];
+    const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'connectedToId')?.values?.filter((id) => id !== instanceId) ?? [];
     const newInstanceFilters = newInstanceValues.length > 0
       ? {
         ...filterGroup,
         filters: [
-          ...filterGroup.filters.filter((f) => f.key !== 'elementId' || f.operator !== 'eq'),
+          ...filterGroup.filters.filter((f) => f.key !== 'connectedToId' || f.operator !== 'eq'),
           {
-            key: 'elementId',
+            key: 'connectedToId',
             values: newInstanceValues,
             operator: 'eq',
             mode: 'or',
@@ -282,7 +282,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       }
       : {
         mode: filterGroup?.mode ?? 'and',
-        filters: filterGroup?.filters.filter((f) => f.key !== 'elementId' || f.operator !== 'eq') ?? [],
+        filters: filterGroup?.filters.filter((f) => f.key !== 'connectedToId' || f.operator !== 'eq') ?? [],
         filterGroups: filterGroup?.filterGroups ?? [],
       };
     commitFieldPatch({
@@ -391,8 +391,8 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
 
   const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
     if (triggerValue.filters) {
-      const elementIdFilter = findFilterFromKey(JSON.parse(triggerValue.filters)?.filters ?? [], 'elementId');
-      return elementIdFilter?.values && elementIdFilter.values.length > 1;
+      const connectedToIdFilter = findFilterFromKey(JSON.parse(triggerValue.filters)?.filters ?? [], 'connectedToId');
+      return connectedToIdFilter?.values && connectedToIdFilter.values.length > 1;
     }
     return false;
   };
