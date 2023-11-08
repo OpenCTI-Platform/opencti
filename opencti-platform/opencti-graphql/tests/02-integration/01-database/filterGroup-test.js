@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { addMarkingDefinition } from '../../../src/domain/markingDefinition';
+import { distributionRelations } from '../../../src/database/middleware';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { ID_INTERNAL } from '../../../src/schema/general';
 
 // test queries involving dynamic filters
 
@@ -89,15 +93,13 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     `;
     // Create a marking
     const marking1Input = {
-      definition_type: 'TEST',
-      definition: 'TEST:1',
-      x_opencti_color: '#ffffff',
+      definition_type: 'TLP',
+      definition: 'TLP:NEW',
       x_opencti_order: 1,
     };
     const marking2Input = {
       definition_type: 'TEST',
       definition: 'TEST:2',
-      x_opencti_color: '#ffffff',
       x_opencti_order: 2,
     };
     const marking1 = await addMarkingDefinition(testContext, ADMIN_USER, marking1Input);
@@ -624,6 +626,21 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    // --- 11. Aggregation with filters --- //
+    // count the number of entities with each marking
+    const distributionArgs = {
+      field: ID_INTERNAL,
+      isTo: true,
+      operation: 'count',
+      relationship_type: RELATION_OBJECT_MARKING,
+      toRole: 'object-marking_to',
+      toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
+    };
+    const distribution = await distributionRelations(testContext, ADMIN_USER, distributionArgs);
+    expect(distribution.length).toEqual(2); // there are 2 markings
+    const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
+    expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
+    expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
