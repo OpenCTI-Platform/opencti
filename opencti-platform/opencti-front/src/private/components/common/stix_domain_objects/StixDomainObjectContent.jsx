@@ -277,6 +277,7 @@ class StixDomainObjectContentComponent extends Component {
         this.setState({
           onProgressExportFileName: undefined,
         });
+        this.subscription.unsubscribe();
       }
     }
   }
