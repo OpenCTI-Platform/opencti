@@ -65,7 +65,7 @@ const syncValidation = (t) => Yup.object().shape({
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
   synchronized: Yup.bool(),
-  user_id: Yup.object().nullable(),
+  user_id: Yup.mixed().nullable(),
 });
 
 const SyncEditionContainer = ({ synchronizer }) => {

@@ -39,7 +39,7 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
   cert: Yup.string().nullable(),
   key: Yup.string().nullable(),
   ca: Yup.string().nullable(),
-  user_id: Yup.object().nullable(),
+  user_id: Yup.mixed().nullable(),
   added_after_start: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
@@ -149,6 +149,7 @@ const IngestionTaxiiEditionContainer = ({
       'added_after_start',
     ]),
   )(ingestionTaxii);
+
   return (
     <Drawer
       title={t('Update a TAXII ingester')}
