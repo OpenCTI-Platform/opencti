@@ -109,6 +109,7 @@ export const entityFilters = [
   'objects',
   'indicates',
   'targets',
+  'connectedToId',
 ];
 
 export const booleanFilters = [
