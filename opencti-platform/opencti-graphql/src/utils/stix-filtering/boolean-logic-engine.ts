@@ -72,11 +72,11 @@ export const testGenericFilter = <T extends string | number | boolean>({ mode, o
 
 /**
  * Implementation of testGenericFilter for string values.
- * String comparison is insensitive to case.
+ * String comparison is insensitive to case, and we trim values by default.
  */
 export const testStringFilter = (filter: FilterExcerpt, stixCandidates: string[]) => {
-  const filterValuesLowerCase = filter.values.map((v) => v.toLowerCase());
-  const stixValuesLowerCase = stixCandidates.map((v) => v.toLowerCase());
+  const filterValuesLowerCase = filter.values.map((v) => v.toLowerCase().trim());
+  const stixValuesLowerCase = stixCandidates.map((v) => v.toLowerCase().trim());
   return testGenericFilter<string>(filter, filterValuesLowerCase, stixValuesLowerCase);
 };
 
@@ -92,10 +92,10 @@ export const testBooleanFilter = (filter: FilterExcerpt, stixCandidate: boolean 
 
 /**
  * Implementation of testGenericFilter for numerical values.
- * Filter values are parsed as integers.
+ * Filter values are parsed as floats.
  */
 export const testNumericFilter = (filter: FilterExcerpt, stixCandidate: number | null | undefined) => {
-  const filterValuesAsNumbers = filter.values.map((v) => parseInt(v, 10)).filter((n) => !Number.isNaN(n));
+  const filterValuesAsNumbers = filter.values.map((v) => parseFloat(v)).filter((n) => !Number.isNaN(n));
   return testGenericFilter<number>(filter, filterValuesAsNumbers, toValidArray(stixCandidate));
 };
 
@@ -158,28 +158,28 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  * It only takes care of the recursion mechanism.
  * @param data data to test
  * @param filterGroup complex filter group object with nested groups and filters
- * @param getTesterFromFilterKey function that gives a function to test a filter, according to the filter key
+ * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, getTesterFromFilterKey: (key: string) => TesterFunction) : boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
       // note that we are not compatible with multiple keys yet, so we'll always check the first one only
-      results.push(filterGroup.filters.every((filter) => getTesterFromFilterKey(filter.key[0])(data, filter)));
+      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, getTesterFromFilterKey)));
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
 
   if (filterGroup.mode === 'or') {
     if (filterGroup.filters.length > 0) {
-      return filterGroup.filters.some((filter) => getTesterFromFilterKey(filter.key[0])(data, filter));
+      return filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter));
     }
     if (filterGroup.filterGroups.length > 0) {
-      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, getTesterFromFilterKey));
+      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap));
     }
   }
 

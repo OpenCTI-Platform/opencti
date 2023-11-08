@@ -40,7 +40,7 @@ const OBJECT_CONTAINS_FILTER = 'objects';
 // missing in filtering.js
 const PRIORITY_FILTER = 'priority';
 const SEVERITY_FILTER = 'severity';
-const CONECTED_TO_FILTER = 'connectedToId';
+const CONNECTED_TO_FILTER = 'connectedToId';
 
 /*
   ['killChainPhase', 'killChainPhases'],
@@ -355,7 +355,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [INSTANCE_FILTER]: testInstance,
 
   // special keys (more complex behavior)
-  [CONECTED_TO_FILTER]: testConnectedTo,
+  [CONNECTED_TO_FILTER]: testConnectedTo,
   [RELATION_FROM]: testRelationFrom,
   [RELATION_FROM_TYPES]: testRelationFromTypes,
   [RELATION_TO]: testRelationTo,
@@ -368,10 +368,5 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
  * @param key
  */
 export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
-  if (!FILTER_KEY_TESTERS_MAP[key]) {
-    logApp.warn(`Unrecognized filter key when matching stix object: [${key}]`);
-    return () => false;
-  }
-
   return FILTER_KEY_TESTERS_MAP[key];
 };

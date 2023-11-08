@@ -150,10 +150,10 @@ describe('Filter Boolean logic engine ', () => {
 
   describe('testNumericFilter', () => {
     it('tests OR mode', () => {
-      expect(engine.testNumericFilter({ mode: 'or', operator: 'eq', values: ['14', '12'] }, 14)).toEqual(true);
-      expect(engine.testNumericFilter({ mode: 'or', operator: 'eq', values: ['5', '17'] }, 14)).toEqual(false);
+      expect(engine.testNumericFilter({ mode: 'or', operator: 'eq', values: ['14.0', '12'] }, 14)).toEqual(true);
+      expect(engine.testNumericFilter({ mode: 'or', operator: 'eq', values: ['5', '17'] }, 14.55)).toEqual(false);
       expect(engine.testNumericFilter({ mode: 'or', operator: 'not_eq', values: ['5', '17'] }, 52)).toEqual(true);
-      expect(engine.testNumericFilter({ mode: 'or', operator: 'not_eq', values: ['52'] }, 52)).toEqual(false);
+      expect(engine.testNumericFilter({ mode: 'or', operator: 'not_eq', values: ['52.89'] }, 52.89)).toEqual(false);
       expect(engine.testNumericFilter({ mode: 'or', operator: 'gt', values: ['5', '17'] }, 52)).toEqual(true);
       expect(engine.testNumericFilter({ mode: 'or', operator: 'gt', values: ['5', '17'] }, 2)).toEqual(false);
       expect(engine.testNumericFilter({ mode: 'or', operator: 'gte', values: ['52'] }, 52)).toEqual(true);
@@ -325,25 +325,27 @@ describe('Filter Boolean logic engine ', () => {
       };
 
       // fake testers for our dummy data (a simplistic version)
-      const getTesterFromKey = (key: string) => {
-        return (data: any, filter: Filter) => {
-          if (data[key] === undefined) return engine.testStringFilter(filter, []);
-          if (typeof data[key] === 'number') return engine.testNumericFilter(filter, data[key]);
-          if (typeof data[key] === 'string') return engine.testStringFilter(filter, [data[key]]);
-          if (Array.isArray(data[key])) return engine.testStringFilter(filter, data[key]);
-          return false;
-        };
+      const testerByFilterKeyMap = {
+        id: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.id]),
+        refs: (data: any, filter: Filter) => engine.testStringFilter(filter, data.refs),
+        score: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.score),
+        labels: (data: any, filter: Filter) => engine.testStringFilter(filter, data.labels),
+        color: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.color]),
+        height: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.height),
+        posX: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posX),
+        posY: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posY),
+        options: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.options),
       };
 
       // our example data+filter matches
-      expect(engine.testFilterGroup(dataMatch, filterGroup, getTesterFromKey)).toEqual(true);
+      expect(engine.testFilterGroup(dataMatch, filterGroup, testerByFilterKeyMap)).toEqual(true);
 
       // failing F4 will propagate to failing FG
       const dataNoMatch1 = {
         ...dataMatch,
         options: ['opt1']
       };
-      expect(engine.testFilterGroup(dataNoMatch1, filterGroup, getTesterFromKey)).toEqual(false);
+      expect(engine.testFilterGroup(dataNoMatch1, filterGroup, testerByFilterKeyMap)).toEqual(false);
 
       // failing F6 and F7 will propagate to failing FG
       const dataNoMatch2 = {
@@ -351,14 +353,14 @@ describe('Filter Boolean logic engine ', () => {
         color: 'yellow',
         height: 99,
       };
-      expect(engine.testFilterGroup(dataNoMatch2, filterGroup, getTesterFromKey)).toEqual(false);
+      expect(engine.testFilterGroup(dataNoMatch2, filterGroup, testerByFilterKeyMap)).toEqual(false);
 
       // failing F6 and F7 but matching F9 will propagate to matching FG
       const dataMatch2 = {
         ...dataNoMatch2,
         posY: 8,
       };
-      expect(engine.testFilterGroup(dataMatch2, filterGroup, getTesterFromKey)).toEqual(true);
+      expect(engine.testFilterGroup(dataMatch2, filterGroup, testerByFilterKeyMap)).toEqual(true);
     });
   });
 });

@@ -101,4 +101,57 @@ describe('Stix Filtering', () => {
     expect(await isStixMatchFilterGroup(testContext, ADMIN_USER, stixReport, filterGroup)).toEqual(false);
     expect(await isStixMatchFilterGroup(testContext, ADMIN_USER, stixIndicator, filterGroup)).toEqual(true);
   });
+
+  it('throws error when filter group is invalid', async () => {
+    const multipleKeys: FilterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['entity_type'], mode: 'or', operator: 'eq', values: ['Report'] }, // valid
+        { key: ['createdBy', 'objectAssignee'], mode: 'or', operator: 'eq', values: ['id1'] }, // invalid
+      ],
+      filterGroups: [],
+    };
+    await expect(() => isStixMatchFilterGroup(testContext, ADMIN_USER, stixReport, multipleKeys)).rejects.toThrowError('Stix filtering can only be executed on a unique filter key');
+
+    const multipleKeysNested: FilterGroup = {
+      mode: 'and',
+      filters: [],
+      filterGroups: [{
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], mode: 'or', operator: 'eq', values: ['Report'] }, // valid
+          { key: ['createdBy', 'objectAssignee'], mode: 'or', operator: 'eq', values: ['id1'] }, // invalid
+        ],
+        filterGroups: [],
+      }],
+    };
+
+    await expect(() => isStixMatchFilterGroup(testContext, ADMIN_USER, stixReport, multipleKeysNested)).rejects.toThrowError('Stix filtering can only be executed on a unique filter key');
+
+    const unhandledKeys: FilterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['entity_type'], mode: 'or', operator: 'eq', values: ['Report'] }, // valid
+        { key: ['bad_key'], mode: 'or', operator: 'eq', values: ['id1'] }, // invalid
+      ],
+      filterGroups: [],
+    };
+
+    await expect(() => isStixMatchFilterGroup(testContext, ADMIN_USER, stixReport, unhandledKeys)).rejects.toThrowError('Stix filtering is not compatible with the provided filter key');
+
+    const unhandledKeysNested: FilterGroup = {
+      mode: 'and',
+      filters: [],
+      filterGroups: [{
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], mode: 'or', operator: 'eq', values: ['Report'] }, // valid
+          { key: ['bad_key'], mode: 'or', operator: 'eq', values: ['id1'] }, // invalid
+        ],
+        filterGroups: [],
+      }],
+    };
+
+    await expect(() => isStixMatchFilterGroup(testContext, ADMIN_USER, stixReport, unhandledKeysNested)).rejects.toThrowError('Stix filtering is not compatible with the provided filter key');
+  });
 });
