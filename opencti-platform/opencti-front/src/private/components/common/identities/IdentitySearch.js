@@ -6,7 +6,7 @@ export const identitySearchIdentitiesSearchQuery = graphql`
     $search: String
     $first: Int
   ) {
-    identities(types: $types, search: $search, first: $first) {
+    identities(types: $types, orderBy: _score, orderMode: desc, search: $search, first: $first) {
       edges {
         node {
           id

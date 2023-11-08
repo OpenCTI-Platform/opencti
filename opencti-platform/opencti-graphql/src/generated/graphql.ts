@@ -8783,6 +8783,7 @@ export type IdentitiesFiltering = {
 };
 
 export enum IdentitiesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
