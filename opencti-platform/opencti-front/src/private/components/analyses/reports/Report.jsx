@@ -32,6 +32,7 @@ class ReportComponent extends Component {
           PopoverComponent={<ReportPopover />}
           enableSuggestions={true}
           enableQuickSubscription
+          enableQuickExport
         />
         <Grid
           container={true}

@@ -47,6 +47,7 @@ import useGranted, {
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 
 const useStyles = makeStyles({
   title: {
@@ -473,6 +474,7 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
     enableQuickSubscription,
+    enableQuickExport,
     investigationAddFromContainer,
   } = props;
   const classes = useStyles();
@@ -728,12 +730,12 @@ const ContainerHeader = (props) => {
         >
           {truncate(
             container.name
-              || container.attribute_abstract
-              || container.content
-              || container.opinion
-              || `${fd(container.first_observed)} - ${fd(
-                container.last_observed,
-              )}`,
+            || container.attribute_abstract
+            || container.content
+            || container.opinion
+            || `${fd(container.first_observed)} - ${fd(
+              container.last_observed,
+            )}`,
             80,
           )}
         </Typography>
@@ -859,6 +861,9 @@ const ContainerHeader = (props) => {
                           elementId={container.id}
                           variant="header"
                         />
+                      )}
+                      {enableQuickExport && (
+                        <StixCoreObjectFileExport id={container.id} />
                       )}
                       {enableSuggestions && (
                         <React.Fragment>

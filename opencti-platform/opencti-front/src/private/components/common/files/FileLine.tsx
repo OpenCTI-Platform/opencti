@@ -49,7 +49,6 @@ Transition.displayName = 'TransitionSlide';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: 10,
     height: 50,
   },
   itemNested: {
@@ -58,9 +57,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemText: {
     whiteSpace: 'nowrap',
+    marginRight: 10,
+  },
+  fileName: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    marginRight: 10,
   },
 }));
 
@@ -89,6 +90,7 @@ interface FileLineComponentProps {
   workNested?: boolean;
   isExternalReferenceAttachment?: boolean;
   onDelete?: () => void;
+  onClick?: () => void;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -102,6 +104,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   workNested,
   isExternalReferenceAttachment,
   onDelete,
+  onClick,
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
@@ -228,8 +231,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       <ListItem
         divider={true}
         dense={dense}
+        button={true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         rel="noopener noreferrer"
+        onClick={onClick}
       >
         <ListItemIcon>
           {isProgress && (
@@ -250,12 +255,16 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </ListItemIcon>
         <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
           <ListItemText
-            primary={<div className={classes.itemText}>{file?.name}</div>}
+            classes={{
+              root: classes.itemText,
+              primary: classes.fileName,
+            }}
+            primary={file?.name}
             secondary={
-              <div className={classes.itemText}>
+              <>
                 {file?.metaData?.mimetype ?? t('Pending')} (
                 {fld(file?.lastModified ?? moment())})
-              </div>
+              </>
             }
           />
         </Tooltip>
