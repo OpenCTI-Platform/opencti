@@ -35,7 +35,7 @@ export const up = async (next) => {
     ['hashes_SHA256', 'hashes.SHA-256'],
     ['hashes_SHA512', 'hashes.SHA-512'],
   ]);
-  const convertFilters = (filters, alreadyParsed = false) => {
+  const convertFilters = (filters, alreadyParsed = false, instance_trigger = false) => {
     const parsedFilters = alreadyParsed ? filters : JSON.parse(filters);
     // filters already in new format are not converted again (code protection in case of migration re-run)
     if (parsedFilters.mode) {
@@ -63,6 +63,9 @@ export const up = async (next) => {
         if (filterKeysConvertor.has(key)) {
           key = filterKeysConvertor.get(key);
         }
+        if (instance_trigger && key === 'elementId') { // rename element_id only for instance triggers
+          key = 'connectedToId';
+        }
         const values = last(pair);
         const valIds = values.map((v) => v.id);
         return { key, values: valIds, operator, mode };
@@ -85,9 +88,10 @@ export const up = async (next) => {
   let entitiesFiltersConvertor = {};
   entitiesToRefacto
     .forEach((n) => {
+      const instance_trigger = n.entity_type === ENTITY_TYPE_TRIGGER && n.instance_trigger === true;
       entitiesFiltersConvertor = {
         ...entitiesFiltersConvertor,
-        [n.internal_id]: convertFilters(n.filters),
+        [n.internal_id]: convertFilters(n.filters, false, instance_trigger),
       };
     });
 

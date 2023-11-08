@@ -263,7 +263,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       {instance_trigger
         ? (<div style={fieldSpacingContainerStyle}>
             <FilterAutocomplete
-                filterKey={'elementId'}
+                filterKey={'connectedToId'}
                 searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                 defaultHandleAddFilter={handleAddFilter}
                 inputValues={instanceFilters}

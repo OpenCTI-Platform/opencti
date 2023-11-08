@@ -62,6 +62,7 @@ export const specialFilterKeysMap = new Map([
   ['creator_id', 'creator_id'],
   ['fromId', 'fromId'], // nested relation for the from of a relationship
   ['toId', 'toId'], // nested relation for the to of a relationship
+  ['connectedToId', 'connectedToId'], // listened instances for an instance trigger
 ]);
 
 export const extractFilterIdsToResolveForCache = (filters) => {
