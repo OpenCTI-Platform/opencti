@@ -34,7 +34,7 @@ const ingestionRssValidation = (t) => Yup.object().shape({
   object_marking_refs: Yup.array().nullable(),
   report_types: Yup.array().nullable(),
   created_by_ref: Yup.mixed().nullable(),
-  user_id: Yup.object().nullable(),
+  user_id: Yup.mixed().nullable(),
   current_state_date: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
