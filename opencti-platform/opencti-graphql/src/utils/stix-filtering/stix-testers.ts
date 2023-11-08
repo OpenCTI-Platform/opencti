@@ -30,15 +30,17 @@ import {
 } from '../filtering';
 import { logApp } from '../../config/conf';
 
-const PRIORITY_FILTER = 'priority';
-const SEVERITY_FILTER = 'severity';
-
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';
 const CREATOR_FILTER = 'creator_id';
 const LABEL_FILTER = 'objectLabel';
 const MARKING_FILTER = 'objectMarking';
 const OBJECT_CONTAINS_FILTER = 'objects';
+
+// missing in filtering.js
+const PRIORITY_FILTER = 'priority';
+const SEVERITY_FILTER = 'severity';
+const CONECTED_TO_FILTER = 'connectedToId';
 
 /*
   ['killChainPhase', 'killChainPhases'],
@@ -293,18 +295,20 @@ export const testRefs = (stix: any, filter: Filter) => {
 };
 
 /**
- * INSTANCE TYPE (elementId)
+ * INSTANCE (elementId)
  * - elementId is id in stix extension
- * - useSideEventMatching arg to optionally test against relations and refs of the object
  */
-export const testInstanceType = (stix: any, filter: Filter, useSideEventMatching = false) => {
+export const testInstance = (stix: any, filter: Filter) => {
   const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.id);
-  if (!useSideEventMatching) {
-    // basic equality test between ids
-    return testStringFilter(filter, stixValues);
-  }
+  return testStringFilter(filter, stixValues);
+};
 
-  // useSideEventMatching is set ; only applies with "eq" operator
+/**
+ * CONNECTED TO
+ - depending on stix type (relation or sighting), we might search in different paths, aggregated
+ */
+export const testConnectedTo = (stix: any, filter: Filter) => {
+  // only applies with "eq" operator
   if (filter.operator !== 'eq') {
     return false;
   }
@@ -348,9 +352,10 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [SCORE_FILTER]: testScore,
   [TYPE_FILTER]: testEntityType,
   [WORKFLOW_FILTER]: testWorkflow,
+  [INSTANCE_FILTER]: testInstance,
 
   // special keys (more complex behavior)
-  [INSTANCE_FILTER]: testInstanceType,
+  [CONECTED_TO_FILTER]: testConnectedTo,
   [RELATION_FROM]: testRelationFrom,
   [RELATION_FROM_TYPES]: testRelationFromTypes,
   [RELATION_TO]: testRelationTo,

@@ -596,7 +596,7 @@ describe('Stix filter testers', () => {
       });
     });
 
-    describe('by From Types (key=fromTypes)', () => {
+    describe('by "From Types" (key=fromTypes)', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['fromTypes'],
@@ -616,7 +616,7 @@ describe('Stix filter testers', () => {
       });
     });
 
-    describe('by To Types (key=toTypes)', () => {
+    describe('by "To Types" (key=toTypes)', () => {
       it('should test positive for a stix object with matching filter', () => {
         let filter: Filter = {
           key: ['toTypes'],
@@ -637,7 +637,7 @@ describe('Stix filter testers', () => {
     });
   });
 
-  describe('by Instance (key=elementId)', () => {
+  describe('by Instance id (key=elementId)', () => {
     const stixWithExtId = stixSightings[0];
 
     it('should test positive for a stix object with matching filter', () => {
@@ -647,16 +647,7 @@ describe('Stix filter testers', () => {
         operator: 'eq',
         values: ['<some-id>', '679a695e-0b00-41e0-b78f-8c36bfbd9d57']
       };
-      expect(testers.testInstanceType(stixWithExtId, filter)).toEqual(true);
-
-      // TODO: handle this case:
-      //   let filter: Filter = {
-      //     key: ['elementId'],
-      //     mode: 'OR',
-      //     operator: 'eq',
-      //     values: ['<some-id>', 'identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023']
-      //   };
-      //   expect(testers.testInstanceType(stixRelationship, filter, true)).toEqual(true);
+      expect(testers.testInstance(stixWithExtId, filter)).toEqual(true);
 
       filter = {
         key: ['elementId'],
@@ -665,6 +656,38 @@ describe('Stix filter testers', () => {
         values: ['<some-id>']
       };
       expect(testers.testObjectContains(stixWithExtId, filter)).toEqual(false);
+    });
+  });
+
+  describe('by "Connected to" (key=elementId)', () => {
+    const stixRelationship = stixRelationships[0];
+    const stixSighting = stixSightings[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['connectedToId'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
+      };
+      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
+      };
+      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['<some-id>']
+      };
+      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(false);
+      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
     });
   });
 });
