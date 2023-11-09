@@ -14,6 +14,7 @@ import { availableStixCoreRelationships } from '../database/stix';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 
 // Resolutions
+export const LABEL_FILTER = INPUT_LABELS;
 export const MARKING_FILTER = 'objectMarking';
 export const CREATED_BY_FILTER = 'createdBy';
 export const CREATOR_FILTER = 'creator_id';
@@ -24,6 +25,7 @@ export const IDS_FILTER = 'ids';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const INSTANCE_FILTER = 'elementId';
+export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const RESOLUTION_FILTERS = [
   LABEL_FILTER,
   MARKING_FILTER,
@@ -34,9 +36,9 @@ export const RESOLUTION_FILTERS = [
   RELATION_FROM,
   RELATION_TO,
   INSTANCE_FILTER,
+  CONNECTED_TO_INSTANCE_FILTER,
 ];
 // Values
-export const LABEL_FILTER = INPUT_LABELS;
 export const TYPE_FILTER = 'entity_type';
 export const INDICATOR_FILTER = 'indicator_types';
 export const SCORE_FILTER = 'x_opencti_score';
@@ -62,15 +64,12 @@ export const specialFilterKeysMap = new Map([
   ['creator_id', 'creator_id'],
   ['fromId', 'fromId'], // nested relation for the from of a relationship
   ['toId', 'toId'], // nested relation for the to of a relationship
-  ['connectedToId', 'connectedToId'], // listened instances for an instance trigger
+  [CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_FILTER], // listened instances for an instance trigger
+  [IDS_FILTER, IDS_FILTER], // values should match any id (internal_id, standard_id, or stix_id)
 ]);
 
 export const extractFilterIdsToResolveForCache = (filters) => {
-  const filterEntries = Object.entries(filters);
-  return filterEntries
-    .filter(([key]) => RESOLUTION_FILTERS.includes(key))
-    .map(([, values]) => values.map((v) => v.id))
-    .flat();
+  return extractFilterIds(filters, RESOLUTION_FILTERS);
 };
 
 // build a map ([id]: StixObject) with the resolved filters accessible for a user
@@ -617,7 +616,7 @@ export const removeFilter = (filterGroup, filterKeys) => {
 };
 
 export const extractFilterKeys = (filters) => {
-  let keys = filters.filters?.map((f) => f.key).flat() ?? []; // TODO remove filters.filters can be null when filter format refacto done
+  let keys = filters.filters.map((f) => f.key).flat() ?? [];
   if (filters.filterGroups && filters.filterGroups.length > 0) {
     keys = keys.concat(filters.filterGroups.map((group) => extractFilterKeys(group)).flat());
   }
@@ -687,7 +686,6 @@ export const checkedAndConvertedFilters = (filters) => {
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
     if (keys.length > 0) {
       let incorrectKeys = keys;
-      // TODO remove hardcode, don't remove 'connections' (it's for nested filters)
       const specialKeys = Array.from(specialFilterKeysMap.keys());
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();

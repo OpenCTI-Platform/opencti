@@ -118,7 +118,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       ? null
       : values.maxMarkingDefinition;
     let finalFilters = paginationOptions.filters ?? [];
-    console.log('paginationOptions.filters', paginationOptions.filters);
     if (paginationOptions.relationship_type) {
       finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
     }
