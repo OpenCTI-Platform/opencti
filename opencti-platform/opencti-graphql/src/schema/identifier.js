@@ -425,6 +425,9 @@ export const generateWorkId = (connectorId) => {
   const timestamp = now();
   return { id: `work_${connectorId}_${timestamp}`, timestamp };
 };
+export const generateFileIndexId = (fileId) => {
+  return uuidv5(fileId, OPENCTI_NAMESPACE);
+};
 export const generateStandardId = (type, data) => {
   // Entities
   if (isStixMetaObject(type)) return generateStixId(type, data);

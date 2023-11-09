@@ -1,10 +1,40 @@
+import * as R from 'ramda';
 import { logApp } from '../config/conf';
-import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
+import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
+import { elSearchFiles, getStats } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { READ_INDEX_FILES } from '../database/utils';
 
+export const filesMetrics = async (context, user, args) => {
+  const { excludedPaths = [] } = args;
+  const finalExcludedPaths = ['import/pending/', ...excludedPaths]; // always exclude pending
+  const finalArgs = {
+    ...args,
+    excludedPaths: finalExcludedPaths,
+  };
+  const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
+  return {
+    globalCount: files.length,
+    globalSize: R.sum(files.map((file) => file.size)),
+  };
+};
+
+export const indexedFilesMetrics = async () => {
+  const metrics = await getStats([READ_INDEX_FILES]);
+  return {
+    globalCount: metrics.docs.count,
+    globalSize: metrics.store.size_in_bytes,
+  };
+};
+
+export const searchIndexedFiles = async (context, user, args) => {
+  return elSearchFiles(context, context.user, args);
+};
+
+// region import / upload
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);

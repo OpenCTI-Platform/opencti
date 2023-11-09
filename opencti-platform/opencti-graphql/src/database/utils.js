@@ -31,6 +31,8 @@ export const UPDATE_OPERATION_REPLACE = 'replace';
 export const UPDATE_OPERATION_REMOVE = 'remove';
 
 // Entities
+export const INDEX_FILES = `${ES_INDEX_PREFIX}_files`;
+export const READ_INDEX_FILES = `${INDEX_FILES}*`;
 export const INDEX_HISTORY = `${ES_INDEX_PREFIX}_history`;
 export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
 export const INDEX_INTERNAL_OBJECTS = `${ES_INDEX_PREFIX}_internal_objects`;
@@ -62,6 +64,7 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
 
 export const WRITE_PLATFORM_INDICES = [
+  INDEX_FILES,
   INDEX_HISTORY,
   INDEX_INTERNAL_OBJECTS,
   INDEX_STIX_META_OBJECTS,

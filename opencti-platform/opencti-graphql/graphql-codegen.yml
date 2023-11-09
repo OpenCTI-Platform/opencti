@@ -37,6 +37,7 @@ generates:
         EntitySetting: ../modules/entitySetting/entitySetting-types#BasicStoreEntityEntitySetting
         Workspace: ../modules/workspace/workspace-types#BasicStoreEntityWorkspace
         MalwareAnalysis: ../modules/malwareAnalysis/malwareAnalysis-types#BasicStoreEntityMalwareAnalysis
+        ManagerConfiguration: ../modules/managerConfiguration/managerConfiguration-types#BasicStoreEntityManagerConfiguration
         Notifier: ../modules/notifier/notifier-types#BasicStoreEntityNotifier
         ThreatActorIndividual: ../modules/threatActorIndividual/threatActorIndividual-types#BasicStoreEntityThreatActorIndividual
         IngestionRss: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionRss

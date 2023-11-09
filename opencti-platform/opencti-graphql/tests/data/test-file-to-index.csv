@@ -1,0 +1,167 @@
+Trololo,malicious UA String,Known Malware,Trolling botnet beaconing
+installer,malicious UA String,Downloader,generic installer for bitcoining
+medialabssiteinstaller,malicious UA String,Downloader,referral abuse
+autohotkey,malicious UA String,Botnet UA String,beacon to naver.com
+tiny-dl/nix,malicious UA String,Downloader,bittorrent file installer
+dmfr,malicious UA String,Known Malware,beaconing traffic
+explorer,malicious UA String,Forged UA String,Palevo botnet PHP checkins
+autoit,malicious UA String,Botnet UA String,second stage downloader C&C
+contype,malicious UA String,Known Malware,bitcoining malware
+user-agent: mozilla/5.0,malicious UA String,Forged UA String,c&c downloads of strings.txt
+testing,malicious UA String,Poorly Coded Malware,c&c downloads of txt files
+tiny-dl,malicious UA String,Downloader,commonly seen with bitcoining
+rpcricheck,malicious UA String,Known Malware,c2 Checkins
+HardCore Software For : Public,malicious UA String,Known Malware,info stealer disguised as music downloads
+MyLove,malicious UA String,Botnet UA String,Botnet beaconing UA
+VIP_TRACKING,malicious UA String,Tracking Beacon,tracking agent
+MyApp,malicious UA String,Poorly Coded Malware,chinese malware beaconing
+hello,malicious UA String,Poorly Coded Malware,russian malware beaconing
+newbrandtest,malicious UA String,Poorly Coded Malware,c2 Checkins
+stubinstaller,malicious UA String,Downloader,installer for malicious toolbar
+sefastsetup,malicious UA String,Known Malware,installer for malware
+ineturl/1.0,malicious UA String,Wget Downloader,adware beaconing
+nsis_toolkitoffers,malicious UA String,Toolbar Installer,referral abuse
+download,malicious UA String,Downloader,malware that attacks Yahoo
+fucking,malicious UA String,Known Malware,c2 beaconing
+-,malicious UA String,Forged UA String,malware downloader of calc.exe
+getright/6.5,malicious UA String,Wget Downloader,package installer
+windows installer,malicious UA String,Downloader,signed windows install pack
+dianji-dnas/1.1,malicious UA String,Wget Downloader,Chinese game installer
+nulldoneyou,malicious UA String,Known Malware,botnet checkin
+adfsgesdafaswe4,malicious UA String,Forged UA String,botnet checkin
+owlforce,malicious UA String,Wget Downloader,toolbar installer
+traymgr1.exe,malicious UA String,Known Malware,system tray installer
+p2pclient ver 3.3,malicious UA String,Downloader,bittorrent file fetcher
+rlmultysocket,malicious UA String,Known Malware,poker botnet installer
+nsisdl/1.2,malicious UA String,Downloader,qq download and toolset pack
+v32,malicious UA String,Poorly Coded Malware,malware installer
+ie,malicious UA String,Forged UA String,c2 Beaconing
+wget 3.0,malicious UA String,Downloader,python download command
+fortis,malicious UA String,Wget Downloader,scripted installer
+generichttp/ver_str_comma,malicious UA String,Wget Downloader,data stealing posts
+[mozilla firefox cool],malicious UA String,Forged UA String,Botnet beaconing UA
+pipiplayer,malicious UA String,Bittorrent String,bittorrent downloader
+nsis_inetload,malicious UA String,Downloader,chinese media streaming referral abuse
+industry update control,malicious UA String,Toolbar Installer,toolbar installer
+babylon,malicious UA String,Botnet UA String,cookie tracker to babylon.com
+yzf,malicious UA String,Forged UA String,Botnet beaconing UA
+myurl,malicious UA String,Poorly Coded Malware,c2 Command Downloader
+mozila,malicious UA String,Forged UA String,incredimail script fetcher
+iexplorer 31,malicious UA String,Forged UA String,c2 beaconing
+ie 9.0,malicious UA String,Forged UA String,c2 beaconing
+widgitoolbar-159-847320,malicious UA String,Toolbar Installer,referral abuse
+tionline updater v59,malicious UA String,Wget Downloader,toolbar referral abuse
+stub installer v2.15,malicious UA String,Downloader,referral abuse and download of toolbar
+shockwave flash,malicious UA String,Forged UA String,shockwave flash install-used to exploit localhost
+myagent,malicious UA String,Poorly Coded Malware,c2 beaconing
+microgaming install program,malicious UA String,Downloader,referral abuse to install games
+ineturl:/1.0,malicious UA String,Wget Downloader,brazilian malware script
+http client,malicious UA String,Wget Downloader,local scripted downloader
+get mp3,malicious UA String,Bittorrent String,search ranking abuse
+gbot/2.3,malicious UA String,Botnet UA String,chinese botnet beaconing
+umbra,malicious UA String,Botnet UA String,c2 beaconing
+safesheild,malicious UA String,Toolbar Installer,misspelled c2 beacon
+myclearsearch helper service,malicious UA String,Poorly Coded Malware,toolbar referral abuse
+get torrent,malicious UA String,Downloader,P2P get request
+dwplayer,malicious UA String,Toolbar Installer,toolbar referral abuse
+chek,malicious UA String,Botnet UA String,test beacon to see if malware is online
+vbtagedit,malicious UA String,Botnet UA String,test beacon to see if malware is online
+toutatis x.x-x,malicious UA String,Wget Downloader,python download command
+tiehttp,malicious UA String,Wget Downloader,python download command
+techbridge application loader,malicious UA String,Toolbar Installer,toolbar referral abuse
+scooter-3.2.ex,malicious UA String,Botnet UA String,c2 beaconing
+rookie/1.0,malicious UA String,Botnet UA String,chinese malware rar downloader
+qvoddown,malicious UA String,Botnet UA String,chinese malware checkin
+mxagent,malicious UA String,Forged UA String,chinese malware checkin
+microsoft internet explorer 6.0,malicious UA String,Forged UA String,chinese malware download
+lobo lunar,malicious UA String,Botnet UA String,chinese malware checkin to baidu
+kuku v3.04 exp,malicious UA String,Tracking Beacon,c2 beaconing
+ie 11.0 sp6,malicious UA String,Forged UA String,taiwanese botnet checkin
+getfiles,malicious UA String,Wget Downloader,scripted installer
+elucid software downloader,malicious UA String,Toolbar Installer,toolbar referral abuse
+askinstallchecker,malicious UA String,Toolbar Installer,evidence of java installation
+adobe update manager 6,malicious UA String,Toolbar Installer,evidence of old adobe version install
+androiddevdet,malicious UA String,Poorly Coded Malware,droid app downloader
+setup factory,malicious UA String,Downloader,bittorrent live checkin
+winhinet example/1.0,malicious UA String,Poorly Coded Malware,python download command
+google page,malicious UA String,Forged UA String,c2 beaconing
+our_agent,malicious UA String,Poorly Coded Malware,c2 beaconing
+tiehttp,malicious UA String,Tracking Beacon,cookie tracking
+winhttpclient,malicious UA String,Wget Downloader,maxmind geoip get
+utilmind httpget,malicious UA String,Wget Downloader,scripted installer
+microsoft-atl-native/8.00,malicious UA String,Forged UA String,c2 beaconing
+report,malicious UA String,Forged UA String,c2 beaconing
+Huai_Huai,malicious UA String,Botnet UA String,chinese c2 beacon gets
+lameupdater/1.0,malicious UA String,Toolbar Installer,russian malware downloads
+goplay,malicious UA String,Poorly Coded Malware,gaming referral abuse
+api-guide test program,malicious UA String,Poorly Coded Malware,online alive checkins
+G4FLauncher,malicious UA String,Downloader,gaming referral abuse
+CHttpFileDownloader,malicious UA String,Downloader,brazilian zipped malware downloads
+downloader mlr 1.0.0,malicious UA String,Downloader,bittorrent downloader
+Downloader MLR 1.0.0,malicious UA String,Downloader,bittorrent downloader
+downloader pfs 1.3.0,malicious UA String,Downloader,bittorrent and russian bitcoining
+downloader touch pfs 1.3.0,malicious UA String,Downloader,bittorrent and russian bitcoining
+iedll,malicious UA String,Forged UA String,chinese baidu malware download
+mozilla/3.0 (compatib1e; indy library),malicious UA String,Wget Downloader,chinese malware download
+/3.0 (compatib1e; indy library),malicious UA String,Wget Downloader,chinese malware download
+iexplore,malicious UA String,Forged UA String,botnet checkin
+downloader pfs 1.2.6,malicious UA String,Downloader,bittorrent downloader
+downloader acp 1.0.3,malicious UA String,Downloader,bittorrent downloader
+hackeroo,malicious UA String,Botnet UA String,botnet checkin
+downloader acp 1.0.2,malicious UA String,Downloader,bittorrent downloader
+downloader acp 1.0.1,malicious UA String,Downloader,bittorrent downloader
+soft32 downloader,malicious UA String,Downloader,bittorrent downloader
+microsoft url control - 6.00.8862,malicious UA String,Forged UA String,botnet checkin
+softonic downloader/1.34.1,malicious UA String,Downloader,downloader of more downloaders
+Kugou7 HttpDownloader,malicious UA String,Downloader,chinese downloader
+vb wininet,malicious UA String,Wget Downloader,ip checking and downloading
+inetc39,malicious UA String,Poorly Coded Malware,botnet checkin
+errcode,malicious UA String,Poorly Coded Malware,botnet checkin
+better installer(mozilla),malicious UA String,Downloader,downloader of more downloaders
+Ryeol HTTP Client Class,malicious UA String,Wget Downloader,botnet checkin
+tixdll,malicious UA String,Downloader,geoip locator service
+SIMBASVC,malicious UA String,Botnet UA Stringtring,botnet checkin
+??,malicious UA String,Poorly Coded Malware,botnet checkin
+nsis_inetc,malicious UA String,Wget Downloader,referral abuse monetizer
+elex update,malicious UA String,Wget Downloader,downloader of patches for malware
+traydownload,malicious UA String,Downloader,toolbar installer
+liebao,malicious UA String,Botnet UA String,botnet checkin
+tesla,malicious UA String,Botnet UA String,botnet checkin
+user-agent,malicious UA String,Forged UA String,botnet checkin
+vieauto,malicious UA String,Botnet UA String,botnet checkin
+stormddos,malicious UA String,DDoS String,participates in DDoS attacks
+downloader touch pfs 1.3.1,malicious UA String,Downloader,bittorrent downloader
+downloader pfs 1.3.1,malicious UA String,Downloader,bittorrent downloader
+downloader touch pfs 1.2.6,malicious UA String,Downloader,bittorrent downloader
+awi v5.12.843,malicious UA String,Trojan Adware,Gamevance trojan adware
+awi v5.16.843,malicious UA String,Trojan Adware,Gamevance trojan adware
+STORMDDOS,malicious UA String,DDoS String,participates in DDoS attacks
+RLMultySocket,malicious UA String,Known Malware,poker botnet installer
+TixDll,malicious UA String,Downloader,geoip locator service
+Mozilla/3.0 (compatible; Indy Library),malicious UA String,Wget Downloader,Russian Downloader
+Downloader PFS 1.3.2,malicious UA String,Downloader,bittorrent downloader
+Downloader Touch PFS 1.3.2,malicious UA String,Downloader,bittorrent downloader
+LameUpdater/1.0,malicious UA String,Toolbar Installer,russian malware downloads
+NSIS_Inetc (Mozilla),malicious UA String,Toolbar Installer,toolbar installer
+Mozilla/3.0 (compatib1e; Indy Library),malicious UA String,Forged UA String,c2 beaconing
+Downloader PFS 1.3.2,malicious UA String,Downloader,bittorrent downloader
+WinSoftware NetInstaller,malicious UA String,Downloader,Rogue AV 
+NSISDL/1.2 (Mozilla),malicious UA String,Downloader,Downloader of software
+Downloader Touch PFS 1.2.6,malicious UA String,Downloader,bittorrent downloader
+Downloader Touch PFS 1.2.7,malicious UA String,Downloader,bittorrent downloader
+Downloader ACP 1.0.2,malicious UA String,Downloader,bittorrent downloader
+Downloader MLR 1.0.0,malicious UA String,Downloader,bittorrent downloader
+Downloader Touch PFS 1.3.2,malicious UA String,Downloader,bittorrent downloader
+Downloader PFS 1.3.2,malicious UA String,Downloader,bittorrent downloader
+IEDLL,malicious UA String,Forged UA String,chinese baidu malware download
+Updates downloader,malicious UA String,Downloader,PDF Trojan
+_,malicious UA String,Botnet UA String,Moldavian trojan
+LabTech Agent v0.835,malicious UA String,Toolbar Installer,Referral Abuse for SUISC.com
+Google page,malicious UA String,Botnet UA String,trojan checkin
+Wget/1.11.4,malicious UA String,Wget Downloader,wget downloader
+YZ,malicious UA String,Trojan Adware,Ad Clicking Trojan
+UniversalUserAgent(winHTTP),malicious UA String,Downloader,Bundler Trojan
+IntensityControlCom,malicious UA String,IP Checker,Chinese IP Checker
+Microsoft URL Control - 6.00.8862,malicious UA String,Referral Abuse,Referral Abuse Agent
+msweather,malicious UA String,IP Checker,Chinese IP Checker
+My User Agent v1.0 ,malicious UA String,Known Malware,malware installer

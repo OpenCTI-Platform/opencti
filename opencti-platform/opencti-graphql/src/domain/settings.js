@@ -35,6 +35,7 @@ const getClusterInformation = async () => {
     id,
     enable: managers.reduce((acc, m) => acc || m.enable, false),
     running: managers.reduce((acc, m) => acc || m.running, false),
+    warning: managers.reduce((acc, m) => acc || m.warning, false),
   }));
   return { info, modules };
 };

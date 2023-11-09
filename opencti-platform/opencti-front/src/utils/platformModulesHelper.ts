@@ -11,11 +11,13 @@ export const TASK_MANAGER = 'TASK_MANAGER';
 export const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
 export const SYNC_MANAGER = 'SYNC_MANAGER';
 export const INGESTION_MANAGER = 'INGESTION_MANAGER';
+export const FILE_INDEX_MANAGER = 'FILE_INDEX_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
 export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
+  isModuleWarning: (id: string) => boolean;
   isFeatureEnable: (id: string) => boolean;
   isRuntimeFieldEnable: () => boolean;
   isRuleEngineEnable: () => boolean;
@@ -24,6 +26,7 @@ export interface ModuleHelper {
   isSyncManagerEnable: () => boolean;
   isRetentionManagerEnable: () => boolean;
   isIngestionManagerEnable: () => boolean;
+  isFileIndexManagerEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -45,10 +48,20 @@ const isModuleEnable = (
   return module !== undefined && module.enable === true;
 };
 
+const isModuleWarning = (
+  settings: RootPrivateQuery$data['settings'],
+  id: string,
+) => {
+  const modules = settings.platform_modules || [];
+  const module = modules.find((f) => f.id === id);
+  return module !== undefined && module.warning === true;
+};
+
 const platformModuleHelper = (
   settings: RootPrivateQuery$data['settings'],
 ): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
+  isModuleWarning: (id: string) => isModuleWarning(settings, id),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),
   isRuleEngineEnable: () => isModuleEnable(settings, RULE_ENGINE),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, RUNTIME_SORTING),
@@ -57,6 +70,7 @@ const platformModuleHelper = (
   isPlayBookManagerEnable: () => isModuleEnable(settings, PLAYBOOK_MANAGER),
   isRetentionManagerEnable: () => isModuleEnable(settings, RETENTION_MANAGER),
   isIngestionManagerEnable: () => isModuleEnable(settings, INGESTION_MANAGER),
+  isFileIndexManagerEnable: () => isModuleEnable(settings, FILE_INDEX_MANAGER),
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

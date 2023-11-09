@@ -28,6 +28,7 @@ import {
 } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { UnsupportedError } from './errors';
@@ -150,6 +151,10 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_MANAGER_CONFIGURATION]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_NOTIFICATION]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NOTIFICATION_EDIT_TOPIC`,
@@ -472,6 +477,7 @@ export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled'
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
 export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
+export const ENABLED_FILE_INDEX_MANAGER = booleanConf('file_index_manager:enabled', true);
 
 // Default deactivated managers
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);

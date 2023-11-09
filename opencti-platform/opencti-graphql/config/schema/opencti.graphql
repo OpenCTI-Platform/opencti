@@ -839,6 +839,28 @@ type FileConnection {
   edges: [FileEdge]
 }
 
+type IndexedFile {
+  id: ID!
+  name: String!
+  file_id: String!
+  uploaded_at: DateTime!
+  entity: StixObject
+  searchOccurrences: Int
+}
+type IndexedFileEdge {
+  cursor: String!
+  node: IndexedFile!
+}
+type IndexedFileConnection {
+  pageInfo: PageInfo!
+  edges: [IndexedFileEdge]
+}
+
+type FilesMetrics {
+  globalCount: Int!
+  globalSize: Float!
+}
+
 type OpenCtiFile {
   id: ID!
   name: String!
@@ -1061,6 +1083,7 @@ type Module {
   id: ID!
   enable: Boolean!
   running: Boolean!
+  warning: Boolean
 }
 type Cluster {
   instances_number: Int!
@@ -11317,6 +11340,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Feedback
   | CaseTemplate
   | EntitySetting
+  | ManagerConfiguration
   | Creator
   | Group
   | Workspace
@@ -11398,6 +11422,7 @@ union StixObjectOrStixRelationship =
   | CaseTemplate
   | Task
   | EntitySetting
+  | ManagerConfiguration
   | Workspace
   | CsvMapper
 union StixCoreObjectOrStixCoreRelationship =
@@ -11472,6 +11497,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | CaseTemplate
   | Task
   | EntitySetting
+  | ManagerConfiguration
   | Workspace
 
 enum StixRelationshipsOrdering {
@@ -12050,6 +12076,9 @@ type Query {
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
+  filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!]): FilesMetrics @auth(for: [SETTINGS])
+  indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES
 

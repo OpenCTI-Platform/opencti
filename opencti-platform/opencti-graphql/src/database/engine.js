@@ -9,13 +9,16 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  INDEX_FILES,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INTERNAL,
   READ_ENTITIES_INDICES,
+  READ_INDEX_FILES,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
@@ -157,6 +160,10 @@ const searchConfiguration = {
 const elasticSearchClient = new ElkClient(searchConfiguration);
 const openSearchClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
+let attachmentProcessorEnabled = false;
+export const isAttachmentProcessorEnabled = () => {
+  return attachmentProcessorEnabled === true;
+};
 let engine = openSearchClient;
 
 // The OpenSearch/ELK Body Parser (oebp)
@@ -219,7 +226,9 @@ export const searchEngineInit = async () => {
   // Setup the platform runtime field option
   isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
   const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
-  logApp.info(`[SEARCH] ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus}`);
+  // configure attachment processor
+  attachmentProcessorEnabled = await elConfigureAttachmentProcessor();
+  logApp.info(`[SEARCH] ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus} / attachment processor ${attachmentProcessorEnabled ? 'enabled' : 'disabled'}`);
   // Everything is fine, return true
   return true;
 };
@@ -619,6 +628,9 @@ const elCreateIndexTemplate = async (index) => {
             modified_at: {
               type: 'date',
             },
+            indexed_at: {
+              type: 'date',
+            },
             first_seen: {
               type: 'date',
             },
@@ -735,17 +747,67 @@ export const elUpdateMapping = async (properties) => {
     throw DatabaseError('[SEARCH] Error updating index mapping', { error: e });
   });
 };
+export const elConfigureAttachmentProcessor = async () => {
+  let success = true;
+  if (engine instanceof ElkClient) {
+    await engine.ingest.putPipeline({
+      id: 'attachment',
+      description: 'Extract attachment information',
+      processors: [
+        {
+          attachment: {
+            field: 'file_data',
+            remove_binary: true
+          }
+        }
+      ]
+    }).catch((e) => {
+      logApp.error('[SEARCH] Error configure attachment processor', { error: e });
+      success = false;
+    });
+  } else {
+    await engine.ingest.putPipeline({
+      id: 'attachment',
+      body: {
+        description: 'Extract attachment information',
+        processors: [
+          {
+            attachment: {
+              field: 'file_data'
+            }
+          },
+          {
+            remove: {
+              field: 'file_data'
+            }
+          }
+        ]
+      }
+    }).catch((e) => {
+      logApp.error('[SEARCH] Error configure attachment processor', { error: e });
+      success = false;
+    });
+  }
+  return success;
+};
+export const elCreateIndex = async (index) => {
+  await elCreateIndexTemplate(index);
+  const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
+  const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
+  if (!isExist) {
+    const createdIndex = await engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
+    return createdIndex;
+  }
+  return null;
+};
 export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
   await elCreateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    await elCreateIndexTemplate(index);
-    const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
-    const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
-    if (!isExist) {
-      const createdIndex = await engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
+    const createdIndex = await elCreateIndex(index);
+    if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
   }
@@ -1939,12 +2001,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
-      const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
-      if (connectionFormat) {
-        const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-        return buildPagination(first, body.search_after, nodeHits, data.hits.total.value);
-      }
-      return convertedHits;
+      return buildSearchResult(data, first, body.search_after, connectionFormat);
     })
     .catch(
       /* istanbul ignore next */ (err) => {
@@ -2052,6 +2109,204 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 };
 // endregion
 
+// index and search files
+const buildIndexFileBody = (documentId, file, entity = null) => {
+  const documentBody = {
+    internal_id: documentId,
+    indexed_at: now(),
+    file_id: file.id,
+    file_data: file.content,
+    name: file.name,
+    uploaded_at: file.uploaded_at,
+  };
+  if (entity) {
+    documentBody.entity_id = entity.internal_id;
+    // index entity markings & organization restrictions
+    documentBody[buildRefRelationKey(RELATION_OBJECT_MARKING)] = entity[RELATION_OBJECT_MARKING] ?? [];
+    documentBody[buildRefRelationKey(RELATION_GRANTED_TO)] = entity[RELATION_GRANTED_TO] ?? [];
+    // index entity authorized_members & authorized_authorities => not yet
+    // documentBody.authorized_members = entity.authorized_members ?? [];
+    // documentBody.authorized_authorities = entity.authorized_authorities ?? [];
+  }
+  return documentBody;
+};
+
+export const elIndexFiles = async (context, user, files) => {
+  if (!files || files.length === 0) {
+    return;
+  }
+  const entityIds = files.filter((file) => !!file.entity_id).map((file) => file.entity_id);
+  const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, toMap: true };
+  const entitiesMap = await elFindByIds(context, user, entityIds, opts);
+  for (let index = 0; index < files.length; index += 1) {
+    const file = files[index];
+    const { internal_id, file_data, file_id, entity_id } = file;
+    if (internal_id && file_id && file_data) {
+      const entity = entity_id ? entitiesMap[entity_id] : null;
+      const fileObject = {
+        id: file_id,
+        content: file_data,
+        name: file.name,
+        uploaded_at: file.uploaded_at,
+      };
+      const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
+      await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' });
+    }
+  }
+};
+
+export const elUpdateFilesWithEntityRestrictions = async (entity) => {
+  if (!entity) {
+    return null;
+  }
+  const changes = {
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: entity[RELATION_OBJECT_MARKING] ?? [],
+    [buildRefRelationKey(RELATION_GRANTED_TO)]: entity[RELATION_GRANTED_TO] ?? [],
+  };
+  const source = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
+  return elRawUpdateByQuery({
+    index: READ_INDEX_FILES,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source, params: { changes } },
+      query: {
+        term: {
+          'entity_id.keyword': entity.internal_id
+        }
+      },
+    },
+  }).catch((err) => {
+    throw DatabaseError('[SEARCH] Error updating elastic (files entity restrictions)', { error: err, entityId: entity.internal_id });
+  });
+};
+
+const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = true) => {
+  const convertedHits = data.hits.hits.map((hit) => {
+    const elementData = hit._source;
+    const searchOccurrences = (hit.highlight && hit.highlight['attachment.content'])
+      ? hit.highlight['attachment.content'].length : 0;
+    return {
+      _index: hit._index,
+      id: elementData.internal_id,
+      internal_id: elementData.internal_id,
+      name: elementData.name,
+      indexed_at: elementData.indexed_at,
+      uploaded_at: elementData.uploaded_at,
+      entity_id: elementData.entity_id,
+      file_id: elementData.file_id,
+      searchOccurrences,
+      sort: hit.sort,
+    };
+  });
+  if (connectionFormat) {
+    const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
+    return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
+  }
+  return convertedHits;
+};
+export const elSearchFiles = async (context, user, options = {}) => {
+  const { first = 20, after, orderBy = null, orderMode = 'asc' } = options; // pagination options
+  const { search = null, fileIds = [], entityIds = [] } = options; // search options
+  const { fields = [], excludeFields = ['attachment.content'], connectionFormat = true, highlight = true } = options; // result options
+  const searchAfter = after ? cursorToOffset(after) : undefined;
+  const { includeAuthorities = false } = options;
+  const dataRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
+  const must = [...dataRestrictions.must];
+  const mustNot = [...dataRestrictions.must_not];
+  const sort = [];
+  if (search) {
+    const fullTextSearch = {
+      multi_match: {
+        query: search,
+        fields: ['attachment.content', 'attachment.title^2']
+      }
+    };
+    must.push(fullTextSearch);
+  }
+  if (fileIds?.length > 0) {
+    must.push({ terms: { 'file_id.keyword': fileIds } });
+  }
+  if (entityIds?.length > 0) {
+    must.push({ terms: { 'entity_id.keyword': entityIds } });
+  }
+  if (!orderBy) { // TODO handle orderby param
+    // order by last indexed date by default
+    if (search) {
+      sort.push({ _score: 'desc' });
+    }
+    sort.push({ indexed_at: 'desc' });
+    // add internal_id sort since indexed_at is not unique
+    sort.push({ 'internal_id.keyword': 'desc' });
+  } else {
+    sort.push({ [orderBy]: orderMode });
+  }
+  const body = {
+    query: {
+      bool: {
+        must,
+        must_not: mustNot,
+      },
+    },
+    size: first,
+    sort,
+  };
+  if (searchAfter) {
+    body.search_after = searchAfter;
+  }
+  if (highlight) {
+    body.highlight = {
+      fields: {
+        'attachment.content': { type: 'unified', boundary_scanner: 'word', number_of_fragments: 100 }
+      }
+    };
+  }
+  const sourceIncludes = (fields?.length > 0) ? fields : [];
+  const sourceExcludes = (excludeFields?.length > 0) ? excludeFields : [];
+  const query = {
+    index: INDEX_FILES,
+    ignore_throttled: ES_IGNORE_THROTTLED,
+    track_total_hits: true,
+    _source: { includes: sourceIncludes, excludes: sourceExcludes },
+    body,
+  };
+  logApp.debug('[SEARCH] search files', { query });
+  return elRawSearch(context, user, null, query)
+    .then((data) => {
+      return buildFilesSearchResult(data, first, body.search_after, connectionFormat);
+    })
+    .catch((err) => {
+      logApp.error('[SEARCH] search files fail', { error: err, query });
+      throw err;
+    });
+};
+
+export const elDeleteFilesByIds = async (context, user, fileIds) => {
+  if (!fileIds) {
+    return;
+  }
+  const query = {
+    terms: { 'file_id.keyword': fileIds },
+  };
+  await elRawDeleteByQuery({
+    index: READ_INDEX_FILES,
+    refresh: true,
+    body: { query },
+  }).catch((err) => {
+    throw DatabaseError('[SEARCH] Error deleting files by ids', { error: err });
+  });
+};
+// end index and search files
+
+const buildSearchResult = (data, first, searchAfter, connectionFormat = true) => {
+  const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
+  if (connectionFormat) {
+    const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
+    return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
+  }
+  return convertedHits;
+};
+
 export const elBulk = async (args) => {
   return elRawBulk(args).then((data) => {
     if (data.errors) {
@@ -2062,17 +2317,22 @@ export const elBulk = async (args) => {
   });
 };
 /* istanbul ignore next */
-export const elIndex = async (indexName, documentBody, refresh = true) => {
+export const elIndex = async (indexName, documentBody, opts = {}) => {
+  const { refresh = true, pipeline } = opts;
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
-  await engine.index({
+  let indexParams = {
     index: indexName,
     id: documentBody.internal_id,
     refresh,
     timeout: '60m',
     body: R.dissoc('_index', documentBody),
-  }).catch((err) => {
+  };
+  if (pipeline) {
+    indexParams = { ...indexParams, pipeline };
+  }
+  await engine.index(indexParams).catch((err) => {
     throw DatabaseError('[SEARCH] Error updating elastic (index)', { error: err, body: documentBody });
   });
   return documentBody;
@@ -2106,6 +2366,16 @@ export const elReplace = (indexName, documentId, documentBody) => {
   const source = R.join(';', rawSources);
   return elUpdate(indexName, documentId, {
     script: { source, params: doc },
+  });
+};
+export const elDelete = (indexName, documentId) => {
+  return engine.delete({
+    id: documentId,
+    index: indexName,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
+  }).catch((err) => {
+    throw DatabaseError('[SEARCH] Error updating elastic (delete)', { error: err, documentId });
   });
 };
 
@@ -2506,8 +2776,8 @@ export const elUpdateElement = async (instance) => {
   return Promise.all([replacePromise, connectionPromise]);
 };
 
-export const getStats = () => {
+export const getStats = (indices = READ_PLATFORM_INDICES) => {
   return engine.indices
-    .stats({ index: READ_PLATFORM_INDICES }) //
-    .then((result) => oebp(result)._all.total);
+    .stats({ index: indices }) //
+    .then((result) => oebp(result)._all.primaries);
 };
