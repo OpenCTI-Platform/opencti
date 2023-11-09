@@ -70,11 +70,12 @@ interface LocationCreationFormProps {
   display?: boolean
   contextual?: boolean
   onCompleted?: () => void;
-  inputValue?: string;
+  inputValue: string
   creationCallback?: (data:LocationCreationMutation$data) => void;
+  onlyAuthors?: boolean
 }
 
-const locationValidation = (t) => Yup.object().shape({
+const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   type: Yup.string().required(t('This field is required')),
