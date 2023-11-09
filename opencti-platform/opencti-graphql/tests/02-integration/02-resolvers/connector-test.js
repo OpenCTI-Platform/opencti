@@ -132,7 +132,13 @@ describe('Connector resolver standard behaviour', () => {
     // List all works for connector
     const queryResult = await queryAsAdmin({
       query: LIST_WORK_QUERY,
-      variables: { filters: { key: 'connector_id', values: [testConnectorId] } },
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'connector_id', values: [testConnectorId] }],
+          filterGroups: [],
+        },
+      },
     });
 
     expect(queryResult.data.works.edges.length).toEqual(1);

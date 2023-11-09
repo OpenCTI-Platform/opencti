@@ -41,7 +41,15 @@ describe('Filters testing', () => {
       expect(filteredObject.object_marking_refs.includes('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27')).toBe(true);
     }
     // With _not_eq
-    const filtersNot = { markedBy_not_eq: [{ id: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: 'objectMarking',
+        values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+        operator: 'not_eq',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -98,7 +106,15 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3);
     // With _not_eq
-    const filtersNot = { createdBy_not_eq: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: 'createdBy',
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'not_eq',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -118,7 +134,15 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(2);
     // With _not_eq
-    const filtersNot = { objectLabel_not_eq: [{ id: 'attack-pattern', value: 'attack-pattern' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: 'objectLabel',
+        values: ['attack-pattern'],
+        operator: 'not_eq',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -139,7 +163,15 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(9);
     // With lt
-    const filtersNot = { confidence_lt: [{ id: 30 }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: 'confidence',
+        values: ['30'],
+        operator: 'lt',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(filteredObjectsNot.length).toBe(8);
     // With nothing
@@ -175,7 +207,15 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
     // With _not_eq
-    const filtersNot = { objects_not_eq: [{ id: 'note--573f623c-bf68-4f19-9500-d618f0d00af0' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: 'objects',
+        values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
+        operator: 'not_eq',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -221,7 +261,11 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no severity in the data
 
-    const filtersNo = { severity: [{ id: '', value: '' }] };
+    const filtersNo = {
+      mode: 'and',
+      filters: [{ key: 'severity', values: [], operator: 'nil' }],
+      filterGroups: [],
+    };
     const filteredObjectsNo = await applyFilters(filtersNo);
     expect(filteredObjectsNo.length).toBe(64);
   });
@@ -239,7 +283,11 @@ describe('Filters testing', () => {
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no priority in the data
 
-    const filtersNo = { priority: [{ id: '', value: '' }] };
+    const filtersNo = {
+      mode: 'and',
+      filters: [{ key: 'priority', values: [], operator: 'nil' }],
+      filterGroups: [],
+    };
     const filteredObjectsNo = await applyFilters(filtersNo);
     expect(filteredObjectsNo.length).toBe(64);
   });
