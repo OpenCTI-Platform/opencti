@@ -169,10 +169,9 @@ class ExportButtons extends Component {
       containerId,
       investigationAddFromContainer,
       history,
-      location,
       workspace,
     } = this.props;
-    const isCustomDashBoard = location.pathname.includes('dashboards/');
+    const isCustomDashBoard = workspace.type === 'dashboard';
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
