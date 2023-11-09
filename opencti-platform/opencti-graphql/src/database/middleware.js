@@ -1571,6 +1571,14 @@ const prepareAttributesForUpdate = (instance, elements) => {
         return null;
       }
     }
+    // Aliases can't have the same name as entity name
+    if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
+      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
+      return {
+        key: input.key,
+        value: filteredValues
+      };
+    }
     // No need to rework the input
     return input;
   }).filter((i) => isNotEmptyField(i));
@@ -1830,19 +1838,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
-
-  const filteredUpdates = updates.map((item) => {
-    if (item.key === ATTRIBUTE_ALIASES || item.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = item.value.filter(e => normalizeName(e) !== normalizeName(initial.name));
-      return {
-        ...item,
-        value: filteredValues
-      }
-    } return item;
-  })
-
   // Region - Pre-Check
-  const elementsByKey = R.groupBy((e) => e.key, filteredUpdates);
+  const elementsByKey = R.groupBy((e) => e.key, updates);
   const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
@@ -1853,7 +1850,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, initial, filteredUpdates, entitySetting);
+  await validateInputUpdate(context, user, initial.entity_type, initial, updates, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;
@@ -1871,20 +1868,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       throw FunctionalError('Cannot update an individual corresponding to a user');
     }
   }
-  if (filteredUpdates.length === 0) {
+  if (updates.length === 0) {
     return { element: initial };
   }
   // Check user access update
-  const manageAccessUpdate = filteredUpdates.some((e) => e.key === 'authorized_members');
+  const manageAccessUpdate = updates.some((e) => e.key === 'authorized_members');
   if (!validateUserAccessOperation(user, initial, manageAccessUpdate ? 'manage-access' : 'edit')) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = filteredUpdates.filter((e) => metaKeys.includes(e.key));
-  const attributes = filteredUpdates.filter((e) => !metaKeys.includes(e.key));
-  const updated = mergeInstanceWithUpdateInputs(initial, filteredUpdates);
+  const meta = updates.filter((e) => metaKeys.includes(e.key));
+  const attributes = updates.filter((e) => !metaKeys.includes(e.key));
+  const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
