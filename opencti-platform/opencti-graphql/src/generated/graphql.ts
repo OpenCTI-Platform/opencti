@@ -6402,6 +6402,49 @@ export enum EntitySettingsOrdering {
   TargetType = 'target_type'
 }
 
+export enum EntityType {
+  AdministrativeArea = 'AdministrativeArea',
+  Artifact = 'Artifact',
+  AttackPattern = 'AttackPattern',
+  Campaign = 'Campaign',
+  CaseIncident = 'CaseIncident',
+  CaseRfi = 'CaseRfi',
+  CaseRft = 'CaseRft',
+  Channel = 'Channel',
+  City = 'City',
+  Country = 'Country',
+  CoursesOfAction = 'CoursesOfAction',
+  DataComponent = 'DataComponent',
+  DataSource = 'DataSource',
+  Event = 'Event',
+  ExternalReference = 'ExternalReference',
+  Feedback = 'Feedback',
+  Grouping = 'Grouping',
+  Incident = 'Incident',
+  Indicator = 'Indicator',
+  Individual = 'Individual',
+  Infrastructure = 'Infrastructure',
+  IntrusionSet = 'IntrusionSet',
+  Malware = 'Malware',
+  MalwareAnalysis = 'MalwareAnalysis',
+  Narrative = 'Narrative',
+  Note = 'Note',
+  ObservedData = 'ObservedData',
+  Organization = 'Organization',
+  Position = 'Position',
+  Region = 'Region',
+  Report = 'Report',
+  Sector = 'Sector',
+  StixFile = 'StixFile',
+  StixSightingRelationship = 'StixSightingRelationship',
+  System = 'System',
+  Task = 'Task',
+  ThreatActorGroup = 'ThreatActorGroup',
+  ThreatActorIndividual = 'ThreatActorIndividual',
+  Tool = 'Tool',
+  Vulnerability = 'Vulnerability'
+}
+
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -20871,13 +20914,13 @@ export type RetentionRuleEditMutationsFieldPatchArgs = {
 export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
   capabilities?: Maybe<Array<Maybe<Capability>>>;
+  capabilities_overrides?: Maybe<Array<Maybe<RoleEntityOverride>>>;
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  overrides?: Maybe<Array<Maybe<RoleEntityOverride>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -28097,6 +28140,7 @@ export type ResolversTypes = ResolversObject<{
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
   EntitySettingsOrdering: EntitySettingsOrdering;
+  EntityType: EntityType;
   Event: ResolverTypeWrapper<BasicStoreEntityEvent>;
   EventAddInput: EventAddInput;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
@@ -29338,6 +29382,7 @@ export type ResolversParentTypes = ResolversObject<{
 export type AuthDirectiveArgs = {
   and?: Maybe<Scalars['Boolean']['input']>;
   for?: Maybe<Array<Maybe<Capabilities>>>;
+  type?: Maybe<EntityType>;
 };
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
@@ -35420,13 +35465,13 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
+  capabilities_overrides?: Resolver<Maybe<Array<Maybe<ResolversTypes['RoleEntityOverride']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  overrides?: Resolver<Maybe<Array<Maybe<ResolversTypes['RoleEntityOverride']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

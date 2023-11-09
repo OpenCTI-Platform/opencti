@@ -1,6 +1,6 @@
 ### DIRECTIVES
 
-directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
+directive @auth(for: [Capabilities] = [], and: Boolean = false, type: EntityType = null) on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -66,6 +66,48 @@ enum MemberType {
   User
   Group
   Organization
+}
+enum EntityType {
+  Report
+  Grouping
+  MalwareAnalysis
+  Note
+  ExternalReference
+  CaseIncident
+  CaseRfi
+  CaseRft
+  Task
+  Feedback
+  Incident
+  StixSightingRelationship
+  ObservedData
+  StixFile
+  Artifact
+  Indicator
+  Infrastructure
+  ThreatActorGroup
+  ThreatActorIndividual
+  IntrusionSet
+  Campaign
+  Malware
+  Channel
+  Tool
+  Vulnerability
+  AttackPattern
+  Narrative
+  CoursesOfAction
+  DataComponent
+  DataSource
+  Sector
+  Event
+  Organization
+  System
+  Individual
+  Region
+  Country
+  AdministrativeArea
+  City
+  Position
 }
 
 ### RELAY
@@ -1521,7 +1563,7 @@ type Role implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   capabilities: [Capability]
-  overrides: [RoleEntityOverride]
+  capabilities_overrides: [RoleEntityOverride]
   editContext: [EditUserContext!]
 }
 input RoleAddInput {
@@ -11273,7 +11315,7 @@ type Query {
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   @auth(for: [KNOWLEDGE])
   myOpinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
-  report(id: String): Report @auth(for: [KNOWLEDGE])
+  report(id: String): Report @auth(for: [KNOWLEDGE], type: Report)
   reports(
     first: Int
     after: ID
@@ -11282,7 +11324,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): ReportConnection @auth(for: [KNOWLEDGE])
+  ): ReportConnection @auth(for: [KNOWLEDGE], type: Report)
   reportsTimeSeries(
     objectId: String
     authorId: String
@@ -12135,12 +12177,12 @@ type OpinionEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
 }
 type ReportEditMutations {
-  delete(purgeElements: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete(purgeElements: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Report)
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
+  contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
+  contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
+  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
 }
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -12489,7 +12531,7 @@ type Mutation {
   opinionAdd(input: OpinionAddInput!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   userOpinionAdd(input: OpinionUserAddInput!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   opinionEdit(id: ID!): OpinionEditMutations
-  reportAdd(input: ReportAddInput!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportAdd(input: ReportAddInput!): Report @auth(for: [KNOWLEDGE_KNUPDATE], type: Report)
   reportEdit(id: ID!): ReportEditMutations
   courseOfActionAdd(input: CourseOfActionAddInput!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations

@@ -92,7 +92,7 @@ const rootPrivateQuery = graphql`
               edges {
                 node {
                   name
-                  overrides {
+                  capabilities_overrides {
                     entity
                     capabilities {
                       name

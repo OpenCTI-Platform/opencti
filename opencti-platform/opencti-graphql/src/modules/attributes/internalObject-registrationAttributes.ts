@@ -327,8 +327,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     {
-      name: 'overrides',
-      label: 'Overrides',
+      name: 'capabilities_overrides',
+      label: 'Capabilities Overrides',
       type: 'object',
       format: 'standard',
       mandatoryType: 'no',
