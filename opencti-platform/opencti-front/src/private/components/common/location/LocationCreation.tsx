@@ -1,27 +1,25 @@
-import React, { Component, FunctionComponent, useState } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import { Add } from '@mui/icons-material';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { Option } from '@components/common/form/ReferenceField';
-import { DataSourceCreationForm } from '@components/techniques/data_sources/DataSourceCreation';
-import inject18n, { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  LocationCreationMutation, LocationCreationMutation$data,
+  LocationCreationMutation$variables,
+} from '@components/common/location/__generated__/LocationCreationMutation.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { useFormatter } from '../../../../components/i18n';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -34,10 +32,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
   },
 }));
 
@@ -52,21 +59,20 @@ const locationMutation = graphql`
   }
 `;
 
-interface LocationCreationProps {
-  contextual?: boolean
-  display?: boolean
-  inputValue?: string | undefined
-  onlyAuthors: boolean
+interface LocationAddInput {
+  name: string
+  description: string
+  type: string
 }
 
 interface LocationCreationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
+  display?: boolean
+  contextual?: boolean
   onCompleted?: () => void;
   inputValue?: string;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
-  defaultConfidence?: number;
+  creationCallback?: (data:LocationCreationMutation$data) => void;
 }
 
 const locationValidation = (t) => Yup.object().shape({
@@ -80,30 +86,41 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   onlyAuthors,
   onReset,
   onCompleted,
-  updater,
+  contextual,
+  creationCallback,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [commit] = useMutation(locationMutation);
+  const [commit] = useMutation<LocationCreationMutation>(locationMutation);
 
-  const onSubmit = (values, { setSubmitting, resetForm, setErrors }) => {
+  const onSubmit: FormikConfig<LocationAddInput>['onSubmit'] = (
+    values,
+    {
+      setSubmitting,
+      resetForm,
+      setErrors,
+    },
+  ) => {
+    const input: LocationCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      type: values.type,
+    };
     commit({
       variables: {
-        input: values,
-      },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'locationAdd');
-        }
+        input,
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
+        if (contextual && creationCallback) {
+          creationCallback(response);
+        }
         if (onCompleted) {
           onCompleted();
         }
@@ -123,7 +140,11 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -192,7 +213,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   );
 };
 
-const LocationCreation: FunctionComponent<LocationCreationProps> = ({
+const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   contextual,
   display,
   inputValue,
@@ -209,46 +230,49 @@ const LocationCreation: FunctionComponent<LocationCreationProps> = ({
     'locationAdd',
   );
 
-  const renderClassic = () => (
-    <Drawer
-      title={t('Add a location')}
-      variant={DrawerVariant.create}
-    >
-      {({ onClose }) => (
-        <LocationCreationForm
-          inputValue={inputValue}
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
-      )}
-    </Drawer>
-  );
-
-  const renderContextual = () => (
-    <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButtonContextual}
+  const renderClassic = () => {
+    return (
+      <Drawer
+        title={t('Add a location')}
+        variant={DrawerVariant.create}
       >
-        <Add />
-      </Fab>
-      <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-        <DialogTitle>{t('Add a location')}</DialogTitle>
-        <DialogContent>
+        {({ onClose }) => (
           <LocationCreationForm
             inputValue={inputValue}
             updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
+            onCompleted={onClose}
+            onReset={onClose}
           />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+        )}
+      </Drawer>
+    );
+  };
 
+  const renderContextual = () => {
+    return (
+      <div style={{ display: display ? 'block' : 'none' }}>
+        <Fab
+          onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButtonContextual}
+        >
+          <Add />
+        </Fab>
+        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+          <DialogTitle>{t('Add a location')}</DialogTitle>
+          <DialogContent>
+            <LocationCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
   if (contextual) {
     return renderContextual();
   }
