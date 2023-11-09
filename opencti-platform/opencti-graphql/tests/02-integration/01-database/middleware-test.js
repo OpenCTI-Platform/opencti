@@ -244,7 +244,7 @@ describe('Entities listing', () => {
     const identity = await elLoadById(testContext, ADMIN_USER, 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
     const filters = {
       mode: 'and',
-      filters: [{ key: 'rel_created-by.internal_id', values: [identity.internal_id] }],
+      filters: [{ key: 'createdBy', values: [identity.internal_id] }],
       filterGroups: [],
     };
     const options = { filters };
