@@ -104,17 +104,22 @@ const WorkspaceHeader = ({
   const { t } = useFormatter();
   const [openTag, setOpenTag] = useState(false);
   const [openTags, setOpenTags] = useState(false);
+  const [newTag, setNewTag] = useState('');
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
   const getCurrentTags = () => workspace.tags;
-  const onSubmitCreateTag = (data, { resetForm }) => {
+  const handleChangeNewTags = (event) => {
+    const { value } = event.target;
+    setNewTag(value);
+  };
+  const onSubmitCreateTag = (data, { resetForm, setSubmitting }) => {
     const currentTags = getCurrentTags();
     if (
-      (currentTags === null || !currentTags.includes(data.new_tag))
-      && data.new_tag !== ''
+      (currentTags === null || !currentTags.includes(newTag))
+      && newTag !== ''
     ) {
       commitMutation({
         mutation: workspaceMutation,
@@ -122,13 +127,15 @@ const WorkspaceHeader = ({
           id: workspace.id,
           input: {
             key: 'tags',
-            value: R.append(data.new_tag, currentTags),
+            value: R.append(newTag, currentTags),
           },
         },
+        setSubmitting,
         onCompleted: () => MESSAGING$.notifySuccess(t('The tag has been added')),
       });
     }
     setOpenTag(false);
+    setNewTag('');
     resetForm();
   };
   const deleteTag = (tag) => {
@@ -457,9 +464,12 @@ const WorkspaceHeader = ({
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="new_tag"
                     autoFocus={true}
                     placeholder={t('New tag')}
+                    onChange={handleChangeNewTags}
+                    value={newTag}
                     className={classes.tagsInput}
                   />
                 </Form>
@@ -476,6 +486,7 @@ const WorkspaceHeader = ({
         />
       )}
       <div className="clearfix" />
+      </div>
     </div>
   );
 };
