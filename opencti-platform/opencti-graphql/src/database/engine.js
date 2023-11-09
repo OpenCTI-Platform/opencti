@@ -2150,7 +2150,7 @@ export const elIndexFiles = async (context, user, files) => {
         uploaded_at: file.uploaded_at,
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
-      await elIndex(INDEX_FILES, documentBody, true, 'attachment');
+      await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' });
     }
   }
 };
@@ -2317,7 +2317,8 @@ export const elBulk = async (args) => {
   });
 };
 /* istanbul ignore next */
-export const elIndex = async (indexName, documentBody, refresh = true, pipeline = null) => {
+export const elIndex = async (indexName, documentBody, opts = {}) => {
+  const { refresh = true, pipeline } = opts;
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
