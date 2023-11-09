@@ -113,6 +113,12 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     indicates: [{ id: entityId, value: entityId }],
   });
 
+  const toolBarFilters = {
+    ...cleanedFilters,
+    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
+    indicates: [{ id: entityId, value: entityId }],
+  };
+
   const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
@@ -186,7 +192,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
             deSelectedElements={deSelectedElements}
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
-            filters={cleanedFilters}
+            filters={toolBarFilters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="medium"
