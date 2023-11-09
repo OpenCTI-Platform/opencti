@@ -10,12 +10,12 @@ import ListSubheader from '@mui/material/ListSubheader';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
+import { Tooltip } from '@mui/material';
+import ErrorIcon from '@mui/icons-material/Error';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
-import { Tooltip } from '@mui/material';
-import ErrorIcon from '@mui/icons-material/Error';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -137,12 +137,11 @@ RoleEditionCapabilitiesComponentProps
             const isChecked = isDisabled || roleCapability !== undefined;
 
             const overrides = [];
-            for (const override of role.overrides ?? []) {
-              var hasCapability = false;
+            for (const override of role.capabilities_overrides ?? []) {
+              let hasCapability = false;
               for (const c of override?.capabilities ?? []) {
                 if (c?.name === capability.name) hasCapability = true;
               }
-              if (isDisabled) continue;
               if (!hasCapability && isChecked) overrides.push(override?.entity);
               else if (hasCapability && !isChecked) overrides.push(override?.entity);
             }
@@ -191,7 +190,7 @@ const RoleEditionCapabilities = createFragmentContainer(
           name
           description
         }
-        overrides {
+        capabilities_overrides {
           entity
           capabilities {
             id

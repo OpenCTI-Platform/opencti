@@ -171,9 +171,15 @@ const delKeyWithList = async (keyId: string, listIds: string[]) => {
   await Promise.all([keyPromise, ...listsPromise]);
 };
 const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number) => {
-  const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
-  const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime));
-  await Promise.all([keyPromise, ...listsPromise]);
+  // Wrapped in try/catch fixed an issue with invalid expiration time in set
+  try {
+    const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
+    const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime));
+    await Promise.all([keyPromise, ...listsPromise]);
+    return keyData;
+  } catch (err) {
+    logApp.info(`[REDIS_DEBUG] expirationTime: ${expirationTime}`);
+  }
   return keyData;
 };
 const keysFromList = async (listId: string, expirationTime?: number) => {

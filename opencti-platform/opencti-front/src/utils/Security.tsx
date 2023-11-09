@@ -3,6 +3,7 @@ import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 import useAuth from './hooks/useAuth';
 import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
+import useKnowledgeGranted from './hooks/useKnowledgeGranted';
 
 export const CAPABILITY_INFORMATION = {
   [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]:
@@ -14,8 +15,11 @@ interface SecurityProps {
   needs: string[];
   hasAccess?: boolean;
   matchAll?: boolean;
-  overrideEntity?: string;
   placeholder?: ReactElement;
+}
+
+interface KnowledgeSecurityProps extends SecurityProps {
+  overrideEntity: string;
 }
 
 interface DataSecurityProps extends SecurityProps {
@@ -52,12 +56,23 @@ export const granted = (
 const Security: FunctionComponent<SecurityProps> = ({
   needs,
   matchAll = false,
-  overrideEntity = null,
   hasAccess = true,
   children,
   placeholder = <span />,
 }) => {
-  const isGranted = useGranted(needs, matchAll, overrideEntity);
+  const isGranted = useGranted(needs, matchAll);
+  return isGranted && hasAccess ? children : placeholder;
+};
+
+export const KnowledgeSecurity: FunctionComponent<KnowledgeSecurityProps> = ({
+  needs,
+  overrideEntity,
+  matchAll = false,
+  hasAccess = true,
+  children,
+  placeholder = <span />,
+}) => {
+  const isGranted = useKnowledgeGranted(needs, overrideEntity, matchAll);
   return isGranted && hasAccess ? children : placeholder;
 };
 
