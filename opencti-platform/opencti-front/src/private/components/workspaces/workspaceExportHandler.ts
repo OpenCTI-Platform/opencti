@@ -1,4 +1,5 @@
 import fileDownload from 'js-file-download';
+import pjson from '../../../../package.json';
 
 interface workspaceToExport {
   name: string
@@ -9,10 +10,12 @@ interface workspaceToExport {
 const handleExportJson = (workspace: workspaceToExport) => {
   const dashboardName = workspace.name;
   const dashboardConfig = JSON.stringify({
-    version: '1.0.0',
+    openCTI_version: pjson.version,
     type: workspace.type,
-    name: dashboardName,
-    manifest: workspace.manifest,
+    configuration: {
+      name: dashboardName,
+      manifest: workspace.manifest,
+    },
   }, null, 2);
   const blob = new Blob([dashboardConfig], { type: 'text/json' });
   const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');

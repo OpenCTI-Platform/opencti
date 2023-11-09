@@ -166,9 +166,15 @@ export const workspaceImport = async (context: AuthContext, user: AuthUser, file
   const readStream = uploadedFile.createReadStream();
   const fileContent = await streamToString(readStream);
   const parsedData = JSON.parse(fileContent.toString());
-  checkDashboardConfigurationImport(parsedData);
 
-  const importWorkspaceCreation = await createEntity(context, user, parsedData, ENTITY_TYPE_WORKSPACE);
+  const mappedData = {
+    type: parsedData.type,
+    openCTI_version: parsedData.openCTI_version,
+    name: parsedData.configuration.name,
+    manifest: parsedData.configuration.manifest
+  };
+  checkDashboardConfigurationImport(mappedData);
+  const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
   const workspaceId = importWorkspaceCreation.id;
   await publishUserAction({
     user,
