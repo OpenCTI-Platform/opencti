@@ -12,7 +12,6 @@ import { Add } from '@mui/icons-material';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { Option } from '@components/common/form/ReferenceField';
 import {
   LocationCreationMutation, LocationCreationMutation$data,
   LocationCreationMutation$variables,
@@ -25,7 +24,6 @@ import SelectField from '../../../../components/SelectField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Theme } from '../../../../components/Theme';
-import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
@@ -55,6 +53,7 @@ const locationMutation = graphql`
       standard_id
       name
       entity_type
+      parent_types
     }
   }
 `;
@@ -66,7 +65,7 @@ interface LocationAddInput {
 }
 
 interface LocationCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy) => void;
   onReset?: () => void;
   display?: boolean
   contextual?: boolean
@@ -88,6 +87,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   onCompleted,
   contextual,
   creationCallback,
+  updater,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -111,6 +111,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
       variables: {
         input,
       },
+      updater: (store) => updater(store),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -172,11 +173,8 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             containerstyle={fieldSpacingContainerStyle}
           >
             {!onlyAuthors && (
-              <MenuItem value="Sector">{t('Sector')}</MenuItem>
+            <MenuItem value="Administrative-Area">{t('Administrative Area')}</MenuItem>
             )}
-            <MenuItem value="Organization">
-              {t('Organization')}
-            </MenuItem>
             {!onlyAuthors && (
               <MenuItem value="Region">{t('Region')}</MenuItem>
             )}
@@ -186,7 +184,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             {!onlyAuthors && (
               <MenuItem value="City">{t('City')}</MenuItem>
             )}
-            <MenuItem value="Individual">{t('Individual')}</MenuItem>
+            <MenuItem value="Position">{t('Position')}</MenuItem>
           </Field>
           <div className={classes.buttons}>
             <Button
@@ -217,6 +215,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   contextual,
   display,
   inputValue,
+  updater,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -224,11 +223,6 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_locations',
-    'locationAdd',
-  );
 
   const renderClassic = () => {
     return (

@@ -12,6 +12,7 @@ import AddLocationsThreatActorIndividualLines, {
   addLocationsThreatActorIndividualLinesQuery,
 } from './AddLocationsThreatActorIndividualLines';
 import LocationCreation from '../../common/location/LocationCreation';
+import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   createButton: {
@@ -52,7 +53,12 @@ class AddLocationsThreatActorIndividual extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
-    console.log('Open avec le drawer')
+    const updater = (store) => insertNode(
+      store,
+      'Pagination_threatActorIndividual_locations',
+      paginationOptions,
+      'locationAdd',
+    );
     return (
       <>
         <IconButton
@@ -101,6 +107,8 @@ class AddLocationsThreatActorIndividual extends Component {
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
+          paginationOptions={paginationOptions}
+          updater={updater}
          />
       </>
     );
