@@ -1565,7 +1565,7 @@ const prepareAttributesForUpdate = (instance, elements) => {
     // If name change already inside aliases, name must be kep untouched
     if (input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
       const aliasField = resolveAliasesField(instanceType).name;
-      const normalizeAliases = instance[aliasField] ? instance[aliasField].map(e => normalizeName(e)) : []
+      const normalizeAliases = instance[aliasField] ? instance[aliasField].map((e) => normalizeName(e)) : [];
       const name = normalizeName(input.value.at(0));
       if ((normalizeAliases).includes(name)) {
         return null;
@@ -1831,15 +1831,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
 
-  const filteredUpdates = updates.map(item => {
+  const filteredUpdates = updates.map((item) => {
     if (item.key === ATTRIBUTE_ALIASES || item.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = item.value.filter(e => normalizeName(e) !== normalizeName(initial.name))
+      const filteredValues = item.value.filter(e => normalizeName(e) !== normalizeName(initial.name));
       return {
         ...item,
         value: filteredValues
       }
-    } else { return item }
-  });
+    } return item;
+  })
 
   // Region - Pre-Check
   const elementsByKey = R.groupBy((e) => e.key, filteredUpdates);
