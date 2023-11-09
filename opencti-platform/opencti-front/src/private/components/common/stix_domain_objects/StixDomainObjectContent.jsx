@@ -430,16 +430,19 @@ class StixDomainObjectContentComponent extends Component {
       let pdfElementMaxWidth = 0;
       // We need to get the children width in order to know which mode we should save the PDF
       const elementCkEditor = document.querySelector('.ck-content.ck-editor__editable.ck-editor__editable_inline');
-      Array.from(elementCkEditor.children).forEach((c) => {
-        if (c.offsetWidth > pdfElementMaxWidth) {
-          pdfElementMaxWidth = c.offsetWidth;
-        }
-      });
+      if (elementCkEditor) {
+        Array.from(elementCkEditor.children).forEach((c) => {
+          if (c.offsetWidth > pdfElementMaxWidth) {
+            pdfElementMaxWidth = c.offsetWidth;
+          }
+        });
+      }
       const maxContentForPortraitMode = 680;
+      const pageOrientation = pdfElementMaxWidth > maxContentForPortraitMode ? 'landscape' : 'portrait';
       const pdfData = {
         content: ret.content,
         images,
-        pageOrientation: pdfElementMaxWidth > maxContentForPortraitMode ? 'landscape' : 'portrait',
+        pageOrientation,
       };
       const { protocol, hostname, port } = window.location;
       const url = `${protocol}//${hostname}:${port || ''}`;
