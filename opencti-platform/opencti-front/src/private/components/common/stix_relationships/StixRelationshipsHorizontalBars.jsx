@@ -244,11 +244,9 @@ const StixRelationshipsHorizontalBars = ({
     let dataSelectionToId = null;
     let dataSelectionFromTypes = null;
     let dataSelectionToTypes = null;
-    console.log('dataSelection', dataSelection);
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      console.log('selection', selection);
       filtersContent = selection.filters?.filters ?? [];
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
@@ -271,7 +269,6 @@ const StixRelationshipsHorizontalBars = ({
       );
     }
     const finalField = selection.attribute || field || 'entity_type';
-    console.log('seelction.filters', selection.filters);
     const variables = {
       fromId: dataSelectionFromId || stixCoreObjectId,
       toId: dataSelectionToId,

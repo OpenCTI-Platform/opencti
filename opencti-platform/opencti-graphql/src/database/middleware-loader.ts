@@ -232,12 +232,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const finalFilters = (Array.isArray(filters) || !filters) ? { // TODO remove hardcoded format and replace by 'filter' when front is migrated
-    mode: 'and',
-    filters: filters ?? [] as Filter[],
-    filterGroups: [],
-  } : filters as FilterGroup;
-  const filtersContent = finalFilters.filters ?? [];
+  const filtersContent = filters?.filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
     filtersContent.push({ key: buildRefRelationKey(relation), values: [id] });
@@ -335,9 +330,9 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     ...cleanedArgs,
     types: relationsToGet,
     filters: {
-      mode: finalFilters.mode ?? 'and',
+      mode: filters?.mode ?? 'and',
       filters: filtersContent,
-      filterGroups: finalFilters.filterGroups ?? [],
+      filterGroups: filters?.filterGroups ?? [],
     }
   };
 };
@@ -368,9 +363,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   const { toId, toRole, toTypes = [] } = args;
   const { filters = null } = args;
   // Config
-  // TODO remove hardcoded format and replace newFilters by filters when front is migrated
-  const newFilters = (Array.isArray(filters) || !filters) ? { mode: 'and', filters: [], filterGroups: [] } : filters;
-  const customFiltersContent = newFilters.filters;
+  const customFiltersContent = filters?.filters ?? [];
   // region element
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
@@ -438,9 +431,9 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   // Override some special filters
   builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
   const customFilters = {
-    mode: newFilters.mode ?? 'and',
+    mode: filters?.mode ?? 'and',
     filters: customFiltersContent,
-    filterGroups: newFilters.filterGroups ?? [],
+    filterGroups: filters?.filterGroups ?? [],
   };
   return { ...builtArgs, filters: customFilters };
 };

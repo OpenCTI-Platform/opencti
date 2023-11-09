@@ -326,7 +326,6 @@ const useSearchEntities = ({
     if (!event) {
       return;
     }
-    console.log('event.target.value', event.target.value);
     const newInputValue = { key: filterKey, values: [event.target.value?.toString()], operator: 'eq' };
     setInputValues([
       newInputValue,

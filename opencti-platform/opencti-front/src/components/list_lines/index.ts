@@ -12,9 +12,6 @@ export interface DataColumn {
 
 export type DataColumns = Record<string, DataColumn>;
 
-export type Filter = Record<string, unknown>[]; // TODO remove
-export type Filters<F = Filter> = Record<string, F>; // TODO remove
-
 export enum OrderMode {
   asc = 'asc',
   desc = 'desc',

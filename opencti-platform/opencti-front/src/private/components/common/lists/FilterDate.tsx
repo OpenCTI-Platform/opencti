@@ -44,7 +44,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 
   const handleAcceptDate = (date: Date) => {
     if (date && date.toISOString()) {
-      defaultHandleAddFilter(filterKey, date.toISOString(), operator); // TODO add value: nsd(date)
+      defaultHandleAddFilter(filterKey, date.toISOString(), operator);
     }
   };
 

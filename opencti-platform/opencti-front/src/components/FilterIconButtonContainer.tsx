@@ -94,7 +94,6 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
 
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, filtersRepresentativesQueryRef);
   const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
-  console.log('filtersRepresentatives', filtersRepresentatives);
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
