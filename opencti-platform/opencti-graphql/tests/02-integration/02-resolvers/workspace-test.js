@@ -259,7 +259,7 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid version. Your workspace version must match the current one. Actual version : 1.0.0',
+      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0',
     );
   });
 
