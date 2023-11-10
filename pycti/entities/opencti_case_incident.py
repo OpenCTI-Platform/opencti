@@ -103,6 +103,21 @@ class CaseIncident:
             severity
             priority
             response_types
+            tasks {
+                edges {
+                    node {
+                        name
+                        description
+                        due_date
+                        status {
+                          template {
+                            name
+                            color
+                          }
+                        }
+                    }
+                }
+            }
             objects(all: true) {
                 edges {
                     node {

@@ -100,6 +100,23 @@ class CaseRfi:
             name
             description
             information_types
+            severity
+            priority
+            tasks {
+                edges {
+                    node {
+                        name
+                        description
+                        due_date
+                        status {
+                          template {
+                            name
+                            color
+                          }
+                        }
+                    }
+                }
+            }
             objects(all: true) {
                 edges {
                     node {
