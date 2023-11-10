@@ -59,6 +59,12 @@ export const fileIndexingConfigurationFieldPatch = graphql`
   }
 `;
 
+export const fileIndexingResetMutation = graphql`
+  mutation FileIndexingResetMutation {
+    resetFileIndexing
+  }
+`;
+
 interface FileIndexingComponentProps {
   queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
 }

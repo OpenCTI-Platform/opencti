@@ -42,8 +42,8 @@ export const managerConfigurationEditField = async (context: AuthContext, user: 
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.manager_id}\``,
-    context_data: { id, entity_type: element.manager_id, input }
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for manager configuration \`${element.manager_id}\``,
+    context_data: { id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
 };

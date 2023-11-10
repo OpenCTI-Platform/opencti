@@ -103,7 +103,7 @@ export const deleteFile = async (context, user, id) => {
   // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
     logApp.info(`[FILE STORAGE] delete file ${id} in index`);
-    await elDeleteFilesByIds(context, user, [id])
+    await elDeleteFilesByIds([id])
       .catch((databaseError) => {
         logApp.error('[FILE STORAGE] Error deleting file in index', { databaseError });
       });

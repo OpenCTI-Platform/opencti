@@ -19,9 +19,9 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
+import { ClearOutlined, PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
+import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
 import {
   FileIndexingMonitoringQuery,
 } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
@@ -90,18 +90,32 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   const classes = useStyles();
 
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery, queryRef);
-  const indexedFiles = indexedFilesMetrics?.globalCount;
-  const volumeIndexed = indexedFilesMetrics?.globalSize;
+  const indexedFiles = indexedFilesMetrics?.globalCount ?? 0;
+  const volumeIndexed = indexedFilesMetrics?.globalSize ?? 0;
 
-  const [commit] = useMutation(fileIndexingConfigurationFieldPatch);
+  const [commitManagerRunning] = useMutation(fileIndexingConfigurationFieldPatch);
   const updateManagerRunning = (running: boolean) => {
-    commit({
+    commitManagerRunning({
       variables: {
         id: managerConfigurationId,
         input: { key: 'manager_running', value: running },
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess(`File indexing successfully ${running ? 'started' : 'paused'}`);
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
+  };
+
+  const [commitManagerReset] = useMutation(fileIndexingResetMutation);
+  const resetManager = () => {
+    commitManagerReset({
+      variables: {},
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('File indexing successfully reset');
+        refetch();
       },
       onError: (error) => {
         handleError(error);
@@ -123,6 +137,9 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   };
   const handlePause = () => {
     updateManagerRunning(false);
+  };
+  const handleReset = () => {
+    resetManager();
   };
 
   return (
@@ -158,23 +175,36 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   {t('Start')}
                 </Button>
               )}
-                </Grid>
-                <Grid item={true} xs={4}>
-                  <div className={classes.count}>
-                      {indexedFiles} / {totalFiles}
-                  </div>
-                  <div className={classes.countText}>
-                      {t('Files indexed')}
-                  </div>
-                </Grid>
-                <Grid item={true} xs={4}>
-                  <div className={classes.count}>
-                      {indexedFiles ? n(volumeIndexed) : 0}
-                  </div>
-                  <div className={classes.countText}>
-                      {t('Volume indexed')}
-                  </div>
-                </Grid>
+              { indexedFiles > 0 && (
+                <Button
+                  startIcon={<ClearOutlined />}
+                  aria-label="Reset"
+                  onClick={handleReset}
+                  size="large"
+                  color="error"
+                  variant="contained"
+                  classes={{ root: classes.button }}
+                >
+                  {t('Reset')}
+                </Button>
+              )}
+              </Grid>
+              <Grid item={true} xs={4}>
+                <div className={classes.count}>
+                    {indexedFiles} / {totalFiles}
+                </div>
+                <div className={classes.countText}>
+                    {t('Files indexed')}
+                </div>
+              </Grid>
+              <Grid item={true} xs={4}>
+                <div className={classes.count}>
+                    {indexedFiles ? n(volumeIndexed) : 0}
+                </div>
+                <div className={classes.countText}>
+                    {t('Volume indexed')}
+                </div>
+              </Grid>
             </Grid>
         </Paper>
     </div>
