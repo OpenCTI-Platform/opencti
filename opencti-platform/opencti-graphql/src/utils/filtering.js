@@ -58,10 +58,10 @@ export const RELATION_TO_TYPES = 'toTypes';
 // the second element is the converted key used in backend if different from the first element
 export const specialFilterKeysMap = new Map([
   ['sightedBy', buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
-  ['elementId', buildRefRelationKey('*')], // in relationships
+  ['elementId', buildRefRelationKey('*')], // element involved in a relationship with the entity
   ['connections', 'connections'], // for nested filters
   [`rel_${RELATION_OBJECT}`, `rel_${RELATION_OBJECT}`],
-  ['creator_id', 'creator_id'],
+  ['creator_id', 'creator_id'], // technical creator
   ['fromId', 'fromId'], // nested relation for the from of a relationship
   ['toId', 'toId'], // nested relation for the to of a relationship
   [CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_FILTER], // listened instances for an instance trigger
