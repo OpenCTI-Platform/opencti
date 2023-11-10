@@ -17,6 +17,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
+  InputMaybe,
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
@@ -91,12 +92,16 @@ const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthU
   }
 };
 
-export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
-  const authorizedMembers = input.authorized_members ?? [];
-  if (!authorizedMembers.some((e) => e.id === user.id)) {
+const initializeAuthorizedMembers = (authorizedMembers: InputMaybe<MemberAccessInput[]> | undefined, user: AuthUser) => {
+  const initializedAuthorizedMembers = authorizedMembers ?? [];
+  if (!authorizedMembers?.some((e) => e.id === user.id)) {
     // add creator to authorized_members on creation
-    authorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
+    initializedAuthorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
+  return initializedAuthorizedMembers
+}
+export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
+  const authorizedMembers = initializeAuthorizedMembers(input.authorized_members, user);
   const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   await publishUserAction({
@@ -160,6 +165,7 @@ export const checkDashboardConfigurationImport = (parsedData: any) => {
 };
 
 export const workspaceImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const authorizedMembers = initializeAuthorizedMembers([], user);
   const uploadedFile = await file;
   const readStream = uploadedFile.createReadStream();
   const fileContent = await streamToString(readStream);
@@ -169,7 +175,8 @@ export const workspaceImport = async (context: AuthContext, user: AuthUser, file
     type: parsedData.type,
     openCTI_version: parsedData.openCTI_version,
     name: parsedData.configuration.name,
-    manifest: parsedData.configuration.manifest
+    manifest: parsedData.configuration.manifest,
+    authorized_members: authorizedMembers,
   };
   checkDashboardConfigurationImport(mappedData);
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
