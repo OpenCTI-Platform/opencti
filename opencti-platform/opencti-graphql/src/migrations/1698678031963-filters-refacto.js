@@ -13,6 +13,7 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 const message = '[MIGRATION] Stored filters refacto';
 
@@ -255,6 +256,73 @@ export const up = async (next) => {
     '[MIGRATION] Workspaces filters refacto',
     READ_DATA_INDICES,
     workspacesUpdateQuery
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
+
+  // 04. Playbooks
+  const playbooks = await listAllEntities(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_PLAYBOOK],
+  );
+
+  let playbooksDefinitionConvertor = {};
+  playbooks
+    .forEach((playbook) => {
+      const playbookDefinition = JSON.parse(playbook.playbook_definition);
+      const definitionNodes = playbookDefinition.nodes;
+      const newDefinitionNodes = [];
+      for (let i = 0; i < definitionNodes.length; i += 1) {
+        const node = definitionNodes[i];
+        const nodeConfiguration = JSON.parse(node.configuration);
+        const { filters } = nodeConfiguration;
+        if (filters) {
+          const newFilters = convertFilters(filters);
+          const newNode = {
+            ...node,
+            configuration: JSON.stringify({
+              ...nodeConfiguration,
+              filters: newFilters,
+            }),
+          };
+          newDefinitionNodes.push(newNode);
+        } else { // no conversion to do
+          newDefinitionNodes.push(node);
+        }
+      }
+      const newPlaybookDefinition = {
+        ...playbookDefinition,
+        nodes: newDefinitionNodes,
+      };
+      playbooksDefinitionConvertor = {
+        ...playbooksDefinitionConvertor,
+        [playbook.internal_id]: JSON.stringify(newPlaybookDefinition),
+      };
+    });
+
+  const playbooksUpdateQuery = {
+    script: {
+      params: { convertor: playbooksDefinitionConvertor },
+      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
+    },
+    query: {
+      bool: {
+        should: [
+          {
+            bool: {
+              must: [{ term: { 'entity_type.keyword': { value: 'Playbook' } } }],
+            }
+          },
+        ],
+        minimum_should_match: 1,
+      },
+    }
+  };
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Playbooks filters refacto',
+    READ_DATA_INDICES,
+    playbooksUpdateQuery
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
