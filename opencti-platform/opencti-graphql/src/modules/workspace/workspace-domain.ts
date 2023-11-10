@@ -34,8 +34,6 @@ import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
 import { streamToString } from '../../database/file-storage';
 
-export const WORKSPACE_VERSION = '1.0.0';
-
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
 };

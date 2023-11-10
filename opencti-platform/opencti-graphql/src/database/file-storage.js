@@ -133,7 +133,7 @@ export const downloadFile = async (id) => {
   }
 };
 
-const streamToString = (stream, encoding = 'utf8') => {
+export const streamToString = (stream, encoding = 'utf8') => {
   return new Promise((resolve, reject) => {
     const chunks = [];
     stream.on('data', (chunk) => chunks.push(chunk));
