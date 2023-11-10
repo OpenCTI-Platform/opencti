@@ -15,79 +15,79 @@ import { NotesLines_data$key } from './__generated__/NotesLines_data.graphql';
 const nbOfRowsToLoad = 50;
 
 export const notesLinesQuery = graphql`
-    query NotesLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: NotesOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...NotesLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query NotesLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: NotesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...NotesLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const notesLineFragment = graphql`
-    fragment NotesLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "NotesOrdering", defaultValue: created }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "NotesLinesRefetchQuery") {
-        notes(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_notes") {
+  fragment NotesLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "NotesOrdering", defaultValue: created }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "NotesLinesRefetchQuery") {
+    notes(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_notes") {
+      edges {
+        node {
+          id
+          attribute_abstract
+          content
+          created
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
             edges {
-                node {
-                    id
-                    attribute_abstract
-                    content
-                    created
-                    createdBy {
-                        ... on Identity {
-                            id
-                            name
-                            entity_type
-                        }
-                    }
-                    objectMarking {
-                        edges {
-                            node {
-                                id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                            }
-                        }
-                    }
-                    ...NoteLine_node
-                }
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+          }
+          ...NoteLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 interface NotesLinesProps {

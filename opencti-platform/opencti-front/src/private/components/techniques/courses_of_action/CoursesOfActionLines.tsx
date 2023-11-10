@@ -13,68 +13,69 @@ import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
+
 interface CoursesOfActionLinesProps {
   queryRef: PreloadedQuery<CoursesOfActionLinesPaginationQuery>;
   dataColumns: DataColumns;
-  paginationOptions ? : CoursesOfActionLinesPaginationQuery$variables;
+  paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onLabelClick: HandleAddFilter;
 }
 
 export const coursesOfActionLinesQuery = graphql`
-    query CoursesOfActionLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: CoursesOfActionOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...CoursesOfActionLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query CoursesOfActionLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: CoursesOfActionOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...CoursesOfActionLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const coursesOfActionLinesFragment = graphql`
-        fragment CoursesOfActionLines_data on Query
-        @argumentDefinitions(
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
-            orderMode: { type: "OrderingMode", defaultValue: asc }
-            filters: { type: "FilterGroup" }
-        )
-        @refetchable(queryName: "CoursesOfActionLinesRefetchQuery") {
-            coursesOfAction(
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            ) @connection(key: "Pagination_coursesOfAction") {
-                edges {
-                    node {
-                        name
-                        ...CourseOfActionLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
+  fragment CoursesOfActionLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "CoursesOfActionLinesRefetchQuery") {
+    coursesOfAction(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_coursesOfAction") {
+      edges {
+        node {
+          name
+          ...CourseOfActionLine_node
         }
-    `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const CoursesOfActionLines: FunctionComponent<CoursesOfActionLinesProps> = ({
   setNumberOfElements,
@@ -83,7 +84,7 @@ const CoursesOfActionLines: FunctionComponent<CoursesOfActionLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   CoursesOfActionLinesPaginationQuery,
   CoursesOfActionLines_data$key
   >({

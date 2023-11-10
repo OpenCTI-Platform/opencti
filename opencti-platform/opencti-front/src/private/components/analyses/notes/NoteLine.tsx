@@ -111,7 +111,7 @@ const NoteLineComponent: FunctionComponent<NoteLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Note" />
+        <ItemIcon type="Note"/>
       </ListItemIcon>
       <ListItemText
         primary={
@@ -192,7 +192,7 @@ const NoteLineComponent: FunctionComponent<NoteLineComponentProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined/>
       </ListItemIcon>
     </ListItem>
   );
@@ -263,7 +263,7 @@ export const NoteLineDummy = ({
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox edge="start" disabled={true} disableRipple={true}/>
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
@@ -368,7 +368,7 @@ export const NoteLineDummy = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined/>
       </ListItemIcon>
     </ListItem>
   );

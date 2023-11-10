@@ -16,68 +16,68 @@ import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks
 const nbOfRowsToLoad = 50;
 
 interface IndividualsLinesProps {
-  queryRef: PreloadedQuery < IndividualsLinesPaginationQuery >;
+  queryRef: PreloadedQuery<IndividualsLinesPaginationQuery>;
   dataColumns: DataColumns;
-  paginationOptions ? : IndividualsLinesPaginationQuery$variables;
+  paginationOptions?: IndividualsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onLabelClick: HandleAddFilter;
 }
 
 export const individualsLinesQuery = graphql`
-    query IndividualsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: IndividualsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...IndividualsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query IndividualsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: IndividualsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...IndividualsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const individualsLinesFragment = graphql`
-    fragment IndividualsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "IndividualsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "IndividualsLinesRefetchQuery") {
-        individuals(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_individuals") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    ...IndividualLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment IndividualsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "IndividualsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "IndividualsLinesRefetchQuery") {
+    individuals(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_individuals") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...IndividualLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const IndividualsLines: FunctionComponent<IndividualsLinesProps> = ({
@@ -87,7 +87,7 @@ const IndividualsLines: FunctionComponent<IndividualsLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   IndividualsLinesPaginationQuery,
   IndividualsLines_data$key
   >({

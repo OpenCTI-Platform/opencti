@@ -11,9 +11,13 @@ import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
 import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
-import { ThreatActorsIndividualCardsPaginationQuery } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import {
+  ThreatActorsIndividualCardsPaginationQuery,
+} from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import { ThreatActorsIndividualCards_data$key } from './__generated__/ThreatActorsIndividualCards_data.graphql';
-import { StixDomainObjectBookmarksQuery$data } from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
+import {
+  StixDomainObjectBookmarksQuery$data,
+} from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 
 const nbOfCardsToLoad = 20;
@@ -28,14 +32,14 @@ export const threatActorsIndividualCardsPaginationQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ThreatActorsIndividualCards_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 

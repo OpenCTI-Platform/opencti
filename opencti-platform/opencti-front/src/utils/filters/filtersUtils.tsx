@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../components/i18n';
 
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
@@ -15,6 +16,7 @@ export type FilterGroup = {
 
 // TODO: import from graphql generated types
 export type Filter = {
+  id?: string;
   key: string; // key is a string in front
   values: string[];
   operator: string;
@@ -54,9 +56,19 @@ export const directFilters = [
   'instance_trigger',
   'containers',
   'objectContains',
+  'entity_type',
+];
+export const inlineFilters = [
+  'is_read',
+  'trigger_type',
+  'instance_trigger',
 ];
 
-export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
+export const integerFilters = [
+  'x_opencti_base_score',
+  'x_opencti_score',
+];
+
 // filters that can have 'eq' or 'not_eq' operator
 export const EqFilters = [
   'objectLabel',
@@ -225,6 +237,7 @@ export const filtersWithEntityType = (
   type: string | string[],
 ): FilterGroup => {
   const entityTypeFilter: Filter = {
+    id: uuid(),
     key: 'entity_type',
     values: Array.isArray(type) ? type : [type],
     operator: 'eq',
@@ -431,6 +444,7 @@ export const addFilter = (
     mode: filters?.mode ?? 'and',
     filters: (filters?.filters ?? []).concat([
       {
+        id: uuid(),
         key,
         values: Array.isArray(value) ? value : [value],
         operator,
@@ -573,4 +587,52 @@ export const filtersAfterSwitchLocalMode = (
     }
   }
   return undefined;
+};
+
+const defaultFilterObject: Filter = {
+  id: '',
+  key: '',
+  values: [],
+  operator: '',
+  mode: 'or',
+};
+export const getDefaultOperatorFilter = (filterKey: string) => {
+  if (EqFilters.includes(filterKey)) {
+    return 'eq';
+  }
+  if (dateFilters.includes(filterKey)) {
+    return 'gt';
+  }
+  if (integerFilters.includes(filterKey)) {
+    return 'gt';
+  }
+  if (booleanFilters.includes(filterKey)) {
+    return 'eq';
+  }
+  return 'eq';
+};
+
+export const getDefaultFilterObject = (key: string): Filter => {
+  return {
+    ...defaultFilterObject,
+    id: uuid(),
+    key,
+    operator: getDefaultOperatorFilter(key),
+  };
+};
+
+export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
+  if (EqFilters.includes(filterKey)) {
+    return ['eq', 'not_eq', 'nil', 'not_nil'];
+  }
+  if (dateFilters.includes(filterKey)) {
+    return ['gt', 'gte', 'lt', 'lte'];
+  }
+  if (integerFilters.includes(filterKey)) {
+    return ['gt', 'gte', 'lt', 'lte'];
+  }
+  if (booleanFilters.includes(filterKey)) {
+    return ['eq', 'not_eq'];
+  }
+  return ['eq', 'not_eq', 'nil', 'not_nil'];
 };

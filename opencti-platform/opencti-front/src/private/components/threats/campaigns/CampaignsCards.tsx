@@ -1,7 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { StixDomainObjectBookmarksQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
-import { CampaignsCardsPaginationQuery } from '@components/threats/campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
+import {
+  StixDomainObjectBookmarksQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
+import {
+  CampaignsCardsPaginationQuery,
+} from '@components/threats/campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
 import { CampaignsCards_data$key } from '@components/threats/campaigns/__generated__/CampaignsCards_data.graphql';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import CampaignCard from './CampaignCard';
@@ -28,14 +32,14 @@ export const campaignsCardsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...CampaignsCards_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 

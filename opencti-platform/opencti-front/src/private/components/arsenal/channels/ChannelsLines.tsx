@@ -22,60 +22,60 @@ interface ChannelsLinesProps {
 }
 
 export const channelsLinesQuery = graphql`
-    query ChannelsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: ChannelsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...ChannelsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query ChannelsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: ChannelsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ChannelsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const channelsLinesFragment = graphql`
-    fragment ChannelsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "ChannelsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "ChannelsLinesRefetchQuery") {
-        channels(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_channels") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    ...ChannelLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment ChannelsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "ChannelsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ChannelsLinesRefetchQuery") {
+    channels(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_channels") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...ChannelLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const ChannelsLines: FunctionComponent<ChannelsLinesProps> = ({
@@ -85,7 +85,7 @@ const ChannelsLines: FunctionComponent<ChannelsLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ChannelsLinesPaginationQuery,
   ChannelsLines_data$key
   >({
@@ -97,22 +97,22 @@ const ChannelsLines: FunctionComponent<ChannelsLinesProps> = ({
   });
 
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.channels?.edges ?? []}
-        globalCount={
-          data?.channels?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
-        LineComponent={ChannelLine}
-        DummyLineComponent={ChannelLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        onLabelClick={onLabelClick}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.channels?.edges ?? []}
+      globalCount={
+        data?.channels?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
+      LineComponent={ChannelLine}
+      DummyLineComponent={ChannelLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
+    />
   );
 };
 

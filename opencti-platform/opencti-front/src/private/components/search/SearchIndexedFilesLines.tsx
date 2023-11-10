@@ -38,45 +38,45 @@ interface SearchIndexedFilesLinesProps {
 }
 
 export const searchIndexedFilesLinesQuery = graphql`
-    query SearchIndexedFilesLinesPaginationQuery(
-        $search: String
-        $first: Int
-        $cursor: ID
-    ) {
-        ...SearchIndexedFilesLines_data
-        @arguments(
-            search: $search
-            first: $first
-            cursor: $cursor
-        )
-    }
+  query SearchIndexedFilesLinesPaginationQuery(
+    $search: String
+    $first: Int
+    $cursor: ID
+  ) {
+    ...SearchIndexedFilesLines_data
+    @arguments(
+      search: $search
+      first: $first
+      cursor: $cursor
+    )
+  }
 `;
 
 export const searchIndexedFilesLinesFragment = graphql`
-    fragment SearchIndexedFilesLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        first: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-    )
-    @refetchable(queryName: "SearchIndexedFilesLinesRefetchQuery") {
-        indexedFiles(
-            search: $search
-            first: $first
-            after: $cursor
-        ) @connection(key: "Pagination_indexedFiles") {
-            edges {
-                node {
-                  ...SearchIndexedFileLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment SearchIndexedFilesLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    first: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+  )
+  @refetchable(queryName: "SearchIndexedFilesLinesRefetchQuery") {
+    indexedFiles(
+      search: $search
+      first: $first
+      after: $cursor
+    ) @connection(key: "Pagination_indexedFiles") {
+      edges {
+        node {
+          ...SearchIndexedFileLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const SearchIndexedFilesLines: FunctionComponent<SearchIndexedFilesLinesProps> = ({
@@ -86,7 +86,7 @@ const SearchIndexedFilesLines: FunctionComponent<SearchIndexedFilesLinesProps> =
   setNumberOfElements,
   queryRef,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   SearchIndexedFilesLinesPaginationQuery,
   SearchIndexedFilesLines_data$key
   >({

@@ -6,7 +6,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import {
-  AccountCircleOutlined,
+  AccountCircleOutlined, BiotechOutlined,
   ContentPasteSearchOutlined,
   ExploreOutlined,
   InsertChartOutlined,
@@ -45,7 +45,6 @@ import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
-import Filters from '../common/lists/Filters';
 import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
@@ -131,27 +130,27 @@ const topBarQuery = graphql`
 
 const routes = {
   // ME
-  '/dashboard/profile/me': () => <TopMenuProfile />,
-  '/dashboard/profile/': () => <TopMenuNotifications />,
-  '/dashboard/cases': () => <TopMenuCases />,
-  '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id} />,
-  '/dashboard/analyses': () => <TopMenuAnalyses />,
-  '/dashboard/events': () => <TopMenuEvents />,
-  '/dashboard/observations': () => <TopMenuObservations />,
-  '/dashboard/threats': () => <TopMenuThreats />,
-  '/dashboard/arsenal': () => <TopMenuArsenal />,
-  '/dashboard/entities': () => <TopMenuEntities />,
-  '/dashboard/locations': () => <TopMenuLocation />,
-  '/dashboard/techniques': () => <TopMenuTechniques />,
-  '/dashboard/data': () => <TopMenuData />,
-  '/dashboard/settings': () => <TopMenuSettings />,
-  '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards />,
+  '/dashboard/profile/me': () => <TopMenuProfile/>,
+  '/dashboard/profile/': () => <TopMenuNotifications/>,
+  '/dashboard/cases': () => <TopMenuCases/>,
+  '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id}/>,
+  '/dashboard/analyses': () => <TopMenuAnalyses/>,
+  '/dashboard/events': () => <TopMenuEvents/>,
+  '/dashboard/observations': () => <TopMenuObservations/>,
+  '/dashboard/threats': () => <TopMenuThreats/>,
+  '/dashboard/arsenal': () => <TopMenuArsenal/>,
+  '/dashboard/entities': () => <TopMenuEntities/>,
+  '/dashboard/locations': () => <TopMenuLocation/>,
+  '/dashboard/techniques': () => <TopMenuTechniques/>,
+  '/dashboard/data': () => <TopMenuData/>,
+  '/dashboard/settings': () => <TopMenuSettings/>,
+  '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards/>,
   '/dashboard/workspaces/investigations': () => (
-    <TopMenuWorkspacesInvestigations />
+    <TopMenuWorkspacesInvestigations/>
   ),
-  '/dashboard/search': () => <TopMenuSearch />,
-  '/dashboard/import': () => <TopMenuImport />,
-  '/dashboard': () => <TopMenuDashboard />,
+  '/dashboard/search': () => <TopMenuSearch/>,
+  '/dashboard/import': () => <TopMenuImport/>,
+  '/dashboard': () => <TopMenuDashboard/>,
 };
 
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
@@ -236,7 +235,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
   const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
   const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
-    ?? [];
+  ?? [];
   return (
     <AppBar
       position="fixed"
@@ -270,33 +269,21 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   variant="topBar"
                   placeholder={`${t('Search the platform')}...`}
                 />
-                <Filters
-                  variant="dialog"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'objectLabel',
-                    'objectMarking',
-                    'createdBy',
-                    'source_reliability',
-                    'confidence',
-                    'x_opencti_organization_type',
-                    'creator_id',
-                    'created',
-                    'created_at',
-                  ]}
-                  disabled={location.pathname.includes('/dashboard/search/')}
-                  size={undefined}
-                  fontSize={undefined}
-                  noDirectFilters={undefined}
-                  availableEntityTypes={undefined}
-                  availableRelationshipTypes={undefined}
-                  allEntityTypes={undefined}
-                  handleAddFilter={undefined}
-                  handleRemoveFilter={undefined}
-                  handleSwitchFilter={undefined}
-                  type={undefined}
-                  availableRelationFilterTypes={undefined}
-                />
+                <Tooltip title={t('Advanced search')}>
+                  <IconButton
+                    component={Link}
+                    to="/dashboard/search"
+                    color={
+                      location.pathname.includes('/dashboard/search')
+                      && !location.pathname.includes('/dashboard/search_bulk')
+                        ? 'secondary'
+                        : 'default'
+                    }
+                    size={'medium'}
+                  >
+                    <BiotechOutlined fontSize={'medium'}/>
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title={t('Bulk search')}>
                   <IconButton
                     component={Link}
@@ -308,11 +295,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     }
                     size="medium"
                   >
-                    <ContentPasteSearchOutlined fontSize="medium" />
+                    <ContentPasteSearchOutlined fontSize="medium"/>
                   </IconButton>
                 </Tooltip>
               </div>
-              <Divider className={classes.divider} orientation="vertical" />
+              <Divider className={classes.divider} orientation="vertical"/>
             </React.Fragment>
           </Security>
           <div className={classes.barRightContainer}>
@@ -331,7 +318,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     }
                     size="medium"
                   >
-                    <InsertChartOutlined fontSize="medium" />
+                    <InsertChartOutlined fontSize="medium"/>
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={t('Investigations')}>
@@ -347,7 +334,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     }
                     size="medium"
                   >
-                    <ExploreOutlined fontSize="medium" />
+                    <ExploreOutlined fontSize="medium"/>
                   </IconButton>
                 </Tooltip>
               </React.Fragment>
@@ -364,7 +351,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   }
                   size="medium"
                 >
-                  <DatabaseCogOutline fontSize="medium" />
+                  <DatabaseCogOutline fontSize="medium"/>
                 </IconButton>
               </Tooltip>
             </Security>
@@ -390,7 +377,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     variant="dot"
                     invisible={!isNewNotification}
                   >
-                    <NotificationsOutlined fontSize="medium" />
+                    <NotificationsOutlined fontSize="medium"/>
                   </Badge>
                 </IconButton>
               </Tooltip>
@@ -408,7 +395,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   : 'default'
               }
             >
-              <AccountCircleOutlined fontSize="medium" />
+              <AccountCircleOutlined fontSize="medium"/>
             </IconButton>
             <Menu
               id="menu-appbar"

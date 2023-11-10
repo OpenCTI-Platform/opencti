@@ -1,26 +1,32 @@
-import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import React, {FunctionComponent} from 'react';
+import {createFragmentContainer, graphql} from 'react-relay';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, {
   containerStixCyberObservablesLinesQuery,
 } from './ContainerStixCyberObservablesLines';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import {usePaginationLocalStorage} from '../../../../utils/hooks/useLocalStorage';
+import {ModuleHelper} from '../../../../utils/platformModulesHelper';
 import {
   ContainerStixCyberObservablesLinesQuery,
   ContainerStixCyberObservablesLinesQuery$variables,
 } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { ContainerStixCyberObservables_container$data } from './__generated__/ContainerStixCyberObservables_container.graphql';
+import {
+  ContainerStixCyberObservables_container$data
+} from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
-import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import {
+  ContainerStixCyberObservablesLinesSearchQuery$data
+} from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
+import {UserContext} from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
-import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
+import {ContainerStixCyberObservableLineDummy} from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
+import {
+  ContainerStixCyberObservableLine_node$data
+} from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import {
   GqlFilterGroup,
   initialFilterGroup,
@@ -66,8 +72,8 @@ interface ContainerStixCyberObservablesComponentProps {
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
-ContainerStixCyberObservablesComponentProps
-> = ({ container }) => {
+  ContainerStixCyberObservablesComponentProps
+> = ({container}) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
@@ -161,7 +167,7 @@ ContainerStixCyberObservablesComponentProps
     data: ContainerStixCyberObservablesLinesSearchQuery$data,
   ) => {
     return (data.container?.objects?.edges ?? [])
-      .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
+      .map((o) => ({id: o?.node.id, value: o?.node.observable_value}))
       .filter((o) => o.id) as { id: string; value: string }[];
   };
   const handleCopy = useCopy<ContainerStixCyberObservablesLinesSearchQuery$data>(
@@ -170,7 +176,7 @@ ContainerStixCyberObservablesComponentProps
       searchTerm: searchTerm ?? '',
       query: ContainerStixCyberObservablesLinesSearchQuery,
       selectedValues: Object.values(selectedElements).map(
-        ({ observable_value }) => observable_value,
+        ({observable_value}) => observable_value,
       ),
       deselectedIds: Object.values(deSelectedElements).map((o) => o.id),
       elementId: container.id,
@@ -227,7 +233,7 @@ ContainerStixCyberObservablesComponentProps
   );
   return (
     <UserContext.Consumer>
-      {({ platformModuleHelpers }) => (
+      {({platformModuleHelpers}) => (
         <ExportContextProvider>
           <ListLines
             sortBy={sortBy}

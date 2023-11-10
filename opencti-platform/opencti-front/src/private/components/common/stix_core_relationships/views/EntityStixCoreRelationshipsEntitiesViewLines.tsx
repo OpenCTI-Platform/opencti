@@ -3,15 +3,21 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../../components/list_lines';
 import type { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
-import { EntityStixCoreRelationshipsEntitiesLineDummy, EntityStixCoreRelationshipsEntitiesViewLine } from './EntityStixCoreRelationshipsEntitiesViewLine';
+import {
+  EntityStixCoreRelationshipsEntitiesLineDummy,
+  EntityStixCoreRelationshipsEntitiesViewLine,
+} from './EntityStixCoreRelationshipsEntitiesViewLine';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
 import {
-  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery, EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { EntityStixCoreRelationshipsEntitiesViewLines_data$key } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLines_data.graphql';
+import {
+  EntityStixCoreRelationshipsEntitiesViewLines_data$key,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLines_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -81,17 +87,17 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $elementId: [String]
   ) {
     ...EntityStixCoreRelationshipsEntitiesViewLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-        types: $types
-        relationship_type: $relationship_type
-        elementId: $elementId
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      types: $types
+      relationship_type: $relationship_type
+      elementId: $elementId
+    )
   }
 `;
 
@@ -152,14 +158,14 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
     { count: 25, ...props.paginationOptions },
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
       <EntityStixCoreRelationshipsEntitiesComponent
         {...props}
         queryRef={queryRef}
       />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement}/>
   );
 };
 

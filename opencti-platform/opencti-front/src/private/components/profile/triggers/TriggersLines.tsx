@@ -6,7 +6,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { TriggersLines_data$key } from './__generated__/TriggersLines_data.graphql';
-import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables,
+} from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
 
 const nbOfRowsToLoad = 50;
@@ -32,15 +35,15 @@ export const triggersLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...TriggersLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        includeAuthorities: $includeAuthorities
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      includeAuthorities: $includeAuthorities
+      filters: $filters
+    )
   }
 `;
 

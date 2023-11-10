@@ -299,6 +299,15 @@ interface EntityWithLabelValue {
   type: string;
 }
 
+export interface SearchEntitiesProps {
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  searchContext: { entityTypes: string[]; elementId?: string[] };
+  searchScope: Record<string, string[]>;
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
+  allEntityTypes?: boolean;
+}
+
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
@@ -323,7 +332,7 @@ const useSearchEntities = ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
       ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
-          === index,
+        === index,
     ),
   }));
   const entityType = searchContext?.entityTypes?.length > 0

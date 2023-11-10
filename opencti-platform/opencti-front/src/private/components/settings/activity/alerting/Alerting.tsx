@@ -33,60 +33,60 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export const alertingQuery = graphql`
-    query AlertingPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: TriggersOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...AlertingLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query AlertingPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: TriggersOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...AlertingLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const alertingFragment = graphql`
-    fragment AlertingLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "TriggersOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "AlertingLinesRefetchQuery") {
-        triggersActivity(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_triggersActivity") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    ...AlertingLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment AlertingLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "TriggersOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "AlertingLinesRefetchQuery") {
+    triggersActivity(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_triggersActivity") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...AlertingLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 interface AlertingLinesProps {
@@ -115,20 +115,20 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
     setNumberOfElements,
   });
   return (
-        <ListLinesContent
-            initialLoading={!data}
-            isLoading={isLoadingMore}
-            loadMore={loadMore}
-            hasMore={hasMore}
-            dataList={data?.triggersActivity?.edges ?? []}
-            globalCount={data?.triggersActivity?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-            LineComponent={AlertingLineComponent}
-            DummyLineComponent={AlertingLineDummy}
-            dataColumns={dataColumns}
-            nbOfRowsToLoad={nbOfRowsToLoad}
-            paginationOptions={paginationOptions}
-            onLabelClick={onLabelClick}
-        />
+    <ListLinesContent
+      initialLoading={!data}
+      isLoading={isLoadingMore}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      dataList={data?.triggersActivity?.edges ?? []}
+      globalCount={data?.triggersActivity?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={AlertingLineComponent}
+      DummyLineComponent={AlertingLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
+    />
   );
 };
 
@@ -219,9 +219,9 @@ const Alerting: FunctionComponent = () => {
 
   return (
     <div className={classes.container}>
-      <ActivityMenu />
+      <ActivityMenu/>
       {renderLines()}
-      <AlertCreation paginationOptions={paginationOptions} />
+      <AlertCreation paginationOptions={paginationOptions}/>
     </div>
   );
 };

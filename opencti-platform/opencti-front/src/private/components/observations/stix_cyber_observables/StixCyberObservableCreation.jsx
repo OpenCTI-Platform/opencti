@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 280,
+    right: 30,
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -390,13 +390,13 @@ const StixCyberObservableCreation = ({
                     dense={true}
                     onClick={() => selectType(subType.label)}
                   >
-                    <ListItemText primary={subType.tlabel} />
+                    <ListItemText primary={subType.tlabel}/>
                   </ListItemButton>
                 ))}
               </List>
             );
           }
-          return <div />;
+          return <div/>;
         }}
       />
     );
@@ -629,7 +629,7 @@ const StixCyberObservableCreation = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <CustomFileUploader setFieldValue={setFieldValue} />
+                    <CustomFileUploader setFieldValue={setFieldValue}/>
                     <Field
                       component={SwitchField}
                       type="checkbox"
@@ -661,7 +661,7 @@ const StixCyberObservableCreation = ({
               </Formik>
             );
           }
-          return <div />;
+          return <div/>;
         }}
       />
     );
@@ -676,7 +676,7 @@ const StixCyberObservableCreation = ({
           aria-label="Add"
           className={classes.createButton}
         >
-          <Add />
+          <Add/>
         </Fab>
         <Drawer
           open={status.open}
@@ -694,7 +694,7 @@ const StixCyberObservableCreation = ({
               size="large"
               color="primary"
             >
-              <Close fontSize="small" color="primary" />
+              <Close fontSize="small" color="primary"/>
             </IconButton>
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
@@ -716,7 +716,7 @@ const StixCyberObservableCreation = ({
             aria-label="Add"
             className={classes.createButtonContextual}
           >
-            <Add />
+            <Add/>
           </Fab>
         )}
         <Dialog

@@ -50,18 +50,18 @@ export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...RelationshipsStixCoreRelationshipsLines_data
-      @arguments(
-        search: $search
-        fromId: $fromId
-        toId: $toId
-        fromTypes: $fromTypes
-        toTypes: $toTypes
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
+      toTypes: $toTypes
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -3404,67 +3404,67 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
 `;
 
 export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
-      fragment RelationshipsStixCoreRelationshipsLines_data on Query
-      @argumentDefinitions(
-        search: { type: "String" }
-        fromId: { type: "[String]" }
-        toId: { type: "[String]" }
-        fromTypes: { type: "[String]" }
-        toTypes: { type: "[String]" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCoreRelationshipsOrdering"
-          defaultValue: created
-        }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-      )
-      @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
-          stixCoreRelationships(
-          search: $search
-          fromId: $fromId
-          toId: $toId
-          fromTypes: $fromTypes
-          toTypes: $toTypes
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        ) @connection(key: "Pagination_stixCoreRelationships") {
-          edges {
-            node {
-              id
-              entity_type
-              created_at
-              createdBy {
-                ... on Identity {
-                  name
-                }
-              }
-              objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
-              }
-              ...RelationshipsStixCoreRelationshipLine_node
+  fragment RelationshipsStixCoreRelationshipsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    fromId: { type: "[String]" }
+    toId: { type: "[String]" }
+    fromTypes: { type: "[String]" }
+    toTypes: { type: "[String]" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixCoreRelationshipsOrdering"
+      defaultValue: created
+    }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
+    stixCoreRelationships(
+      search: $search
+      fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
+      toTypes: $toTypes
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreRelationships") {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
             }
           }
-          pageInfo {
-            endCursor
-            hasNextPage
-            globalCount
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
           }
+          ...RelationshipsStixCoreRelationshipLine_node
         }
       }
-    `;
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 const RelationshipsStixCoreRelationshipsLines: FunctionComponent<RelationshipsStixCoreRelationshipsLinesProps> = ({
   dataColumns,
   onLabelClick,
@@ -3476,7 +3476,7 @@ const RelationshipsStixCoreRelationshipsLines: FunctionComponent<RelationshipsSt
   setNumberOfElements,
   queryRef,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLines_data$key
   >({

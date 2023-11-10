@@ -1,5 +1,4 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   EntitiesStixDomainObjectsLinesPaginationQuery,
   EntitiesStixDomainObjectsLinesPaginationQuery$variables,
@@ -13,7 +12,6 @@ import ToolBar from './ToolBar';
 import EntitiesStixDomainObjectsLines, {
   entitiesStixDomainObjectsLinesQuery,
 } from './entities/EntitiesStixDomainObjectsLines';
-import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 import useAuth from '../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -21,19 +19,12 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    paddingRight: 250,
-  },
-}));
-
 const LOCAL_STORAGE_KEY = 'entities';
 
 const Entities = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const classes = useStyles();
   const {
     viewStorage,
     paginationOptions,
@@ -131,6 +122,7 @@ const Entities = () => {
               handleToggleExports={storageHelpers.handleToggleExports}
               openExports={openExports}
               handleToggleSelectAll={handleToggleSelectAll}
+              availableEntityTypes={['Stix-Domain-Object']}
               exportEntityType="Stix-Domain-Object"
               selectAll={selectAll}
               disableCards={true}
@@ -142,6 +134,7 @@ const Entities = () => {
               iconExtension={true}
               secondaryAction={true}
               availableFilterKeys={[
+                'entity_type',
                 'objectLabel',
                 'objectMarking',
                 'createdBy',
@@ -192,16 +185,11 @@ const Entities = () => {
     );
   };
   return (
-      <ExportContextProvider>
-        <div className={classes.container}>
-          {renderLines()}
-          <StixDomainObjectsRightBar
-            types={types}
-            handleToggle={storageHelpers.handleToggleTypes}
-            handleClear={storageHelpers.handleClearTypes}
-          />
-        </div>
-      </ExportContextProvider>
+    <ExportContextProvider>
+      <div>
+        {renderLines()}
+      </div>
+    </ExportContextProvider>
   );
 };
 

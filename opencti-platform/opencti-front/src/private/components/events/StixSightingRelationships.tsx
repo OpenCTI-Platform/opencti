@@ -107,7 +107,7 @@ const StixSightingRelationships = () => {
   } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
   const renderLines = (
-    paginationOptions : StixSightingRelationshipsLinesPaginationQuery$variables,
+    paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
   ) => {
     const toolBarFilters = filtersWithEntityType(filters, 'stix-sighting-relationship');
     return (
@@ -147,7 +147,7 @@ const StixSightingRelationships = () => {
         >
           <QueryRenderer
             query={stixSightingRelationshipsLinesQuery}
-            variables={paginationOptions}
+            variables={rawPaginationOptions}
             render={({
               props,
             }: {

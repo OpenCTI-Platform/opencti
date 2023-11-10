@@ -12,6 +12,7 @@ import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntities.util';
 
 interface FiltersProps {
   variant?: string;
@@ -32,6 +33,7 @@ interface FiltersProps {
   searchContext?: { entityTypes: string[], elementId?: string[] };
   type?: string;
 }
+
 const Filters: FunctionComponent<FiltersProps> = ({
   variant,
   disabled,
@@ -57,7 +59,33 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
   const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>([]);
   const [keyword, setKeyword] = useState('');
-
+  const [searchScope, _] = useState<Record<string, string[]>>(
+    availableRelationFilterTypes || {
+      targets: [
+        'Region',
+        'Country',
+        'Administrative-Area',
+        'City',
+        'Position',
+        'Sector',
+        'Organization',
+        'Individual',
+        'System',
+        'Event',
+        'Vulnerability',
+      ],
+    },
+  );
+  // TODO Issue first ok, second rendering with undefined
+  // console.log(availableEntityTypes);
+  setSearchEntitiesScope({
+    searchContext: searchContext ?? { entityTypes: [] },
+    searchScope,
+    setInputValues: setInputValues as (value: { key: string, values: string[], operator?: string }[]) => void,
+    availableEntityTypes,
+    availableRelationshipTypes,
+    allEntityTypes,
+  });
   const handleOpenFilters = (event: React.SyntheticEvent) => {
     setOpen(true);
     setAnchorEl(event.currentTarget);

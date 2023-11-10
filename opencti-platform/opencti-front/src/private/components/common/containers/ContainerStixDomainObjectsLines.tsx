@@ -40,91 +40,91 @@ interface ContainerStixDomainObjectsLinesProps {
 }
 
 export const containerStixDomainObjectsLinesQuery = graphql`
-    query ContainerStixDomainObjectsLinesQuery(
-        $id: String!
-        $search: String
-        $types: [String]
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixObjectOrStixRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-            ...ContainerStixDomainObjectsLines_container
-            @arguments(
-                search: $search
-                types: $types
-                count: $count
-                cursor: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            )
-    }
+  query ContainerStixDomainObjectsLinesQuery(
+    $id: String!
+    $search: String
+    $types: [String]
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixObjectOrStixRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ContainerStixDomainObjectsLines_container
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const containerStixDomainObjectsLinesFragment = graphql`
-    fragment ContainerStixDomainObjectsLines_container on Query
-    @argumentDefinitions(
-        types: { type: "[String]" }
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-            type: "StixObjectOrStixRelationshipsOrdering"
-            defaultValue: name
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "ContainerStixDomainObjectsLinesRefetchQuery") {
-        container(id: $id) {
-            id
-            confidence
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                edges {
-                    node {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
-            }
-            objects(
-                types: $types
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            ) @connection(key: "Pagination_objects") {
-                edges {
-                    types
-                    node {
-                        ... on BasicObject {
-                            id
-                        }
-                        ...ContainerStixDomainObjectLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
-        }
+  fragment ContainerStixDomainObjectsLines_container on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixObjectOrStixRelationshipsOrdering"
+      defaultValue: name
     }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ContainerStixDomainObjectsLinesRefetchQuery") {
+    container(id: $id) {
+      id
+      confidence
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      objects(
+        types: $types
+        search: $search
+        first: $count
+        after: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      ) @connection(key: "Pagination_objects") {
+        edges {
+          types
+          node {
+            ... on BasicObject {
+              id
+            }
+            ...ContainerStixDomainObjectLine_node
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
+      }
+    }
+  }
 `;
 
 const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObjectsLinesProps> = ({
@@ -153,49 +153,49 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   const currentSelection = container?.objects?.edges ?? [];
   const selectWithoutInferred = currentSelection.filter((edge) => (edge?.types ?? ['manual']).includes('manual'));
   return (
-      <div>
-        <ListLinesContent
-          initialLoading={!container}
-          isLoading={isLoadingMore}
-          loadMore={loadMore}
-          hasMore={hasMore}
-          dataList={container?.objects?.edges ?? []}
-          paginationOptions={paginationOptions}
-          globalCount={
-            container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-          }
-          LineComponent={
-            <ContainerStixDomainObjectLine
-              containerId={container?.id ?? null}
-            />
-          }
-          DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          selectAll={selectAll}
-          onToggleEntity={onToggleEntity}
-        />
-        {container && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ContainerAddStixCoreObjects
-              containerId={container.id}
-              containerStixCoreObjects={selectWithoutInferred}
-              paginationOptions={paginationOptions}
-              withPadding={true}
-              targetStixCoreObjectTypes={['Stix-Domain-Object']}
-              onTypesChange={onTypesChange}
-              openExports={openExports}
-              defaultCreatedBy={container.createdBy ?? null}
-              defaultMarkingDefinitions={(
-                container.objectMarking?.edges ?? []
-              ).map((n) => n.node)}
-              confidence={container.confidence}
-            />
-          </Security>
-        )}
-      </div>
+    <div>
+      <ListLinesContent
+        initialLoading={!container}
+        isLoading={isLoadingMore}
+        loadMore={loadMore}
+        hasMore={hasMore}
+        dataList={container?.objects?.edges ?? []}
+        paginationOptions={paginationOptions}
+        globalCount={
+          container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+        }
+        LineComponent={
+          <ContainerStixDomainObjectLine
+            containerId={container?.id ?? null}
+          />
+        }
+        DummyLineComponent={<ContainerStixDomainObjectLineDummy/>}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity}
+      />
+      {container && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerAddStixCoreObjects
+            containerId={container.id}
+            containerStixCoreObjects={selectWithoutInferred}
+            paginationOptions={paginationOptions}
+            withPadding={true}
+            targetStixCoreObjectTypes={['Stix-Domain-Object']}
+            onTypesChange={onTypesChange}
+            openExports={openExports}
+            defaultCreatedBy={container.createdBy ?? null}
+            defaultMarkingDefinitions={(
+              container.objectMarking?.edges ?? []
+            ).map((n) => n.node)}
+            confidence={container.confidence}
+          />
+        </Security>
+      )}
+    </div>
   );
 };
 

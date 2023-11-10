@@ -35,80 +35,80 @@ interface EntitiesStixDomainObjectsLinesProps {
 }
 
 export const entitiesStixDomainObjectsLinesQuery = graphql`
-    query EntitiesStixDomainObjectsLinesPaginationQuery(
-        $types: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixDomainObjectsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...EntitiesStixDomainObjectsLines_data
-        @arguments(
-            types: $types
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query EntitiesStixDomainObjectsLinesPaginationQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixDomainObjectsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...EntitiesStixDomainObjectsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const entitiesStixDomainObjectsLinesFragment = graphql`
-        fragment EntitiesStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-            types: { type: "[String]" }
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-            orderMode: { type: "OrderingMode", defaultValue: asc }
-            filters: { type: "FilterGroup" }
-        )
-        @refetchable(queryName: "EntitiesStixDomainObjectsLinesRefetchQuery") {
-            stixDomainObjects(
-                types: $types
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            ) @connection(key: "Pagination_stixDomainObjects") {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        created_at
-                        createdBy {
-                            ... on Identity {
-                                name
-                            }
-                        }
-                        objectMarking {
-                            edges {
-                                node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                }
-                            }
-                        }
-                        ...EntitiesStixDomainObjectLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
+  fragment EntitiesStixDomainObjectsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "EntitiesStixDomainObjectsLinesRefetchQuery") {
+    stixDomainObjects(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixDomainObjects") {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          createdBy {
+            ... on Identity {
+              name
             }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+          }
+          ...EntitiesStixDomainObjectLine_node
         }
-    `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObjectsLinesProps> = ({
   dataColumns,
@@ -121,7 +121,7 @@ const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObject
   setNumberOfElements,
   queryRef,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   EntitiesStixDomainObjectsLinesPaginationQuery,
   EntitiesStixDomainObjectsLines_data$key
   >({
@@ -132,26 +132,26 @@ const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObject
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.stixDomainObjects?.edges ?? []}
-        globalCount={
-          data?.stixDomainObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
-        LineComponent={EntitiesStixDomainObjectLine}
-        DummyLineComponent={EntitiesStixDomainObjectLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        onLabelClick={onLabelClick}
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        selectAll={selectAll}
-        onToggleEntity={onToggleEntity}
-        paginationOptions={paginationOptions}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.stixDomainObjects?.edges ?? []}
+      globalCount={
+        data?.stixDomainObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
+      LineComponent={EntitiesStixDomainObjectLine}
+      DummyLineComponent={EntitiesStixDomainObjectLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
+      paginationOptions={paginationOptions}
+    />
   );
 };
 

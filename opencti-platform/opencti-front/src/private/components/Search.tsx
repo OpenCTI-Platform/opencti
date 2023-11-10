@@ -117,7 +117,7 @@ const Search = () => {
     };
 
     return (
-        <>
+      <>
         <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
@@ -188,7 +188,7 @@ const Search = () => {
               </React.Suspense>
               )}
         </ListLines>
-        </>
+      </>
     );
   };
   return (

@@ -1,8 +1,6 @@
 import { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
-import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -11,7 +9,6 @@ import StixCyberObservablesLines, {
   stixCyberObservablesLinesSearchQuery,
 } from './stix_cyber_observables/StixCyberObservablesLines';
 import ToolBar from '../data/ToolBar';
-import { Theme } from '../../../components/Theme';
 import {
   StixCyberObservablesLinesPaginationQuery$data,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
@@ -29,16 +26,9 @@ import {
 } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    paddingRight: 250,
-  },
-}));
-
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
-  const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -75,20 +65,20 @@ const StixCyberObservables: FunctionComponent = () => {
     selectAll,
   } = useEntityToggle<StixCyberObservableLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const handleToggle = (type: string) => {
-    if (types?.includes(type)) {
-      helpers.handleAddProperty(
-        'types',
-        types.filter((x) => x !== type),
-      );
-    } else {
-      helpers.handleAddProperty('types', types ? [...types, type] : [type]);
-    }
-  };
-
-  const handleClear = () => {
-    helpers.handleAddProperty('types', []);
-  };
+  // const handleToggle = (type: string) => {
+  //   if (types?.includes(type)) {
+  //     helpers.handleAddProperty(
+  //       'types',
+  //       types.filter((x) => x !== type),
+  //     );
+  //   } else {
+  //     helpers.handleAddProperty('types', types ? [...types, type] : [type]);
+  //   }
+  // };
+  //
+  // const handleClear = () => {
+  //   helpers.handleAddProperty('types', []);
+  // };
 
   const getValuesForCopy = (
     data: StixCyberObservablesLinesSearchQuery$data,
@@ -181,13 +171,16 @@ const StixCyberObservables: FunctionComponent = () => {
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           exportEntityType="Stix-Cyber-Observable"
+          availableEntityTypes={['Stix-Cyber-Observable']}
           exportContext={null}
           keyword={searchTerm}
           filters={filters}
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          noDirectFilters={true}
           availableFilterKeys={[
+            'entity_type',
             'objectLabel',
             'objectMarking',
             'created_at',
@@ -237,7 +230,7 @@ const StixCyberObservables: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
+      <div>
         {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableCreation
@@ -252,11 +245,12 @@ const StixCyberObservables: FunctionComponent = () => {
             inputValue={undefined}
           />
         </Security>
-        <StixCyberObservablesRightBar
-          types={types}
-          handleToggle={handleToggle}
-          handleClear={handleClear}
-        />
+
+        {/* <StixCyberObservablesRightBar */}
+        {/*  types={types} */}
+        {/*  handleToggle={handleToggle} */}
+        {/*  handleClear={handleClear} */}
+        {/* /> */}
       </div>
     </ExportContextProvider>
   );

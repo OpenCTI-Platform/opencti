@@ -15,79 +15,79 @@ import { OpinionsLines_data$key } from './__generated__/OpinionsLines_data.graph
 const nbOfRowsToLoad = 50;
 
 export const opinionsLinesQuery = graphql`
-    query OpinionsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: OpinionsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...OpinionsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query OpinionsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: OpinionsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...OpinionsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const opinionsLineFragment = graphql`
-    fragment OpinionsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "OpinionsOrdering", defaultValue: created }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "OpinionsLinesRefetchQuery") {
-        opinions(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_opinions") {
+  fragment OpinionsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "OpinionsOrdering", defaultValue: created }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "OpinionsLinesRefetchQuery") {
+    opinions(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_opinions") {
+      edges {
+        node {
+          id
+          opinion
+          explanation
+          created
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
             edges {
-                node {
-                    id
-                    opinion
-                    explanation
-                    created
-                    createdBy {
-                        ... on Identity {
-                            id
-                            name
-                            entity_type
-                        }
-                    }
-                    objectMarking {
-                        edges {
-                            node {
-                                id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                            }
-                        }
-                    }
-                    ...OpinionLine_node
-                }
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+          }
+          ...OpinionLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 interface OpinionsLinesProps {
@@ -127,23 +127,23 @@ const OpinionsLines: FunctionComponent<OpinionsLinesProps> = ({
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.opinions?.edges ?? []}
-        globalCount={data?.opinions?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-        LineComponent={<OpinionLine />}
-        DummyLineComponent={<OpinionLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        onLabelClick={onLabelClick}
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        selectAll={selectAll}
-        onToggleEntity={onToggleEntity}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.opinions?.edges ?? []}
+      globalCount={data?.opinions?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={<OpinionLine/>}
+      DummyLineComponent={<OpinionLineDummy/>}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
+    />
   );
 };
 

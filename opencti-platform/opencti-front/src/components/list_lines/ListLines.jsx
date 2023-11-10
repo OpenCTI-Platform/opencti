@@ -68,8 +68,12 @@ const styles = (theme) => ({
     padding: '0 0 0 0',
   },
   parameters: {
-    float: 'left',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
     marginTop: -10,
+    paddingBottom: 10,
+    flexWrap: 'wrap',
   },
   parametersWithPadding: {
     padding: '0 0 0 15px',
@@ -135,18 +139,18 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
+    const { classes, t, sortBy, orderAsc, _ } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
-        <ArrowDropDown classes={{ root: classes.sortIcon }} />
+        <ArrowDropDown classes={{ root: classes.sortIcon }}/>
       ) : (
-        <ArrowDropUp classes={{ root: classes.sortIcon }} />
+        <ArrowDropUp classes={{ root: classes.sortIcon }}/>
       );
       return (
         <div
           key={field}
           className={classes.sortableHeaderItem}
-          style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
+          style={{ width }}
           onClick={this.reverseBy.bind(this, field)}
         >
           <div className={classes.headerItemText}>{t(label)}</div>
@@ -216,7 +220,7 @@ class ListLines extends Component {
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
-        && numberOfElements.number > export_max_size)
+          && numberOfElements.number > export_max_size)
         || (selectedIds.length === 0
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
@@ -227,23 +231,23 @@ class ListLines extends Component {
       <div
         className={noPadding ? classes.containerNoPadding : classes.container}
       >
-        {!this.props.inline && (
-          <div
-            className={
-              parametersWithPadding
-                ? classes.parametersWithPadding
-                : classes.parameters
-            }
-          >
-            {typeof handleSearch === 'function' && (
-              <div style={{ float: 'left', marginRight: 20 }}>
+        {!this.props.inline
+            && <>
+            <div
+              className={
+                parametersWithPadding
+                  ? classes.parametersWithPadding
+                  : classes.parameters
+              }
+            >
+              {typeof handleSearch === 'function' && (
                 <SearchInput
                   variant={searchVariant || 'small'}
                   onSubmit={handleSearch.bind(this)}
                   keyword={keyword}
-                />
+                />)}
               </div>
-            )}
+
             {extraFields}
             {availableFilterKeys && availableFilterKeys.length > 0 && (
               <Filters
@@ -262,8 +266,8 @@ class ListLines extends Component {
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders
               && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-            {isFilterGroupNotEmpty(filters) && (
-              <FilterIconButton
+            {isFilterGroupNotEmpty(filters)
+              && <FilterIconButton
                 availableFilterKeys={availableFilterKeys}
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
@@ -271,11 +275,11 @@ class ListLines extends Component {
                 handleSwitchLocalMode={handleSwitchLocalMode}
                 redirection
               />
-            )}
-          </div>
-        )}
+            }
+          </>
+            }
         <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
+          <div>
             {numberOfElements && (
               <div
                 style={
@@ -310,7 +314,7 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function' && !disableCards && (
                   <ToggleButton value="cards" aria-label="cards">
                     <Tooltip title={t('Cards view')}>
-                      <ViewModuleOutlined fontSize="small" color="primary" />
+                      <ViewModuleOutlined fontSize="small" color="primary"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -362,14 +366,14 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
                     <Tooltip title={t('Graph view')}>
-                      <VectorPolygon fontSize="small" color="primary" />
+                      <VectorPolygon fontSize="small" color="primary"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
                 {typeof handleChangeView === 'function' && enableNestedView && (
                   <ToggleButton value="nested" aria-label="nested">
                     <Tooltip title={t('Nested view')}>
-                      <FormatListGroup fontSize="small" color="primary" />
+                      <FormatListGroup fontSize="small" color="primary"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -397,7 +401,7 @@ class ListLines extends Component {
                     aria-label="settings"
                   >
                     <Tooltip title={t('List settings')}>
-                      <SettingsOutlined fontSize="small" color="primary" />
+                      <SettingsOutlined fontSize="small" color="primary"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -419,7 +423,7 @@ class ListLines extends Component {
                     aria-label="export"
                   >
                     <Tooltip title={t('Export first 5000 rows in CSV')}>
-                      <FileDelimitedOutline fontSize="small" color="primary" />
+                      <FileDelimitedOutline fontSize="small" color="primary"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -439,7 +443,7 @@ class ListLines extends Component {
                           aria-label="export"
                           disabled={true}
                         >
-                          <FileDownloadOutlined fontSize="small" />
+                          <FileDownloadOutlined fontSize="small"/>
                         </ToggleButton>
                       </span>
                     </Tooltip>
@@ -448,7 +452,7 @@ class ListLines extends Component {
             )}
           </div>
         </div>
-        <div className="clearfix" />
+        <div className="clearfix"/>
         {message && (
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert

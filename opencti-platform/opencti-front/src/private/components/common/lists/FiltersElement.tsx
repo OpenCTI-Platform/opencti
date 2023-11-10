@@ -23,11 +23,22 @@ export interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];
-  searchContext: { entityTypes: string[], elementId?: string[] };
+  searchContext: {
+    entityTypes: string[],
+    elementId?: string[]
+  };
   handleChangeKeyword: (event: React.ChangeEvent) => void;
   noDirectFilters?: boolean;
-  setInputValues: (value: FilterElementsInputValue[]) => void;
-  inputValues: FilterElementsInputValue[];
+  setInputValues: (value: {
+    key: string,
+    values: (string | Date)[],
+    operator?: string
+  }[]) => void;
+  inputValues: {
+    key: string,
+    values: (string | Date)[],
+    operator?: string
+  }[];
   defaultHandleAddFilter: HandleAddFilter;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
