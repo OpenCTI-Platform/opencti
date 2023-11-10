@@ -98,8 +98,8 @@ const initializeAuthorizedMembers = (authorizedMembers: InputMaybe<MemberAccessI
     // add creator to authorized_members on creation
     initializedAuthorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
-  return initializedAuthorizedMembers
-}
+  return initializedAuthorizedMembers;
+};
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
   const authorizedMembers = initializeAuthorizedMembers(input.authorized_members, user);
   const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
