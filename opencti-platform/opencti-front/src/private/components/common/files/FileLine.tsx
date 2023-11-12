@@ -2,19 +2,10 @@ import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
 import Alert from '@mui/material/Alert';
-import {
-  createFragmentContainer,
-  graphql,
-  GraphQLTaggedNode,
-} from 'react-relay';
+import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import {
-  DeleteOutlined,
-  DocumentScannerOutlined,
-  GetAppOutlined,
-  WarningOutlined,
-} from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -33,11 +24,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -144,7 +131,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     .filter((s) => !isEmpty(s))
     .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
-
   const handleOpenDelete = () => {
     setDisplayDelete(true);
   };
@@ -229,6 +215,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense}
         classes={{ root: nested ? classes.itemNested : classes.item }}
+        /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+        // @ts-ignore
+        button={directDownload || false}
+        component={directDownload ? 'a' : 'div'}
+        disabled={isProgress || isOutdated}
+        href={`${APP_BASE_PATH}/storage/get/${encodedFilePath}`}
         rel="noopener noreferrer"
       >
         <ListItemIcon>
@@ -294,27 +286,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   </IconButton>
                 </span>
               </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                  )
-                  }
-                >
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                <MenuItem dense={true} onClick={() => handleLink(`${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`)}>
                   {t('Encrypted archive')}
                 </MenuItem>
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                  )
-                  }
-                >
+                <MenuItem dense={true} onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)}>
                   {t('Raw file')}
                 </MenuItem>
               </Menu>
