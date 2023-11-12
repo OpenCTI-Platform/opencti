@@ -94,6 +94,34 @@ jobs:
           paths:
             - opencti_musl
 
+  tag_package_rolling:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:current
+    resource_class: medium+
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - run: mkdir release
+      - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
+      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
+      - run:
+          working_directory: ~/opencti/release
+          command: tar -zcvf "opencti-${CIRCLE_TAG}.tar.gz" opencti
+      - run:
+          working_directory: ~/opencti/release
+          command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-${CIRCLE_TAG}.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-${CIRCLE_TAG}.tar.gz"
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
+
   package_rolling:
     working_directory: ~/opencti
     docker:
@@ -144,6 +172,35 @@ jobs:
       - run:
           working_directory: ~/opencti_musl/release
           command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d')_musl.tar.gz"
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
+
+  tag_package_rolling_musl:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: circleci/node:current
+    resource_class: medium+
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - run: mkdir release
+      - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
+      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
+      - run:
+          working_directory: ~/opencti_musl/release
+          command: tar -zcvf "opencti-${CIRCLE_TAG}_musl.tar.gz" opencti
+      - run:
+          working_directory: ~/opencti_musl/release
+          command: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-${CIRCLE_TAG}_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-${CIRCLE_TAG}_musl.tar.gz"
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -365,6 +422,14 @@ workflows:
                 - master
           requires:
             - build_frontend
+      - tag_package_rolling:
+          requires:
+            - build_frontend
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - package_rolling:
           requires:
             - build_platform
@@ -379,6 +444,14 @@ workflows:
             branches:
               only:
                 - master
+      - tag_package_rolling_musl:
+          requires:
+            - build_frontend
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - docker_build_platform_rolling:
           requires:
             - build_frontend
