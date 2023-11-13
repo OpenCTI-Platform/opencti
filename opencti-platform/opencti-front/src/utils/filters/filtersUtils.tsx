@@ -73,6 +73,9 @@ export const EqFilters = [
   'objects',
   'indicates',
   'targets',
+  'objectAssignee',
+  'objectParticipant',
+  'killChainPhases',
 ];
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
