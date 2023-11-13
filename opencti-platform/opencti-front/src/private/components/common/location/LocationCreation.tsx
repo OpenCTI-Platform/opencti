@@ -75,6 +75,14 @@ interface LocationCreationFormProps {
   onlyAuthors?: boolean
 }
 
+const locations = [
+  'Administrative Area',
+  'Region',
+  'Country',
+  'City',
+  'Position',
+];
+
 const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
@@ -173,19 +181,9 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
-            {!onlyAuthors && (
-            <MenuItem value="Administrative-Area">{t('Administrative Area')}</MenuItem>
-            )}
-            {!onlyAuthors && (
-              <MenuItem value="Region">{t('Region')}</MenuItem>
-            )}
-            {!onlyAuthors && (
-              <MenuItem value="Country">{t('Country')}</MenuItem>
-            )}
-            {!onlyAuthors && (
-              <MenuItem value="City">{t('City')}</MenuItem>
-            )}
-            <MenuItem value="Position">{t('Position')}</MenuItem>
+            {!onlyAuthors && locations.map((location) => (
+            <MenuItem value={location}>{t(location)}</MenuItem>
+            ))}
           </Field>
           <div className={classes.buttons}>
             <Button
