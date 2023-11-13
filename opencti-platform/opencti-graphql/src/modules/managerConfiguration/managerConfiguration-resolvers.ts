@@ -1,6 +1,11 @@
 import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findByManagerId, managerConfigurationEditField } from './managerConfiguration-domain';
+import {
+  findById,
+  findByManagerId,
+  getManagerSettings,
+  managerConfigurationEditField
+} from './managerConfiguration-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
@@ -9,6 +14,9 @@ const managerConfigurationResolvers: Resolvers = {
   Query: {
     managerConfiguration: (_, { id }, context) => findById(context, context.user, id),
     managerConfigurationByManagerId: (_, { managerId }, context) => findByManagerId(context, context.user, managerId),
+  },
+  ManagerConfiguration: {
+    manager_settings: (current) => getManagerSettings(current.manager_id),
   },
   Mutation: {
     managerConfigurationFieldPatch: (_, { id, input }, context) => {

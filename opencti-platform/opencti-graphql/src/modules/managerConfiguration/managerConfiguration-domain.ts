@@ -11,7 +11,7 @@ import {
 import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityManagerConfiguration> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION);
@@ -33,6 +33,10 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
     [SemanticAttributes.DB_NAME]: 'managerConfiguration_domain',
     [SemanticAttributes.DB_OPERATION]: 'read',
   }, findByTypeFn);
+};
+
+export const getManagerSettings = async (managerId: string) => {
+  return conf.get(managerId.toLowerCase());
 };
 
 export const managerConfigurationEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {

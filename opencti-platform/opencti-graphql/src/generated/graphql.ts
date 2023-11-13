@@ -11483,6 +11483,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   last_run_start_date?: Maybe<Scalars['DateTime']['output']>;
   manager_id: Scalars['String']['output'];
   manager_running?: Maybe<Scalars['Boolean']['output']>;
+  manager_settings?: Maybe<Scalars['JSON']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
@@ -32247,6 +32248,7 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
   last_run_start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   manager_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  manager_settings?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

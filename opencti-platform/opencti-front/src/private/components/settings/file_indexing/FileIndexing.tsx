@@ -38,6 +38,7 @@ const fileIndexingConfigurationQuery = graphql`
       manager_running
       last_run_start_date
       last_run_end_date
+      manager_settings
     }
     filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths) {
       globalCount
@@ -79,6 +80,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   const { filesMetrics, managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
   const isStarted = managerConfigurationByManagerId?.manager_running || false;
   const managerConfigurationId = managerConfigurationByManagerId?.id;
+  // const managerSettings = managerConfigurationByManagerId?.manager_settings;
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
 
