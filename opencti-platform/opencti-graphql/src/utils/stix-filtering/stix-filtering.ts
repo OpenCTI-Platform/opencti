@@ -88,17 +88,11 @@ const RESOLUTION_MAP_PATHS: Record<string, string> = {
   [CREATED_BY_FILTER]: 'id', // created by --> resolve with the standard id (which is the stix.id)
   [LABEL_FILTER]: 'value', // labels --> resolve id to stix.name
   [INDICATOR_FILTER]: 'type', // indicator types --> resolve id to stix.type
-  [INSTANCE_FILTER]: `extensions.${STIX_EXT_OCTI}.id`, // element id --> resolve to the id in octi extension
   [MARKING_FILTER]: 'id', // marking --> resolve id to standard id (which is the stix.id)
   [OBJECT_CONTAINS_FILTER]: 'id',
   [PARTICIPANT_FILTER]: 'id', // participant --> resolve with the standard id (which is the stix.id)
   [RELATION_FROM]: 'id',
   [RELATION_TO]: 'id',
-};
-
-// utility function that works like R.path, giving the content of the field at "path" inside "obj"
-const getFieldByPath = (obj: { [key: string]: any; }, path: string[]): any | undefined => {
-  return path.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
 };
 
 /**
@@ -115,7 +109,7 @@ const buildResolutionMapForFilter = async (mutableMap: FilterResolutionMap, filt
       const cachedObject = cache.get(v) as any;
       const path = RESOLUTION_MAP_PATHS[filter.key[0]];
       if (cachedObject && path) {
-        const cachedValue = getFieldByPath(cachedObject, path.split('.'));
+        const cachedValue = cachedObject[path];
         if (typeof cachedValue === 'string') {
           mutableMap.set(v, cachedValue);
         }

@@ -294,15 +294,6 @@ export const testRefs = (stix: any, filter: Filter) => {
 };
 
 /**
- * INSTANCE (elementId)
- * - elementId is id in stix extension
- */
-export const testInstance = (stix: any, filter: Filter) => {
-  const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.id);
-  return testStringFilter(filter, stixValues);
-};
-
-/**
  * CONNECTED TO
  - depending on stix type (relation or sighting), we might search in different paths, aggregated
  */
@@ -351,7 +342,6 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [SCORE_FILTER]: testScore,
   [TYPE_FILTER]: testEntityType,
   [WORKFLOW_FILTER]: testWorkflow,
-  [INSTANCE_FILTER]: testInstance,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_FILTER]: testConnectedTo,

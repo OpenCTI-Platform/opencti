@@ -637,29 +637,7 @@ describe('Stix filter testers', () => {
     });
   });
 
-  describe('by Instance id (key=elementId)', () => {
-    const stixWithExtId = stixSightings[0];
-
-    it('should test positive for a stix object with matching filter', () => {
-      let filter: Filter = {
-        key: ['elementId'],
-        mode: 'or',
-        operator: 'eq',
-        values: ['<some-id>', '679a695e-0b00-41e0-b78f-8c36bfbd9d57']
-      };
-      expect(testers.testInstance(stixWithExtId, filter)).toEqual(true);
-
-      filter = {
-        key: ['elementId'],
-        mode: 'and',
-        operator: 'eq',
-        values: ['<some-id>']
-      };
-      expect(testers.testObjectContains(stixWithExtId, filter)).toEqual(false);
-    });
-  });
-
-  describe('by "Connected to" (key=elementId)', () => {
+  describe('by "Connected to" (key=connectedToId)', () => {
     const stixRelationship = stixRelationships[0];
     const stixSighting = stixSightings[0];
 

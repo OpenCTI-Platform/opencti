@@ -63,8 +63,6 @@ describe('Stix Filtering', () => {
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, WHITE_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(false);
   });
 
-  // TODO: add test with resolution of labels/indicators in filterGroup
-
   it('matches stix objects with complex filter groups', async () => {
     const filterGroup: FilterGroup = {
       mode: 'and',
