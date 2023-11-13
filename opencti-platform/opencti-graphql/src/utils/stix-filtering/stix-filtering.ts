@@ -13,7 +13,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { StixObject } from '../../types/stix-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
-import { ValidationError } from '../../config/errors';
 
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';
