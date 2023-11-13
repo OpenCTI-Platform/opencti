@@ -181,8 +181,8 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
-            {!onlyAuthors && locations.map((location) => (
-            <MenuItem value={location}>{t(location)}</MenuItem>
+            {!onlyAuthors && locations.map((location, idx) => (
+            <MenuItem key={idx} value={location}>{t(location)}</MenuItem>
             ))}
           </Field>
           <div className={classes.buttons}>
