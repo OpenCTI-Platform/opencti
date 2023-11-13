@@ -23,6 +23,9 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     overflow: 'hidden',
   },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 }));
 
 export const searchObjectOrganizationFieldQuery = graphql`
@@ -75,6 +78,7 @@ const ObjectOrganizationField = (props) => {
         setOrganizations(searchResults);
       });
   };
+
   if (outlined === false) {
     return (
       <Field
@@ -87,7 +91,6 @@ const ObjectOrganizationField = (props) => {
           variant: 'standard',
           label: label ? t(label) : '',
           helperText: helpertext,
-          fullWidth: true,
           onFocus: searchOrganizations,
         }}
         noOptionsText={t('No available options')}
@@ -110,12 +113,12 @@ const ObjectOrganizationField = (props) => {
       component={AutocompleteField}
       name={name}
       multiple={multiple}
+      style={style}
       disabled={disabled}
-      style={{ width: '100%' }}
       textfieldprops={{
-        placeholder: label ?? '',
+        variant: 'standard',
+        label: t(label) ?? '',
         helperText: helpertext,
-        fullWidth: true,
         onFocus: searchOrganizations,
       }}
       noOptionsText={t('No available options')}
@@ -130,6 +133,7 @@ const ObjectOrganizationField = (props) => {
           <div className={classes.text}>{option.label}</div>
         </li>
       )}
+      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
   if (!alert) {

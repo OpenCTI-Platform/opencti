@@ -18,6 +18,9 @@ const styles = () => ({
     flexGrow: 1,
     marginLeft: 10,
   },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 });
 
 export const searchGroupFieldQuery = graphql`
@@ -108,6 +111,7 @@ class GroupField extends Component {
             <div className={classes.text}>{option.label}</div>
           </li>
         )}
+        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     );
   }
