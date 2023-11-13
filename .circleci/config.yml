@@ -410,26 +410,16 @@ workflows:
               only: /.*/
       - build_platform:
           filters:
-            branches:
-              only:
-                - master
+            tags:
+              only: /.*/
           requires:
             - build_frontend
       - build_platform_musl:
           filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build_frontend
-      - tag_package_rolling:
-          requires:
-            - build_frontend
-          filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+              only: /.*/
+          requires:
+            - build_frontend
       - package_rolling:
           requires:
             - build_platform
@@ -437,6 +427,14 @@ workflows:
             branches:
               only:
                 - master
+      - tag_package_rolling:
+          requires:
+            - build_platform
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - package_rolling_musl:
           requires:
             - build_platform_musl
@@ -446,7 +444,7 @@ workflows:
                 - master
       - tag_package_rolling_musl:
           requires:
-            - build_frontend
+            - build_platform_musl
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
