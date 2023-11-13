@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import type { FileHandle } from 'fs/promises';
 import {
   createEntity,
   deleteElementById,
@@ -16,17 +17,23 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
+  InputMaybe,
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import {
+  getUserAccessRight,
+  isValidMemberAccessRight,
+  MEMBER_ACCESS_RIGHT_ADMIN
+} from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { streamToString } from '../../database/file-storage';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -85,12 +92,16 @@ const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthU
   }
 };
 
-export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
-  const authorizedMembers = input.authorized_members ?? [];
-  if (!authorizedMembers.some((e) => e.id === user.id)) {
+const initializeAuthorizedMembers = (authorizedMembers: InputMaybe<MemberAccessInput[]> | undefined, user: AuthUser) => {
+  const initializedAuthorizedMembers = authorizedMembers ?? [];
+  if (!authorizedMembers?.some((e) => e.id === user.id)) {
     // add creator to authorized_members on creation
-    authorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
+    initializedAuthorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
+  return initializedAuthorizedMembers;
+};
+export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
+  const authorizedMembers = initializeAuthorizedMembers(input.authorized_members, user);
   const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   await publishUserAction({
@@ -134,4 +145,50 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
   await setEditContext(user, workspaceId, input);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE)
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
+};
+
+export const checkDashboardConfigurationImport = (parsedData: any) => {
+  if (parsedData.type !== 'dashboard') {
+    throw FunctionalError('Invalid type. Please import OpenCTI dashboard-type only', { reason: parsedData.type });
+  }
+
+  const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
+  const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
+    const [major, minor, patch] = openCtiVersion.split('.').map((number) => parseInt(number, 10));
+    const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10));
+    return major >= openCtiMajor && minor >= openCtiMinor && patch >= openCtiPatch;
+  };
+
+  if (!isCompatibleOpenCtiVersion(parsedData.openCTI_version)) {
+    throw FunctionalError(`Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`, { reason: parsedData.openCTI_version });
+  }
+};
+
+export const workspaceConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const authorizedMembers = initializeAuthorizedMembers([], user);
+  const uploadedFile = await file;
+  const readStream = uploadedFile.createReadStream();
+  const fileContent = await streamToString(readStream);
+  const parsedData = JSON.parse(fileContent.toString());
+
+  const mappedData = {
+    type: parsedData.type,
+    openCTI_version: parsedData.openCTI_version,
+    name: parsedData.configuration.name,
+    manifest: parsedData.configuration.manifest,
+    authorized_members: authorizedMembers,
+  };
+  checkDashboardConfigurationImport(mappedData);
+  const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
+  const workspaceId = importWorkspaceCreation.id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import ${importWorkspaceCreation.name} workspace`,
+    context_data: { id: workspaceId, entity_type: ENTITY_TYPE_WORKSPACE, input: importWorkspaceCreation }
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, importWorkspaceCreation, user);
+  return workspaceId;
 };

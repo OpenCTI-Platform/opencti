@@ -13153,6 +13153,7 @@ export type Mutation = {
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
   workspaceAdd?: Maybe<Workspace>;
+  workspaceConfigurationImport: Scalars['String']['output'];
   workspaceContextClean?: Maybe<Workspace>;
   workspaceContextPatch?: Maybe<Workspace>;
   workspaceDelete?: Maybe<Scalars['ID']['output']>;
@@ -14818,6 +14819,11 @@ export type MutationWorkEditArgs = {
 
 export type MutationWorkspaceAddArgs = {
   input: WorkspaceAddInput;
+};
+
+
+export type MutationWorkspaceConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -34973,6 +34979,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
+  workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
   workspaceContextPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextPatchArgs, 'id' | 'input'>>;
   workspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationWorkspaceDeleteArgs, 'id'>>;

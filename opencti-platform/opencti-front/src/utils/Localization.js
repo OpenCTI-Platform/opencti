@@ -473,6 +473,7 @@ const i18n = {
       'Export to image': 'Exportar a image',
       'Export to PDF': 'Exportar a PDF',
       'Export to CSV': 'Exportar a CSV',
+      'Export to JSON': 'Exportar a JSON',
       'Start an investigation': 'Iniciar a investigación',
       Periodicity: 'Periodicidad',
       Period: 'Periodo',
@@ -841,6 +842,7 @@ const i18n = {
       Investigations: 'Investigaciones',
       'Custom dashboards': 'Cuadros de mando personalizados',
       'Custom dashboard': 'Cuadro de mando personalizado',
+      'Import dashboard': 'Importar un cuadro de mando personalizado',
       'Unique identifier': 'Identificador único',
       'Related entities': 'Entidades relacionadas',
       'Indicators composed with this observable':
@@ -2708,6 +2710,7 @@ const i18n = {
       'Export to image': 'Exporter en image',
       'Export to PDF': 'Exporter en PDF',
       'Export to CSV': 'Exporter en CSV',
+      'Export to JSON': 'Exporter en JSON',
       'Start an investigation': 'Commencer une investigation',
       Periodicity: 'Périodicité',
       Period: 'Période',
@@ -3072,6 +3075,7 @@ const i18n = {
       Enrich: 'Enrichir',
       'Custom dashboards': 'Tableaux de bord personnalisés',
       'Custom dashboard': 'Tableau de bord personnalisé',
+      'Import dashboard': 'Importer un tableau de bord personnalisé',
       'Unique identifier': 'Identifiant unique',
       'Related entities': 'Entités liées',
       'Indicators composed with this observable':
@@ -4891,6 +4895,7 @@ const i18n = {
       'Export to image': '画像を出力',
       'Export to PDF': 'PDFを出力',
       'Export to CSV': 'CSVを出力',
+      'Export to JSON': 'JSONを出力',
       'Start an investigation': '調査を開始する',
       Periodicity: '周期',
       Period: '時代',
@@ -5250,6 +5255,7 @@ const i18n = {
       Investigations: '調査',
       'Custom dashboards': 'カスタムダッシュボード',
       'Custom dashboard': 'カスタムダッシュボード',
+      'Import dashboard': 'ダッシュボードのインポート',
       'Unique identifier': '一意な識別子',
       'Related entities': '関連エンティティ',
       'Indicators composed with this observable':
@@ -6984,6 +6990,7 @@ const i18n = {
       'Export to image': '导出成图像',
       'Export to PDF': '导出成PDF',
       'Export to CSV': '导出成CSV',
+      'Export to JSON': '导出成JSON',
       'Start an investigation': '开始调查',
       Periodicity: '周期性',
       Period: '時期',
@@ -7322,6 +7329,7 @@ const i18n = {
       Enrich: '丰富',
       'Custom dashboards': '自定义仪表盘',
       'Custom dashboard': '自定义仪表盘',
+      'Import dashboard': '导入仪表板',
       'Unique identifier': '唯一标识',
       'Related entities': '相关实体',
       'Indicators composed with this observable':

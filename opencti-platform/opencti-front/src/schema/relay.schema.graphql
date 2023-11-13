@@ -9170,6 +9170,7 @@ type Mutation {
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
   workspaceContextPatch(id: ID!, input: EditContext!): Workspace
   workspaceContextClean(id: ID!): Workspace
+  workspaceConfigurationImport(file: Upload!): String!
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis

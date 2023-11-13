@@ -317,6 +317,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
         <SafetyCheckOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'dashboard':
+    case 'workspace':
       return (
         <DashboardCustomizeOutlined
           style={style}

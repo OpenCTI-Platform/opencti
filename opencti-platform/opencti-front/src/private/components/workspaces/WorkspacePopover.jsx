@@ -19,6 +19,7 @@ import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
+import handleExportJson from './workspaceExportHandler';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -99,6 +100,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={() => handleExportJson(workspace)}>{t('Export')}</MenuItem>
         <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
