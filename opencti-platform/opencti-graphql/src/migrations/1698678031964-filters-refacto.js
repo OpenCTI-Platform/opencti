@@ -42,35 +42,50 @@ export const up = async (next) => {
     if (parsedFilters.mode) {
       return filters;
     }
-    const newFiltersContent = toPairs(parsedFilters)
-      .map((pair) => {
-        let key = head(pair);
-        let operator = 'eq';
-        let mode = 'or';
-        if (key.endsWith('start_date') || key.endsWith('_gt')) {
-          key = key.replace('_start_date', '').replace('_gt', '');
-          operator = 'gt';
-        } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-          key = key.replace('_end_date', '').replace('_lt', '');
-          operator = 'lt';
-        } else if (key.endsWith('_lte')) {
-          key = key.replace('_lte', '');
-          operator = 'lte';
-        } else if (key.endsWith('_not_eq')) {
-          key = key.replace('_not_eq', '');
-          operator = 'not_eq';
-          mode = 'and';
+    const newFiltersContent = [];
+    toPairs(parsedFilters).forEach((pair) => {
+      let key = head(pair);
+      const values = last(pair);
+      const valIds = values.map((v) => v.id);
+      let operator = 'eq';
+      let mode = 'or';
+      // handle operators contained in the key
+      if (key.endsWith('start_date') || key.endsWith('_gt')) {
+        key = key.replace('_start_date', '').replace('_gt', '');
+        operator = 'gt';
+      } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
+        key = key.replace('_end_date', '').replace('_lt', '');
+        operator = 'lt';
+      } else if (key.endsWith('_lte')) {
+        key = key.replace('_lte', '');
+        operator = 'lte';
+      } else if (key.endsWith('_not_eq')) {
+        key = key.replace('_not_eq', '');
+        operator = 'not_eq';
+        mode = 'and';
+      }
+      // change renamed keys
+      if (filterKeysConvertor.has(key)) {
+        key = filterKeysConvertor.get(key);
+      }
+      // rename element_id key for instance triggers
+      if (instance_trigger && key === 'elementId') {
+        key = 'connectedToId';
+      }
+      if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
+        const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
+        if (valIds.length === 1) {
+          newFiltersContent.push({ key, values: [], operator: nilOperator, mode }); // remove null id
+        } else {
+          newFiltersContent.push(
+            { key, values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
+            { key, values: [], operator: nilOperator, mode }, // create a filter for the former null id
+          );
         }
-        if (filterKeysConvertor.has(key)) {
-          key = filterKeysConvertor.get(key);
-        }
-        if (instance_trigger && key === 'elementId') { // rename element_id only for instance triggers
-          key = 'connectedToId';
-        }
-        const values = last(pair);
-        const valIds = values.map((v) => v.id);
-        return { key, values: valIds, operator, mode };
-      });
+      } else {
+        newFiltersContent.push({ key, values: valIds, operator, mode });
+      }
+    });
     const newFilters = {
       mode: 'and',
       filters: newFiltersContent,
@@ -199,39 +214,41 @@ export const up = async (next) => {
   let workspacesManifestConvertor = {};
   workspaces
     .forEach((workspace) => {
-      const decodedManifest = JSON.parse(atob(workspace.manifest)); // atob is used to decode B64 strings
-      const { widgets } = decodedManifest;
-      const widgetEntries = Object.entries(widgets);
-      const newWidgets = {};
-      for (let i = 0; i < widgetEntries.length; i += 1) {
-        const [key, value] = widgetEntries[i];
-        const { dataSelection } = value;
-        const newDataSelection = dataSelection.map((selection) => {
-          const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
-          const newFilters = convertFilters(filters, true);
-          const newDynamicFrom = convertFilters(dynamicFrom, true);
-          const newDynamicTo = convertFilters(dynamicTo, true);
-          return {
-            ...selection,
-            filters: newFilters,
-            dynamicFrom: newDynamicFrom,
-            dynamicTo: newDynamicTo,
+      if (workspace.manifest) {
+        const decodedManifest = JSON.parse(atob(workspace.manifest)); // atob is used to decode B64 strings
+        const { widgets } = decodedManifest;
+        const widgetEntries = Object.entries(widgets);
+        const newWidgets = {};
+        for (let i = 0; i < widgetEntries.length; i += 1) {
+          const [key, value] = widgetEntries[i];
+          const { dataSelection } = value;
+          const newDataSelection = dataSelection.map((selection) => {
+            const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
+            const newFilters = convertFilters(filters, true);
+            const newDynamicFrom = convertFilters(dynamicFrom, true);
+            const newDynamicTo = convertFilters(dynamicTo, true);
+            return {
+              ...selection,
+              filters: newFilters,
+              dynamicFrom: newDynamicFrom,
+              dynamicTo: newDynamicTo,
+            };
+          });
+          newWidgets[key] = {
+            ...value,
+            dataSelection: newDataSelection,
           };
-        });
-        newWidgets[key] = {
-          ...value,
-          dataSelection: newDataSelection,
+        }
+        const newManifest = {
+          ...decodedManifest,
+          widgets: newWidgets,
+        };
+        const newEncodedManifest = btoa(JSON.stringify(newManifest));
+        workspacesManifestConvertor = {
+          ...workspacesManifestConvertor,
+          [workspace.internal_id]: newEncodedManifest,
         };
       }
-      const newManifest = {
-        ...decodedManifest,
-        widgets: newWidgets,
-      };
-      const newEncodedManifest = btoa(JSON.stringify(newManifest));
-      workspacesManifestConvertor = {
-        ...workspacesManifestConvertor,
-        [workspace.internal_id]: newEncodedManifest,
-      };
     });
 
   const workspacesUpdateQuery = {
