@@ -1,7 +1,9 @@
 import {
   CREATED_BY_FILTER,
-  INDICATOR_FILTER, INSTANCE_FILTER,
-  PARTICIPANT_FILTER, RELATION_FROM, RELATION_TO,
+  INDICATOR_FILTER,
+  PARTICIPANT_FILTER,
+  RELATION_FROM,
+  RELATION_TO,
 } from '../filtering';
 import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
 import { testFilterGroup } from './boolean-logic-engine';
@@ -11,7 +13,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { StixObject } from '../../types/stix-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { ValidationError } from '../../config/errors';
 
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';
