@@ -76,6 +76,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const { t } = useFormatter();
   const inputRef = useRef();
   const [commitImportMutation] = useMutation(importMutation);
+  const [commitCreationMutation] = useMutation(workspaceMutation);
   const history = useHistory();
 
   const handleImport = (event) => {
@@ -94,8 +95,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    commitMutation({
-      mutation: workspaceMutation,
+    commitCreationMutation({
       variables: {
         input: {
           ...values,
@@ -107,10 +107,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
+            store,
+            container.getDataID(),
+            paginationOptions,
+            newEdge,
         );
       },
       setSubmitting,
@@ -118,7 +118,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         setSubmitting(false);
         resetForm();
       },
-    });
+    })
   };
 
   return (
