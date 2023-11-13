@@ -34,6 +34,7 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
     { name: 'has_header', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'separator', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'representations', type: 'json', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'skipLineChar', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (instance: StixCsvMapper) => {

@@ -34,6 +34,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     name: csvMapper.name,
     has_header: csvMapper.has_header,
     separator: csvMapper.separator,
+    skipLineChar: csvMapper.skipLineChar,
     representations: useMapRepresentations(csvMapper.representations),
     errors: csvMapper.errors,
   };

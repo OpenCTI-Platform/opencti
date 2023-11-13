@@ -12403,6 +12403,7 @@ type CsvMapper implements InternalObject & BasicObject {
   name: String!
   has_header: Boolean!
   separator: String!
+  skipLineChar: String
   representations: [CsvMapperRepresentation!]!
   errors: String
 }
@@ -12491,4 +12492,5 @@ input CsvMapperAddInput {
   has_header: Boolean!
   separator: String!
   representations: String!
+  skipLineChar: String
 }

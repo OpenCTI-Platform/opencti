@@ -6,8 +6,12 @@ import {
   usePreloadedQuery,
 } from 'react-relay';
 import CsvMapperEdition from '@components/data/csvMapper/CsvMapperEdition';
-import { CsvMapperEditionContainerFragment_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
-import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
+import {
+  CsvMapperEditionContainerFragment_csvMapper$key,
+} from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
+import {
+  CsvMapperEditionContainerQuery,
+} from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import Drawer from '@components/common/drawer/Drawer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -18,6 +22,7 @@ const csvMapperEditionContainerFragment = graphql`
     name
     has_header
     separator
+    skipLineChar
     errors
     representations {
       id
@@ -70,12 +75,12 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   );
 
   if (!csvMapper) {
-    return <Loader variant={LoaderVariant.inElement} />;
+    return <Loader variant={LoaderVariant.inElement}/>;
   }
 
   return (
     <Drawer title={t('Csv Mapper edition')} open={open} onClose={onClose}>
-      <CsvMapperEdition csvMapper={csvMapper} onClose={onClose} />
+      <CsvMapperEdition csvMapper={csvMapper} onClose={onClose}/>
     </Drawer>
   );
 };

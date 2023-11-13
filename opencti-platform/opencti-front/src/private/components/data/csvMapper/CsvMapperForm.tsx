@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
@@ -14,6 +13,8 @@ import CsvMapperRepresentationForm, {
   RepresentationFormEntityOption,
 } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import TextField from 'src/components/TextField';
+import classNames from 'classnames';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/SwitchField';
@@ -34,12 +35,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
+  marginTop: {
+    marginTop: 20,
+  },
+  formContainer: {
+    margin: '20px 0',
+  },
+  representationContainer: {
+    marginTop: 20,
+    display: 'flex',
+  },
 }));
 
 const csvMapperValidation = (t: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   has_header: Yup.boolean().required(t('This field is required')),
   separator: Yup.string().required(t('This field is required')),
+  skipLineChar: Yup.string().max(1),
 });
 
 interface CsvMapperFormProps {
@@ -50,10 +62,7 @@ interface CsvMapperFormProps {
   ) => void;
 }
 
-const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
-  csvMapper,
-  onSubmit,
-}) => {
+const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
@@ -157,7 +166,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
           );
 
           return (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form className={classes.formContainer}>
               <Field
                 component={TextField}
                 variant="standard"
@@ -165,7 +174,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                 label={t('Name')}
                 fullWidth
               />
-              <div className={classes.center} style={{ marginTop: 20 }}>
+              <div className={classNames(classes.center, classes.marginTop)}>
                 <Field
                   component={SwitchField}
                   type="checkbox"
@@ -184,7 +193,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   />
                 </Tooltip>
               </div>
-              <div style={{ marginTop: 20 }}>
+              <div className={classes.marginTop}>
                 <Typography>{t('CSV separator')}</Typography>
                 <div className={classes.center}>
                   <Field
@@ -213,11 +222,30 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   <Typography>{t('Semicolon')}</Typography>
                 </div>
               </div>
-              <div className={classes.center} style={{ marginTop: 20 }}>
+              <div className={classes.center}>
+                <Field
+                  component={TextField}
+                  name="skipLineChar"
+                  value={values.skipLineChar}
+                  label={t('Char to escape line')}
+                  onChange={(event: SelectChangeEvent) => setFieldValue('skipLineChar', event.target.value)}
+                />
+                <Tooltip
+                  title={t(
+                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
+              </div>
+              <div className={classNames(classes.center, classes.marginTop)}>
                 <Typography
                   variant="h3"
                   gutterBottom
-                  style={{ marginBottom: 0 }}
                 >
                   {t('Representations for entity')}
                 </Typography>
@@ -228,13 +256,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   }
                   size="large"
                 >
-                  <Add fontSize="small" />
+                  <Add fontSize="small"/>
                 </IconButton>
               </div>
               {entities.map((representation, idx) => (
                 <div
                   key={`entity-${idx}`}
-                  style={{ marginTop: 20, display: 'flex' }}
+                  className={classes.representationContainer}
                 >
                   <CsvMapperRepresentationForm
                     key={representation.id}
@@ -245,11 +273,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   />
                 </div>
               ))}
-              <div className={classes.center} style={{ marginTop: 20 }}>
+              <div className={classNames(classes.center, classes.marginTop)}>
                 <Typography
                   variant="h3"
                   gutterBottom
-                  style={{ marginBottom: 0 }}
                 >
                   {t('Representations for relationship')}
                 </Typography>
@@ -260,13 +287,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({
                   }
                   size="large"
                 >
-                  <Add fontSize="small" />
+                  <Add fontSize="small"/>
                 </IconButton>
               </div>
               {relationships.map((representation, idx) => (
                 <div
                   key={`relationship-${idx}`}
-                  style={{ marginTop: 20, display: 'flex' }}
+                  className={classes.representationContainer}
                 >
                   <CsvMapperRepresentationForm
                     key={representation.id}

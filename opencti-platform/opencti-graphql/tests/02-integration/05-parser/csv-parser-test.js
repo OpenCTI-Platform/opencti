@@ -13,6 +13,7 @@ import {
 import { csvMapperMockSimpleSighting } from "./simple-sighting-test/csv-mapper-mock-simple-sighting";
 import { bundleProcess } from "../../../src/parser/csv-bundler";
 import { ADMIN_USER, testContext } from "../../utils/testQuery";
+import { csvMapperMockSimpleSkipLine } from "./simple-skip-line-test/csv-mapper-mock-simple-skip-line";
 
 describe('CSV-HELPER', () => {
   it('Column name to idx', async () => {
@@ -143,5 +144,20 @@ describe('CSV-PARSER', () => {
     const relationshipPartOf = objects.filter((o) => o.relationship_type === 'part-of');
     expect(relationshipPartOf.length)
       .toBe(160);
+  });
+  it('Parse CSV - Simple skip line test on Simple entity ', async () => {
+    const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_line.csv';
+    const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine);
+    const objects = bundle.objects;
+    expect(objects.length)
+      .toBe(5);
+    expect(objects.filter((o) => isNotEmptyField(o.name)).length)
+      .toBe(5);
+    const threatActorWithTypes = objects.filter((o) => isNotEmptyField(o.threat_actor_types))[0];
+    expect(threatActorWithTypes)
+      .not
+      .toBeNull();
+    expect(threatActorWithTypes.threat_actor_types.length)
+      .toBe(2);
   });
 })
