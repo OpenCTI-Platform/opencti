@@ -46,8 +46,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FileIndexingConfigurationProps {
-  totalFiles: number | undefined // TODO undefined??
-  dataToIndex: number | undefined
+  totalFiles: number;
+  dataToIndex: number;
 }
 
 const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
@@ -62,27 +62,27 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
       <Typography variant="h4" gutterBottom={true}>
         {t('Configuration and impact')}
       </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <div className={classes.count}>
-                {n(totalFiles)}
-              </div>
-              <div className={classes.countText}>
-                {t('Files will be indexed')}
-              </div>
-            </Grid>
-              <Grid item={true} xs={6}>
-                <div className={classes.count}>
-                  {b(dataToIndex)}
-                </div>
-                <div className={classes.countText}>
-                  {t('Storage size')}
-                </div>
-              </Grid>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={6}>
+            <div className={classes.count}>
+              {n(totalFiles)}
+            </div>
+            <div className={classes.countText}>
+              {t('Files will be indexed')}
+            </div>
           </Grid>
-        </Paper>
-      </div>
+          <Grid item={true} xs={6}>
+            <div className={classes.count}>
+              {b(dataToIndex)}
+            </div>
+            <div className={classes.countText}>
+              {t('Storage size')}
+            </div>
+          </Grid>
+        </Grid>
+      </Paper>
+    </div>
   );
 };
 

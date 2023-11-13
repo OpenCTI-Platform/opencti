@@ -66,7 +66,7 @@ export const fileIndexingResetMutation = graphql`
 `;
 
 interface FileIndexingComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
+  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>;
 }
 
 const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
@@ -79,8 +79,8 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   const { filesMetrics, managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
   const isStarted = managerConfigurationByManagerId?.manager_running || false;
   const managerConfigurationId = managerConfigurationByManagerId?.id;
-  const totalFiles = filesMetrics?.globalCount;
-  const dataToIndex = filesMetrics?.globalSize;
+  const totalFiles = filesMetrics?.globalCount ?? 0;
+  const dataToIndex = filesMetrics?.globalSize ?? 0;
 
   return (
     <div>
@@ -90,23 +90,23 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
       <FileIndexingRequirements
         isModuleWarning={isModuleWarning}
       />
-        {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingConfiguration
-               totalFiles={totalFiles}
-               dataToIndex={dataToIndex}
-             />
-            </Grid>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingMonitoring
-               totalFiles={totalFiles}
-               isStarted={isStarted}
-               managerConfigurationId={managerConfigurationId}
-             />
-            </Grid>
+      {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <FileIndexingConfiguration
+              totalFiles={totalFiles}
+              dataToIndex={dataToIndex}
+            />
           </Grid>
-        )}
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+            <FileIndexingMonitoring
+              totalFiles={totalFiles}
+              isStarted={isStarted}
+              managerConfigurationId={managerConfigurationId}
+            />
+          </Grid>
+        </Grid>
+      )}
     </div>
   );
 };
@@ -125,17 +125,15 @@ const FileIndexing = () => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
   }, []);
   return (
-      <>
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-            <FileIndexingComponent
-              queryRef={queryRef}
-            />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.container} />
-        )}
-      </>
+    <>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <FileIndexingComponent queryRef={queryRef} />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.container} />
+      )}
+    </>
   );
 };
 export default FileIndexing;

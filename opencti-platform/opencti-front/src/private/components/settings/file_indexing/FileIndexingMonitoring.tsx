@@ -72,11 +72,11 @@ const fileIndexingMonitoringQuery = graphql`
 `;
 
 interface FileIndexingMonitoringComponentProps {
-  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>
+  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>;
   refetch: () => void;
-  managerConfigurationId: string | undefined
-  isStarted: boolean
-  totalFiles: number | undefined
+  managerConfigurationId: string | undefined;
+  isStarted: boolean;
+  totalFiles: number;
 }
 
 const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringComponentProps> = ({
@@ -147,74 +147,74 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
       <Typography variant="h4" gutterBottom={true}>
         {t('Indexing information')}
       </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={4}>
-              {isStarted ? (
-                <Button
-                  startIcon={<PauseOutlined />}
-                  aria-label="Pause"
-                  onClick={handlePause}
-                  size="large"
-                  color="warning"
-                  variant="contained"
-                  classes={{ root: classes.button }}
-                >
-                  {t('Pause')}
-                </Button>
-              ) : (
-                <Button
-                  startIcon={<PlayArrowOutlined />}
-                  aria-label="Start"
-                  onClick={handleStart}
-                  size="large"
-                  color="success"
-                  variant="contained"
-                  classes={{ root: classes.button }}
-                >
-                  {t('Start')}
-                </Button>
-              )}
-              { indexedFiles > 0 && (
-                <Button
-                  startIcon={<ClearOutlined />}
-                  aria-label="Reset"
-                  onClick={handleReset}
-                  size="large"
-                  color="error"
-                  variant="contained"
-                  classes={{ root: classes.button }}
-                >
-                  {t('Reset')}
-                </Button>
-              )}
-              </Grid>
-              <Grid item={true} xs={4}>
-                <div className={classes.count}>
-                    {indexedFiles} / {totalFiles}
-                </div>
-                <div className={classes.countText}>
-                    {t('Files indexed')}
-                </div>
-              </Grid>
-              <Grid item={true} xs={4}>
-                <div className={classes.count}>
-                    {indexedFiles ? n(volumeIndexed) : 0}
-                </div>
-                <div className={classes.countText}>
-                    {t('Volume indexed')}
-                </div>
-              </Grid>
-            </Grid>
-        </Paper>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={4}>
+            {isStarted ? (
+              <Button
+                startIcon={<PauseOutlined />}
+                aria-label="Pause"
+                onClick={handlePause}
+                size="large"
+                color="warning"
+                variant="contained"
+                classes={{ root: classes.button }}
+              >
+                {t('Pause')}
+              </Button>
+            ) : (
+              <Button
+                startIcon={<PlayArrowOutlined />}
+                aria-label="Start"
+                onClick={handleStart}
+                size="large"
+                color="success"
+                variant="contained"
+                classes={{ root: classes.button }}
+              >
+                {t('Start')}
+              </Button>
+            )}
+            { indexedFiles > 0 && (
+              <Button
+                startIcon={<ClearOutlined />}
+                aria-label="Reset"
+                onClick={handleReset}
+                size="large"
+                color="error"
+                variant="contained"
+                classes={{ root: classes.button }}
+              >
+                {t('Reset')}
+              </Button>
+            )}
+          </Grid>
+          <Grid item={true} xs={4}>
+            <div className={classes.count}>
+              {indexedFiles} / {totalFiles}
+            </div>
+            <div className={classes.countText}>
+              {t('Files indexed')}
+            </div>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <div className={classes.count}>
+              {indexedFiles ? n(volumeIndexed) : 0}
+            </div>
+            <div className={classes.countText}>
+              {t('Volume indexed')}
+            </div>
+          </Grid>
+        </Grid>
+      </Paper>
     </div>
   );
 };
 
 interface FileIndexingMonitoringProps {
-  managerConfigurationId: string | undefined
-  isStarted: boolean
-  totalFiles: number | undefined
+  managerConfigurationId: string | undefined;
+  isStarted: boolean;
+  totalFiles: number;
 }
 
 const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
@@ -228,21 +228,21 @@ const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = (
   }, [queryRef]);
 
   return (
-      <>
-        {queryRef ? (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-              <FileIndexingMonitoringComponent
-                  queryRef={queryRef}
-                  refetch={refetch}
-                  managerConfigurationId={managerConfigurationId}
-                  isStarted={isStarted}
-                  totalFiles={totalFiles}
-              />
-            </React.Suspense>
-        ) : (
-            <Loader variant={LoaderVariant.container} />
-        )}
-      </>
+    <>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <FileIndexingMonitoringComponent
+            queryRef={queryRef}
+            refetch={refetch}
+            managerConfigurationId={managerConfigurationId}
+            isStarted={isStarted}
+            totalFiles={totalFiles}
+          />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.container} />
+      )}
+    </>
   );
 };
 
