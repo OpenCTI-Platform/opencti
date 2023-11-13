@@ -222,7 +222,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
-          configurationImport(file: $file)
+          workspaceConfigurationImport(file: $file)
         }
       `,
       variables: {
@@ -250,7 +250,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
-          configurationImport(file: $file)
+          workspaceConfigurationImport(file: $file)
         }
       `,
       variables: {
@@ -278,7 +278,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
-          configurationImport(file: $file)
+          workspaceConfigurationImport(file: $file)
         }
       `,
       variables: {
@@ -289,7 +289,7 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult).not.toBeUndefined();
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: queryResult.data.configurationImport },
+      variables: { id: queryResult.data.workspaceConfigurationImport },
     });
   });
 

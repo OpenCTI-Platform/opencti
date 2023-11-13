@@ -95,7 +95,7 @@ type Mutation {
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceContextPatch(id: ID!, input: EditContext!): Workspace
     workspaceContextClean(id: ID!): Workspace
-    configurationImport(file: Upload!): String!
+    workspaceConfigurationImport(file: Upload!): String!
 }
 
 # Subscriptions

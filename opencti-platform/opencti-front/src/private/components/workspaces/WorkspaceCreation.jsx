@@ -13,7 +13,7 @@ import { useHistory } from 'react-router-dom';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
-import { commitMutation, handleError } from '../../../relay/environment';
+import { handleError } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import MarkdownField from '../../../components/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
@@ -52,7 +52,7 @@ const workspaceMutation = graphql`
 
 export const importMutation = graphql`
   mutation WorkspaceCreationImportMutation($file: Upload!) {
-    configurationImport(file: $file)
+    workspaceConfigurationImport(file: $file)
   }
 `;
 
@@ -85,7 +85,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       variables: { file: importedFile },
       onCompleted: (data) => {
         history.push(
-          `${resolveLink('Dashboard')}/${data.configurationImport}`,
+          `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
       },
       onError: (error) => {

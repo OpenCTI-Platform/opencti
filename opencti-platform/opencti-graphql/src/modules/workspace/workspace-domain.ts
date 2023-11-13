@@ -164,7 +164,7 @@ export const checkDashboardConfigurationImport = (parsedData: any) => {
   }
 };
 
-export const workspaceImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const workspaceConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const uploadedFile = await file;
   const readStream = uploadedFile.createReadStream();

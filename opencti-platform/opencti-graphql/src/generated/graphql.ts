@@ -12905,7 +12905,6 @@ export type Mutation = {
   channelRelationDelete?: Maybe<Channel>;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
-  configurationImport: Scalars['String']['output'];
   containerEdit?: Maybe<ContainerEditMutations>;
   countryAdd?: Maybe<Country>;
   countryEdit?: Maybe<CountryEditMutations>;
@@ -13154,6 +13153,7 @@ export type Mutation = {
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
   workspaceAdd?: Maybe<Workspace>;
+  workspaceConfigurationImport: Scalars['String']['output'];
   workspaceContextClean?: Maybe<Workspace>;
   workspaceContextPatch?: Maybe<Workspace>;
   workspaceDelete?: Maybe<Scalars['ID']['output']>;
@@ -13374,11 +13374,6 @@ export type MutationCityAddArgs = {
 
 export type MutationCityEditArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationConfigurationImportArgs = {
-  file: Scalars['Upload']['input'];
 };
 
 
@@ -14824,6 +14819,11 @@ export type MutationWorkEditArgs = {
 
 export type MutationWorkspaceAddArgs = {
   input: WorkspaceAddInput;
+};
+
+
+export type MutationWorkspaceConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -34731,7 +34731,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   channelRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
-  configurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationConfigurationImportArgs, 'file'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
@@ -34980,6 +34979,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
+  workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
   workspaceContextPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextPatchArgs, 'id' | 'input'>>;
   workspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationWorkspaceDeleteArgs, 'id'>>;
