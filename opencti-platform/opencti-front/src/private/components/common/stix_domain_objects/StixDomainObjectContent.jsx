@@ -428,10 +428,10 @@ class StixDomainObjectContentComponent extends Component {
       )(ret.images);
 
       let pdfElementMaxWidth = 0;
-      // We need to get the children width in order to know which mode we should save the PDF
+      // We need to get tables width inside ckeditor in order to know which mode we should save the PDF
       const elementCkEditor = document.querySelector('.ck-content.ck-editor__editable.ck-editor__editable_inline');
       if (elementCkEditor) {
-        Array.from(elementCkEditor.children).forEach((c) => {
+        Array.from((elementCkEditor.querySelectorAll('figure.table') ?? [])).forEach((c) => {
           if (c.offsetWidth > pdfElementMaxWidth) {
             pdfElementMaxWidth = c.offsetWidth;
           }
