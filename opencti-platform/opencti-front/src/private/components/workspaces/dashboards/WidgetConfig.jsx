@@ -491,7 +491,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     setDataSelection(newDataSelection);
   };
 
-  const handleAddDataValidationFilter = (i, filterName, key, id, op = 'eq') => {
+  const handleAddFilter = (i, filterName, key, id, op = 'eq') => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         const dataFilters = data[filterName];
@@ -535,7 +535,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     setDataSelection(newDataSelection);
   };
-  const handleRemoveDataSelectionFilter = (i, filterName, key, op = 'eq') => {
+  const handleRemoveFilter = (i, filterName, key, op = 'eq') => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         const dataFilters = data[filterName];
@@ -852,7 +852,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           <Filters
                             availableFilterKeys={availableFilterKeys}
                             availableEntityTypes={availableEntityTypes}
-                            handleAddFilter={(key, id, op) => handleAddDataValidationFilter(i, 'filters', key, id, op)}
+                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
                             noDirectFilters={true}
                           />
                           {(dataSelection[i].perspective ?? perspective)
@@ -863,7 +863,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                 'Stix-Domain-Object',
                                 'Stix-Cyber-Observable',
                               ]}
-                              handleAddFilter={(key, id, op) => handleAddDataValidationFilter(i, 'dynamicFrom', key, id, op)}
+                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicFrom', key, id, op)}
                               noDirectFilters={true}
                               type="from"
                             />
@@ -876,7 +876,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                 'Stix-Domain-Object',
                                 'Stix-Cyber-Observable',
                               ]}
-                              handleAddFilter={(key, id, op) => handleAddDataValidationFilter(i, 'dynamicTo', key, id, op)}
+                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicTo', key, id, op)}
                               noDirectFilters={true}
                               type="to"
                             />
@@ -889,7 +889,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 <div className="clearfix" />
                 <FilterIconButton
                   filters={dataSelection[i].filters}
-                  handleRemoveFilter={(key, op) => handleRemoveDataSelectionFilter(i, 'filters', key, op)}
+                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
                   handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
                   handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
                   classNameNumber={7}
@@ -897,7 +897,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 ></FilterIconButton>
                 <FilterIconButton
                   filters={dataSelection[i].dynamicFrom}
-                  handleRemoveFilter={(key, op) => handleRemoveDataSelectionFilter(i, 'dynamicFrom', key, op)}
+                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)}
                   handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)}
                   handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')}
                   classNameNumber={7}
@@ -906,7 +906,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 ></FilterIconButton>
                 <FilterIconButton
                   filters={dataSelection[i].dynamicTo}
-                  handleRemoveFilter={(key, op) => handleRemoveDataSelectionFilter(i, 'dynamicTo', key, op)}
+                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)}
                   handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)}
                   handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')}
                   classNameNumber={7}

@@ -71,6 +71,9 @@ export const EqFilters = [
   'indicates',
   'targets',
   'x_opencti_main_observable_type',
+  'objectAssignee',
+  'objectParticipant',
+  'killChainPhases',
 ];
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
