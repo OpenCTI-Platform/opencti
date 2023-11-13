@@ -107,10 +107,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
-            store,
-            container.getDataID(),
-            paginationOptions,
-            newEdge,
+          store,
+          container.getDataID(),
+          paginationOptions,
+          newEdge,
         );
       },
       setSubmitting,
@@ -118,7 +118,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         setSubmitting(false);
         resetForm();
       },
-    })
+    });
   };
 
   return (
