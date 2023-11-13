@@ -81,7 +81,7 @@ export const testEntityType = (stix: any, filter: Filter) => {
  * INDICATORS
  * - search must be insensitive to case due to constraint in frontend keywords (using "runtimeAttribute" based on keyword which is always lowercase)
  */
-export const testIndicator = (stix: any, filter: Filter) => {
+export const testIndicatorTypes = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.indicator_types ?? [];
   return testStringFilter(filter, stixValues);
 };
@@ -339,7 +339,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CREATED_BY_FILTER]: testCreatedBy,
   [CREATOR_FILTER]: testCreator,
   [DETECTION_FILTER]: testDetection,
-  [INDICATOR_FILTER]: testIndicator,
+  [INDICATOR_FILTER]: testIndicatorTypes,
   [LABEL_FILTER]: testLabel,
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,

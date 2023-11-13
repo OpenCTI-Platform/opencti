@@ -110,8 +110,8 @@ describe('Stix filter testers', () => {
         operator: 'eq',
         values: ['unknown']
       };
-      expect(testers.testIndicator(stixWithIndicatorTypes, filter)).toEqual(true);
-      expect(testers.testIndicator(stixWithoutIndicatorTypes, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithIndicatorTypes, filter)).toEqual(true);
+      expect(testers.testIndicatorTypes(stixWithoutIndicatorTypes, filter)).toEqual(false);
 
       filter = {
         key: ['indicator_types'],
@@ -119,8 +119,8 @@ describe('Stix filter testers', () => {
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
-      expect(testers.testIndicator(stixWithIndicatorTypes, filter)).toEqual(false);
-      expect(testers.testIndicator(stixWithoutIndicatorTypes, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithIndicatorTypes, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithoutIndicatorTypes, filter)).toEqual(false);
     });
   });
 
@@ -209,7 +209,7 @@ describe('Stix filter testers', () => {
         values: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f']
       };
       expect(testers.testAssignee(stixWithAssignee, filter)).toEqual(true);
-      expect(testers.testIndicator(stixWithoutAssignee, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithoutAssignee, filter)).toEqual(false);
 
       filter = {
         key: ['indicator_types'],
@@ -217,8 +217,8 @@ describe('Stix filter testers', () => {
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
       };
-      expect(testers.testIndicator(stixWithAssignee, filter)).toEqual(false);
-      expect(testers.testIndicator(stixWithoutAssignee, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithAssignee, filter)).toEqual(false);
+      expect(testers.testIndicatorTypes(stixWithoutAssignee, filter)).toEqual(false);
     });
   });
 

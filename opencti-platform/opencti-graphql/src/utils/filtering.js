@@ -26,7 +26,9 @@ export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const INSTANCE_FILTER = 'elementId';
 export const NEGATION_FILTER_SUFFIX = '_not_eq';
+export const LABEL_FILTER = 'labelledBy';
 export const RESOLUTION_FILTERS = [
+  LABEL_FILTER,
   MARKING_FILTER,
   CREATED_BY_FILTER,
   ASSIGNEE_FILTER,
@@ -44,7 +46,6 @@ export const ENTITY_FILTERS = [
   OBJECT_CONTAINS_FILTER,
 ];
 // Values
-export const LABEL_FILTER = 'labelledBy';
 export const TYPE_FILTER = 'entity_type';
 export const INDICATOR_FILTER = 'indicator_types';
 export const SCORE_FILTER = 'x_opencti_score';
