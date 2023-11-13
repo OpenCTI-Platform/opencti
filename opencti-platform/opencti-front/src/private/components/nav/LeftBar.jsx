@@ -182,7 +182,6 @@ const LeftBar = () => {
   );
   const hideFinancials = useIsHiddenEntities(
     'Financial-Account',
-    'Financial-Asset',
   );
   const {
     bannerSettings: { bannerHeightNumber },

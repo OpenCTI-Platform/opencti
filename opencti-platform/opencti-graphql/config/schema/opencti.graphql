@@ -11161,6 +11161,121 @@ input MediaContentAddInput {
   publication_date: DateTime
   file: Upload
 }
+type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixCyberObservable
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  # FinancialAsset
+  name: String
+  type: String
+  description: String
+  asset_value: Float
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input FinancialAssetAddInput {
+  name: String
+  type: String
+  description: String
+  asset_value: Float
+}
 ###### RELATIONSHIPS
 
 interface BasicRelationship {
@@ -11328,6 +11443,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | PhoneNumber
   | PaymentCard
   | MediaContent
+  | FinancialAsset
   | StixCoreRelationship
   | StixSightingRelationship
   | StixRefRelationship
@@ -11346,7 +11462,6 @@ union StixObjectOrStixRelationshipOrCreator =
   | Workspace
   | CsvMapper
   | FinancialAccount
-  | FinancialAsset
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -11412,6 +11527,7 @@ union StixObjectOrStixRelationship =
   | PhoneNumber
   | PaymentCard
   | MediaContent
+  | FinancialAsset
   | StixCoreRelationship
   | StixSightingRelationship
   | StixRefRelationship
@@ -11428,7 +11544,6 @@ union StixObjectOrStixRelationship =
   | Workspace
   | CsvMapper
   | FinancialAccount
-  | FinancialAsset
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -11491,6 +11606,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | PhoneNumber
   | PaymentCard
   | MediaContent
+  | FinancialAsset
   | StixCoreRelationship
   | DataComponent
   | DataSource
@@ -11504,7 +11620,6 @@ union StixCoreObjectOrStixCoreRelationship =
   | ManagerConfiguration
   | Workspace
   | FinancialAccount
-  | FinancialAsset
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -13937,6 +14052,7 @@ type Mutation {
     PhoneNumber: PhoneNumberAddInput
     PaymentCard: PaymentCardAddInput
     MediaContent: MediaContentAddInput
+    FinancialAsset: FinancialAssetAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(

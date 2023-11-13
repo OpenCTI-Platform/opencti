@@ -419,6 +419,12 @@ const StixCyberObservableDetails = createFragmentContainer(
           url
           publication_date
         }
+        ... on FinancialAsset {
+          name
+          type
+          description
+          asset_value
+        }
         ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,

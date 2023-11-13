@@ -11,7 +11,6 @@ export const ENTITY_EMAIL_ADDR = 'Email-Addr';
 export const ENTITY_EMAIL_MESSAGE = 'Email-Message';
 export const ENTITY_EMAIL_MIME_PART_TYPE = 'Email-Mime-Part-Type';
 export const ENTITY_FINANCIAL_ACCOUNT = 'Financial-Account';
-export const ENTITY_FINANCIAL_ASSET = 'Financial-Asset';
 export const ENTITY_HASHED_OBSERVABLE_ARTIFACT = 'Artifact';
 export const ENTITY_HASHED_OBSERVABLE_STIX_FILE = 'StixFile'; // Because File already used
 export const ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE = 'X509-Certificate';
@@ -35,6 +34,7 @@ export const ENTITY_BANK_ACCOUNT = 'Bank-Account'; // Custom
 export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
 export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
+export const ENTITY_FINANCIAL_ASSET = 'Financial-Asset'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -72,6 +72,7 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_PHONE_NUMBER,
   ENTITY_PAYMENT_CARD,
   ENTITY_MEDIA_CONTENT,
+  ENTITY_FINANCIAL_ASSET,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 

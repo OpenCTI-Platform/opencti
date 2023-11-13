@@ -565,3 +565,21 @@ export interface StixMediaContent extends StixCyberObject {
     [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
   }
 }
+
+// Custom object extension - Financial Asset
+// value
+export interface StixFinancialAsset extends StixCyberObject {
+  name: string;
+  type: string;
+  description: string;
+  asset_value: number;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}

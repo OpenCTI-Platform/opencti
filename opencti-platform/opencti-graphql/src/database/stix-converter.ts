@@ -95,6 +95,7 @@ import {
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_FINANCIAL_ASSET,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -133,7 +134,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
-import { ENTITY_TYPE_FINANCIAL_ACCOUNT, type StoreEntityFinancialAsset, type StoreEntityFinancialAccount, ENTITY_TYPE_FINANCIAL_ASSET } from '../modules/financialData/financialData-types';
+import { ENTITY_TYPE_FINANCIAL_ACCOUNT, type StoreEntityFinancialAccount } from '../modules/financialData/financialData-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -721,23 +722,6 @@ export const convertFinancialAccountToStix = (
     international_bank_account_number: instance.international_bank_account_number,
   };
 };
-export const convertFinancialAssetToStix = (
-  instance: StoreEntityFinancialAsset,
-  type: string = ENTITY_TYPE_FINANCIAL_ASSET
-): SDO.StixFinancialAsset => {
-  if (!isStixDomainObjectFinancialData(type)) {
-    throw UnsupportedError(
-      `${instance.entity_type} not compatible with financial data`
-    );
-  }
-  const sdo = buildStixDomain(instance);
-  return {
-    ...sdo,
-    name: instance.name,
-    asset_type: instance.asset_type,
-    asset_value: instance.asset_value,
-  };
-};
 
 // SCO
 const convertArtifactToStix = (instance: StoreCyberObservable, type: string): SCO.StixArtifact => {
@@ -1067,6 +1051,25 @@ const convertMediaContentToStix = (instance: StoreCyberObservable, type: string)
     media_category: instance.media_category,
     url: instance.url,
     publication_date: convertToStixDate(instance.publication_date),
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertFinancialAssetToStix = (instance: StoreCyberObservable, type: string): SCO.StixFinancialAsset => {
+  assertType(ENTITY_FINANCIAL_ASSET, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    name: instance.name,
+    type: instance.asset_type,
+    description: instance.x_opencti_description,
+    asset_value: instance.asset_value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
@@ -1424,53 +1427,41 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (isStixDomainObjectLocation(type)) {
       return convertLocationToStix(basic, type);
     }
-    if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
-      return convertThreatActorGroupToStix(basic, type);
+    switch (type) {
+      case ENTITY_TYPE_THREAT_ACTOR_GROUP:
+        return convertThreatActorGroupToStix(basic, type);
+      case ENTITY_TYPE_CONTAINER_REPORT:
+        return convertReportToStix(basic, type);
+      case ENTITY_TYPE_MALWARE:
+        return convertMalwareToStix(basic, type);
+      case ENTITY_TYPE_INFRASTRUCTURE:
+        return convertInfrastructureToStix(basic, type);
+      case ENTITY_TYPE_ATTACK_PATTERN:
+        return convertAttackPatternToStix(basic, type);
+      case ENTITY_TYPE_CAMPAIGN:
+        return convertCampaignToStix(basic, type);
+      case ENTITY_TYPE_CONTAINER_NOTE:
+        return convertNoteToStix(basic, type);
+      case ENTITY_TYPE_CONTAINER_OPINION:
+        return convertOpinionToStix(basic, type);
+      case ENTITY_TYPE_CONTAINER_OBSERVED_DATA:
+        return convertObservedDataToStix(basic, type);
+      case ENTITY_TYPE_COURSE_OF_ACTION:
+        return convertCourseOfActionToStix(basic, type);
+      case ENTITY_TYPE_INCIDENT:
+        return convertIncidentToStix(basic, type);
+      case ENTITY_TYPE_INDICATOR:
+        return convertIndicatorToStix(basic, type);
+      case ENTITY_TYPE_INTRUSION_SET:
+        return convertIntrusionSetToStix(basic, type);
+      case ENTITY_TYPE_TOOL:
+        return convertToolToStix(basic, type);
+      case ENTITY_TYPE_VULNERABILITY:
+        return convertVulnerabilityToStix(basic, type);
+      default:
+        // No converter found
+        throw UnsupportedError(`No entity converter available for ${type}`);
     }
-    if (ENTITY_TYPE_CONTAINER_REPORT === type) {
-      return convertReportToStix(basic, type);
-    }
-    if (ENTITY_TYPE_MALWARE === type) {
-      return convertMalwareToStix(basic, type);
-    }
-    if (ENTITY_TYPE_INFRASTRUCTURE === type) {
-      return convertInfrastructureToStix(basic, type);
-    }
-    if (ENTITY_TYPE_ATTACK_PATTERN === type) {
-      return convertAttackPatternToStix(basic, type);
-    }
-    if (ENTITY_TYPE_CAMPAIGN === type) {
-      return convertCampaignToStix(basic, type);
-    }
-    if (ENTITY_TYPE_CONTAINER_NOTE === type) {
-      return convertNoteToStix(basic, type);
-    }
-    if (ENTITY_TYPE_CONTAINER_OPINION === type) {
-      return convertOpinionToStix(basic, type);
-    }
-    if (ENTITY_TYPE_CONTAINER_OBSERVED_DATA === type) {
-      return convertObservedDataToStix(basic, type);
-    }
-    if (ENTITY_TYPE_COURSE_OF_ACTION === type) {
-      return convertCourseOfActionToStix(basic, type);
-    }
-    if (ENTITY_TYPE_INCIDENT === type) {
-      return convertIncidentToStix(basic, type);
-    }
-    if (ENTITY_TYPE_INDICATOR === type) {
-      return convertIndicatorToStix(basic, type);
-    }
-    if (ENTITY_TYPE_INTRUSION_SET === type) {
-      return convertIntrusionSetToStix(basic, type);
-    }
-    if (ENTITY_TYPE_TOOL === type) {
-      return convertToolToStix(basic, type);
-    }
-    if (ENTITY_TYPE_VULNERABILITY === type) {
-      return convertVulnerabilityToStix(basic, type);
-    }
-    // No converter found
-    throw UnsupportedError(`No entity converter available for ${type}`);
   }
   if (isStixMetaObject(type)) {
     const basic = instance as StoreEntity;
@@ -1494,96 +1485,72 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
   if (isStixCyberObservable(type)) {
     const cyber = instance as StoreCyberObservable;
     // Meta observable
-    if (ENTITY_WINDOWS_REGISTRY_VALUE_TYPE === type) {
-      return convertWindowsRegistryValueToStix(cyber);
+    switch (type) {
+      case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
+        return convertWindowsRegistryValueToStix(cyber);
+      case ENTITY_EMAIL_MIME_PART_TYPE:
+        return convertEmailMimePartToStix(cyber);
+      // Observables
+      case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
+        return convertArtifactToStix(cyber, type);
+      case ENTITY_AUTONOMOUS_SYSTEM:
+        return convertAutonomousSystemToStix(cyber, type);
+      case ENTITY_BANK_ACCOUNT:
+        return convertBankAccountToStix(cyber, type);
+      case ENTITY_CRYPTOGRAPHIC_WALLET:
+        return convertCryptocurrencyWalletToStix(cyber, type);
+      case ENTITY_CRYPTOGRAPHIC_KEY:
+        return convertCryptographicKeyToStix(cyber, type);
+      case ENTITY_DIRECTORY:
+        return convertDirectoryToStix(cyber, type);
+      case ENTITY_DOMAIN_NAME:
+        return convertDomainNameToStix(cyber, type);
+      case ENTITY_EMAIL_ADDR:
+        return convertEmailAddressToStix(cyber, type);
+      case ENTITY_EMAIL_MESSAGE:
+        return convertEmailMessageToStix(cyber, type);
+      case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+        return convertFileToStix(cyber, type);
+      case ENTITY_HOSTNAME:
+        return convertHostnameToStix(cyber, type);
+      case ENTITY_IPV4_ADDR:
+        return convertIPv4AddressToStix(cyber, type);
+      case ENTITY_IPV6_ADDR:
+        return convertIPv6AddressToStix(cyber, type);
+      case ENTITY_MAC_ADDR:
+        return convertMacAddressToStix(cyber, type);
+      case ENTITY_MEDIA_CONTENT:
+        return convertMediaContentToStix(cyber, type);
+      case ENTITY_FINANCIAL_ASSET:
+        return convertFinancialAssetToStix(cyber, type);
+      case ENTITY_MUTEX:
+        return convertMutexToStix(cyber, type);
+      case ENTITY_NETWORK_TRAFFIC:
+        return convertNetworkTrafficToStix(cyber, type);
+      case ENTITY_PROCESS:
+        return convertProcessToStix(cyber, type);
+      case ENTITY_SOFTWARE:
+        return convertSoftwareToStix(cyber, type);
+      case ENTITY_TEXT:
+        return convertTextToStix(cyber, type);
+      case ENTITY_PHONE_NUMBER:
+        return convertPhoneNumberToStix(cyber, type);
+      case ENTITY_PAYMENT_CARD:
+        return convertPaymentCardToStix(cyber, type);
+      case ENTITY_URL:
+        return convertURLToStix(cyber, type);
+      case ENTITY_USER_ACCOUNT:
+        return convertUserAccountToStix(cyber, type);
+      case ENTITY_USER_AGENT:
+        return convertUserAgentToStix(cyber, type);
+      case ENTITY_WINDOWS_REGISTRY_KEY:
+        return convertWindowsRegistryKeyToStix(cyber, type);
+      case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
+        return convertX509CertificateToStix(cyber, type);
+      default:
+        // No converter found
+        throw UnsupportedError(`No observable converter available for ${type}`);
     }
-    if (ENTITY_EMAIL_MIME_PART_TYPE === type) {
-      return convertEmailMimePartToStix(cyber);
-    }
-    // Observables
-    if (ENTITY_HASHED_OBSERVABLE_ARTIFACT === type) {
-      return convertArtifactToStix(cyber, type);
-    }
-    if (ENTITY_AUTONOMOUS_SYSTEM === type) {
-      return convertAutonomousSystemToStix(cyber, type);
-    }
-    if (ENTITY_BANK_ACCOUNT === type) {
-      return convertBankAccountToStix(cyber, type);
-    }
-    if (ENTITY_CRYPTOGRAPHIC_WALLET === type) {
-      return convertCryptocurrencyWalletToStix(cyber, type);
-    }
-    if (ENTITY_CRYPTOGRAPHIC_KEY === type) {
-      return convertCryptographicKeyToStix(cyber, type);
-    }
-    if (ENTITY_DIRECTORY === type) {
-      return convertDirectoryToStix(cyber, type);
-    }
-    if (ENTITY_DOMAIN_NAME === type) {
-      return convertDomainNameToStix(cyber, type);
-    }
-    if (ENTITY_EMAIL_ADDR === type) {
-      return convertEmailAddressToStix(cyber, type);
-    }
-    if (ENTITY_EMAIL_MESSAGE === type) {
-      return convertEmailMessageToStix(cyber, type);
-    }
-    if (ENTITY_HASHED_OBSERVABLE_STIX_FILE === type) {
-      return convertFileToStix(cyber, type);
-    }
-    if (ENTITY_HOSTNAME === type) {
-      return convertHostnameToStix(cyber, type);
-    }
-    if (ENTITY_IPV4_ADDR === type) {
-      return convertIPv4AddressToStix(cyber, type);
-    }
-    if (ENTITY_IPV6_ADDR === type) {
-      return convertIPv6AddressToStix(cyber, type);
-    }
-    if (ENTITY_MAC_ADDR === type) {
-      return convertMacAddressToStix(cyber, type);
-    }
-    if (ENTITY_MEDIA_CONTENT === type) {
-      return convertMediaContentToStix(cyber, type);
-    }
-    if (ENTITY_MUTEX === type) {
-      return convertMutexToStix(cyber, type);
-    }
-    if (ENTITY_NETWORK_TRAFFIC === type) {
-      return convertNetworkTrafficToStix(cyber, type);
-    }
-    if (ENTITY_PROCESS === type) {
-      return convertProcessToStix(cyber, type);
-    }
-    if (ENTITY_SOFTWARE === type) {
-      return convertSoftwareToStix(cyber, type);
-    }
-    if (ENTITY_TEXT === type) {
-      return convertTextToStix(cyber, type);
-    }
-    if (ENTITY_PHONE_NUMBER === type) {
-      return convertPhoneNumberToStix(cyber, type);
-    }
-    if (ENTITY_PAYMENT_CARD === type) {
-      return convertPaymentCardToStix(cyber, type);
-    }
-    if (ENTITY_URL === type) {
-      return convertURLToStix(cyber, type);
-    }
-    if (ENTITY_USER_ACCOUNT === type) {
-      return convertUserAccountToStix(cyber, type);
-    }
-    if (ENTITY_USER_AGENT === type) {
-      return convertUserAgentToStix(cyber, type);
-    }
-    if (ENTITY_WINDOWS_REGISTRY_KEY === type) {
-      return convertWindowsRegistryKeyToStix(cyber, type);
-    }
-    if (ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE === type) {
-      return convertX509CertificateToStix(cyber, type);
-    }
-    // No converter found
-    throw UnsupportedError(`No observable converter available for ${type}`);
   }
   throw UnsupportedError(`No entity converter available for ${type}`);
 };

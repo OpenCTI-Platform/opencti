@@ -245,11 +245,11 @@ const AccountBalances = ({
         id: account.id,
         input: [{
           key: 'financial_account_balances',
-          value: newAccountBalances.map(b => ({ as_of_date: b.as_of_date, balance: b.balance })),
+          value: newAccountBalances.map((b) => ({ as_of_date: b.as_of_date, balance: b.balance })),
           operation: 'replace',
-        }]
-      }
-    })
+        }],
+      },
+    });
     return formattedRow;
   };
 
@@ -266,10 +266,10 @@ const AccountBalances = ({
           id: account.id,
           input: [{
             key: 'financial_account_balances',
-            value: remainingRows.map(b => ({ as_of_date: b.as_of_date, balance: b.balance })),
+            value: remainingRows.map((b) => ({ as_of_date: b.as_of_date, balance: b.balance })),
             operation: 'replace',
-          }]
-        }
+          }],
+        },
       });
     };
     return (

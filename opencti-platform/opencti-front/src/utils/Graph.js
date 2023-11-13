@@ -137,6 +137,7 @@ export const graphImages = {
   'Bank-Account': genImage(StixCyberObservable),
   'Payment-Card': genImage(StixCyberObservable),
   'Media-Content': genImage(StixCyberObservable),
+  'Financial-Asset': genImage(StixCyberObservable),
   Text: genImage(StixCyberObservable),
   relationship: genImage(relationship),
   Unknown: genImage(Unknown),
@@ -211,6 +212,7 @@ export const graphLevel = {
   'Bank-Account': 1,
   'Payment-Card': 1,
   'Media-Content': 1,
+  'Financial-Asset': 1,
   relationship: 1,
   Unknown: 1,
 };
@@ -286,6 +288,7 @@ export const graphRawImages = {
   'Bank-Account': StixCyberObservable,
   'Payment-Card': StixCyberObservable,
   'Media-Content': StixCyberObservable,
+  'Financial-Asset': StixCyberObservable,
   Unknown,
   relationship,
 };

@@ -5,8 +5,6 @@ import { Redirect, Switch } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Accounts from './Accounts';
 import RootAccount from './accounts/Root';
-import Assets from './Assets';
-import RootAsset from './assets/Root';
 
 const Root = () => (
   <Switch>
@@ -23,15 +21,6 @@ const Root = () => (
     <BoundaryRoute
       path="/dashboard/financial/accounts/:accountId"
       component={RootAccount}
-    />
-    <BoundaryRoute
-      exact
-      path="/dashboard/financial/assets"
-      component={Assets}
-    />
-    <BoundaryRoute
-      path="/dashboard/financial/assets/:assetId"
-      component={RootAsset}
     />
   </Switch>
 );

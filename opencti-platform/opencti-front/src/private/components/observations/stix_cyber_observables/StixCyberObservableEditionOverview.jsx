@@ -797,6 +797,12 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           url
           publication_date
         }
+        ... on FinancialAsset {
+          name
+          type
+          description
+          asset_value
+        }
         x_opencti_score
         x_opencti_description
         createdBy {

@@ -113,6 +113,7 @@ export const resolveLink = (type: string): string | null => {
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':
+    case 'Financial-Asset':
       return '/dashboard/observations/observables';
     default:
       return null;
@@ -276,6 +277,12 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         stixCyberObservable.content
         || stixCyberObservable.title
         || stixCyberObservable.url
+        || 'Unknown'
+      );
+    case 'Financial-Asset'.toLowerCase():
+      return (
+        stixCyberObservable.name
+        || stixCyberObservable.asset_value
         || 'Unknown'
       );
     default:

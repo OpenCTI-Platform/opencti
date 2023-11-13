@@ -131,9 +131,6 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on FinancialAccount {
         name
       }
-      ... on FinancialAsset {
-        name
-      }
       ... on Country {
         name
       }

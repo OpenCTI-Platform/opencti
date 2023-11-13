@@ -457,6 +457,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   priority: string;
   owner_sid: string;
   window_title: string;
+  asset_type: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -509,6 +510,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   number_of_subkeys: number;
   subject_public_key_exponent: number;
   cvv: number;
+  asset_value: number;
   // object
   ipfix: object;
   environment_variables: object;

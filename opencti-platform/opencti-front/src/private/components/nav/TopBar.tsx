@@ -108,7 +108,6 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import TopMenuFinancial from './TopMenuFinancial';
 import TopMenuFinancialAccount from './TopMenuFinancialAccount';
-import TopMenuFinancialAsset from './TopMenuFinancialAsset';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -264,7 +263,6 @@ const routes = {
   '/dashboard/locations': () => <TopMenuLocation />,
   // FINANCIAL
   '/dashboard/financial/accounts/': (id: string) => <TopMenuFinancialAccount id={id} />,
-  '/dashboard/financial/assets/': (id: string) => <TopMenuFinancialAsset id={id} />,
   '/dashboard/financial': () => <TopMenuFinancial />,
   // TECHNIQUES
   '/dashboard/techniques/attack_patterns/': (id: string) => (

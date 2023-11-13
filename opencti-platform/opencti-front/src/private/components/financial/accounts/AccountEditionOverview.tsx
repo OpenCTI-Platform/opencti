@@ -1,13 +1,12 @@
 import { graphql, useFragment, useMutation } from 'react-relay';
 import { FunctionComponent } from 'react';
 import * as R from 'ramda';
-import { Field, Form, Formik, FormikConfig } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { AccountEditionOverview_financialAccount$key } from './__generated__/AccountEditionOverview_financialAccount.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { CurrencyCode, FinancialAccountStatus, FinancialAccountType, displayCurrencyCode, getAccountValidator } from './AccountCreation';
 import TextField from '../../../../components/TextField';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { Option } from '../../common/form/ReferenceField';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -141,37 +140,12 @@ interface AccountEditionOverviewProps {
   accountRef: AccountEditionOverview_financialAccount$key
 }
 
-interface AccountEditionFormValues {
-  name: string
-  financial_account_number: string
-  international_bank_account_number: string
-  currency_code: string // Drop-down value
-  financial_account_status: string // Drop-down value
-  financial_account_type: string // Drop-down value
-  createdBy?: Option
-  objectMarking?: Option[]
-}
-
 const AccountEditionOverviewComponent: FunctionComponent<AccountEditionOverviewProps> = ({ accountRef }) => {
   const { t } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const account = useFragment(accountEditionOverviewFragment, accountRef);
   const accountValidator = getAccountValidator(t);
   const [commitUpdate] = useMutation(accountEditionOverviewUpdate);
-
-  const onSubmit: FormikConfig<AccountEditionFormValues>['onSubmit'] = (values: AccountEditionFormValues, { setSubmitting }) => {
-    const finalValues = R.pipe(
-      R.dissoc('createdBy'),
-      R.dissoc('objectMarking'),
-    )(values);
-    commitUpdate({
-      variables: {
-        id: account.id,
-        input: finalValues,
-      },
-      onCompleted: () => setSubmitting(false),
-    });
-  };
 
   const queries = {
     fieldPatch: accountMutationFieldPatch,
@@ -191,9 +165,9 @@ const AccountEditionOverviewComponent: FunctionComponent<AccountEditionOverviewP
             input: [{
               key: name,
               value,
-            }]
-          }
-        })
+            }],
+          },
+        });
       })
       .catch(() => false);
   };
@@ -222,7 +196,7 @@ const AccountEditionOverviewComponent: FunctionComponent<AccountEditionOverviewP
       validationSchema={accountValidator}
       onSubmit={() => {}}
     >
-      {({ submitForm, setFieldValue }) => (
+      {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}

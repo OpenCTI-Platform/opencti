@@ -1,7 +1,7 @@
 import { makeStyles } from '@mui/styles';
 import { Button } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import { SavingsOutlined, MonetizationOnOutlined } from '@mui/icons-material';
+import { SavingsOutlined } from '@mui/icons-material';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -45,27 +45,6 @@ const TopMenuFinancial = () => {
         >
           <SavingsOutlined className={classes.icon} fontSize="small" />
           {t('Accounts')}
-        </Button>
-      )}
-      {!useIsHiddenEntity('Financial-Asset') && (
-        <Button
-          component={Link}
-          to="/dashboard/financial/assets"
-          variant={
-            location.pathname === '/dashboard/financial/assets'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/financial/assets'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <MonetizationOnOutlined className={classes.icon} fontSize="small" />
-          {t('Assets')}
         </Button>
       )}
     </div>

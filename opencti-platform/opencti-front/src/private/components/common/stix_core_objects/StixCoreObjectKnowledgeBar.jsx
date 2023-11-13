@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
-import { DomainOutlined, GroupOutlined, MonetizationOnOutlined, SavingsOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { DomainOutlined, GroupOutlined, SavingsOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { GlobeModel } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -831,7 +831,7 @@ const StixCoreObjectKnowledgeBar = ({
             )}
           </MenuList>
         )}
-        {isInAvailableSection(['accounts', 'assets']) && (
+        {isInAvailableSection(['accounts']) && (
           <MenuList
             style={{ paddingBottom: 0 }}
             component="nav"
@@ -855,22 +855,6 @@ const StixCoreObjectKnowledgeBar = ({
                   <SavingsOutlined />
                 </ListItemIcon>
                 <ListItemText primary={t('Accounts')} />
-              </MenuItem>
-            )}
-            {includes('assets', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/assets`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/assets`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <MonetizationOnOutlined />
-                </ListItemIcon>
-                <ListItemText primary={t('Assets')} />
               </MenuItem>
             )}
           </MenuList>

@@ -152,6 +152,7 @@ const stixCyberObservableMutation = graphql`
     $PhoneNumber: PhoneNumberAddInput
     $PaymentCard: PaymentCardAddInput
     $MediaContent: MediaContentAddInput
+    $FinancialAsset: FinancialAssetAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -191,6 +192,7 @@ const stixCyberObservableMutation = graphql`
       PhoneNumber: $PhoneNumber
       PaymentCard: $PaymentCard
       MediaContent: $MediaContent
+      FinancialAsset: $FinancialAsset
     ) {
       id
       standard_id

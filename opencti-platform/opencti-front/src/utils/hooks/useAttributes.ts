@@ -225,6 +225,7 @@ export const stixCyberObservableTypes = [
   'Phone-Number',
   'Payment-Card',
   'Media-Content',
+  'Financial-Asset',
 ];
 
 export const typesWithoutName = ['Observed-Data'];

@@ -1,8 +1,7 @@
-import type { CurrencyCode, FinancialAccountBalance, FinancialAccountStatus, FinancialAccountType, FinancialAssetType } from '../../generated/graphql';
+import type { CurrencyCode, FinancialAccountBalance, FinancialAccountStatus, FinancialAccountType } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 export const ENTITY_TYPE_FINANCIAL_ACCOUNT = 'Financial-Account';
-export const ENTITY_TYPE_FINANCIAL_ASSET = 'Financial-Asset';
 
 export interface BasicStoreEntityFinancialAccount extends BasicStoreEntity {
   currency_code: CurrencyCode;
@@ -22,16 +21,4 @@ export interface StoreEntityFinancialAccount extends StoreEntity {
   financial_account_type: string;
   financial_account_balances: string[];
   international_bank_account_number: string;
-}
-
-export interface BasicStoreEntityFinancialAsset extends BasicStoreEntity {
-  name: string;
-  asset_type: FinancialAssetType;
-  asset_value: number;
-}
-
-export interface StoreEntityFinancialAsset extends StoreEntity {
-  name: string;
-  asset_type: string;
-  asset_value: number;
 }

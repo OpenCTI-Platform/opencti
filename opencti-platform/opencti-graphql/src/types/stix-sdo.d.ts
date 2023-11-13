@@ -326,9 +326,3 @@ export interface StixFinancialAccount extends StixDomainObject {
   financial_account_balances: Array<string>;
   international_bank_account_number: string;
 }
-
-export interface StixFinancialAsset extends StixDomainObject {
-  name: string;
-  asset_type: string;
-  asset_value: number;
-}

@@ -7616,6 +7616,60 @@ input MediaContentAddInput {
   file: Upload
 }
 
+type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  name: String
+  type: String
+  description: String
+  asset_value: Float
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+
+input FinancialAssetAddInput {
+  name: String
+  type: String
+  description: String
+  asset_value: Float
+}
+
 interface BasicRelationship {
   id: ID!
   standard_id: String!
@@ -7717,11 +7771,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | FinancialAccount | FinancialAsset
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | FinancialAsset | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | FinancialAccount
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | FinancialAccount | FinancialAsset
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | FinancialAsset | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | FinancialAccount
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | FinancialAccount | FinancialAsset
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | FinancialAsset | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | FinancialAccount
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -8429,8 +8483,6 @@ type Query {
   administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: [AdministrativeAreasFiltering!], filterMode: FilterMode, search: String): AdministrativeAreaConnection
   financialAccount(id: ID!): FinancialAccount
   financialAccounts(first: Int, after: ID, orderBy: FinancialAccountOrdering, orderMode: OrderingMode, filters: [FinancialAccountFiltering!], filterMode: FilterMode, search: String): FinancialAccountConnection
-  financialAsset(id: ID!): FinancialAsset
-  financialAssets(first: Int, after: ID, orderBy: FinancialAssetOrdering, orderMode: OrderingMode, filters: [FinancialAssetFiltering!], filterMode: FilterMode, search: String): FinancialAssetConnection
   task(id: String!): Task
   tasks(first: Int, after: ID, orderBy: TasksOrdering, orderMode: OrderingMode, filters: [TasksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): TaskConnection
   taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
@@ -9058,7 +9110,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, FinancialAsset: FinancialAssetAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, context: String, types: [String], search: String, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode, filters: [StixCyberObservablesFiltering], filterMode: FilterMode, relationship_type: [String], elementId: String, selectedIds: [String]): [File!]
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
@@ -9145,20 +9197,12 @@ type Mutation {
   administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
   financialAccountAdd(input: FinancialAccountAddInput!): FinancialAccount
-  financialAccountUpdate(input: FinancialAccountUpdateInput!): FinancialAccount
   financialAccountDelete(id: ID!): ID
   financialAccountFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): FinancialAccount
   financialAccountContextPatch(id: ID!, input: EditContext!): FinancialAccount
   financialAccountContextClean(id: ID!): FinancialAccount
   financialAccountRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   financialAccountRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): FinancialAccount
-  financialAssetAdd(input: FinancialAssetAddInput!): FinancialAsset
-  financialAssetUpdate(input: FinancialAssetUpdateInput!): FinancialAsset
-  financialAssetDelete(id: ID!): ID
-  financialAssetContextPatch(id: ID!, input: EditContext!): FinancialAsset
-  financialAssetContextClean(id: ID!): FinancialAsset
-  financialAssetRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  financialAssetRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): FinancialAsset
   taskAdd(input: TaskAddInput!): Task
   taskDelete(id: ID!): ID
   taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task
@@ -10838,17 +10882,6 @@ input FinancialAccountBalanceInput {
   balance: Float
 }
 
-enum FinancialAssetType {
-  airplane
-  boat
-  car
-  company
-  domain_name
-  real_estate
-  digital
-  other
-}
-
 type FinancialAccount implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -10908,80 +10941,12 @@ type FinancialAccount implements BasicObject & StixObject & StixCoreObject & Sti
   international_bank_account_number: String
 }
 
-type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  representative: Representative!
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  x_opencti_photo_ref: String
-  x_opencti_photo_refs: [String]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  avatar: OpenCtiFile
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
-  status: Status
-  workflowEnabled: Boolean
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  name: String!
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
-}
-
 enum FinancialAccountOrdering {
   name
   financial_account_number
   financial_account_status
   financial_account_type
   international_bank_account_number
-  created
-  modified
-  created_at
-  updated_at
-  objectMarking
-  objectLabel
-}
-
-enum FinancialAssetOrdering {
-  name
-  asset_type
-  asset_value
   created
   modified
   created_at
@@ -11011,24 +10976,6 @@ input FinancialAccountFiltering {
   filterMode: FilterMode
 }
 
-enum FinancialAssetFilter {
-  name
-  asset_type
-  asset_value
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-}
-
-input FinancialAssetFiltering {
-  key: [FinancialAssetFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 type FinancialAccountConnection {
   pageInfo: PageInfo!
   edges: [FinancialAccountEdge!]
@@ -11039,17 +10986,7 @@ type FinancialAccountEdge {
   node: FinancialAccount!
 }
 
-type FinancialAssetConnection {
-  pageInfo: PageInfo!
-  edges: [FinancialAssetEdge!]
-}
-
-type FinancialAssetEdge {
-  cursor: String!
-  node: FinancialAsset!
-}
-
-union FinancialData = FinancialAccount | FinancialAsset
+union FinancialData = FinancialAccount
 
 input FinancialAccountAddInput {
   currency_code: CurrencyCode
@@ -11064,39 +11001,6 @@ input FinancialAccountAddInput {
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
-}
-
-input FinancialAccountUpdateInput {
-  id: ID!
-  currency_code: CurrencyCode
-  name: name_String_minLength_2
-  financial_account_number: String
-  financial_account_status: FinancialAccountStatus
-  financial_account_type: FinancialAccountType
-  financial_account_balances: [FinancialAccountBalanceInput]
-  international_bank_account_number: String
-}
-
-scalar name_String_minLength_2
-
-input FinancialAssetAddInput {
-  name: name_String_NotNull_minLength_2!
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-}
-
-input FinancialAssetUpdateInput {
-  id: ID!
-  name: name_String_minLength_2
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
 }
 
 type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {

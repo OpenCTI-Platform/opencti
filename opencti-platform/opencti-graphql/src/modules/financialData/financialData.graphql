@@ -287,16 +287,6 @@ input FinancialAccountBalanceInput {
   as_of_date: DateTime
   balance: Float
 }
-enum FinancialAssetType {
-  airplane
-  boat
-  car
-  company
-  domain_name
-  real_estate
-  digital
-  other
-}
 
 # Entities
 type FinancialAccount implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -421,125 +411,6 @@ type FinancialAccount implements BasicObject & StixObject & StixCoreObject & Sti
   financial_account_balances: [FinancialAccountBalance!]
   international_bank_account_number: String
 }
-type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # StixObject
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  representative: Representative!
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-    @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  # StixDomainObject
-  x_opencti_photo_ref: String
-  x_opencti_photo_refs: [String]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  avatar: OpenCtiFile
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
-  status: Status
-  workflowEnabled: Boolean
-  # Technical
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  # Financial Asset
-  name: String!
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
-}
 
 # Ordering
 enum FinancialAccountOrdering {
@@ -548,17 +419,6 @@ enum FinancialAccountOrdering {
   financial_account_status
   financial_account_type
   international_bank_account_number
-  created
-  modified
-  created_at
-  updated_at
-  objectMarking
-  objectLabel
-}
-enum FinancialAssetOrdering {
-  name
-  asset_type
-  asset_value
   created
   modified
   created_at
@@ -587,22 +447,6 @@ input FinancialAccountFiltering {
   operator: String
   filterMode: FilterMode
 }
-enum FinancialAssetFilter {
-  name
-  asset_type
-  asset_value
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-}
-input FinancialAssetFiltering {
-  key: [FinancialAssetFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
 
 # Relay Connections
 type FinancialAccountConnection {
@@ -613,16 +457,8 @@ type FinancialAccountEdge {
   cursor: String!
   node: FinancialAccount!
 }
-type FinancialAssetConnection {
-  pageInfo: PageInfo!
-  edges: [FinancialAssetEdge!]
-}
-type FinancialAssetEdge {
-  cursor: String!
-  node: FinancialAsset!
-}
 
-union FinancialData = FinancialAccount | FinancialAsset
+union FinancialData = FinancialAccount
 
 # Queries
 type Query {
@@ -636,16 +472,6 @@ type Query {
     filterMode: FilterMode
     search: String
   ): FinancialAccountConnection @auth(for: [KNOWLEDGE])
-  financialAsset(id: ID!): FinancialAsset @auth(for: [KNOWLEDGE])
-  financialAssets(
-    first: Int
-    after: ID
-    orderBy: FinancialAssetOrdering
-    orderMode: OrderingMode
-    filters: [FinancialAssetFiltering!]
-    filterMode: FilterMode
-    search: String
-  ): FinancialAssetConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -663,48 +489,12 @@ input FinancialAccountAddInput {
   objectLabel: [String]
   externalReferences: [String]
 }
-input FinancialAccountUpdateInput {
-  id: ID! # internal_id
-  currency_code: CurrencyCode
-  name: String @constraint(minLength: 2)
-  financial_account_number: String
-  financial_account_status: FinancialAccountStatus
-  financial_account_type: FinancialAccountType
-  financial_account_balances: [FinancialAccountBalanceInput]
-  international_bank_account_number: String
-}
-input FinancialAssetAddInput {
-  name: String! @constraint(minLength: 2)
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-}
-input FinancialAssetUpdateInput {
-  id: ID! # internal_id
-  name: String @constraint(minLength: 2)
-  asset_type: FinancialAssetType
-  asset_value: Int
-  currency_code: CurrencyCode
-}
 type Mutation {
   financialAccountAdd(input: FinancialAccountAddInput!): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAccountUpdate(input: FinancialAccountUpdateInput!): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
   financialAccountDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   financialAccountFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
   financialAccountContextPatch(id: ID!, input: EditContext!): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
   financialAccountContextClean(id: ID!): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
   financialAccountRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   financialAccountRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): FinancialAccount @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetAdd(input: FinancialAssetAddInput!): FinancialAsset @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetUpdate(input: FinancialAssetUpdateInput!): FinancialAsset @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  financialAssetContextPatch(id: ID!, input: EditContext!): FinancialAsset @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetContextClean(id: ID!): FinancialAsset @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  financialAssetRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): FinancialAsset @auth(for: [KNOWLEDGE_KNUPDATE])
 }
