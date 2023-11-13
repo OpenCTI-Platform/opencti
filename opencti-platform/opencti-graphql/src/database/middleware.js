@@ -3129,10 +3129,12 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     if (input.aliases) {
-      data.aliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      const preparedAliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      data.aliases = preparedAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
     }
     if (input.x_opencti_aliases) {
-      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      const preparedXOpenctiAliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      data.x_opencti_aliases = preparedXOpenctiAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }
