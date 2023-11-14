@@ -10144,7 +10144,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   manager_running: Boolean
   last_run_start_date: DateTime
   last_run_end_date: DateTime
-  manager_settings: JSON
+  manager_setting: JSON
 }
 
 enum NotifierOrdering {

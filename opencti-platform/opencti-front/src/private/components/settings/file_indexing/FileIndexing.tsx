@@ -32,7 +32,7 @@ const fileIndexingConfigurationQuery = graphql`
       manager_running
       last_run_start_date
       last_run_end_date
-      manager_settings
+      manager_setting
     }
   }
 `;

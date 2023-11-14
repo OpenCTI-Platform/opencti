@@ -8,7 +8,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
     manager_running: Boolean @auth
     last_run_start_date: DateTime @auth
     last_run_end_date: DateTime @auth
-    manager_settings: JSON @auth
+    manager_setting: JSON @auth
 }
 
 # Queries

@@ -35,7 +35,7 @@ interface ManagerConfiguration {
   last_run_start_date: Date;
   manager_id: string;
   manager_running: boolean | null;
-  manager_settings: {
+  manager_setting: {
     accept_mime_types: string[];
     include_global_files: boolean;
     max_file_size: number;
@@ -84,11 +84,11 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
   managerConfiguration,
 }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
-  const { manager_settings } = managerConfiguration;
+  const { manager_setting } = managerConfiguration;
   const queryArgs = {
-    mimeTypes: manager_settings.accept_mime_types,
-    maxFileSize: manager_settings.max_file_size,
-    excludedPaths: manager_settings.include_global_files ? [] : ['import/global'],
+    mimeTypes: manager_setting.accept_mime_types,
+    maxFileSize: manager_setting.max_file_size,
+    excludedPaths: manager_setting.include_global_files ? [] : ['import/global'],
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });

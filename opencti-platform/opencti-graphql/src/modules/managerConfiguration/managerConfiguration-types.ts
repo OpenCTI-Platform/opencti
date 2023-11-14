@@ -9,6 +9,7 @@ export interface BasicStoreEntityManagerConfiguration extends BasicStoreEntity {
   manager_running: boolean;
   last_run_start_date: Date;
   last_run_end_date: Date;
+  manager_setting: any;
 }
 
 export interface StoreEntityManagerConfiguration extends StoreEntity {
@@ -16,6 +17,7 @@ export interface StoreEntityManagerConfiguration extends StoreEntity {
   manager_running: boolean;
   last_run_start_date: Date;
   last_run_end_date: Date;
+  manager_setting: any;
 }
 
 export interface StixManagerConfiguration extends StixObject {
@@ -23,6 +25,7 @@ export interface StixManagerConfiguration extends StixObject {
   manager_running: boolean;
   last_run_start_date: Date;
   last_run_end_date: Date;
+  manager_setting: any;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }

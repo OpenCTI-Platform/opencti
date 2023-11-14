@@ -72,11 +72,9 @@ const loadFilesToIndex = async (file: { id: string, internalId: string, entityId
 const indexImportedFiles = async (
   context: AuthContext,
   fromDate: Date | null = null,
-  path = 'import/',
-  includeGlobalFiles = INCLUDE_GLOBAL_FILES,
-  maxFileSize = MAX_FILE_SIZE,
-  mimeTypes = ACCEPT_MIME_TYPES,
+  opts: { path?: string, includeGlobalFiles?: boolean, maxFileSize?: number, mimeTypes?: string[] } = {},
 ) => {
+  const { path = 'import/', includeGlobalFiles = INCLUDE_GLOBAL_FILES, maxFileSize = MAX_FILE_SIZE, mimeTypes = ACCEPT_MIME_TYPES } = opts;
   const excludedPaths = includeGlobalFiles ? ['import/pending/'] : ['import/pending/', 'import/global/'];
   const fileListingOpts = { modifiedSince: fromDate, excludedPaths, mimeTypes, maxFileSize };
   const allFiles: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
@@ -172,7 +170,12 @@ const initFileIndexManager = () => {
           const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
           const indexFromDate = lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toDate() : null;
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
-          await indexImportedFiles(context, indexFromDate);
+          const indexOpts = {
+            includeGlobalFiles: managerConfiguration.manager_setting?.include_global_files,
+            maxFileSize: managerConfiguration.manager_setting?.max_file_size,
+            mimeTypes: managerConfiguration.manager_setting?.accept_mime_types,
+          };
+          await indexImportedFiles(context, indexFromDate, indexOpts);
           const endDate = new Date();
           await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: startDate, last_run_end_date: endDate });
           logApp.debug('[OPENCTI-MODULE] End of file index manager processing');

@@ -3,7 +3,6 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   findById,
   findByManagerId,
-  getManagerSettings,
   managerConfigurationEditField
 } from './managerConfiguration-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
@@ -14,9 +13,6 @@ const managerConfigurationResolvers: Resolvers = {
   Query: {
     managerConfiguration: (_, { id }, context) => findById(context, context.user, id),
     managerConfigurationByManagerId: (_, { managerId }, context) => findByManagerId(context, context.user, managerId),
-  },
-  ManagerConfiguration: {
-    manager_settings: (current) => getManagerSettings(current.manager_id),
   },
   Mutation: {
     managerConfigurationFieldPatch: (_, { id, input }, context) => {

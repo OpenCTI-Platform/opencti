@@ -39,7 +39,7 @@ import { VocabularyCategory } from './generated/graphql';
 import { addVocabulary } from './modules/vocabulary/vocabulary-domain';
 import { builtInOv, openVocabularies } from './modules/vocabulary/vocabulary-utils';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
-import { initiManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
+import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { GROUP_DEFAULT, groupAddRelation } from './domain/group';
 
 // region Platform constants
@@ -325,7 +325,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
     platform_language: 'auto',
   });
   await initCreateEntitySettings(context, SYSTEM_USER);
-  await initiManagerConfigurations(context, SYSTEM_USER);
+  await initManagerConfigurations(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
@@ -387,7 +387,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeAdminUser(context);
       await applyMigration(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
-      await initiManagerConfigurations(context, SYSTEM_USER);
+      await initManagerConfigurations(context, SYSTEM_USER);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

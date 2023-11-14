@@ -193,6 +193,10 @@ export const searchEngineVersion = async () => {
   return { platform: searchPlatform, version: searchVersion, engine: localEngine };
 };
 
+export const isElkEngine = () => {
+  return engine instanceof ElkClient;
+};
+
 export const searchEngineInit = async () => {
   // Select the correct engine
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
@@ -547,6 +551,7 @@ const elCreateIndexTemplate = async (index) => {
       }
     };
   }
+  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
   await engine.indices.putIndexTemplate({
     name: index,
     create: false,
@@ -720,9 +725,12 @@ const elCreateIndexTemplate = async (index) => {
             connections: {
               type: 'nested',
             },
+            manager_setting: {
+              type: flattenedType,
+            },
             context_data: {
               properties: {
-                input: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+                input: { type: flattenedType },
               },
             }
           },
