@@ -29,27 +29,33 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
   }
 `;
 
+interface ManagerConfiguration {
+  id: string;
+  last_run_end_date: Date;
+  last_run_start_date: Date;
+  manager_id: string;
+  manager_running: boolean | null;
+  manager_settings: {
+    accept_mime_types: string[];
+    include_global_files: boolean;
+    max_file_size: number;
+  };
+}
+
 interface FileIndexingConfigurationAndMonitoringComponentProps {
-  managerConfigurationByManagerId: {
-    id: string;
-    last_run_end_date: any;
-    last_run_start_date: any;
-    manager_id: string;
-    manager_running: boolean | null;
-    manager_settings: any;
-  }
+  managerConfiguration: ManagerConfiguration
   queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
 }
 
 const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileIndexingConfigurationAndMonitoringComponentProps> = ({
-  managerConfigurationByManagerId,
+  managerConfiguration,
   queryRef,
 }) => {
   const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery, queryRef);
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
-  const managerConfigurationId = managerConfigurationByManagerId?.id;
-  const isStarted = managerConfigurationByManagerId?.manager_running || false;
+  const managerConfigurationId = managerConfiguration?.id;
+  const isStarted = managerConfiguration?.manager_running || false;
 
   return (
     <Grid container={true} spacing={3}>
@@ -71,26 +77,18 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 };
 
 interface FileIndexingConfigurationAndMonitoringProps {
-  managerConfigurationByManagerId: {
-    id: string;
-    last_run_end_date: any;
-    last_run_start_date: any;
-    manager_id: string;
-    manager_running: boolean | null;
-    manager_settings: any;
-  }
+  managerConfiguration: ManagerConfiguration
 }
 
 const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConfigurationAndMonitoringProps> = ({
-  managerConfigurationByManagerId,
+  managerConfiguration,
 }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
-  // TODO MVP2 : get from configuration
-  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  const { manager_settings } = managerConfiguration;
   const queryArgs = {
-    mimeTypes: defaultMimeTypes,
-    maxFileSize: 5242880,
-    excludedPaths: ['import/global'],
+    mimeTypes: manager_settings.accept_mime_types,
+    maxFileSize: manager_settings.max_file_size,
+    excludedPaths: manager_settings.include_global_files ? [] : ['import/global'],
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
@@ -101,7 +99,7 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <FileIndexingConfigurationAndMonitoringComponent
             queryRef={queryRef}
-            managerConfigurationByManagerId={managerConfigurationByManagerId}
+            managerConfiguration={managerConfiguration}
           />
         </React.Suspense>
       ) : (

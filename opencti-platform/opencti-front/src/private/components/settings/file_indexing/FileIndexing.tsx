@@ -69,12 +69,6 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
 
   const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
 
-  // const managerSettings = managerConfigurationByManagerId?.manager_settings;
-
-  // FileIndexing fera juste query managerConfigurationByManagerId et passera config au composant parent en dessous => FileIndexingConfigurationAndMonitoring
-  // faire composant parents de FileIndexingConfiguration et FileIndexingMonitoring
-  // ce composant fera la query des metrics et les passera en props aux enfants
-
   return (
     <div>
       {!isEnterpriseEdition && (
@@ -84,7 +78,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
         isModuleWarning={isModuleWarning}
       />
       {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
-       <FileIndexingConfigurationAndMonitoring managerConfigurationByManagerId={managerConfigurationByManagerId} />
+       <FileIndexingConfigurationAndMonitoring managerConfiguration={managerConfigurationByManagerId} />
       )}
     </div>
   );
