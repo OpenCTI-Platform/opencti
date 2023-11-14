@@ -12,7 +12,6 @@ import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { withRouter } from 'react-router-dom';
-import handleExportJson from '../private/components/workspaces/workspaceExportHandler';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -165,13 +164,12 @@ class ExportButtons extends Component {
       type,
       csvData,
       csvFileName,
-      handleDownloadAsStixReport,
       containerId,
+      handleDownloadAsStixReport,
+      handleExportDashboard,
       investigationAddFromContainer,
       history,
-      workspace,
     } = this.props;
-    const isCustomDashBoard = workspace.type === 'dashboard';
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
@@ -185,9 +183,9 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
-          {isCustomDashBoard && (
+          {type === 'dashboard' && handleExportDashboard && (
             <Tooltip title={t('Export to JSON')}>
-              <ToggleButton onClick={() => handleExportJson(workspace)} value={'Export-to-JSON'}>
+              <ToggleButton onClick={handleExportDashboard.bind(this)} value={'Export-to-JSON'}>
                 <FileExportOutline fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
