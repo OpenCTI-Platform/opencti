@@ -39,7 +39,7 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
   }
 
   // our stix matching is currently limited, we need to validate the input filters
-  if (input.filters && input.filters !== '{}') {
+  if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
   }
 };
