@@ -48,6 +48,8 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import type { FilterGroup } from '../../utils/stix-filtering/filter-group';
+import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -80,6 +82,16 @@ export const addTrigger = async (
   if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).event_types.length === 0) {
     throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
   }
+
+  // our stix matching is currently limited, we need to validate the input filters
+  if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).filters) {
+    const input = triggerInput as TriggerLiveAddInput;
+    if (input.filters) {
+      const filters = JSON.parse(input.filters) as FilterGroup;
+      validateFilterGroupForStixMatch(filters);
+    }
+  }
+
   let authorizedMembers;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
@@ -163,11 +175,21 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
 
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
+
+  // our stix matching is currently limited, we need to validate the input filters
+  if (trigger.trigger_type === TriggerTypeValue.Live) {
+    const filtersItem = input.find((item) => item.key === 'filters');
+    if (filtersItem?.value[0]) {
+      const filterGroup = JSON.parse((filtersItem?.value[0]) as string) as FilterGroup;
+      validateFilterGroupForStixMatch(filterGroup);
+    }
+  }
+
   const userAccessRight = getUserAccessRight(user, trigger);
   if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
     throw ForbiddenAccess();
   }
-  if (trigger.trigger_type === 'live') {
+  if (trigger.trigger_type === TriggerTypeValue.Live) {
     const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
     if (emptyTriggerEvents.length > 0) {
       throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
