@@ -21,7 +21,7 @@ import { RELATION_DELIVERS } from '../../../src/schema/stixCoreRelationship';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../src/schema/general';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 // !!!!
 // These tests enable to protect the notificationManager code, and especially the instance trigger notification system behavior.
