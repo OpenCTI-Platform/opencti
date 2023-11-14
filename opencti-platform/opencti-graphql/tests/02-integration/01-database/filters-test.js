@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { adaptFiltersIds, isStixMatchFilters } from '../../../src/utils/filtering';
+import { adaptFiltersIds } from '../../../src/utils/filtering';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import { isEmptyField } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
+import { isStixMatchFilterGroup } from '../../../src/utils/stix-filtering/stix-filtering';
 
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
@@ -12,7 +13,7 @@ const applyFilters = async (filters, user = ADMIN_USER) => {
   for (let i = 0; i < data.objects.length; i += 1) {
     const stix = data.objects[i];
     const adaptedFilters = await adaptFiltersIds(testContext, user, filters);
-    const isCurrentlyVisible = await isStixMatchFilters(testContext, user, stix, adaptedFilters);
+    const isCurrentlyVisible = await isStixMatchFilterGroup(testContext, user, stix, adaptedFilters);
     if (isCurrentlyVisible) {
       filteredObjects.push(stix);
     }

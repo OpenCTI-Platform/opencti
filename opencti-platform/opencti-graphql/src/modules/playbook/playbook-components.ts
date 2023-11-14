@@ -22,7 +22,7 @@ import {
   type PlaybookComponent,
   type PlaybookComponentConfiguration
 } from './playbook-types';
-import { adaptFiltersIds, isStixMatchFilters } from '../../utils/filtering';
+import { adaptFiltersIds } from '../../utils/filtering';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
@@ -103,6 +103,7 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-sro';
 import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
+import { isStixMatchFilterGroup } from '../../utils/stix-filtering/stix-filtering';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -230,14 +231,14 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, adaptedFilters);
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const isMatch = await isStixMatchFilters(context, SYSTEM_USER, baseData, adaptedFilters);
+    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, adaptedFilters);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
   }
 };
@@ -271,7 +272,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, adaptedFilters);
       if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
     }
     const newBundle = { ...bundle, objects: matchedElements };
