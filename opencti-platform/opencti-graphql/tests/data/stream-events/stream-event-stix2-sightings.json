@@ -1,0 +1,51 @@
+[
+  {
+    "id": "sighting--98b904c3-6836-4b94-90f0-8f3b25ec6349",
+    "spec_version": "2.1",
+    "type": "sighting",
+    "extensions": {
+      "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+        "extension_type": "property-extension",
+        "id": "679a695e-0b00-41e0-b78f-8c36bfbd9d57",
+        "type": "stix-sighting-relationship",
+        "created_at": "2023-10-05T07:57:02.086Z",
+        "updated_at": "2023-11-03T13:34:00.077Z",
+        "stix_ids": [
+          "sighting--579a46af-a339-400d-809e-b92101fe7de8"
+        ],
+        "is_inferred": false,
+        "creator_ids": [
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ],
+        "sighting_of_value": "2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957",
+        "sighting_of_ref": "12c19a66-d623-4ae7-9bc0-88e83198d188",
+        "sighting_of_type": "Indicator",
+        "sighting_of_ref_object_marking_refs": [
+          "89c4088b-c4c5-407f-a882-fa140d09ea36"
+        ],
+        "where_sighted_values": [
+          "France"
+        ],
+        "where_sighted_refs": [
+          "ec5a22f6-c849-4e1f-abba-3fb15f0aaaea"
+        ],
+        "where_sighted_types": [
+          "Country"
+        ],
+        "negative": false
+      }
+    },
+    "created": "2016-08-06T20:08:31.000Z",
+    "modified": "2023-11-03T13:34:00.077Z",
+    "revoked": false,
+    "confidence": 25,
+    "lang": "en",
+    "first_seen": "2016-08-06T20:08:31.000Z",
+    "last_seen": "2016-08-07T20:08:31.000Z",
+    "count": 8,
+    "sighting_of_ref": "indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b",
+    "where_sighted_refs": [
+      "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d"
+    ]
+  }
+]

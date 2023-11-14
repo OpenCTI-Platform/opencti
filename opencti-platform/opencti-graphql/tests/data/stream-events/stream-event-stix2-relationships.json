@@ -1,0 +1,40 @@
+[
+  {
+    "id":"relationship--21c1841a-7b2d-40a5-9398-5fd979384467",
+    "spec_version":"2.1",
+    "type":"relationship",
+    "extensions":{
+      "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba":{
+        "extension_type":"property-extension",
+        "id":"8b3d929a-594c-4d31-b1a4-76befecd4c47",
+        "type":"related-to",
+        "created_at":"2023-11-03T14:15:14.368Z",
+        "updated_at":"2023-11-03T14:15:14.368Z",
+        "is_inferred":false,
+        "creator_ids":[
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ],
+        "source_value":"Disco Team Threat Actor Group",
+        "source_ref":"49e956ff-f0bc-48d2-9685-87c780c56d17",
+        "source_type":"Threat-Actor-Group",
+        "source_ref_object_marking_refs":[
+          "ef2beafc-3701-47b5-aec2-d8ad6c1a841a"
+        ],
+        "target_value":"GROUPY",
+        "target_ref":"e0256b00-dbce-47fd-99ba-7f6be934230d",
+        "target_type":"Grouping",
+        "target_ref_object_marking_refs":[
+          "b5ed1bd3-c140-40a0-859e-9e6f24d2c3d7"
+        ]
+      }
+    },
+    "created":"2023-11-03T14:15:14.368Z",
+    "modified":"2023-11-03T14:15:14.368Z",
+    "revoked":false,
+    "confidence":75,
+    "lang":"en",
+    "relationship_type":"related-to",
+    "source_ref":"threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+    "target_ref":"grouping--e09ce86e-0bd0-5a09-a5e9-4ebd76b79bd4"
+  }
+]

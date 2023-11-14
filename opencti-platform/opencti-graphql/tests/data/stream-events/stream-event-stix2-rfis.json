@@ -1,0 +1,37 @@
+[
+  {
+    "id": "case-rfi--ba623df5-65fe-57f9-9b63-6f946de48146",
+    "spec_version": "2.1",
+    "type": "case-rfi",
+    "extensions": {
+      "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+        "extension_type": "new-sdo",
+        "id": "7b5acb1e-168d-4e71-9591-7e92c34c4751",
+        "type": "Case-Rfi",
+        "created_at": "2023-10-20T14:24:58.023Z",
+        "updated_at": "2023-11-03T10:34:24.417Z",
+        "is_inferred": false,
+        "creator_ids": [
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ]
+      }
+    },
+    "created": "2023-10-20T14:24:49.000Z",
+    "modified": "2023-11-03T10:34:24.417Z",
+    "revoked": false,
+    "confidence": 75,
+    "lang": "en",
+    "created_by_ref": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+    "external_references": [
+      {
+        "source_name": "Super blog",
+        "description": "dsdsdsdsd",
+        "url": "https://superblog.cyber.com"
+      }
+    ],
+    "name": "RFI test",
+    "description": "dsdsddddddd",
+    "content": "<p>dsdsd</p>",
+    "priority": "P3"
+  }
+]
