@@ -10,6 +10,7 @@ import {
   isUniqFilter,
 } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
+import { MESSAGING$ } from '../../relay/environment';
 
 export interface MessageFromLocalStorage {
   id: string;
@@ -161,6 +162,10 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
     const currentUrl = window.location.href;
     const newUrl = currentUrl.split('?')[0];
     window.history.replaceState(null, '', newUrl);
+    // Display a warning message
+    setTimeout(() => { // delay the message to be sure the page is loaded
+      MESSAGING$.notifyError('Your url contains filters in a deprecated format, parameters stored in the url have been removed.');
+    }, 1000);
   }
   return removeEmptyFields({
     filters,
