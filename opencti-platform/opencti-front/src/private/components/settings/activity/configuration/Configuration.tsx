@@ -191,11 +191,11 @@ ConfigurationComponentProps
                         >
                           <ObjectOrganizationField
                             alert={false}
-                            name="orgs"
+                            name="organizations"
                             label={t('Add an organization')}
                             multiple={false}
                             onChange={onChangeData(resetForm)}
-                            containerStyle={{ width: '100' }}
+                            style={{ width: '100' }}
                           />
                         </Grid>
                       </Grid>
