@@ -41,7 +41,7 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersIds, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
+import { adaptFiltersIds, convertFiltersToQueryOptions } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
@@ -51,6 +51,7 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
+import { isStixMatchFilterGroup } from '../utils/stix-filtering/stix-filtering';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -461,8 +462,8 @@ const createSseMiddleware = () => {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
       const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
-      const isFromVisible = await isStixMatchFilters(context, user, fromStix, adaptedFilters);
-      const isToVisible = await isStixMatchFilters(context, user, toStix, adaptedFilters);
+      const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, adaptedFilters);
+      const isToVisible = await isStixMatchFilterGroup(context, user, toStix, adaptedFilters);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -561,10 +562,10 @@ const createSseMiddleware = () => {
               const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
                 const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
-                const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, adaptedFilters);
+                const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, adaptedFilters);
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                  const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, adaptedFilters);
+                  const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, adaptedFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                     cache.set(stix.id);
@@ -594,7 +595,7 @@ const createSseMiddleware = () => {
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                       const container = containers[containerIndex];
                       const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilters(context, user, stixContainer, adaptedFilters);
+                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, adaptedFilters);
                       if (containerMatch) {
                         isContainerMatching = true;
                         break;
