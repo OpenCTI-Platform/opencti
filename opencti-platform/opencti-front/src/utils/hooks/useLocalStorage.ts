@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import {
-  convertOldFilters,
   Filter,
   FilterGroup,
   findFilterFromKey,
@@ -155,8 +154,13 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   const zoom = searchObject.get('zoom');
   const stringFilters = searchObject.get('filters');
   let filters = stringFilters ? JSON.parse(stringFilters) : undefined;
-  if (filters && stringFilters && !filters.mode) { // if filters are in the old format
-    filters = convertOldFilters(stringFilters);
+  if (filters && !filters.mode) { // if filters are in the old format
+    // Remove the filters from local storage
+    filters = undefined;
+    // Remove the filters from the URL
+    const currentUrl = window.location.href;
+    const newUrl = currentUrl.split('?')[0];
+    window.history.replaceState(null, '', newUrl);
   }
   return removeEmptyFields({
     filters,
