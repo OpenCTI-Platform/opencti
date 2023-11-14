@@ -31,8 +31,9 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         aria-label={t('Settings')}
         onClick={handleClickOpen}
         size="large"
-        disabled={!attribute.column?.column_name}
-      ><CogOutline/></IconButton>
+        disabled={!attribute.column?.column_name}>
+        <CogOutline/>
+      </IconButton>
       <Dialog
         open={open}
         onClose={handleClose}
