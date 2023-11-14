@@ -18,7 +18,7 @@ import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-fi
 export const createStreamCollection = async (context, user, input) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filter));
+    validateFilterGroupForStixMatch(JSON.parse(input.filters));
   }
 
   const collectionId = generateInternalId();
