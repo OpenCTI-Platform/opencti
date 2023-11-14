@@ -2,14 +2,10 @@ import * as R from 'ramda';
 import { elCount, elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import {
-  INDEX_HISTORY,
-  READ_INDEX_HISTORY,
-} from '../database/utils';
+import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
-import type { FilterGroup } from '../database/middleware-loader';
 import { addFilter } from '../utils/filtering';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
@@ -29,7 +25,7 @@ export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) =>
 
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   const { types } = args;
-  const filters: FilterGroup = args.userId
+  const filters = args.userId
     ? addFilter(args.filters, '*_id', args.userId)
     : args.filters;
   return timeSeriesHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, filters });
