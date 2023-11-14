@@ -89,12 +89,16 @@ const DynamicResolutionField = ({
             }
             return fetchQuery(stixDomainObjectsLinesSearchQuery, {
               types,
-              filters: [
-                {
-                  key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
-                  values: val.trim(),
-                },
-              ],
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
+                    values: [val.trim()],
+                  },
+                ],
+                filterGroups: [],
+              },
               count: 1,
             })
               .toPromise()
