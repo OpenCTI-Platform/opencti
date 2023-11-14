@@ -26,21 +26,24 @@ const OBJECT_CONTAINS_FILTER = 'objects';
  * Pass through all individual filters and throws an error if it cannot be handled properly.
  * This is very aggressive but will allow us to detect rapidly any corner-case.
  */
-export const validateFilter = (filter: Filter) => {
+export const validateFilterForStixMatch = (filter: Filter) => {
   if (filter.key.length !== 1) {
-    throw new Error(`Stix filtering can only be executed on a unique filter key - got ${JSON.stringify(filter.key)}`);
+    throw Error(`Stix filtering can only be executed on a unique filter key - got ${JSON.stringify(filter.key)}`);
   }
   if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
-    throw new Error(`Stix filtering is not compatible with the provided filter key ${JSON.stringify(filter.key)}`);
+    throw Error(`Stix filtering is not compatible with the provided filter key ${JSON.stringify(filter.key)} - available filter keys: ${JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP))}`);
   }
 };
 
 /**
  * Recursively call validateFilter inside a FilterGroup
  */
-export const validateFilterGroup = (filterGroup: FilterGroup) => {
-  filterGroup.filters.forEach((f) => validateFilter(f));
-  filterGroup.filterGroups.forEach((fg) => validateFilterGroup(fg));
+export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
+  if (!filterGroup?.filterGroups || !filterGroup?.filters) {
+    throw Error('Unrecognized filter format; expecting FilterGroup');
+  }
+  filterGroup.filters.forEach((f) => validateFilterForStixMatch(f));
+  filterGroup.filterGroups.forEach((fg) => validateFilterGroupForStixMatch(fg));
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -122,7 +125,7 @@ const buildResolutionMapForFilter = async (mutableMap: FilterResolutionMap, filt
 /**
  * recursively call buildResolutionMapForFilter inside a filter group
  */
-const buildResolutionMapForFilterGroup = async (mutableMap: FilterResolutionMap, filterGroup: FilterGroup, cache: Map<string, StixObject>) => {
+export const buildResolutionMapForFilterGroup = async (mutableMap: FilterResolutionMap, filterGroup: FilterGroup, cache: Map<string, StixObject>) => {
   filterGroup.filters.forEach((f) => buildResolutionMapForFilter(mutableMap, f, cache));
   filterGroup.filterGroups.forEach((fg) => buildResolutionMapForFilterGroup(mutableMap, fg, cache));
 };
@@ -140,9 +143,10 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   filterGroup: FilterGroup,
   resolutionMap: FilterResolutionMap
 ) : Promise<boolean> => {
-  // throws on unhandled filter groups
-  // this is a failsafe, but if a valid use-case throws error here, consider adding a missing tester.
-  validateFilterGroup(filterGroup);
+  // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
+  // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
+  // This check should thus not fail here, theoretically.
+  validateFilterGroupForStixMatch(filterGroup);
 
   // first check: user access right (according to markings, organization, etc.)
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);

@@ -13,6 +13,7 @@ import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
 import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-filtering';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -35,6 +36,11 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
         throw UnsupportedError(`The attribute ${f.attribute} contains an invalid mapping.`);
       }
     });
+  }
+
+  // our stix matching is currently limited, we need to validate the input filters
+  if (input.filters && input.filters !== '{}') {
+    validateFilterGroupForStixMatch(JSON.parse(input.filters));
   }
 };
 
