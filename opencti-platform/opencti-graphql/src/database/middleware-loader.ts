@@ -33,7 +33,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const MAX_SEARCH_SIZE = 5000;
 
-export interface Filter {
+export interface FiltersWithNested {
   key: any;
   operator?: string | null;
   values?: any;
@@ -44,10 +44,10 @@ export interface Filter {
   }>;
 }
 
-export interface FilterGroup {
+export interface FilterGroupWithNested {
   mode?: string;
-  filters: Filter[],
-  filterGroups: FilterGroup[],
+  filters: FiltersWithNested[],
+  filterGroups: FilterGroupWithNested[],
 }
 
 export interface ListFilter<T extends BasicStoreCommon> {
@@ -60,7 +60,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   after?: string | undefined | null;
   orderBy?: any,
   orderMode?: InputMaybe<OrderingMode>;
-  filters?: FilterGroup | null;
+  filters?: FilterGroupWithNested | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
   types?: string[]
 }
@@ -82,7 +82,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   entityTypes?: Array<string>;
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
-  filters?: FilterGroup | null;
+  filters?: FilterGroupWithNested | null;
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
