@@ -37,6 +37,8 @@ import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, Nod
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
+import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
+import type { FilterGroup } from '../../utils/stix-filtering/filter-group';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -55,6 +57,15 @@ export const availableComponents = () => {
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
+  // our stix matching is currently limited, we need to validate the input filters
+  if (input.configuration) {
+    const config = JSON.parse(input.configuration);
+    if (config.filters) {
+      const filterGroup = config.filters as FilterGroup;
+      validateFilterGroupForStixMatch(filterGroup);
+    }
+  }
+
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -130,6 +141,15 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
+  // our stix matching is currently limited, we need to validate the input filters
+  if (input.configuration) {
+    const config = JSON.parse(input.configuration);
+    if (config.filters) {
+      const filterGroup = config.filters as FilterGroup;
+      validateFilterGroupForStixMatch(filterGroup);
+    }
+  }
+
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
