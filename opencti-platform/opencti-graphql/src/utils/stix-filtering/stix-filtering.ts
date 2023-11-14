@@ -7,12 +7,12 @@ import {
 } from '../filtering';
 import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
 import { testFilterGroup } from './boolean-logic-engine';
-import type { Filter, FilterGroup } from './filter-group';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { StixObject } from '../../types/stix-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
+import type { Filter, FilterGroup } from '../../generated/graphql';
 
 // TODO: changed by Cathia, to integrate properly with her
 const ASSIGNEE_FILTER = 'objectAssignee';

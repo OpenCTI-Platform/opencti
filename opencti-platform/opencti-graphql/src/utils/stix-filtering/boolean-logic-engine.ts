@@ -1,5 +1,5 @@
 import moment from 'moment';
-import type { Filter, FilterGroup } from './filter-group';
+import type { Filter, FilterGroup } from '../../generated/graphql';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
