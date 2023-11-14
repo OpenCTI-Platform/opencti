@@ -26,6 +26,7 @@ import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
+import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import {
   commitMutation,
@@ -159,6 +160,10 @@ const WorkspaceHeader = ({
           fileDownload(blob, fileName, 'application/json');
         }
       });
+  };
+
+  const handleExportDashboard = () => {
+    handleExportJson(workspace);
   };
 
   const [
@@ -322,7 +327,7 @@ const WorkspaceHeader = ({
           type={workspace.type}
           adjust={adjust}
           handleDownloadAsStixReport={handleDownloadAsStixReport}
-          workspace={workspace}
+          handleExportDashboard={handleExportDashboard}
         />
       </div>
       {variant === 'investigation' && (
