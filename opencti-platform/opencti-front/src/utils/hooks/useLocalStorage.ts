@@ -11,6 +11,7 @@ import {
 } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
+import { useFormatter } from '../../components/i18n';
 
 export interface MessageFromLocalStorage {
   id: string;
@@ -152,6 +153,7 @@ const buildParamsFromHistory = (params: LocalStorage) => {
 };
 
 const searchParamsToStorage = (searchObject: URLSearchParams) => {
+  const { t } = useFormatter();
   const zoom = searchObject.get('zoom');
   const stringFilters = searchObject.get('filters');
   let filters = stringFilters ? JSON.parse(stringFilters) : undefined;
@@ -164,7 +166,7 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
     window.history.replaceState(null, '', newUrl);
     // Display a warning message
     setTimeout(() => { // delay the message to be sure the page is loaded
-      MESSAGING$.notifyError('Your url contains filters in a deprecated format, parameters stored in the url have been removed.');
+      MESSAGING$.notifyError(t('Your url contains filters in a deprecated format, parameters stored in the url have been removed.'));
     }, 1000);
   }
   return removeEmptyFields({
