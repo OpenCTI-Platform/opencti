@@ -75,15 +75,15 @@ export const up = async (next) => {
       if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
         const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
         if (valIds.length === 1) {
-          newFiltersContent.push({ key, values: [], operator: nilOperator, mode }); // remove null id
+          newFiltersContent.push({ key: [key], values: [], operator: nilOperator, mode }); // remove null id
         } else {
           newFiltersContent.push(
-            { key, values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
-            { key, values: [], operator: nilOperator, mode }, // create a filter for the former null id
+            { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
+            { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
           );
         }
       } else {
-        newFiltersContent.push({ key, values: valIds, operator, mode });
+        newFiltersContent.push({ key: [key], values: valIds, operator, mode });
       }
     });
     const newFilters = {
