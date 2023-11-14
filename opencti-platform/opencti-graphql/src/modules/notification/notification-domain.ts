@@ -3,7 +3,7 @@ import { createEntity, deleteElementById, patchAttribute, updateAttribute } from
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
-  EditInput,
+  EditInput, FilterGroup,
   QueryNotificationsArgs,
   QueryTriggersActivityArgs,
   QueryTriggersKnowledgeArgs,
@@ -48,7 +48,6 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import type { FilterGroup } from '../../utils/stix-filtering/filter-group';
 import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
 
 // Triggers

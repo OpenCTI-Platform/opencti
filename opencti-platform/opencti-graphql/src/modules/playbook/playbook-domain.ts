@@ -28,6 +28,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditInput,
+  FilterGroup,
   PlaybookAddInput,
   PlaybookAddLinkInput,
   PlaybookAddNodeInput,
@@ -38,7 +39,6 @@ import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
-import type { FilterGroup } from '../../utils/stix-filtering/filter-group';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
