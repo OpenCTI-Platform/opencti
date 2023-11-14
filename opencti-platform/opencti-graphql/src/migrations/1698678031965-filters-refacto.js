@@ -94,7 +94,7 @@ export const up = async (next) => {
     return alreadyParsed ? newFilters : JSON.stringify(newFilters);
   };
 
-  // 01. feeds, taxiiCollections and triggers
+  // 01. feeds, taxiiCollections, triggers, streams
   const entitiesToRefacto = await listAllEntities(
     context,
     SYSTEM_USER,
@@ -132,6 +132,11 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Feed' } } }],
+            }
+          },
+          {
+            bool: {
+              must: [{ term: { 'entity_type.keyword': { value: 'StreamCollection' } } }],
             }
           },
         ],
