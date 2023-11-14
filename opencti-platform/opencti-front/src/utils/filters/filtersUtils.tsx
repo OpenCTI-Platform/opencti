@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { head, last, toPairs } from 'ramda';
 import { useFormatter } from '../../components/i18n';
 
 export const FiltersVariant = {
@@ -326,57 +325,4 @@ export const filtersAfterSwitchLocalMode = (filters: FilterGroup, localFilter: F
     }
   }
   return undefined;
-};
-
-// convert filters that are in a format before OpenCTI 5.11 (included) to the new format introduced in 5.12
-export const convertOldFilters = (filters: string) => {
-  const filterKeysConvertor = new Map([
-    ['labelledBy', 'objectLabel'],
-    ['markedBy', 'objectMarking'],
-    ['objectContains', 'objects'],
-    ['killChainPhase', 'killChainPhases'],
-    ['assigneeTo', 'objectAssignee'],
-    ['participant', 'objectParticipant'],
-    ['creator', 'creator_id'],
-    ['hasExternalReference', 'externalReferences'],
-    ['hashes_MD5', 'hashes.MD5'],
-    ['hashes_SHA1', 'hashes.SHA-1'],
-    ['hashes_SHA256', 'hashes.SHA-256'],
-    ['hashes_SHA512', 'hashes.SHA-512'],
-  ]);
-  if (JSON.parse(filters).mode) { // filters already in new format are not converted again (protection)
-    return filters;
-  }
-  const newFiltersContent = toPairs(JSON.parse(filters))
-    .map((pair) => {
-      let key = head(pair);
-      let operator = 'eq';
-      let mode = 'or';
-      if (key.endsWith('start_date') || key.endsWith('_gt')) {
-        key = key.replace('_start_date', '').replace('_gt', '');
-        operator = 'gt';
-      } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-        key = key.replace('_end_date', '').replace('_lt', '');
-        operator = 'lt';
-      } else if (key.endsWith('_lte')) {
-        key = key.replace('_lte', '');
-        operator = 'lte';
-      } else if (key.endsWith('_not_eq')) {
-        key = key.replace('_not_eq', '');
-        operator = 'not_eq';
-        mode = 'and';
-      }
-      const gotKey = filterKeysConvertor.get(key);
-      if (gotKey) {
-        key = gotKey;
-      }
-      const values = last(pair);
-      const valIds = values.map((v: { id: string, value: string }) => v.id);
-      return { key, values: valIds, operator, mode };
-    });
-  return {
-    mode: 'and',
-    filters: newFiltersContent,
-    filterGroups: [],
-  };
 };
