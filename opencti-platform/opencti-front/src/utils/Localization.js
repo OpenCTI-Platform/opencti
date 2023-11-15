@@ -56,6 +56,8 @@ const i18n = {
       'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
         'Al aplicar la autenticación 2FA, se pedirá a todos los usuarios que habiliten 2FA para poder iniciar sesión en la plataforma.',
       Search: 'Buscar',
+      'Search these results': 'Buscar estos resultados',
+      'Search OpenCTI': 'Buscar OpenCTI',
       Active: 'Activo',
       Inactive: 'Inactivo',
       'Last update': 'Última actualización',
@@ -2285,6 +2287,8 @@ const i18n = {
       'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
         "Lors de l’application de l'authentication à deux facteurs, tous les utilisateurs seront invités à activer l'authentication à deux facteurs pour pouvoir se connecter à la plate-forme.",
       Search: 'Rechercher',
+      'Search these results': 'Rechercher ces résultats',
+      'Search OpenCTI': 'Rechercher OpenCTI',
       Active: 'Actif',
       Inactive: 'Inactif',
       'Last update': 'Dernière mise à jour',
@@ -4514,6 +4518,8 @@ const i18n = {
       'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
         '2要素認証を強制する場合、すべてのユーザーは、プラットフォームにログインできるように2要素認証を有効にするように求められます。',
       Search: '検索',
+      'Search these results': 'これらの結果を検索',
+      'Search OpenCTI': 'OpenCTI を検索',
       Active: 'アクティブ',
       Inactive: '非活性',
       'Last update': '最終更新',
@@ -6658,6 +6664,8 @@ const i18n = {
       'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
         '強制執行雙因素身份驗證時，將要求所有使用者啟用雙因素身份驗證才能登錄平臺。',
       Search: '搜索',
+      'Search these results': '搜索这些结果',
+      'Search OpenCTI': '搜索 OpenCTI',
       Active: '活跃',
       Inactive: '不活跃',
       'Last update': '上次更新',

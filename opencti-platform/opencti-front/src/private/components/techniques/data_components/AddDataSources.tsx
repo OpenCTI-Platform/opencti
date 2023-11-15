@@ -67,7 +67,6 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
-              placeholder={`${t('Search')}...`}
               onSubmit={handleSearch}
             />
           </div>
