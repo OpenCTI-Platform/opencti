@@ -66,10 +66,15 @@ const useStyles = makeStyles(() => ({
   },
   tags: {
     float: 'right',
-    marginTop: '-5px',
+    marginTop: '-8px',
   },
   tag: {
     marginRight: 7,
+    paddingBottom: 2,
+  },
+  tagsWithMargin: {
+    float: 'right',
+    marginTop: '8px',
   },
   tagsInput: {
     margin: '4px 15px 0 10px',
@@ -188,6 +193,7 @@ const WorkspaceHeader = ({
 
   const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
   const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
+  const shouldApplyMargin = tags.length > 3;
 
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -410,17 +416,17 @@ const WorkspaceHeader = ({
           />
         </div>
       </Security>
-      <div className={classes.tags}>
-        {R.take(5, tags).map(
-          (tag) => tag.length > 0 && (
+        <div className={`${shouldApplyMargin ? classes.tagsWithMargin : classes.tags}`}>
+          {R.take(5, tags).map(
+            (tag) => tag.length > 0 && (
               <Chip
                 key={tag}
                 classes={{ root: classes.tag }}
                 label={tag}
                 onDelete={() => deleteTag(tag)}
               />
-          ),
-        )}
+            ),
+          )}
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
           {tags.length > 5 ? (
             <Button
