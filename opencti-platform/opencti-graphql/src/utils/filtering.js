@@ -714,3 +714,20 @@ export const checkedAndConvertedFilters = (filters) => {
 export const isNotEmptyFilters = (filters) => {
   return filters && ((filters.filters && filters.filters.length > 0) || (filters.filterGroups && filters.filterGroups.length > 0));
 };
+
+// return the filter corresponding to the specified key (and operator if it is specified)
+// among a list of filters
+export const findFilterFromKey = (filtersList, key, operator = null) => {
+  for (let index = 0; index < filtersList.length; index += 1) {
+    const filter = filtersList[index];
+    if (filter.key === key) {
+      if (operator && filter.operator === operator) {
+        return filter;
+      }
+      if (!operator) {
+        return filter;
+      }
+    }
+  }
+  return null;
+};
