@@ -634,8 +634,8 @@ export const extractFilterIds = (inputFilters, key = null, reverse = false) => {
   let filteredFilters = [];
   if (key) {
     filteredFilters = reverse
-      ? filters.filter((f) => f.key.every((k) => !keysToKeep.includes(k)))
-      : filters.filter((f) => f.key.some((k) => keysToKeep.includes(k)));
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
   } else {
     filteredFilters = filters;
   }
