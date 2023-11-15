@@ -41,7 +41,7 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersIds, convertFiltersToQueryOptions } from '../utils/filtering';
+import { adaptFiltersIds, convertFiltersToQueryOptions, findFilterFromKey, MARKING_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
@@ -147,9 +147,10 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   }
   // If no marking part of filtering are accessible for the user, return
   // It's better to prevent connection instead of having no events accessible
-  if (streamFilters.markedBy && Array.isArray(streamFilters.markedBy)) {
+  const objectMarkingFilters = findFilterFromKey(streamFilters.filters, MARKING_FILTER, 'eq');
+  if (objectMarkingFilters) {
     const userMarkings = (user.allowed_marking || []).map((m) => m.internal_id);
-    const filterMarkings = streamFilters.markedBy.map((m) => m.id);
+    const filterMarkings = objectMarkingFilters.values;
     const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
@@ -415,22 +416,24 @@ const createSseMiddleware = () => {
     let match = false;
     const matches = [];
     const fromAllTypes = [type, ...getParentTypes(type)];
+    const entityTypeFilter = findFilterFromKey(filters.filters, 'entity_type', 'eq');
+    const entityTypeFilterValues = entityTypeFilter?.values ?? [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const filter of filters.entity_type.values) {
+    for (const id of entityTypeFilterValues) {
       // consider the operator
-      if (filter.operator === 'not_eq') {
-        if (!fromAllTypes.includes(filter.id)) {
+      if (entityTypeFilter.operator === 'not_eq') {
+        if (!fromAllTypes.includes(id)) {
           matches.push(true);
         } else {
           matches.push(false);
         }
-      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq'
+      } else if (fromAllTypes.includes(id)) { // operator = 'eq'
         matches.push(true);
       } else {
         matches.push(false);
       }
       // consider the mode
-      if (filter.mode === 'and') {
+      if (entityTypeFilter.mode === 'and') {
         if (!matches.includes(false)) {
           match = true;
         }
@@ -448,7 +451,8 @@ const createSseMiddleware = () => {
     const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
     const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
     // Pre-filter by type to prevent resolutions as much as possible.
-    if (streamFilters.entity_type && streamFilters.entity_type.values.length > 0) {
+    const entityTypeFilters = findFilterFromKey(streamFilters.filters, 'entity_type', 'eq');
+    if (entityTypeFilters && entityTypeFilters.values.length > 0) {
       const fromType = isRel ? stix.extensions[STIX_EXT_OCTI].source_type : stix.extensions[STIX_EXT_OCTI].sighting_of_type;
       const matchingFrom = isFiltersEntityTypeMatch(streamFilters, fromType);
       const toType = isRel ? stix.extensions[STIX_EXT_OCTI].target_type : stix.extensions[STIX_EXT_OCTI].where_sighted_types[0];
@@ -588,7 +592,11 @@ const createSseMiddleware = () => {
                   } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                     // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
+                    const filters = {
+                      mode: 'and',
+                      filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
+                      filterGroups: [],
+                    };
                     const args = { connectionFormat: false, filters };
                     const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
                     let isContainerMatching = false;
