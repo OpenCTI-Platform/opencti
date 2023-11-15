@@ -1350,7 +1350,7 @@ class StixCoreObject:
         LOGGER.info("Listing Stix-Core-Objects with filters %s.", json.dumps(filters))
         query = (
             """
-                    query StixCoreObjects($types: [String], $filters: [StixCoreObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {
+                    query StixCoreObjects($types: [String], $filters: [StixCoreObjectsFiltering], $search: String, $relationship_type: [String], $elementId: [String], $first: Int, $after: ID, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {
                         stixCoreObjects(types: $types, filters: $filters, search: $search, relationship_type: $relationship_type, elementId: $elementId, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                             edges {
                                 node {
