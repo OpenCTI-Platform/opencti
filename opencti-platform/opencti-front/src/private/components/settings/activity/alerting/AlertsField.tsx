@@ -102,7 +102,11 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
     setTriggerCreation(false);
   };
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filters = [{ key: 'trigger_type', values: ['live'] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'trigger_type', values: ['live'] }],
+      filterGroups: [],
+    };
     fetchQuery(triggersQueriesActivitySearchQuery, { search: event && event.target.value, filters })
       .toPromise()
       .then((data) => {

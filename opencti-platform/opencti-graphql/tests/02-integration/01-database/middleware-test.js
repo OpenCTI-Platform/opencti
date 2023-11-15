@@ -619,8 +619,7 @@ describe('Entities distribution', () => {
       start,
       end,
     };
-    const filters = [relationFilter];
-    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, ...relationFilter });
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
