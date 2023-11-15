@@ -800,9 +800,16 @@ type IndexedFileConnection {
   edges: [IndexedFileEdge]
 }
 
+type MetricsByMimeType {
+  mimeType: String!
+  count: Int!
+  size: Float!
+}
+
 type FilesMetrics {
   globalCount: Int!
   globalSize: Float!
+  metricsByMimeType: [MetricsByMimeType!]
 }
 
 type OpenCtiFile {

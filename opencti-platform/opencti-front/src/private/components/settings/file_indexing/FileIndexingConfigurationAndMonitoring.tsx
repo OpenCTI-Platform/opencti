@@ -25,6 +25,11 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
     filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths) {
       globalCount
       globalSize
+      metricsByMimeType {
+        mimeType
+        count
+        size
+      }
     }
   }
 `;
@@ -53,19 +58,17 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 }) => {
   const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery, queryRef);
   const totalFiles = filesMetrics?.globalCount ?? 0;
-  const dataToIndex = filesMetrics?.globalSize ?? 0;
   const managerConfigurationId = managerConfiguration?.id;
   const isStarted = managerConfiguration?.manager_running || false;
 
   return (
     <Grid container={true} spacing={3}>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item={true} xs={7} style={{ marginTop: 30 }}>
         <FileIndexingConfiguration
-          totalFiles={totalFiles}
-          dataToIndex={dataToIndex}
+          filesMetrics={filesMetrics}
         />
       </Grid>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item={true} xs={5} style={{ marginTop: 30 }}>
         <FileIndexingMonitoring
           totalFiles={totalFiles}
           isStarted={isStarted}

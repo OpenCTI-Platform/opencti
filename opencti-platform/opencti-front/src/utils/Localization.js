@@ -9314,6 +9314,11 @@ const i18n = {
       INGESTION_MANAGER: 'Ingestion manager',
       PLAYBOOK_MANAGER: 'Playbook manager',
       FILE_INDEX_MANAGER: 'File index manager',
+      'text/csv': 'CSV',
+      'application/pdf': 'PDF',
+      'text/plain': 'TXT',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+      'application/vnd.ms-excel': 'XSL',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':

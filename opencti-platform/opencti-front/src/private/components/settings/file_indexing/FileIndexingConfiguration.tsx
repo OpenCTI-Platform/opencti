@@ -18,8 +18,14 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '../../../../components/Theme';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import {
+  FileIndexingConfigurationAndMonitoringQuery$data,
+} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -43,19 +49,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
   },
+  mimeType: {
+    fontWeight: 500,
+    color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  mimeTypeCount: {
+    color: theme.palette.primary.main,
+  },
 }));
 
 interface FileIndexingConfigurationProps {
-  totalFiles: number;
-  dataToIndex: number;
+  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['fileMetrics']
 }
 
 const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
-  totalFiles,
-  dataToIndex,
+  filesMetrics,
 }) => {
   const { n, t, b } = useFormatter();
   const classes = useStyles();
+  const totalFiles = filesMetrics?.globalCount ?? 0;
+  const dataToIndex = filesMetrics?.globalSize ?? 0;
+  const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
 
   return (
     <div>
@@ -64,7 +78,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <div className={classes.count}>
               {n(totalFiles)}
             </div>
@@ -72,13 +86,25 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               {t('Files will be indexed')}
             </div>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <div className={classes.count}>
               {b(dataToIndex)}
             </div>
             <div className={classes.countText}>
               {t('Storage size')}
             </div>
+          </Grid>
+          <Grid item={true} xs={4}>
+              <List>
+                { metricsByMimeType?.map((metrics) => (
+                  <ListItem key={metrics.mimeType} divider={true}>
+                    <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType}/>
+                    <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount}/>
+                    <ListItemText primary={'files for'}/>
+                    <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount}/>
+                  </ListItem>
+                ))}
+              </List>
           </Grid>
         </Grid>
       </Paper>
