@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
@@ -52,6 +52,19 @@ const Index = ({ settings }) => {
     overflowX: 'hidden',
   };
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
+  // Change the theme body attribute when the mode changes in
+  // the palette because some components like CKEditor uses this
+  // body attribute to display correct styles.
+  useEffect(() => {
+    const body = document.querySelector('body');
+    const bodyMode = body.getAttribute('data-theme');
+    const themeMode = `${theme.palette.mode}`;
+    if (bodyMode !== themeMode) {
+      body.setAttribute('data-theme', themeMode);
+    }
+  }, [theme]);
+
   return (
     <>
       <SystemBanners settings={settings} />
