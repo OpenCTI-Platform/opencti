@@ -87,6 +87,11 @@ const ThemeDark = (
       fontSize: 18,
       color: primary || '#00b1ff',
     },
+    subtitle2: {
+      fontWeight: 400,
+      fontSize: 18,
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
   },
   components: {
     MuiAccordion: {

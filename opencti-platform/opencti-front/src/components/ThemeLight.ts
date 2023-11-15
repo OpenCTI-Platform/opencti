@@ -85,6 +85,11 @@ const ThemeLight = (
       fontSize: 18,
       color: primary || '#007fff',
     },
+    subtitle2: {
+      fontWeight: 400,
+      fontSize: 18,
+      color: 'rgba(0, 0, 0, 0.87)',
+    },
   },
   components: {
     MuiTooltip: {
