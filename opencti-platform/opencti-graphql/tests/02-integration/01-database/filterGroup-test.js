@@ -124,6 +124,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       input: {
         name: 'Report2',
         stix_id: report2StixId,
+        description: 'Report1',
         published: '2023-09-15T00:51:35.000Z',
         objectMarking: [marking2StixId],
         report_types: ['threat-report', 'internal-report'],
@@ -641,6 +642,27 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
     expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
+    // --- 12. Multi keys --- //
+    // (name = Report1) OR (description = Report1)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: ['name', 'description'],
+              operator: 'eq',
+              values: ['Report1'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
