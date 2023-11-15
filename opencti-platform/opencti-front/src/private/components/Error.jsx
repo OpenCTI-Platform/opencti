@@ -86,7 +86,11 @@ export const BoundaryRoute = (props) => {
 };
 
 BoundaryRoute.propTypes = {
+  component: PropTypes.object,
   display: PropTypes.object,
+  exact: PropTypes.bool,
+  path: PropTypes.string,
+  render: PropTypes.func,
 };
 
 // 404
