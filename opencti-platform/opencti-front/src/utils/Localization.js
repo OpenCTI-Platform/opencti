@@ -136,6 +136,8 @@ const i18n = {
         '¿Quieres borrar esta observación?',
       'Do you want to delete this workspace?':
         '¿Quieres borrar este área de trabajo?',
+      'Do you want to duplicate this workspace?':
+        '¿Quieres duplicar este espacio de trabajo?',
       'Do you want to delete this widget?':
         '¿Quieres borrar este elemento gráfico?',
       'Do you want to delete this attack pattern?':
@@ -343,6 +345,9 @@ const i18n = {
       Replace: 'Reemplazarr',
       'Add an action': 'Añadir una acción',
       Export: 'Exportar',
+      Duplicate: 'Duplicar',
+      'The dashboard has been duplicated. You can manage it': 'El tablero ha sido duplicado. puedes gestionarlo',
+      here: 'aquí',
       Delete: 'Suprimir',
       Remove: 'Borrar',
       Merge: 'Fusionar',
@@ -1218,6 +1223,8 @@ const i18n = {
       'Sort by': 'Ordenar por',
       'Filter by': 'Filtrar por',
       Name: 'Nombre',
+      'New name': 'Nuevo nombre',
+      copy: 'copia',
       Description: 'Descripción',
       description: 'Descripción',
       'Is family': 'Es una familia',
@@ -2434,6 +2441,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette détection ?',
       'Do you want to delete this workspace?':
         'Souhaitez-vous supprimer cet espace de travail ?',
+      'Do you want to duplicate this workspace?':
+        'Souhaitez-vous dupliquer cet espace de travail ?',
       'Do you want to delete this widget?':
         'Souhaitez-vous supprimer ce widget ?',
       'Do you want to delete this attack pattern?':
@@ -2640,6 +2649,9 @@ const i18n = {
       Replace: 'Remplacer',
       'Add an action': 'Ajouter une action',
       Export: 'Exporter',
+      Duplicate: 'Dupliquer',
+      'The dashboard has been duplicated. You can manage it': 'Le tableau de bord a été dupliqué. Vous pouvez le gérer',
+      here: 'ici',
       Delete: 'Supprimer',
       Remove: 'Retirer',
       Merge: 'Fusionner',
@@ -3508,6 +3520,8 @@ const i18n = {
       'Sort by': 'Trier par',
       'Filter by': 'Filtrer par',
       Name: 'Nom',
+      'New name': 'Nouveau nom',
+      copy: 'copie',
       Description: 'Description',
       description: 'Description',
       'Is family': 'Est une famille',
@@ -4694,6 +4708,7 @@ const i18n = {
       'Do you want to delete this sighting?': 'この目撃情報を削除しますか？',
       'Do you want to delete this workspace?':
         'このワークスペースを削除しますか？',
+      'Do you want to duplicate this workspace?': 'このワークスペースを複製しますか?',
       'Do you want to delete this widget?': 'このウィジェットを削除しますか？',
       'Do you want to delete this attack pattern?':
         'この攻撃パターンを削除しますか？',
@@ -4886,6 +4901,9 @@ const i18n = {
       Replace: '置換',
       'Add an action': 'アクションを追加',
       Export: '出力',
+      Duplicate: '重複',
+      'The dashboard has been duplicated. You can manage it': 'ダッシュボードが複製されました。管理できるよ',
+      here: 'ここ',
       Delete: '削除',
       Remove: '解除',
       Merge: 'マージ',
@@ -5740,6 +5758,8 @@ const i18n = {
       'Sort by': 'ソート',
       'Filter by': 'フィルタ',
       Name: '名前',
+      'New name': '新しい名前',
+      copy: 'コピー',
       Description: '説明',
       description: '説明',
       'Is family': 'ファミリ',
@@ -6878,6 +6898,7 @@ const i18n = {
       'Do you want to delete this relation?': '是否要删除此关系？',
       'Do you want to delete this sighting?': '是否要删除此目击？',
       'Do you want to delete this workspace?': '是否要删除此工作区？',
+      'Do you want to duplicate this workspace?': '您想复制此工作区吗？',
       'Do you want to delete this widget?': '你想删除这个小部件吗？',
       'Do you want to delete this attack pattern?': '是否要删除此攻击模式？',
       'Do you want to delete this course of action?': '是否要删除此应对措施？',
@@ -7042,6 +7063,9 @@ const i18n = {
       Replace: '替换',
       'Add an action': '增加一个动作',
       Export: '导出',
+      Duplicate: '复制',
+      'The dashboard has been duplicated. You can manage it': '仪表板已被复制。你可以管理它',
+      here: '这里',
       Delete: '删除',
       Remove: '移除',
       Merge: '归并',
@@ -7853,6 +7877,8 @@ const i18n = {
       'Sort by': '排序方式',
       'Filter by': '过滤条件',
       Name: '姓名',
+      'New name': '新名字',
+      copy: '复制',
       Description: '描述',
       description: '描述',
       'Is family': '是同一家族',

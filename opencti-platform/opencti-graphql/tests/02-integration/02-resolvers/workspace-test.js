@@ -293,6 +293,30 @@ describe('Workspace resolver standard behavior', () => {
     });
   });
 
+  it('can duplicate workspace', async () => {
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
+          workspaceDuplicate(input: $input){
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          type: 'dashboard',
+          name: 'Dashboard to duplicate',
+        },
+      },
+    });
+
+    expect(queryResult).not.toBeUndefined();
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: queryResult.data?.workspaceDuplicate.id },
+    });
+  });
+
   it('can not investigate on an internal object', async () => {
     const queryResult = await queryAsAdmin({
       query: gql`

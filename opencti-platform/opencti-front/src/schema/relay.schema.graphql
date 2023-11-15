@@ -9172,6 +9172,7 @@ type Mutation {
   feedbackDelete(id: ID!): ID
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
+  workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
   workspaceDelete(id: ID!): ID
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
@@ -11541,6 +11542,15 @@ input WorkspaceAddInput {
   tags: [String]
   authorized_members: [MemberAccessInput!]
   investigated_entities_ids: [String]
+}
+
+input WorkspaceDuplicateInput {
+  type: String!
+  name: String!
+  description: String
+  manifest: String
+  tags: [String]
+  authorized_members: [MemberAccessInput!]
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

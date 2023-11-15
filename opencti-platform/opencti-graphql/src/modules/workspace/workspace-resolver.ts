@@ -6,6 +6,7 @@ import {
   findById,
   getCurrentUserAccessRight,
   getOwnerId,
+  duplicateWorkspace,
   objects,
   workspaceCleanContext,
   workspaceDelete,
@@ -40,6 +41,9 @@ const workspaceResolvers: Resolvers = {
   Mutation: {
     workspaceAdd: (_, { input }, context) => {
       return addWorkspace(context, context.user, input);
+    },
+    workspaceDuplicate: (_, { input }, context) => {
+      return duplicateWorkspace(context, context.user, input);
     },
     workspaceDelete: (_, { id }, context) => {
       return workspaceDelete(context, context.user, id);
