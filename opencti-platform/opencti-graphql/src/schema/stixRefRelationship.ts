@@ -77,6 +77,7 @@ export const operatingSystems: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_OPERATING_SYSTEM,
   stixName: 'operating_system_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
   label: 'Operating System'
@@ -87,6 +88,7 @@ export const samples: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_SAMPLE,
   stixName: 'sample_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -96,6 +98,7 @@ export const contains: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_CONTAINS,
   stixName: 'contains_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -104,6 +107,7 @@ export const resolvesTo: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_RESOLVES_TO,
   stixName: 'resolves_to_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -112,6 +116,7 @@ export const belongsTo: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_BELONGS_TO,
   stixName: 'belongs_to_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -120,6 +125,7 @@ export const from: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_FROM,
   stixName: 'from_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -128,6 +134,7 @@ export const sender: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_SENDER,
   stixName: 'sender_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -136,6 +143,7 @@ export const to: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_TO,
   stixName: 'to_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -144,6 +152,7 @@ export const cc: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_CC,
   stixName: 'cc_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -152,6 +161,7 @@ export const bcc: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_BCC,
   stixName: 'bcc_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -160,6 +170,7 @@ export const rawEmail: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_RAW_EMAIL,
   stixName: 'raw_email_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -168,6 +179,7 @@ export const bodyRaw: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_BODY_RAW,
   stixName: 'body_raw_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -176,6 +188,7 @@ export const parentDirectory: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_PARENT_DIRECTORY,
   stixName: 'parent_directory_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -184,6 +197,7 @@ export const obsContent: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_CONTENT,
   stixName: 'content_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -192,6 +206,7 @@ export const src: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_SRC,
   stixName: 'src_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -200,6 +215,7 @@ export const dst: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_DST,
   stixName: 'dst_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -208,6 +224,7 @@ export const srcPayload: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_SRC_PAYLOAD,
   stixName: 'src_payload_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -216,6 +233,7 @@ export const dstPayload: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_DST_PAYLOAD,
   stixName: 'dst_payload_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -224,6 +242,7 @@ export const encapsulates: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_ENCAPSULATES,
   stixName: 'encapsulates_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -232,6 +251,7 @@ export const encapsulatedBy: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_ENCAPSULATED_BY,
   stixName: 'encapsulated_by_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -240,6 +260,7 @@ export const openedConnections: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_OPENED_CONNECTION,
   stixName: 'opened_connection_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -248,6 +269,7 @@ export const creatorUser: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_CREATOR_USER,
   stixName: 'creator_user_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -256,6 +278,7 @@ export const image: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_IMAGE,
   stixName: 'image_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -264,6 +287,7 @@ export const parent: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_PARENT,
   stixName: 'parent_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   datable: true,
 };
@@ -272,6 +296,7 @@ export const child: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_CHILD,
   stixName: 'child_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -280,6 +305,7 @@ export const bodyMultipart: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_BODY_MULTIPART,
   stixName: 'body_multipart',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -288,6 +314,7 @@ export const values: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_VALUES,
   stixName: 'values_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -296,6 +323,7 @@ export const xOpenctiLinkedTo: RelationRefDefinition = {
   databaseName: RELATION_LINKED,
   stixName: 'x_opencti_linked_to_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   checker: () => true,
   datable: true,
@@ -305,6 +333,7 @@ export const serviceDlls: Omit<RelationRefDefinition, 'checker'> = {
   databaseName: RELATION_SERVICE_DLL,
   stixName: 'service_dll_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   datable: true,
 };
@@ -363,6 +392,7 @@ export const createdBy: RelationRefDefinition = {
   databaseName: RELATION_CREATED_BY,
   stixName: 'created_by_ref',
   mandatoryType: 'customizable',
+  editDefault: true,
   multiple: false,
   checker: (_, toType) => isStixDomainObjectIdentity(toType),
   label: 'Author',
@@ -374,6 +404,7 @@ export const objectMarking: RelationRefDefinition = {
   databaseName: RELATION_OBJECT_MARKING,
   stixName: 'object_marking_refs',
   mandatoryType: 'customizable',
+  editDefault: true,
   multiple: true,
   checker: (_, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
   label: 'Markings',
@@ -385,6 +416,7 @@ export const objects: RelationRefDefinition = {
   databaseName: RELATION_OBJECT,
   stixName: 'object_refs',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: true,
   checker: (fromType,) => isStixDomainObjectContainer(fromType),
   datable: false,
@@ -395,6 +427,7 @@ export const objectOrganization: RelationRefDefinition = {
   databaseName: RELATION_GRANTED_TO,
   stixName: 'granted_refs',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   checker: (fromType, toType) => !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
       || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType,
@@ -406,6 +439,7 @@ export const objectAssignee: RelationRefDefinition = {
   databaseName: RELATION_OBJECT_ASSIGNEE,
   stixName: 'object_assignee_refs',
   mandatoryType: 'customizable',
+  editDefault: true,
   multiple: true,
   checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Assignees',
@@ -417,6 +451,7 @@ export const objectParticipant: RelationRefDefinition = {
   databaseName: RELATION_OBJECT_PARTICIPANT,
   stixName: 'object_participant_refs',
   mandatoryType: 'customizable',
+  editDefault: true,
   multiple: true,
   checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Participants',
@@ -428,6 +463,7 @@ export const bornIn: RelationRefDefinition = {
   databaseName: RELATION_BORN_IN,
   stixName: 'born_in_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
     && ENTITY_TYPE_LOCATION_COUNTRY === toType,
@@ -440,6 +476,7 @@ export const ethnicity: RelationRefDefinition = {
   databaseName: RELATION_ETHNICITY,
   stixName: 'ethnicity_ref',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
     && ENTITY_TYPE_LOCATION_COUNTRY === toType,
@@ -454,6 +491,7 @@ export const objectLabel: RelationRefDefinition = {
   databaseName: RELATION_OBJECT_LABEL,
   stixName: 'labels',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   checker: (_, toType) => toType === ENTITY_TYPE_LABEL,
   label: 'Labels',
@@ -465,6 +503,7 @@ export const externalReferences: RelationRefDefinition = {
   databaseName: RELATION_EXTERNAL_REFERENCE,
   stixName: 'external_references',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   checker: (_, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
   label: 'External references',
@@ -475,6 +514,7 @@ export const killChainPhases: RelationRefDefinition = {
   databaseName: RELATION_KILL_CHAIN_PHASE,
   stixName: 'kill_chain_phases',
   mandatoryType: 'customizable',
+  editDefault: true,
   multiple: true,
   checker: (_, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE,
   label: 'Kill chain phases',

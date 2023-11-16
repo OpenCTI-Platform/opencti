@@ -171,7 +171,7 @@ describe('EntitySetting resolver - attributes definitions', () => {
     const queryResult = await queryAsAdmin({ query: READ_ATTRIBUTES_DEFINITION_QUERY_BY_TARGET_TYPE, variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE } });
     const { attributesDefinitions } = queryResult.data.entitySettingByType;
     const attributes = [...schemaAttributesDefinition.getAttributes(ENTITY_TYPE_CONTAINER_NOTE).values()]
-      .filter((attr) => attr.mandatoryType === 'customizable' || attr.mandatoryType === 'external' || attr.scalable);
+      .filter((attr) => attr.editDefault);
     const refs = schemaRelationsRefDefinition.getRelationsRef(ENTITY_TYPE_CONTAINER_NOTE)
       .filter((ref) => ref.mandatoryType === 'customizable' || ref.mandatoryType === 'external');
     expect(attributesDefinitions.length).toEqual(attributes.length + refs.length);

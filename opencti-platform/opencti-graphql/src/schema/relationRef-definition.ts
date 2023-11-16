@@ -7,6 +7,7 @@ export interface RelationRefDefinition {
   databaseName: string
   stixName: string
   mandatoryType: MandatoryType
+  editDefault: boolean
   multiple: boolean
   checker: Checker
   label?: string

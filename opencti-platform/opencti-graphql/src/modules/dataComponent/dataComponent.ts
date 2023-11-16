@@ -39,8 +39,8 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
   ],
   relations: [
     {
@@ -59,6 +59,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       inputName: INPUT_DATA_SOURCE,
       databaseName: RELATION_DATA_SOURCE,
       mandatoryType: 'no',
+      editDefault: false,
       multiple: false,
       checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE
     },

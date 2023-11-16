@@ -4632,7 +4632,6 @@ const i18n = {
         "Il n'y a pas encore de configurations définies",
       'Do you want to delete this CSV mapper ?':
         'Voulez-vous supprimer ce mappage CSV ?',
-      'Attribute mapping configuration': "Configuration de mappage d'attributs",
       'No default value for authorized members': 'Aucune valeur par défaut pour les membres autorisés',
       'Default values are applied only during entity creation. So only for entities created after default values have been set': 'Les valeurs par défaut sont appliquées uniquement lors de la création d\'une entité. Donc uniquement pour les entités créées après que les valeurs par défaut aient été définies',
       'Activate/Deactivate authorized members': 'Activer/Désactiver les membres autorisés',
