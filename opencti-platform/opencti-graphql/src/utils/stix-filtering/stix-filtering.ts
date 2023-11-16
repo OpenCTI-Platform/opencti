@@ -1,6 +1,7 @@
 import {
+  ASSIGNEE_FILTER,
   CREATED_BY_FILTER,
-  INDICATOR_FILTER,
+  INDICATOR_FILTER, LABEL_FILTER, MARKING_FILTER, OBJECT_CONTAINS_FILTER,
   PARTICIPANT_FILTER,
   RELATION_FROM,
   RELATION_TO,
@@ -13,12 +14,8 @@ import { getEntitiesMapFromCache } from '../../database/cache';
 import type { StixObject } from '../../types/stix-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import type { Filter, FilterGroup } from '../../generated/graphql';
-
-// TODO: changed by Cathia, to integrate properly with her
-const ASSIGNEE_FILTER = 'objectAssignee';
-const LABEL_FILTER = 'objectLabel';
-const MARKING_FILTER = 'objectMarking';
-const OBJECT_CONTAINS_FILTER = 'objects';
+import type { ActivityStreamEvent } from '../../manager/activityListener';
+import { FILTER_WITH_EVENTS_KEY_TESTERS_MAP } from './event-testers';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -35,6 +32,15 @@ export const validateFilterForStixMatch = (filter: Filter) => {
   }
 };
 
+export const validateFilterForEventMatch = (filter: Filter) => {
+  if (filter.key.length !== 1) {
+    throw Error(`Stix filtering can only be executed on a unique filter key - got ${JSON.stringify(filter.key)}`);
+  }
+  if (FILTER_WITH_EVENTS_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
+    throw Error(`Stix filtering is not compatible with the provided filter key ${JSON.stringify(filter.key)} - available filter keys: ${JSON.stringify(Object.keys(FILTER_WITH_EVENTS_KEY_TESTERS_MAP))}`);
+  }
+};
+
 /**
  * Recursively call validateFilter inside a FilterGroup
  */
@@ -44,6 +50,14 @@ export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
   }
   filterGroup.filters.forEach((f) => validateFilterForStixMatch(f));
   filterGroup.filterGroups.forEach((fg) => validateFilterGroupForStixMatch(fg));
+};
+
+export const validateFilterGroupForEventMatch = (filterGroup: FilterGroup) => {
+  if (!filterGroup?.filterGroups || !filterGroup?.filters) {
+    throw Error('Unrecognized filter format; expecting FilterGroup');
+  }
+  filterGroup.filters.forEach((f) => validateFilterForEventMatch(f));
+  filterGroup.filterGroups.forEach((fg) => validateFilterGroupForEventMatch(fg));
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -160,6 +174,23 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP);
 };
 
+export const isEventMatchFilterGroup_MockableForUnitTests = async (
+  event: ActivityStreamEvent,
+  filterGroup: FilterGroup,
+  resolutionMap: FilterResolutionMap,
+) : Promise<boolean> => {
+  // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
+  // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
+  // This check should thus not fail here, theoretically.
+  validateFilterGroupForEventMatch(filterGroup);
+
+  // resolve filters to check accesses
+  const resolvedFilterGroup = resolveFilterGroup(filterGroup, resolutionMap);
+
+  // then call our boolean engine on the filter group using the event testers
+  return testFilterGroup(event, resolvedFilterGroup, FILTER_WITH_EVENTS_KEY_TESTERS_MAP);
+};
+
 /**
  * Tells if a stix object matches a filter group given a certain context.
  * The input filter group is a stored filter (streams, triggers, playbooks), the stix object comes from the raw stream.
@@ -183,4 +214,17 @@ export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUse
   await buildResolutionMapForFilterGroup(map, filterGroup, cache);
 
   return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
+};
+
+export const isEventMatchFilterGroup = async (context: AuthContext, event: ActivityStreamEvent, filterGroup: FilterGroup) : Promise<boolean> => {
+  // resolve some of the ids as we filter on their corresponding values or standard-id for instance
+  // the provided map contains replacements for filter values, if any.
+  const map = new Map<string, string>();
+
+  // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)
+  // see cacheManager.ts:platformResolvedFilters
+  const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  await buildResolutionMapForFilterGroup(map, filterGroup, cache);
+
+  return isEventMatchFilterGroup_MockableForUnitTests(event, filterGroup, map);
 };
