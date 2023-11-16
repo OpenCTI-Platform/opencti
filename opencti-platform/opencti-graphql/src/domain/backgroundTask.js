@@ -2,7 +2,7 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { adaptFiltersIds, checkAndConvertFilters, TYPE_FILTER } from '../utils/filtering';
+import { checkAndConvertFilters, TYPE_FILTER } from '../utils/filtering';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';

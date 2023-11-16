@@ -22,7 +22,6 @@ import {
   type PlaybookComponent,
   type PlaybookComponentConfiguration
 } from './playbook-types';
-import { adaptFiltersIds } from '../../utils/filtering';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
@@ -33,7 +32,8 @@ import {
 } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
-  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -63,7 +63,13 @@ import {
   ENTITY_TYPE_INDICATOR,
   isStixDomainObjectContainer
 } from '../../schema/stixDomainObject';
-import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
+import type {
+  StixBundle,
+  StixCoreObject,
+  StixCyberObject,
+  StixDomainObject,
+  StixObject
+} from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -78,8 +84,8 @@ import { extractStixRepresentative } from '../../database/stix-representative';
 import {
   isEmptyField,
   isNotEmptyField,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES_WITHOUT_INFERRED,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE

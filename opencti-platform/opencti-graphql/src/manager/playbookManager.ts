@@ -42,7 +42,6 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
-import { adaptFiltersIds } from '../utils/filtering';
 import { isStixMatchFilterGroup } from '../utils/stix-filtering/stix-filtering';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
