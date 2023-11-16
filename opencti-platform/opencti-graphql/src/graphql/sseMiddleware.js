@@ -13,7 +13,8 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
-  EVENT_TYPE_UPDATE, extractIdsFromStoreObject,
+  EVENT_TYPE_UPDATE,
+  extractIdsFromStoreObject,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INFERRED_ENTITIES,
@@ -37,11 +38,12 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
-  STIX_TYPE_RELATION, STIX_TYPE_SIGHTING
+  STIX_TYPE_RELATION,
+  STIX_TYPE_SIGHTING
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersIds, convertFiltersToQueryOptions, findFilterFromKey, MARKING_FILTER } from '../utils/filtering';
+import { convertFiltersToQueryOptions, findFilterFromKey, MARKING_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
