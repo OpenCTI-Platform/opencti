@@ -17,7 +17,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { addFilter, convertFiltersToQueryOptions } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForMatch } from '../utils/stix-filtering/stix-filtering';
 
 const MAX_PAGINATION_ELEMENTS = 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -26,7 +26,7 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 export const createTaxiiCollection = async (context, user, input) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filter));
+    validateFilterGroupForMatch(JSON.parse(input.filter));
   }
 
   const collectionId = generateInternalId();
@@ -74,7 +74,7 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
   const filtersItem = finalInput.find((item) => item.key === 'filters');
   if (filtersItem?.value?.[0]) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(filtersItem.value[0]);
+    validateFilterGroupForMatch(filtersItem.value[0]);
   }
 
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);

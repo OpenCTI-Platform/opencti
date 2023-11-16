@@ -38,7 +38,7 @@ import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, Nod
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
-import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForMatch } from '../../utils/stix-filtering/stix-filtering';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -62,7 +62,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     const config = JSON.parse(input.configuration);
     if (config.filters) {
       const filterGroup = config.filters as FilterGroup;
-      validateFilterGroupForStixMatch(filterGroup);
+      validateFilterGroupForMatch(filterGroup);
     }
   }
 
@@ -146,7 +146,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
     const config = JSON.parse(input.configuration);
     if (config.filters) {
       const filterGroup = config.filters as FilterGroup;
-      validateFilterGroupForStixMatch(filterGroup);
+      validateFilterGroupForMatch(filterGroup);
     }
   }
 

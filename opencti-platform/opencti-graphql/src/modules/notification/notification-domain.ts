@@ -48,7 +48,7 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForMatch } from '../../utils/stix-filtering/stix-filtering';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -87,7 +87,7 @@ export const addTrigger = async (
     const input = triggerInput as TriggerLiveAddInput;
     if (input.filters) {
       const filters = JSON.parse(input.filters) as FilterGroup;
-      validateFilterGroupForStixMatch(filters);
+      validateFilterGroupForMatch(filters);
     }
   }
 
@@ -180,7 +180,7 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
     const filtersItem = input.find((item) => item.key === 'filters');
     if (filtersItem?.value[0]) {
       const filterGroup = JSON.parse((filtersItem?.value[0]) as string) as FilterGroup;
-      validateFilterGroupForStixMatch(filterGroup);
+      validateFilterGroupForMatch(filterGroup);
     }
   }
 

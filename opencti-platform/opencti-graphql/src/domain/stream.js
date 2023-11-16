@@ -12,13 +12,13 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addFilter } from '../utils/filtering';
-import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForMatch } from '../utils/stix-filtering/stix-filtering';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filters));
+    validateFilterGroupForMatch(JSON.parse(input.filters));
   }
 
   const collectionId = generateInternalId();
@@ -63,7 +63,7 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
   const filtersItem = input.find((item) => item.key === 'filters');
   if (filtersItem?.value?.[0]) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(filtersItem.value[0]);
+    validateFilterGroupForMatch(filtersItem.value[0]);
   }
 
   const finalInput = input.map(({ key, value }) => {
