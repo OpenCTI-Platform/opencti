@@ -33,11 +33,12 @@ import {
   FilterGroup,
   filtersAfterSwitchLocalMode,
   initialFilterGroup,
+  sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import {
   TriggerEventType,
@@ -134,7 +135,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const classes = useStyles();
   const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const [instanceFilters, setInstanceFilters] = useState([]);
+  const [instanceFilters, setInstanceFilters] = useState<FilterAutocompleteInputValue[]>([]);
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
@@ -149,7 +150,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     handleClose?.();
     setFilters(initialFilterGroup);
     setInstanceTrigger(false);
-    setInstanceFilters({});
+    setInstanceFilters([]);
   };
   const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
     setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
@@ -191,7 +192,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : undefined;
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),
@@ -263,12 +264,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       {instance_trigger
         ? (<div style={fieldSpacingContainerStyle}>
             <FilterAutocomplete
-                filterKey={'connectedToId'}
-                searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                defaultHandleAddFilter={handleAddFilter}
-                inputValues={instanceFilters}
-                setInputValues={setInstanceFilters}
-                openOnFocus={true}
+              filterKey={'connectedToId'}
+              searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+              defaultHandleAddFilter={handleAddFilter}
+              inputValues={instanceFilters}
+              setInputValues={setInstanceFilters}
+              openOnFocus={true}
             />
           </div>)
         : (

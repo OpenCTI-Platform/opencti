@@ -19,9 +19,9 @@ import {
   // MARKING_FILTER,
   // OBJECT_CONTAINS_FILTER,
   PATTERN_FILTER, PRIORITY_FILTER,
-  RELATION_FROM,
+  RELATION_FROM_FILTER,
   RELATION_FROM_TYPES,
-  RELATION_TO, RELATION_TO_TYPES,
+  RELATION_TO_FILTER, RELATION_TO_TYPES,
   REVOKED_FILTER,
   SCORE_FILTER, SEVERITY_FILTER,
   TYPE_FILTER,
@@ -323,9 +323,8 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo,
-  [RELATION_FROM]: testRelationFrom,
+  [RELATION_FROM_FILTER]: testRelationFrom,
   [RELATION_FROM_TYPES]: testRelationFromTypes,
-  [RELATION_TO]: testRelationTo,
+  [RELATION_TO_FILTER]: testRelationTo,
   [RELATION_TO_TYPES]: testRelationToTypes,
 };
-

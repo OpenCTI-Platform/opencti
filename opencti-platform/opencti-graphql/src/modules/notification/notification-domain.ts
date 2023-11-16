@@ -48,7 +48,10 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { validateFilterGroupForStixMatch } from '../../utils/stix-filtering/stix-filtering';
+import {
+  validateFilterGroupForEventMatch,
+  validateFilterGroupForStixMatch
+} from '../../utils/stix-filtering/stix-filtering';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -83,12 +86,10 @@ export const addTrigger = async (
   }
 
   // our stix matching is currently limited, we need to validate the input filters
-  if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).filters) {
-    const input = triggerInput as TriggerLiveAddInput;
-    if (input.filters) {
-      const filters = JSON.parse(input.filters) as FilterGroup;
-      validateFilterGroupForStixMatch(filters);
-    }
+  const input = triggerInput as TriggerLiveAddInput;
+  if (type === TriggerTypeValue.Live && input.filters) {
+    const filters = JSON.parse(input.filters) as FilterGroup;
+    validateFilterGroupForStixMatch(filters);
   }
 
   let authorizedMembers;
@@ -133,6 +134,14 @@ export const addTriggerActivity = async (
   if (members.length === 0) {
     throw UnsupportedError('Cannot add a activity trigger without recipients');
   }
+
+  // Validate the filter for activity event matching before saving it
+  const input = triggerInput as TriggerActivityLiveAddInput;
+  if (type === TriggerTypeValue.Live && input.filters) {
+    const filters = JSON.parse(input.filters) as FilterGroup;
+    validateFilterGroupForEventMatch(filters);
+  }
+
   const defaultOpts = {
     created: now(),
     updated: now(),
@@ -175,12 +184,18 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
 
-  // our stix matching is currently limited, we need to validate the input filters
   if (trigger.trigger_type === TriggerTypeValue.Live) {
     const filtersItem = input.find((item) => item.key === 'filters');
     if (filtersItem?.value[0]) {
       const filterGroup = JSON.parse((filtersItem?.value[0]) as string) as FilterGroup;
-      validateFilterGroupForStixMatch(filterGroup);
+      // filters need to be validated before save, as we are limited in terms of compatible keys
+      // this depends if it's an activity live trigger or knowledge live trigger
+      if (trigger.trigger_scope === 'knowledge') {
+        validateFilterGroupForStixMatch(filterGroup);
+      }
+      if (trigger.trigger_scope === 'activity') {
+        validateFilterGroupForEventMatch(filterGroup);
+      }
     }
   }
 

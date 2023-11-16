@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import { useFormatter } from '../../components/i18n';
 
-export const FiltersVariant = {
-  list: 'list',
-  dialog: 'dialog',
-};
+import type { FilterGroup as GqlFilterGroup, Filter as GqlFilter } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+
+//----------------------------------------------------------------------------------------------------------------------
 
 export type FilterGroup = {
   mode: string;
@@ -12,8 +11,9 @@ export type FilterGroup = {
   filterGroups: FilterGroup[];
 };
 
+// TODO: import from graphql generated types
 export type Filter = {
-  key: string;
+  key: string; // this is actually an array
   values: string[];
   operator: string;
   mode: string;
@@ -25,7 +25,15 @@ export const initialFilterGroup = {
   filterGroups: [],
 };
 
+//----------------------------------------------------------------------------------------------------------------------
+
+export const FiltersVariant = {
+  list: 'list',
+  dialog: 'dialog',
+};
+
 export const onlyGroupOrganization = ['x_opencti_workflow_id'];
+
 export const directFilters = [
   'is_read',
   'channel_types',
@@ -44,6 +52,7 @@ export const directFilters = [
   'containers',
   'objectContains',
 ];
+
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 // filters that can have 'eq' or 'not_eq' operator
 export const EqFilters = [
@@ -74,6 +83,7 @@ export const EqFilters = [
   'objectParticipant',
   'killChainPhases',
 ];
+
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
   'published',
@@ -84,22 +94,19 @@ export const dateFilters = [
   'start_time',
   'stop_time',
 ];
+
 const uniqFilters = [
   'revoked',
   'x_opencti_detection',
-  'x_opencti_base_score_gt',
-  'x_opencti_base_score_lte',
-  'x_opencti_base_score_lte',
-  'confidence_gt',
-  'confidence_lte',
-  'likelihood_gt',
-  'likelihood_lte',
+  'x_opencti_base_score',
+  'confidence',
+  'likelihood',
   'x_opencti_negative',
-  'x_opencti_score_gt',
-  'x_opencti_score_lte',
+  'x_opencti_score',
   'toSightingId',
   'basedOn',
 ];
+
 // filters that targets entities instances
 export const entityFilters = [
   'elementId',
@@ -127,6 +134,34 @@ export const entityTypesFilters = [
   'relationship_types',
   'container_type',
 ];
+
+//----------------------------------------------------------------------------------------------------------------------
+// utilities
+
+export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
+  return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
+};
+
+// when a filter group is serialized, we need to make sure the keys are all arrays as per graphql TS typing emission
+// GQL input coercion allows to use non-array value of same type as inside the array
+// but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
+// --> saved filters MUST be properly sanitized
+export const sanitizeFilterKeysForSerialization = (filter: Filter): GqlFilter => {
+  return {
+    ...filter,
+    key: Array.isArray(filter.key) ? filter.key : [filter.key],
+  } as GqlFilter;
+};
+export const sanitizeFilterGroupKeysForSerialization = (filterGroup: FilterGroup): GqlFilterGroup => {
+  if (!filterGroup) {
+    return filterGroup;
+  }
+  return {
+    ...filterGroup,
+    filters: filterGroup.filters.map((f) => sanitizeFilterKeysForSerialization(f)),
+    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForSerialization(fg)),
+  } as GqlFilterGroup;
+};
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
@@ -175,7 +210,7 @@ export const findFilterIndexFromKey = (filters: Filter[], key: string, operator?
 };
 
 export const filtersWithEntityType = (filters: FilterGroup | undefined, type: string | string[]) => {
-  const entityTypeFilter = {
+  const entityTypeFilter : Filter = {
     key: 'entity_type',
     values: Array.isArray(type) ? type : [type],
     operator: 'eq',
@@ -193,10 +228,7 @@ export const filtersWithEntityType = (filters: FilterGroup | undefined, type: st
   };
 };
 
-export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
-  return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
-};
-
+// return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
   if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) { // TODO: improvement: boolean filters based on schema definition (not an enum)
@@ -223,6 +255,9 @@ export const filterValue = (filterKey: string, value?: string | null) => {
   return value;
 };
 
+//----------------------------------------------------------------------------------------------------------------------
+
+// forcefully add a filter into a filterGroup, no check done
 export const addFilter = (filters: FilterGroup, key: string, value: string | string[], operator = 'eq', mode = 'or') => {
   return {
     mode: filters?.mode ?? 'and',
@@ -237,26 +272,42 @@ export const addFilter = (filters: FilterGroup, key: string, value: string | str
     filterGroups: filters?.filterGroups ?? [],
   };
 };
+
+// forcefully remove a filter into a filterGroup, no check done
 export const removeFilter = (filters: FilterGroup, key: string | string[]) => {
-  return filters ? {
+  if (!filters) {
+    return undefined;
+  }
+  const newFilters = {
     ...filters,
     filters: Array.isArray(key)
       ? filters.filters.filter((f) => !key.includes(f.key))
       : filters.filters.filter((f) => f.key !== key),
-  } : initialFilterGroup;
+  };
+
+  return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
+// remove from filter all keys not listed in availableFilterKeys
+// if filter ends up empty, return undefined
 export const cleanFilters = (filters: FilterGroup | undefined, availableFilterKeys: string[]) => {
   if (!filters) {
-    return initialFilterGroup;
+    return undefined;
   }
-  return {
+  const newFilters = {
     ...filters,
     filters: filters.filters.filter((f) => availableFilterKeys.includes(f.key)),
   };
+
+  return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
+//----------------------------------------------------------------------------------------------------------------------
+
+// add a filter (k, id, op) in a filterGroup smartly, for usage in forms
+// note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
 export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: string, id: string | null, op = 'eq') => {
+  // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
     let newValues: string[] = [];
@@ -278,6 +329,8 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: st
     };
     return newBaseFilters;
   }
+
+  // new filter key, add it ot the list
   const newFilterElement = {
     key: k,
     values: id !== null ? [id] : [],
@@ -295,6 +348,8 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: st
   return newBaseFilters;
 };
 
+// remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
+// if the filter ends up empty, return undefined
 export const constructHandleRemoveFilter = (filters: FilterGroup | undefined, k: string, op = 'eq') => {
   if (filters) {
     const newBaseFilters = {
@@ -302,11 +357,12 @@ export const constructHandleRemoveFilter = (filters: FilterGroup | undefined, k:
       filters: filters.filters
         .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
     };
-    return newBaseFilters;
+    return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : undefined;
   }
   return undefined;
 };
 
+// switch the mode inside a specific filter
 export const filtersAfterSwitchLocalMode = (filters: FilterGroup, localFilter: Filter) => {
   if (filters) {
     const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);

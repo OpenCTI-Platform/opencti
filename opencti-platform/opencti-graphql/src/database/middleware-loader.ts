@@ -20,7 +20,7 @@ import type {
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, checkedAndConvertedFilters, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, checkAndConvertFilters, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
@@ -459,7 +459,7 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
 export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}, noFiltersChecking = false) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   const { filters } = args;
-  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkedAndConvertedFilters(filters);
+  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkAndConvertFilters(filters);
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
@@ -470,7 +470,7 @@ export const listEntities: InternalListEntities = async (context, user, entityTy
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkedAndConvertedFilters(args.filters);
+  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkAndConvertFilters(args.filters);
   const paginateArgs = buildEntityFilters({ entityTypes, filters, ...args });
   return elList(context, user, indices, paginateArgs);
 };
@@ -483,7 +483,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   }
   const convertedFilters = (noFiltersChecking || !args.filters)
     ? args.filters
-    : checkedAndConvertedFilters(args.filters);
+    : checkAndConvertFilters(args.filters);
   const paginateArgs = buildEntityFilters({ ...args, entityTypes, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };

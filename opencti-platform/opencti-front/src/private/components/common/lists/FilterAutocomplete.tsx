@@ -30,12 +30,18 @@ interface OptionValue extends Option {
   group?: string;
 }
 
+export interface FilterAutocompleteInputValue {
+  key: string;
+  values: string[];
+  operator?: string;
+}
+
 interface FilterAutocompleteProps {
   filterKey: string;
   searchContext: { entityTypes: string[], elementId?: string[] };
   defaultHandleAddFilter: HandleAddFilter;
   inputValues: { key: string, values: string[], operator?: string }[];
-  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
+  setInputValues: (value: FilterAutocompleteInputValue[]) => void;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;

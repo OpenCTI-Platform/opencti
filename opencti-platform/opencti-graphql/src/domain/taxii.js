@@ -26,7 +26,7 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 export const createTaxiiCollection = async (context, user, input) => {
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filter));
+    validateFilterGroupForStixMatch(JSON.parse(input.filters));
   }
 
   const collectionId = generateInternalId();
@@ -72,9 +72,9 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
   });
 
   const filtersItem = finalInput.find((item) => item.key === 'filters');
-  if (filtersItem?.value?.[0]) {
+  if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(filtersItem.value[0]);
+    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value));
   }
 
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);

@@ -2,7 +2,7 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { adaptFiltersIds, checkedAndConvertedFilters, TYPE_FILTER } from '../utils/filtering';
+import { adaptFiltersIds, checkAndConvertFilters, TYPE_FILTER } from '../utils/filtering';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -15,6 +15,7 @@ import {
 } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
+import { resolveFilterGroupValuesWithCache } from '../utils/stix-filtering/stix-filtering';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -44,7 +45,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
       filterGroups: [],
     };
   }
-  const { filters, filterGroups = [] } = checkedAndConvertedFilters(adaptedFiltersGroup);
+  const { filters, filterGroups = [] } = checkAndConvertFilters(adaptedFiltersGroup);
   const queryFilterGroups = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const currentGroup = filterGroups[index];
@@ -108,7 +109,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
   let adaptedFilterGroup;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
-    adaptedFilterGroup = await adaptFiltersIds(context, user, filters);
+    adaptedFilterGroup = await resolveFilterGroupValuesWithCache(context, user, filters);
   }
   const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   // Avoid empty type which will target internal objects and relationships as well

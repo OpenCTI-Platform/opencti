@@ -465,9 +465,8 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
-      const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, adaptedFilters);
-      const isToVisible = await isStixMatchFilterGroup(context, user, toStix, adaptedFilters);
+      const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, streamFilters);
+      const isToVisible = await isStixMatchFilterGroup(context, user, toStix, streamFilters);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -565,11 +564,10 @@ const createSseMiddleware = () => {
               const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
               const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
-                const adaptedFilters = await adaptFiltersIds(context, user, streamFilters);
-                const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, adaptedFilters);
+                const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                  const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, adaptedFilters);
+                  const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                     cache.set(stix.id);
@@ -603,7 +601,7 @@ const createSseMiddleware = () => {
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                       const container = containers[containerIndex];
                       const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, adaptedFilters);
+                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, streamFilters);
                       if (containerMatch) {
                         isContainerMatching = true;
                         break;

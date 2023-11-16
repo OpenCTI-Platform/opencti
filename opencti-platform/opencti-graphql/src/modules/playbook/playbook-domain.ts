@@ -61,7 +61,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (input.configuration) {
     const config = JSON.parse(input.configuration);
     if (config.filters) {
-      const filterGroup = config.filters as FilterGroup;
+      const filterGroup = JSON.parse(config.filters) as FilterGroup;
       validateFilterGroupForStixMatch(filterGroup);
     }
   }
@@ -145,7 +145,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   if (input.configuration) {
     const config = JSON.parse(input.configuration);
     if (config.filters) {
-      const filterGroup = config.filters as FilterGroup;
+      const filterGroup = JSON.parse(config.filters) as FilterGroup;
       validateFilterGroupForStixMatch(filterGroup);
     }
   }

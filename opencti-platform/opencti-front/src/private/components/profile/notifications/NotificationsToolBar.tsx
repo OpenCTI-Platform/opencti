@@ -11,7 +11,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
-import { CheckCircleOutlined, ClearOutlined, DeleteOutlined, UnpublishedOutlined, } from '@mui/icons-material';
+import { CheckCircleOutlined, ClearOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -29,7 +29,10 @@ import { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 import Transition from '../../../../components/Transition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { FilterGroup } from '../../../../utils/filters/filtersUtils';
+import {
+  FilterGroup,
+  sanitizeFilterGroupKeysForSerialization,
+} from '../../../../utils/filters/filtersUtils';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -43,11 +46,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     flex: '1 1 100%',
     fontSize: '12px',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
   },
   selectedElementsNumber: {
     padding: '2px 5px 2px 5px',
@@ -177,7 +175,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
   const submitTask = () => {
     setProcessing(true);
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : '{}';
     const finalActions = actions.map((action) => ({
       type: action.type,
       context: action.context

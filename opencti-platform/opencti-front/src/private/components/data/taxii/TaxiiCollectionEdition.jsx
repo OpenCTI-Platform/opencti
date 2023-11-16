@@ -18,7 +18,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -121,7 +121,7 @@ const TaxiiCollectionEditionContainer = (props) => {
     .catch(() => false);
   const handleAddFilter = (key, id, op = 'eq') => {
     const newFilters = constructHandleAddFilter(filters, key, id, op);
-    const jsonFilters = JSON.stringify(newFilters);
+    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters));
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,
       variables: {
@@ -135,7 +135,7 @@ const TaxiiCollectionEditionContainer = (props) => {
   };
   const handleRemoveFilter = (key, op = 'and') => {
     const newFilters = constructHandleRemoveFilter(filters, key, op);
-    const jsonFilters = JSON.stringify(newFilters);
+    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters));
     const variables = {
       id: props.taxiiCollection.id,
       input: { key: 'filters', value: jsonFilters },
@@ -153,7 +153,7 @@ const TaxiiCollectionEditionContainer = (props) => {
     const newFilters = filtersAfterSwitchLocalMode(filters, localFilter);
     const variables = {
       id: props.taxiiCollection.id,
-      input: { key: 'filters', value: JSON.stringify(newFilters) },
+      input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters)) },
     };
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,
@@ -173,7 +173,7 @@ const TaxiiCollectionEditionContainer = (props) => {
       : initialFilterGroup;
     const variables = {
       id: props.taxiiCollection.id,
-      input: { key: 'filters', value: JSON.stringify(newFiltersContent) },
+      input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFiltersContent)) },
     };
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,

@@ -12,6 +12,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { availableStixCoreRelationships } from '../database/stix';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { resolveFilterGroupValuesWithCache } from './stix-filtering/stix-filtering';
 
 // Resolutions
 export const LABEL_FILTER = INPUT_LABELS;
@@ -22,8 +23,8 @@ export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const IDS_FILTER = 'ids';
-export const RELATION_FROM = 'fromId';
-export const RELATION_TO = 'toId';
+export const RELATION_FROM_FILTER = 'fromId';
+export const RELATION_TO_FILTER = 'toId';
 export const INSTANCE_FILTER = 'elementId';
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const RESOLUTION_FILTERS = [
@@ -33,8 +34,8 @@ export const RESOLUTION_FILTERS = [
   ASSIGNEE_FILTER,
   PARTICIPANT_FILTER,
   OBJECT_CONTAINS_FILTER,
-  RELATION_FROM,
-  RELATION_TO,
+  RELATION_FROM_FILTER,
+  RELATION_TO_FILTER,
   INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
 ];
@@ -62,8 +63,8 @@ export const specialFilterKeysMap = new Map([
   ['connections', 'connections'], // for nested filters
   [`rel_${RELATION_OBJECT}`, `rel_${RELATION_OBJECT}`],
   [CREATOR_FILTER, CREATOR_FILTER], // technical creator
-  [RELATION_FROM, RELATION_FROM], // nested relation for the from of a relationship
-  [RELATION_TO, RELATION_TO], // nested relation for the to of a relationship
+  [RELATION_FROM_FILTER, RELATION_FROM_FILTER], // nested relation for the from of a relationship
+  [RELATION_TO_FILTER, RELATION_TO_FILTER], // nested relation for the to of a relationship
   [RELATION_FROM_TYPES, RELATION_FROM_TYPES], // nested relation for the from type of a relationship
   [RELATION_TO_TYPES, RELATION_TO_TYPES], // nested relation for the to type of a relationship
   [CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_FILTER], // listened instances for an instance trigger
@@ -147,9 +148,9 @@ export const convertFiltersToQueryOptions = async (context, user, filters, opts 
   const types = [...defaultTypes];
   let adaptedFilters;
   if (filters) {
-    adaptedFilters = await adaptFiltersIds(context, user, filters);
+    adaptedFilters = await resolveFilterGroupValuesWithCache(context, user, filters);
   }
-  const finalFilters = checkedAndConvertedFilters(adaptedFilters);
+  const finalFilters = checkAndConvertFilters(adaptedFilters);
   if (after) {
     finalFilters.filters.push({ key: field, values: [after], operator: 'gte' });
   }
@@ -518,12 +519,12 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
         }
       }
       // region specific for relationships
-      if (key === RELATION_FROM) { // 'fromId'
+      if (key === RELATION_FROM_FILTER) { // 'fromId'
         if (!testRelationFromFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
       }
-      if (key === RELATION_TO) { // 'toId'
+      if (key === RELATION_TO_FILTER) { // 'toId'
         if (!testRelationToFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
@@ -634,6 +635,7 @@ export const extractFilterIds = (inputFilters, key = null, reverse = false) => {
   let filteredFilters = [];
   if (key) {
     filteredFilters = reverse
+      // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
       ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
       : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
   } else {
@@ -680,7 +682,7 @@ const convertFilterKeys = (inputFilters) => {
   return inputFilters;
 };
 
-export const checkedAndConvertedFilters = (filters) => {
+export const checkAndConvertFilters = (filters) => {
   // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given
   if (isNotEmptyFilters(filters)) {

@@ -61,9 +61,9 @@ export const findAll = (context, user, args) => {
 };
 export const streamCollectionEditField = async (context, user, collectionId, input) => {
   const filtersItem = input.find((item) => item.key === 'filters');
-  if (filtersItem?.value?.[0]) {
+  if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(filtersItem.value[0]);
+    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value));
   }
 
   const finalInput = input.map(({ key, value }) => {

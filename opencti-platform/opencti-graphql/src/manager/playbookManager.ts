@@ -267,8 +267,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           if (type === 'create' && create === true) validEventType = true;
           if (type === 'update' && update === true) validEventType = true;
           if (type === 'delete' && deletion === true) validEventType = true;
-          const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
-          const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, adaptedFilters);
+          const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
           // 02. Execute the component
           if (validEventType && isMatch) {
             const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
