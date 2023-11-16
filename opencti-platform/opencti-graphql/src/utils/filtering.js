@@ -54,21 +54,30 @@ export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const RELATION_FROM_TYPES = 'fromTypes';
 export const RELATION_TO_TYPES = 'toTypes';
 
-// list of the special filtering keys (= key with a complex behavior)
+// list of the special filtering keys (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
+export const specialFilterKeys = [
+  'sightedBy', // relation between elements linked by a stix sighting relationship
+  INSTANCE_FILTER, // element involved in a relationship with the entity
+  'connections', // for nested filters
+  `rel_${RELATION_OBJECT}`,
+  CREATOR_FILTER, // technical creator
+  RELATION_FROM_FILTER, // nested relation for the from of a relationship
+  RELATION_TO_FILTER, // nested relation for the to of a relationship
+  RELATION_FROM_TYPES, // nested relation for the from type of a relationship
+  RELATION_TO_TYPES, // nested relation for the to type of a relationship
+  CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
+  IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
+  'members_user', // for activity trigger
+  'members_group', // for activity trigger
+  'members_organization', // for activity trigger
+];
+
+// map of the special filtering keys that should be converted
 // the first element of the map is the frontend key
-// the second element is the converted key used in backend if different from the first element
-export const specialFilterKeysMap = new Map([
+// the second element is the converted key used in backend
+export const specialFilterKeysConvertor = new Map([
   ['sightedBy', buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
-  [INSTANCE_FILTER, buildRefRelationKey('*')], // element involved in a relationship with the entity
-  ['connections', 'connections'], // for nested filters
-  [`rel_${RELATION_OBJECT}`, `rel_${RELATION_OBJECT}`],
-  [CREATOR_FILTER, CREATOR_FILTER], // technical creator
-  [RELATION_FROM_FILTER, RELATION_FROM_FILTER], // nested relation for the from of a relationship
-  [RELATION_TO_FILTER, RELATION_TO_FILTER], // nested relation for the to of a relationship
-  [RELATION_FROM_TYPES, RELATION_FROM_TYPES], // nested relation for the from type of a relationship
-  [RELATION_TO_TYPES, RELATION_TO_TYPES], // nested relation for the to type of a relationship
-  [CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_FILTER], // listened instances for an instance trigger
-  [IDS_FILTER, IDS_FILTER], // values should match any id (internal_id, standard_id, or stix_id)
+  [INSTANCE_FILTER, buildRefRelationKey('*')],
 ]);
 
 export const extractFilterIdsToResolveForCache = (filters) => {
@@ -664,8 +673,8 @@ const convertFilterKeys = (inputFilters) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
       const convertedFilterKeys = filterKeys
         .map((key) => { // 1. convert special keys
-          if (specialFilterKeysMap.has(key)) {
-            return specialFilterKeysMap.get(key);
+          if (specialFilterKeysConvertor.has(key)) {
+            return specialFilterKeysConvertor.get(key);
           }
           return key;
         })
@@ -690,7 +699,6 @@ export const checkAndConvertFilters = (filters) => {
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
     if (keys.length > 0) {
       let incorrectKeys = keys;
-      const specialKeys = Array.from(specialFilterKeysMap.keys());
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableStixCoreRelations = availableStixCoreRelationships();
@@ -698,7 +706,7 @@ export const checkAndConvertFilters = (filters) => {
       const availableKeys = availableAttributes
         .concat(availableRelations)
         .concat(extendedAvailableStixCoreRelations)
-        .concat(specialKeys);
+        .concat(specialFilterKeys);
       keys.forEach((k) => {
         if (availableKeys.includes(k)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
