@@ -1,4 +1,4 @@
-# Exploring "Analyses"
+# Analyses
 
 When you click on "Analyses" in the left-side bar, you see all the "Analyses" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.
 
@@ -33,8 +33,8 @@ When clicking on a Report, you land on the Overview tab. For a Report, the follo
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the report, accessible through different views (See below for a dive-in). As described [here](overview.md#knowledge-section).
 - Content: a tab to upload or creates outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described [here](overview.md#content-section).
-- Entities: A table containing all SDO (Stix Domain Objects) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
-- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
+- Entities: A table containing all SDO (Stix Domain Objects) contained in the Report, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
+- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Report, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
 
 Exploring and modifying the structured Knowledge contained in a Report can be done through different lenses.

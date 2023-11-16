@@ -156,7 +156,6 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
-      - Indicators lifecycle: usage/indicators-lifecycle.md
     - Act on knowledge:    
       - Case management: usage/case-management.md
       - Notifications:
@@ -165,6 +164,7 @@ nav:
       - Background tasks: usage/background-tasks.md
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md
+      - Indicators lifecycle: usage/indicators-lifecycle.md
       - Automation: usage/automation.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md

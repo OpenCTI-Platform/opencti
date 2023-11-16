@@ -1,6 +1,7 @@
 # Background tasks
 
 Three types of tasks are done in the background:
+
 - rule tasks,
 - knowledge tasks,
 - user tasks.
@@ -12,7 +13,7 @@ Knowledge and user tasks can be seen and managed in Data > Background Tasks. The
 
 ## Rule tasks
 
-If a rule task is enabled, it leads to the scan of the whole platform data and the creation of entities or relationships in case a configuration correspond to the tasks rules. The created data are called 'inferred data'. Each time an event occurs in the platform, the rule engine checks if inferred data should be updated/created/deleted.
+If a rule task is enabled, it leads to the scan of the whole platform data and the creation of entities or relationships in case a configuration corresponds to the tasks rules. The created data are called 'inferred data'. Each time an event occurs in the platform, the rule engine checks if inferred data should be updated/created/deleted.
 
 ## Knowledge tasks
 

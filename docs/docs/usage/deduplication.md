@@ -40,7 +40,7 @@ Technically, OpenCTI generates deterministic IDs based on the listed properties 
 | Organization            | (`name` OR `x_opencti_alias`) and `identity_class`          |
 | Position                | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
 | Region                  | `name` OR `alias`                                           |
-| Report                  | `name` AND `publised` (date)                                |
+| Report                  | `name` AND `published` (date)                               |
 | RFI Case                | `name` AND `created` (date)                                 |
 | RFT Case                | `name` AND `created` (date)                                 |
 | Sector                  | (`name` OR `alias`) and `identity_class`                    |

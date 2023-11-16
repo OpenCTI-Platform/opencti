@@ -12,7 +12,7 @@ From the `Events` section, users can access the following tabs:
 
 ### General presentation
 
-Incidents usually represents negative events impacting ressources you want to protect, but local definitions can vary a lot, from a simple security events send by a SIEM to a massive scale supply chain attack impacting a whole activity sector.
+Incidents usually represents negative events impacting resources you want to protect, but local definitions can vary a lot, from a simple security events send by a SIEM to a massive scale supply chain attack impacting a whole activity sector.
 
 In the MITRE STIX 2.1, the `Incident` SDO has not yet been finalize and is the object of important work as part of a forthcoming STIX Extension.
 
@@ -25,23 +25,23 @@ When clicking on the Incidents tab at the top left, you see the list of all the 
 When clicking on an `Incident` in the list, you land on its Overview tab. For an Incident, the following tabs are accessible:
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to display two distribution graphs of its related Entities (STIX SDO) and Observable (STIX SCO).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Incident. Different thematic views are proposed to easily see the victimology, arsenal and techniques and so on used in the context of the Incident. As described [here](overview.md#knowledge-section).
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Incident. Different thematic views are proposed to easily see the victimology, arsenal, techniques and so on used in the context of the Incident. As described [here](overview.md#knowledge-section).
 - Content: This specific tab allows to previzualize, manage and write deliverable associated with the Incident. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 
-![Incident Overview](assets/Incident_overview.png)
+![Incident Overview](assets/incident_overview.png)
 
 ## Sightings
 
 ### General presentation
 
-`Sightings` correspond to the event in which an `Observable` (IP, domain name, certificate, etc.) is detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR. 
+The `Sightings` correspond to events in which an `Observable` (IP, domain name, url, etc.) is detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR. 
 
 In OpenCTI, as we are in a cybersecurity context, `Sightings` are associated with `Indicators` of Compromise (IoC) and the notion of "True positive" and "False positive". 
 
-It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between an Observable and an Individual/Organization/Sector/System.
+It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between an Observable and an Entities or Locations.
 
 When clicking on the Sightings tab at the top left, you see the list of all the Sightings you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
@@ -63,7 +63,7 @@ In addition, this overview displays:
 
 In the MITRE STIX 2.1, the `Observed Data` SDO is defined as such:
 
-> Observed Data conveys information about cyber security related entities such as files, systems, and networks using the STIX Cyber-observable Objects (SCOs). For example, Observed Data can capture information about an IP address, a network connection, a file, or a registry key. Observed Data is not an intelligence assertion, it is simply the raw information without any context for what it means.
+> Observed Data conveys information about cybersecurity related entities such as files, systems, and networks using the STIX Cyber-observable Objects (SCOs). For example, Observed Data can capture information about an IP address, a network connection, a file, or a registry key. Observed Data is not an intelligence assertion, it is simply the raw information without any context for what it means.
 
 When clicking on the `Observed Data` tab at the top left, you see the list of all the `Observed Data` you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
