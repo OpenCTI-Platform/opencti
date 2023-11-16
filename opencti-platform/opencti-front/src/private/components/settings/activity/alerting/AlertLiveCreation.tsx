@@ -24,7 +24,7 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter, Filter,
-  FilterGroup, filtersAfterSwitchLocalMode,
+  FilterGroup, filtersAfterSwitchLocalMode, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
@@ -154,7 +154,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     values: TriggerActivityLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerActivityLiveAddInput>,
   ) => {
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : undefined;
     const finalValues = {
       name: values.name,
       notifiers: values.notifiers.map((n) => n.value),

@@ -56,9 +56,9 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
-import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
@@ -75,7 +75,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey } from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, sanitizeFilterGroupKeysForSerialization } from '../../../utils/filters/filtersUtils';
 import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
@@ -595,7 +595,7 @@ class ToolBar extends Component {
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : '{}';
     const finalActions = R.map(
       (n) => ({
         type: n.type,

@@ -26,7 +26,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
 import {
-  stixCyberObservablesLinesAttributesQuery
+  stixCyberObservablesLinesAttributesQuery,
 } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
@@ -35,7 +35,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup
+  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -182,7 +182,7 @@ const FeedEditionContainer = (props) => {
     const finalValues = R.pipe(
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
-      R.assoc('filters', JSON.stringify(filters)),
+      R.assoc('filters', JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters))),
       R.assoc(
         'authorized_members',
         values.authorized_members.map(({ value }) => ({

@@ -39,7 +39,7 @@ import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkedAndConvertedFilters } from '../utils/filtering';
+import { checkAndConvertFilters } from '../utils/filtering';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -202,7 +202,7 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: checkedAndConvertedFilters(filteringArgs),
+    filters: checkAndConvertFilters(filteringArgs),
   };
 };
 

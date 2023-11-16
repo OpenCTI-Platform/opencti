@@ -27,12 +27,12 @@ import {
   Filter,
   FilterGroup,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -102,7 +102,7 @@ TriggerEditionOverviewProps
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const filters = JSON.parse(trigger.filters ?? JSON.stringify(initialFilterGroup)) as FilterGroup;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState([]);
+  const [instanceFilters, setInstanceFilters] = useState< FilterAutocompleteInputValue[]>([]);
   const handleAddFilter = (
     k: string,
     id: string,
@@ -112,7 +112,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+        input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newBaseFilters)) },
       },
     });
   };
@@ -121,7 +121,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+        input: { key: 'filters', value: newBaseFilters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(newBaseFilters)) : null },
       },
     });
   };

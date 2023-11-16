@@ -72,7 +72,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
       const { trigger, users } = triggers[triggerIndex];
       const { internal_id: notification_id, notifiers } = trigger;
       // Filter the event
-      const isMatchFilter = await isEventMatchFilterGroup(context, event.data, JSON.parse(trigger.filters));
+      const isMatchFilter = await isEventMatchFilterGroup(event.data, JSON.parse(trigger.filters));
       if (isMatchFilter) {
         const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;

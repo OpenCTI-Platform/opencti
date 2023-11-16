@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -26,7 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode
+  filtersAfterSwitchLocalMode, initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
@@ -97,8 +97,9 @@ const PlaybookAddComponentsContent = ({
   const { t } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const [filters, setFilters] = useState(
-    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
+    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : initialFilterGroup,
   );
+
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
   );
@@ -330,7 +331,7 @@ const PlaybookAddComponentsContent = ({
     const { name, ...config } = values;
     let finalConfig = config;
     if (configurationSchema?.properties?.filters) {
-      const jsonFilters = JSON.stringify(filters);
+      const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters));
       finalConfig = { ...config, filters: jsonFilters };
     }
     if (configurationSchema?.properties?.actions) {

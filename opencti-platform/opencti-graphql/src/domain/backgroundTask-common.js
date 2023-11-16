@@ -32,8 +32,8 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterObject, ids } = input;
-  const filters = JSON.parse(baseFilterObject)?.filters ?? [];
-  const typeFilters = filters.filter((f) => f.key === 'entity_type');
+  const filters = (baseFilterObject && JSON.parse(baseFilterObject)?.filters) ?? [];
+  const typeFilters = filters.filter((f) => f.key.includes('entity_type'));
   const typeFiltersValues = typeFilters.map((f) => f.values).flat();
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   if (scope === 'SETTINGS') {

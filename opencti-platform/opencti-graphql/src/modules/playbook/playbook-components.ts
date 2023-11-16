@@ -225,20 +225,19 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
     // Checking on all bundle elements
     if (all) {
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, adaptedFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, adaptedFilters);
+    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
   }
 };
@@ -268,11 +267,10 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await adaptFiltersIds(context, SYSTEM_USER, jsonFilters);
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, adaptedFilters);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
       if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
     }
     const newBundle = { ...bundle, objects: matchedElements };

@@ -16,7 +16,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -85,7 +85,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
     .catch(() => false);
   const handleAddFilter = (key, id, op = 'eq') => {
     const newFilters = constructHandleAddFilter(filters, key, id, op);
-    const jsonFilters = JSON.stringify(newFilters);
+    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters));
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
       variables: {
@@ -99,7 +99,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
   };
   const handleRemoveFilter = (key, op = 'eq') => {
     const newFilters = constructHandleRemoveFilter(filters, key, op);
-    const jsonFilters = JSON.stringify(newFilters);
+    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters));
     const variables = {
       id: streamCollection.id,
       input: { key: 'filters', value: jsonFilters },
@@ -116,7 +116,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
     const newFilters = filtersAfterSwitchLocalMode(filters, localFilter);
     const variables = {
       id: streamCollection.id,
-      input: { key: 'filters', value: JSON.stringify(newFilters) },
+      input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFilters)) },
     };
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
@@ -136,7 +136,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       : initialFilterGroup;
     const variables = {
       id: streamCollection.id,
-      input: { key: 'filters', value: JSON.stringify(newFiltersContent) },
+      input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newFiltersContent)) },
     };
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,

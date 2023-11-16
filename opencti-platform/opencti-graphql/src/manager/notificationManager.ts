@@ -444,6 +444,7 @@ export const buildTargetEvents = async (
       // For each user for a specific trigger
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
+      // TODO: replace with new matcher, but handle side events
       const adaptedFilters = await adaptFiltersIds(context, user, frontendFilters);
       // Check if the event matched/matches the trigger filters and the user rights
       const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, useSideEventMatching);
@@ -482,6 +483,7 @@ export const buildTargetEvents = async (
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
+      // TODO: replace with resolveFilterGroupValuesWithCache
       const adaptedFilters = await adaptFiltersIds(context, user, frontendFilters);
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
       if (isCurrentlyMatch) {

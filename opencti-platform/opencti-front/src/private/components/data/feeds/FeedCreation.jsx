@@ -37,7 +37,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -213,7 +213,7 @@ const FeedCreation = (props) => {
     const finalValues = R.pipe(
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
-      R.assoc('filters', JSON.stringify(filters)),
+      R.assoc('filters', JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters))),
       R.assoc(
         'authorized_members',
         values.authorized_members.map(({ value }) => ({
@@ -398,8 +398,8 @@ const FeedCreation = (props) => {
                       />
                       <Alert
                         icon={false}
-                        classes={{ root: classes.alert, message: classes.message,
-                        }}severity="warning"
+                        classes={{ root: classes.alert, message: classes.message }}
+                        severity="warning"
                         variant="outlined"
                         style={{ position: 'relative' }}
                       >
@@ -410,8 +410,8 @@ const FeedCreation = (props) => {
                           control={<Switch />}
                           style={{ marginLeft: 1 }}
                           name="feed_public"
-                          onChange={(_, checked) => setFieldValue('feed_public', checked)
-                          }label={t('Public feed')}
+                          onChange={(_, checked) => setFieldValue('feed_public', checked)}
+                          label={t('Public feed')}
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
@@ -419,7 +419,8 @@ const FeedCreation = (props) => {
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
-                            helpertext={t('Let the field empty to grant all authenticated users')}name="authorized_members"
+                            helpertext={t('Let the field empty to grant all authenticated users')}
+                            name="authorized_members"
                           />
                         )}
                       </Alert>
