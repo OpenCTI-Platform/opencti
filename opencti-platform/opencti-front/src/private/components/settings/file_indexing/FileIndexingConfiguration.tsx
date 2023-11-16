@@ -24,8 +24,18 @@ import ListItemText from '@mui/material/ListItemText';
 import {
   FileIndexingConfigurationAndMonitoringQuery$data,
 } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
+import { Field, Form, Formik } from 'formik';
+import {
+  FileIndexingConfigurationQuery$data,
+} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { useMutation } from 'react-relay';
+import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
+import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
+import { handleErrorInForm } from '../../../../relay/environment';
+import SwitchField from '../../../../components/SwitchField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -60,16 +70,51 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface FileIndexingConfigurationProps {
   filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics']
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
+}
+
+interface FileIndexingConfigurationFormValues {
+  accept_mime_types: string[];
+  include_global_files: boolean;
+  max_file_size: number;
 }
 
 const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
   filesMetrics,
+  managerConfiguration,
 }) => {
   const { n, t, b } = useFormatter();
   const classes = useStyles();
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
   const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
+  const manager_setting = managerConfiguration?.manager_setting;
+  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  const initialValues = {
+    accept_mime_types: manager_setting.accept_mime_types,
+    include_global_files: manager_setting.include_global_files,
+    max_file_size: manager_setting.max_file_size,
+  };
+  const [commitManagerSetting] = useMutation(fileIndexingConfigurationFieldPatch);
+  const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
+    setSubmitting(true);
+    commitManagerSetting({
+      variables: {
+        id: managerConfiguration?.id,
+        input: { key: 'manager_setting', value: values },
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+    });
+  };
 
   return (
     <div>
@@ -107,6 +152,46 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               </List>
           </Grid>
         </Grid>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={onSubmitForm}
+        >
+        {({ submitForm, setFieldValue, values }) => (
+          <Form>
+              <Typography variant="h4" gutterBottom={true}>
+                  {t('Mime-Types to index')}
+              </Typography>
+            <List>
+            { defaultMimeTypes.map((mimeType) => (
+              <ListItem key={mimeType} divider={true}>
+                <ListItemText primary={t(mimeType)} className={classes.mimeType}/>
+                <Checkbox
+                  edge="start"
+                  disableRipple={true}
+                  checked={values.accept_mime_types.includes(mimeType)}
+                  onChange={() => {
+                    if (values.accept_mime_types.includes(mimeType)) {
+                      setFieldValue('accept_mime_types', values.accept_mime_types.filter((v) => v !== mimeType));
+                    } else {
+                      setFieldValue('accept_mime_types', [...values.accept_mime_types, mimeType]);
+                    }
+                    submitForm();
+                  }}
+                />
+              </ListItem>
+            ))}
+            </List>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="include_global_files"
+              label={t('Indexing global files')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={submitForm}
+            />
+          </Form>
+        )}
+        </Formik>
       </Paper>
     </div>
   );

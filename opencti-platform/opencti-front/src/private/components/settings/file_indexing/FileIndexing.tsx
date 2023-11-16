@@ -46,6 +46,7 @@ export const fileIndexingConfigurationFieldPatch = graphql`
       id
       manager_id
       manager_running
+      manager_setting
     }
   }
 `;

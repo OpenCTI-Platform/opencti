@@ -17,6 +17,9 @@ import Grid from '@mui/material/Grid';
 import FileIndexingConfiguration from '@components/settings/file_indexing/FileIndexingConfiguration';
 import FileIndexingMonitoring from '@components/settings/file_indexing/FileIndexingMonitoring';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import {
+  FileIndexingConfigurationQuery$data,
+} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationAndMonitoringQuery } from './__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 
@@ -34,21 +37,8 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
   }
 `;
 
-interface ManagerConfiguration {
-  id: string;
-  last_run_end_date: Date;
-  last_run_start_date: Date;
-  manager_id: string;
-  manager_running: boolean | null;
-  manager_setting: {
-    accept_mime_types: string[];
-    include_global_files: boolean;
-    max_file_size: number;
-  };
-}
-
 interface FileIndexingConfigurationAndMonitoringComponentProps {
-  managerConfiguration: ManagerConfiguration
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
   queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
 }
 
@@ -66,6 +56,7 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
       <Grid item={true} xs={7} style={{ marginTop: 30 }}>
         <FileIndexingConfiguration
           filesMetrics={filesMetrics}
+          managerConfiguration={managerConfiguration}
         />
       </Grid>
       <Grid item={true} xs={5} style={{ marginTop: 30 }}>
@@ -80,14 +71,14 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 };
 
 interface FileIndexingConfigurationAndMonitoringProps {
-  managerConfiguration: ManagerConfiguration
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
 }
 
 const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConfigurationAndMonitoringProps> = ({
   managerConfiguration,
 }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
-  const { manager_setting } = managerConfiguration;
+  const manager_setting = managerConfiguration?.manager_setting;
   const queryArgs = {
     mimeTypes: manager_setting.accept_mime_types,
     maxFileSize: manager_setting.max_file_size,
@@ -95,7 +86,7 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [manager_setting]);
   return (
     <>
       {queryRef ? (
