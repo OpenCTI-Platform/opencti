@@ -145,6 +145,7 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
 
 export const knowledgeAddFromInvestigation = async (context, user, { containerId, workspaceId }) => {
   const investigation = await findInvestigationById(context, user, workspaceId);
-  const containerInput = { toIds: investigation.investigated_entities_ids, relationship_type: 'object' };
+  const toIds = investigation.investigated_entities_ids.filter((id) => id !== containerId);
+  const containerInput = { toIds, relationship_type: 'object' };
   return await stixCoreObjectAddRelations(context, user, containerId, containerInput);
 };
