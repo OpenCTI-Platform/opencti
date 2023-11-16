@@ -70,7 +70,7 @@ import {
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter, extractFilterIds, specialFilterKeysMap } from '../utils/filtering';
+import { addFilter, extractFilterIds, specialFilterKeys } from '../utils/filtering';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {
@@ -595,8 +595,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
   const filtersRepresentatives = [];
   // extract the ids to resolve from inputFilters
-  const specialKeys = Array.from(specialFilterKeysMap.keys());
-  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(specialKeys);
+  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(specialFilterKeys);
   const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
   const otherIds = extractFilterIds(inputFilters, refsInputNames, true);
   // resolve the ids
