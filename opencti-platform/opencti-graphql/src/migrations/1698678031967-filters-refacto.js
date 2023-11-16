@@ -3,7 +3,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { listAllEntities } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_BACKGROUND_TASK,
-  ENTITY_TYPE_FEED,
+  ENTITY_TYPE_FEED, ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_TAXII_COLLECTION
 } from '../schema/internalObject';
@@ -43,6 +43,7 @@ export const up = async (next) => {
       return filters;
     }
     const newFiltersContent = [];
+    const newFilterGroupsContent = [];
     toPairs(parsedFilters).forEach((pair) => {
       let key = head(pair);
       const values = last(pair);
@@ -74,12 +75,18 @@ export const up = async (next) => {
       }
       if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
         const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
-        if (valIds.length === 1) {
-          newFiltersContent.push({ key: [key], values: [], operator: nilOperator, mode }); // remove null id
-        } else {
-          newFiltersContent.push(
-            { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
-            { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
+        if (valIds.length === 1) { // if there is only 'null' in values
+          newFiltersContent.push({ key: [key], values: [], operator: nilOperator, mode }); // replace by a filter with nil and values = []
+        } else { // if there is other values
+          newFilterGroupsContent.push(
+            {
+              mode,
+              filters: [
+                { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
+                { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
+              ],
+              filterGroups: [],
+            }
           );
         }
       } else {
@@ -89,16 +96,16 @@ export const up = async (next) => {
     const newFilters = {
       mode: 'and',
       filters: newFiltersContent,
-      filterGroups: [],
+      filterGroups: newFilterGroupsContent,
     };
     return alreadyParsed ? newFilters : JSON.stringify(newFilters);
   };
 
-  // 01. feeds, taxiiCollections, triggers, streams
+  // 01. feeds, taxiiCollections, triggers, streams, retention rules
   const entitiesToRefacto = await listAllEntities(
     context,
     SYSTEM_USER,
-    [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER, ENTITY_TYPE_STREAM_COLLECTION],
+    [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_RETENTION_RULE],
   );
 
   let entitiesFiltersConvertor = {};
@@ -137,6 +144,11 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'StreamCollection' } } }],
+            }
+          },
+          {
+            bool: {
+              must: [{ term: { 'entity_type.keyword': { value: 'RetentionRule' } } }],
             }
           },
         ],
