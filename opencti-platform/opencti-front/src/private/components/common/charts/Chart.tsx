@@ -81,9 +81,9 @@ const ExportPopover = ({
         onClose={() => setAnchorEl(null)}
         className="noDrag"
       >
-        <MenuItem onClick={handleExportToPng}>{t('Export PNG')}</MenuItem>
-        <MenuItem onClick={handleExportToSVG}>{t('Export SVG')}</MenuItem>
-        <MenuItem onClick={handleExportToCSV}>{t('Export CSV')}</MenuItem>
+        <MenuItem onClick={handleExportToPng}>{t('Download as PNG')}</MenuItem>
+        <MenuItem onClick={handleExportToSVG}>{t('Download as SVG')}</MenuItem>
+        <MenuItem onClick={handleExportToCSV}>{t('Download as CSV')}</MenuItem>
       </Menu>
     </div>
   );

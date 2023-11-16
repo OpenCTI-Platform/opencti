@@ -231,6 +231,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     return null;
   };
   const renderEntitiesVisualization = (widget, config) => {
+    console.log('widget', widget);
     const { relativeDate } = config;
     const startDate = relativeDate
       ? computerRelativeDate(relativeDate)
@@ -404,6 +405,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
   };
   const renderRelationshipsVisualization = (widget, config) => {
+    console.log('widget', widget);
     const { relativeDate } = config;
     const startDate = relativeDate
       ? computerRelativeDate(relativeDate)
@@ -577,6 +579,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
   };
   const renderAuditsVisualization = (widget, config) => {
+    console.log('widget', widget);
     const { relativeDate } = config;
     const startDate = relativeDate
       ? computerRelativeDate(relativeDate)
@@ -773,6 +776,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               {!noToolbar && (
                 <WidgetPopover
                   widget={widget}
+                  manifest={manifest}
                   onUpdate={handleUpdateWidget}
                   onDuplicate={handleDuplicateWidget}
                   onDelete={() => handleDeleteWidget(widget.id)}
