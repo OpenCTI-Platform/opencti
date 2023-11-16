@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FileIndexingConfigurationProps {
-  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['fileMetrics']
+  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics']
 }
 
 const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
@@ -96,7 +96,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
           </Grid>
           <Grid item={true} xs={4}>
               <List>
-                { metricsByMimeType?.map((metrics) => (
+                { metricsByMimeType.map((metrics) => (
                   <ListItem key={metrics.mimeType} divider={true}>
                     <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType}/>
                     <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount}/>
