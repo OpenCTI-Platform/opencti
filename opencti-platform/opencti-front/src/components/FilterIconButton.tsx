@@ -97,6 +97,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       .filter((currentFilter) => !availableFilterKeys
         || availableFilterKeys?.some((k) => currentFilter.key === k)),
   };
+  const { filterGroups } = filters;
 
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
@@ -120,6 +121,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
           redirection={redirection}
           filters={displayedFilters}
           filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
+          filterGroups={filterGroups}
         ></FilterIconButtonContainer>
       </React.Suspense>)
     }
