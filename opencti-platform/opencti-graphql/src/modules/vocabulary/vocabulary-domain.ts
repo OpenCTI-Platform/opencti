@@ -10,7 +10,7 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { UnsupportedError } from '../../config/errors';
-import { addFilter } from '../../utils/filtering';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
@@ -26,11 +26,12 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
     const categories = entityTypes.values.flatMap((type) => getVocabulariesCategories()
       .filter(({ entity_types }) => type && entity_types.includes(type))
       .map(({ key }) => key));
+    const filterGroup = filters ? {
+      ...filters,
+      filters: (filters?.filters ?? []).filter(({ key }) => !key.includes('entity_types')),
+    } : undefined;
     filters = addFilter(
-      {
-        ...filters,
-        filters: (filters?.filters ?? []).filter(({ key }) => !key.includes('entity_types'))
-      },
+      filterGroup,
       'category',
       categories,
       entityTypes.operator ?? undefined

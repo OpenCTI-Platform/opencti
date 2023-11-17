@@ -7,7 +7,7 @@ import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../d
 import { UnsupportedError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 
 export const checkRetentionRule = async (context, input) => {

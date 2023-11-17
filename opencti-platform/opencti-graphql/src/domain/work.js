@@ -14,7 +14,7 @@ import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError } from '../config/errors';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);

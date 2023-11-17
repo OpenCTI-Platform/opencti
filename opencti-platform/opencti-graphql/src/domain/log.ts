@@ -6,7 +6,7 @@ import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };

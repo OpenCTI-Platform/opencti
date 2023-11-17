@@ -6,7 +6,7 @@ import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { OrderingMode } from '../generated/graphql';
-import { extractFilterIdsToResolveForCache } from '../utils/filtering';
+import { extractFilterIdsToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';

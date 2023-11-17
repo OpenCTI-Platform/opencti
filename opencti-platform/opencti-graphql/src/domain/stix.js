@@ -39,7 +39,7 @@ import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkAndConvertFilters } from '../utils/filtering';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);

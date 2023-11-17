@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as engine from '../../../src/utils/stix-filtering/boolean-logic-engine';
+import * as engine from '../../../src/utils/filtering/boolean-logic-engine';
 import type { Filter, FilterGroup } from '../../../src/generated/graphql';
 import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
 

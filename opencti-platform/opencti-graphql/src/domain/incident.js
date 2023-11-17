@@ -8,7 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, incidentId) => {
   return storeLoadById(context, user, incidentId, ENTITY_TYPE_INCIDENT);

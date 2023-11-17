@@ -10,7 +10,7 @@ import { isStixId } from '../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { addFilter } from "../utils/filtering";
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, noteId) => {
   return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);

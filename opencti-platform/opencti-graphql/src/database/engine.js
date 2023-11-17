@@ -88,7 +88,8 @@ import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } 
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkAndConvertFilters, IDS_FILTER, isNotEmptyFilters, TYPE_FILTER } from '../utils/filtering';
+import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { IDS_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1669,11 +1670,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
     ? {
       mode: 'and',
       filters: specialFiltersContent,
-      filterGroups: isNotEmptyFilters(filters) ? [filters] : [],
+      filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
     }
     : filters;
   // Handle filters
-  if (isNotEmptyFilters(completeFilters)) {
+  if (isFilterGroupNotEmpty(completeFilters)) {
     const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, completeFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);

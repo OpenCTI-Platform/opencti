@@ -11,7 +11,7 @@ import type { AuthUser } from '../types/user';
 import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isDictionaryAttribute, isMultipleAttribute } from '../schema/schema-attributes';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;

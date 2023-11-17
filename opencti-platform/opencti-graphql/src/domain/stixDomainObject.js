@@ -32,7 +32,7 @@ import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
 import { usersSessionRefresh } from './user';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];

@@ -1,6 +1,6 @@
-import type { TesterFunction } from './boolean-logic-engine';
-import { testStringFilter } from './boolean-logic-engine';
-import type { Filter } from '../../generated/graphql';
+import type { TesterFunction } from '../boolean-logic-engine';
+import { testStringFilter } from '../boolean-logic-engine';
+import type { Filter } from '../../../generated/graphql';
 
 //-----------------------------------------------------------------------------------
 // Event testers for each possible filter.

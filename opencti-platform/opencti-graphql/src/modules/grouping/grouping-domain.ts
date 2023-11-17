@@ -26,7 +26,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelati
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
-import { addFilter } from '../../utils/filtering';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);

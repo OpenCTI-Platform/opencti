@@ -57,7 +57,7 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

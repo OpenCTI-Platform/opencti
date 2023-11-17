@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
-import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/stix-filtering/stix-filtering';
+import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 import stixReports from '../../data/stream-events/stream-event-stix2-reports.json';
 import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
