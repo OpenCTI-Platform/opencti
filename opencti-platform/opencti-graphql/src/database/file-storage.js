@@ -198,8 +198,8 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-export const rawFilesListing = async (context, user, directory, recursive = false, opts = {}) => {
-  const { modifiedSince, excludedPaths = [] } = opts;
+const simpleFilesListing = async (context, user, directory, opts = {}) => {
+  const { recursive = false, modifiedSince, maxFileSize, excludedExtensions = [], excludedPaths = [], includedPaths = [] } = opts;
   const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -222,12 +222,19 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
   }
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
-        && (!modifiedSince || obj.LastModified > modifiedSince)
-        && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
+      && (!excludedExtensions?.length || !excludedExtensions.some((ext) => obj.Key.endsWith(ext)))
+      && (!modifiedSince || obj.LastModified > modifiedSince)
+      && (!maxFileSize || maxFileSize >= obj.Size)
+      && (!includedPaths?.length || includedPaths.some((includedPath) => obj.Key.startsWith(includedPath)))
+      && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
   });
-  // TODO limit loadFile : sort by LastModified and get the first 50 ? => waiting for performance test
+  return filteredObjects;
+};
+
+export const rawFilesListing = async (context, user, directory, opts = {}) => {
+  const storageObjects = await simpleFilesListing(context, user, directory, opts);
   // Load file metadata with 5 // call maximum
-  return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  return BluePromise.map(storageObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
@@ -353,24 +360,25 @@ export const filesListing = async (context, user, first, path, entity = null, pr
 
 export const fileListingForIndexing = async (context, user, path, opts = {}) => {
   const fileListingForIndexingFn = async () => {
-    let files = await rawFilesListing(context, user, path, true, opts);
-    const { mimeTypes, maxFileSize } = opts;
-    if (mimeTypes?.length > 0) {
-      files = files.filter((file) => {
-        return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
-      });
-    }
-    if (maxFileSize) {
-      files = files.filter((file) => {
-        return maxFileSize >= (file.size || 0);
-      });
-    }
-    return files.sort((a, b) => a.lastModified - b.lastModified);
+    const excludedExtensions = ['.exe', '.json'];
+    const files = await simpleFilesListing(context, user, path, { ...opts, excludedExtensions, recursive: true });
+    return files.sort((a, b) => a.LastModified - b.LastModified);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
     [SemanticAttributes.DB_NAME]: 'storage_engine',
     [SemanticAttributes.DB_OPERATION]: 'listing',
   }, fileListingForIndexingFn);
+};
+
+export const loadFilesForIndexing = (user, files, opts = {}) => {
+  let filesObjects = BluePromise.map(files, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  const { mimeTypes } = opts;
+  if (mimeTypes?.length > 0) {
+    filesObjects = filesObjects.filter((file) => {
+      return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
+    });
+  }
+  return filesObjects;
 };
 
 export const deleteAllFiles = async (context, user, path) => {

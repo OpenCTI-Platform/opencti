@@ -32,6 +32,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { useMutation } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -122,7 +123,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
         {t('Configuration and impact')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item={true} xs={4}>
             <div className={classes.count}>
               {n(totalFiles)}
@@ -140,18 +141,19 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-              <List>
-                { metricsByMimeType.map((metrics) => (
-                  <ListItem key={metrics.mimeType} divider={true}>
-                    <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType}/>
-                    <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount}/>
-                    <ListItemText primary={'files for'}/>
-                    <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount}/>
-                  </ListItem>
-                ))}
-              </List>
+            <List>
+              { metricsByMimeType.map((metrics) => (
+                <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32 }}>
+                  <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType}/>
+                  <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount}/>
+                  <ListItemText primary={'files for'}/>
+                  <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount}/>
+                </ListItem>
+              ))}
+            </List>
           </Grid>
         </Grid>
+        <Divider style={{ marginBottom: 30, marginTop: 30 }} />
         <Formik
           initialValues={initialValues}
           onSubmit={onSubmitForm}
@@ -161,9 +163,9 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               <Typography variant="h4" gutterBottom={true}>
                   {t('Mime-Types to index')}
               </Typography>
-            <List>
+            <List style={{ marginLeft: 25 }}>
             { defaultMimeTypes.map((mimeType) => (
-              <ListItem key={mimeType} divider={true}>
+              <ListItem key={mimeType} divider={true} dense={true} style={{ height: 36 }}>
                 <ListItemText primary={t(mimeType)} className={classes.mimeType}/>
                 <Checkbox
                   edge="start"

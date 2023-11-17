@@ -35,7 +35,7 @@ import {
   elUpdateFilesWithEntityRestrictions,
   isAttachmentProcessorEnabled,
 } from '../database/engine';
-import { fileListingForIndexing, getFileContent } from '../database/file-storage';
+import { fileListingForIndexing, getFileContent, loadFilesForIndexing } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
 import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -53,11 +53,19 @@ const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_k
 
 // configuration that will be handled in ManagerConfiguration in MVP2
 const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-const ACCEPT_MIME_TYPES: string[] = conf.get('file_index_manager:accept_mime_types') || defaultMimeTypes;
-const MAX_FILE_SIZE: number = conf.get('file_index_manager:max_file_size') || 5242880; // 5 mb
-const INCLUDE_GLOBAL_FILES: boolean = conf.get('file_index_manager:include_global_files') || false;
+const ACCEPT_MIME_TYPES: string[] = defaultMimeTypes;
+const MAX_FILE_SIZE: number = 5242880; // 5 mb
+const INCLUDE_GLOBAL_FILES: boolean = false;
 
-const loadFilesToIndex = async (file: { id: string, internalId: string, entityId: string | null, name: string, uploaded_at: Date | undefined }) => {
+interface FileToIndexObject {
+  id: string;
+  internalId: string;
+  entityId: string | null;
+  name: string;
+  uploaded_at: Date | undefined;
+}
+
+const loadFilesToIndex = async (file: FileToIndexObject) => {
   const content = await getFileContent(file.id, 'base64');
   return {
     internal_id: file.internalId,
@@ -72,12 +80,17 @@ const loadFilesToIndex = async (file: { id: string, internalId: string, entityId
 const indexImportedFiles = async (
   context: AuthContext,
   fromDate: Date | null = null,
-  opts: { path?: string, includeGlobalFiles?: boolean, maxFileSize?: number, mimeTypes?: string[] } = {},
+  opts: { path?: string, includeGlobalFiles?: boolean, entityTypes?: string[], maxFileSize?: number, mimeTypes?: string[] } = {},
 ) => {
-  const { path = 'import/', includeGlobalFiles = INCLUDE_GLOBAL_FILES, maxFileSize = MAX_FILE_SIZE, mimeTypes = ACCEPT_MIME_TYPES } = opts;
+  const { path = 'import/', maxFileSize = MAX_FILE_SIZE, mimeTypes = ACCEPT_MIME_TYPES } = opts;
+  const { entityTypes = [], includeGlobalFiles = INCLUDE_GLOBAL_FILES } = opts;
+  const includedPaths = entityTypes.map((entityType) => `import/${entityType}/`);
+  if (includeGlobalFiles && includedPaths.length > 0) {
+    includedPaths.push('import/global/'); // add global to included paths
+  }
   const excludedPaths = includeGlobalFiles ? ['import/pending/'] : ['import/pending/', 'import/global/'];
-  const fileListingOpts = { modifiedSince: fromDate, excludedPaths, mimeTypes, maxFileSize };
-  const allFiles: { id: string; metaData: { entity_id: string; }; name: string; lastModified: Date; }[] = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
+  const fileListingOpts = { modifiedSince: fromDate, excludedPaths, includedPaths, mimeTypes, maxFileSize };
+  const allFiles = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
   if (allFiles.length === 0) {
     return;
   }
@@ -85,8 +98,8 @@ const indexImportedFiles = async (
   for (let index = 0; index < filesBulk.length; index += 1) {
     const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
     if (managerConfiguration?.manager_running) {
-      const files = filesBulk[index];
-      const filesToLoad = files.map((file) => {
+      const files = await loadFilesForIndexing(SYSTEM_USER, filesBulk[index], { mimeTypes });
+      const filesToLoad: FileToIndexObject[] = files.map((file) => {
         const internalId = generateFileIndexId(file.id);
         const entityId = file.metaData.entity_id;
         return {
@@ -103,6 +116,20 @@ const indexImportedFiles = async (
       await waitInSec(1);
     }
   }
+};
+
+const getIndexFromDate = async (context: AuthContext) => {
+  const searchOptions = {
+    first: 1,
+    connectionFormat: false,
+    highlight: false,
+    orderBy: 'uploaded_at',
+    orderMode: 'desc',
+  };
+  const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
+  const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
+  const indexFromDate = lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toDate() : null;
+  return indexFromDate;
 };
 
 const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
@@ -159,19 +186,11 @@ const initFileIndexManager = () => {
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
         if (managerConfiguration?.manager_running) {
           const startDate = new Date();
-          const searchOptions = {
-            first: 1,
-            connectionFormat: false,
-            highlight: false,
-            orderBy: 'uploaded_at',
-            orderMode: 'desc',
-          };
-          const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
-          const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
-          const indexFromDate = lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toDate() : null;
+          const indexFromDate = await getIndexFromDate(context);
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
           const indexOpts = {
-            includeGlobalFiles: managerConfiguration.manager_setting?.include_global_files,
+            includeGlobalFiles: managerConfiguration.manager_setting?.include_global_files || false,
+            entityTypes: managerConfiguration.manager_setting?.entity_types || [],
             maxFileSize: managerConfiguration.manager_setting?.max_file_size,
             mimeTypes: managerConfiguration.manager_setting?.accept_mime_types,
           };
