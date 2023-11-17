@@ -530,6 +530,7 @@ const ContainerHeader = (props) => {
       localStorage.getItem(`suggestions-rules-${container.id}`) || '[]',
     );
   };
+
   const generateSuggestions = (objects) => {
     const suggestions = [];
     const resolvedThreats = resolveThreats(objects);
@@ -602,7 +603,9 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, type]);
+      setApplied([...applied, {
+        [type]: selectedEntity[type],
+      }]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
@@ -654,7 +657,9 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, type]);
+      setApplied([...applied, {
+        [type]: selectedEntity[type],
+      }]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
@@ -705,7 +710,9 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, type]);
+      setApplied([...applied, {
+        [type]: selectedEntity[type],
+      }]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
@@ -863,7 +870,7 @@ const ContainerHeader = (props) => {
                         />
                       )}
                       {enableQuickExport && (
-                        <StixCoreObjectFileExport id={container.id} />
+                        <StixCoreObjectFileExport id={container.id}/>
                       )}
                       {enableSuggestions && (
                         <React.Fragment>
@@ -970,7 +977,7 @@ const ContainerHeader = (props) => {
                                   }
                                   size="large"
                                   color={
-                                    applied.includes(suggestion.type)
+                                    applied.some((a) => a[suggestion.type] === selectedEntity[suggestion.type])
                                       ? 'success'
                                       : 'secondary'
                                   }
@@ -985,7 +992,7 @@ const ContainerHeader = (props) => {
                                       color="inherit"
                                     />
                                   ) : (
-                                    <AddTaskOutlined />
+                                    <AddTaskOutlined/>
                                   )}
                                 </IconButton>
                               </ListItemSecondaryAction>
@@ -1006,11 +1013,11 @@ const ContainerHeader = (props) => {
                 );
               }
             }
-            return <div />;
+            return <div/>;
           }}
         />
       </div>
-      <div className="clearfix" />
+      <div className="clearfix"/>
     </>
   );
 };
