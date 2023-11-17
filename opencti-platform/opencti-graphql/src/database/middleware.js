@@ -385,7 +385,8 @@ export const loadThroughGetTo = async (context, user, sources, relationType, tar
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllThings = async (context, user, thingsTypes, args = {}, noFiltersChecking = false) => {
@@ -553,7 +554,8 @@ export const stixLoadByIdStringify = async (context, user, id) => {
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
-  const elements = await loadByFiltersWithDependencies(context, user, types, args);
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const elements = await loadByFiltersWithDependencies(context, user, types, { args, filters: convertedFilters });
   return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
@@ -568,7 +570,8 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
 };
 export const timeSeriesHistory = async (context, user, types, args) => {
   const { startDate, endDate, interval } = args;
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, args);
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, { ...args, filters: convertedFilters });
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
@@ -588,6 +591,7 @@ export const timeSeriesRelations = async (context, user, args) => {
 };
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
+  const convertedFilters = checkAndConvertFilters(args.filters);
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
@@ -600,7 +604,8 @@ export const distributionHistory = async (context, user, types, args) => {
   }
   const distributionData = await elAggregationCount(context, user, READ_INDEX_HISTORY, {
     ...args,
-    field: finalField
+    field: finalField,
+    filters: convertedFilters,
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
@@ -662,6 +667,7 @@ export const distributionRelations = async (context, user, args) => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
+  const convertedFilters = checkAndConvertFilters(args.filters);
   const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
@@ -669,7 +675,7 @@ export const distributionRelations = async (context, user, args) => {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types
-  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField };
+  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField, filters: convertedFilters };
   const distributionArgs = buildAggregationRelationFilter(types, opts);
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.

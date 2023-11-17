@@ -40,7 +40,7 @@ class StixCoreObjectLatestHistory extends Component {
               mode: 'and',
               filterGroups: [],
               filters: [
-                { key: 'entity_id', values: [stixCoreObjectId] },
+                { key: 'context_data.id', values: [stixCoreObjectId] },
                 { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
               ],
             },

@@ -22,7 +22,7 @@ class StixCoreRelationshipLatestHistory extends Component {
               mode: 'and',
               filterGroups: [],
               filters: [
-                { key: 'entity_id', values: [stixCoreRelationshipId] },
+                { key: 'context_data.id', values: [stixCoreRelationshipId] },
                 { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
               ],
             },
