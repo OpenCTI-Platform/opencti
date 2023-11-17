@@ -11257,8 +11257,8 @@ type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixC
   indicators(first: Int): IndicatorConnection
   # FinancialAsset
   name: String
-  type: String
   description: String
+  asset_type: String
   asset_value: Float
   # Technical
   creators: [Creator!]
@@ -11272,8 +11272,8 @@ type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixC
 }
 input FinancialAssetAddInput {
   name: String
-  type: String
   description: String
+  asset_type: String
   asset_value: Float
 }
 ###### RELATIONSHIPS

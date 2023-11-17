@@ -11,6 +11,7 @@ import {
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_FINANCIAL_ASSET,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -251,6 +252,11 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'media_category', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Media category' },
     { name: 'url', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'publication_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: true, label: 'Publication date' },
+  ],
+  [ENTITY_FINANCIAL_ASSET]: [
+    { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'asset_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'asset_value', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixCyberObservablesAttributes);

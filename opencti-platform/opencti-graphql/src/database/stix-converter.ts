@@ -1067,8 +1067,8 @@ const convertFinancialAssetToStix = (instance: StoreCyberObservable, type: strin
   return {
     ...stixCyberObject,
     name: instance.name,
-    type: instance.asset_type,
     description: instance.x_opencti_description,
+    asset_type: instance.asset_type,
     asset_value: instance.asset_value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     score: instance.x_opencti_score,

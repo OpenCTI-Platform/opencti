@@ -799,8 +799,8 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
         }
         ... on FinancialAsset {
           name
-          type
           description
+          asset_type
           asset_value
         }
         x_opencti_score

@@ -570,8 +570,8 @@ export interface StixMediaContent extends StixCyberObject {
 // value
 export interface StixFinancialAsset extends StixCyberObject {
   name: string;
-  type: string;
   description: string;
+  asset_type: string;
   asset_value: number;
   score: number;
   labels: Array<string>;

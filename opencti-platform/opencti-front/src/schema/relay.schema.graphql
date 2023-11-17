@@ -7650,8 +7650,8 @@ type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixC
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   name: String
-  type: String
   description: String
+  asset_type: String
   asset_value: Float
   creators: [Creator!]
   toStix: String
@@ -7665,8 +7665,8 @@ type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixC
 
 input FinancialAssetAddInput {
   name: String
-  type: String
   description: String
+  asset_type: String
   asset_value: Float
 }
 
@@ -10342,6 +10342,7 @@ input DataSourceAddInput {
 
 enum VocabularyCategory {
   account_type_ov
+  asset_type_ov
   attack_motivation_ov
   attack_resource_level_ov
   case_severity_ov

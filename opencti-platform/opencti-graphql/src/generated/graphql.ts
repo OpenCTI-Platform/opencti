@@ -8150,6 +8150,7 @@ export enum FinancialAccountType {
 
 export type FinancialAsset = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'FinancialAsset';
+  asset_type?: Maybe<Scalars['String']['output']>;
   asset_value?: Maybe<Scalars['Float']['output']>;
   cases?: Maybe<CaseConnection>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -8188,7 +8189,6 @@ export type FinancialAsset = BasicObject & StixCoreObject & StixCyberObservable 
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
-  type?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -8336,10 +8336,10 @@ export type FinancialAssetStixCoreRelationshipsDistributionArgs = {
 };
 
 export type FinancialAssetAddInput = {
+  asset_type?: InputMaybe<Scalars['String']['input']>;
   asset_value?: InputMaybe<Scalars['Float']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
-  type?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FinancialData = FinancialAccount;
@@ -28671,6 +28671,7 @@ export type VocabularyAddInput = {
 
 export enum VocabularyCategory {
   AccountTypeOv = 'account_type_ov',
+  AssetTypeOv = 'asset_type_ov',
   AttackMotivationOv = 'attack_motivation_ov',
   AttackResourceLevelOv = 'attack_resource_level_ov',
   CasePriorityOv = 'case_priority_ov',
@@ -33989,6 +33990,7 @@ export type FinancialAccountEdgeResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type FinancialAssetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FinancialAsset'] = ResolversParentTypes['FinancialAsset']> = ResolversObject<{
+  asset_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   asset_value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FinancialAssetCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<FinancialAssetConnectorsArgs>>;
@@ -34027,7 +34029,6 @@ export type FinancialAssetResolvers<ContextType = any, ParentType extends Resolv
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<FinancialAssetStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<FinancialAssetStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

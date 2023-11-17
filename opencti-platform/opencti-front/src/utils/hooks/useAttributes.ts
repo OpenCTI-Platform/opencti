@@ -107,6 +107,7 @@ export const numberAttributes = [
   'number_of_subkeys',
   'subject_public_key_exponent',
   'cvv',
+  'asset_value',
 ];
 
 export const booleanAttributes = [

@@ -24,6 +24,16 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'windows-local', description: 'Specifies a Windows local account' },
     { key: 'windows-domain', description: 'Specifies a Windows domain account' },
   ],
+  asset_type_ov: [
+    { key: 'airplane', description: 'A winged vehicle capable of lifting itself off the earth' },
+    { key: 'boat', description: 'A sea faring vessel' },
+    { key: 'car', description: 'A motor vehicle with wheels' },
+    { key: 'company', description: 'A company of financial value' },
+    { key: 'domain_name' },
+    { key: 'real_estate', description: 'Real property, houses, townhomes, etc.' },
+    { key: 'digital', description: 'Digital assets such as NFTs' },
+    { key: 'other', description: 'Another type of financial asset' },
+  ],
   attack_resource_level_ov: [
     {
       key: 'individual',

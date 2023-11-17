@@ -421,8 +421,8 @@ const StixCyberObservableDetails = createFragmentContainer(
         }
         ... on FinancialAsset {
           name
-          type
           description
+          asset_type
           asset_value
         }
         ...StixCyberObservableIndicators_stixCyberObservable

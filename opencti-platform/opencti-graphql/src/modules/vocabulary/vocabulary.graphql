@@ -1,5 +1,6 @@
 enum VocabularyCategory {
   account_type_ov
+  asset_type_ov
   attack_motivation_ov
   attack_resource_level_ov
   case_severity_ov
