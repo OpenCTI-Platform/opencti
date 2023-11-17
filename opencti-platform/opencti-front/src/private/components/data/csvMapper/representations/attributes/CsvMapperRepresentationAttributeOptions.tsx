@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
-    justifyContent: 'right',
+    alignItems: 'center',
   },
 }));
 
@@ -44,7 +44,7 @@ CsvMapperRepresentationAttributeOptionsProps
   const enabled = !!selectedAttributes.find((a) => a.key === attribute.key);
 
   return (
-    <div>
+    <>
       {attribute.type === 'date' && (
         <div className={classes.container}>
           <MuiTextField
@@ -97,7 +97,7 @@ CsvMapperRepresentationAttributeOptionsProps
           </Tooltip>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
