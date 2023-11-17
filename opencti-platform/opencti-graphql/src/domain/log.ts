@@ -6,15 +6,15 @@ import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
-import { addFilter } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
-  const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
+  const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY], filters: checkAndConvertFilters(args.filters ?? undefined) };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
-  const finalArgs = { ...args, types: args.types ? args.types : [ENTITY_TYPE_HISTORY] };
+  const finalArgs = { ...args, types: args.types ? args.types : [ENTITY_TYPE_HISTORY], filters: checkAndConvertFilters(args.filters ?? undefined) };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 

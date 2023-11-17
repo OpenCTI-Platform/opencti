@@ -18,7 +18,7 @@ import {
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_TAXII_COLLECTION,
-  ENTITY_TYPE_USER, ENTITY_TYPE_FEED,
+  ENTITY_TYPE_USER, ENTITY_TYPE_FEED, ENTITY_TYPE_HISTORY,
 } from '../../schema/internalObject';
 import { settingsMessages } from '../../domain/settings';
 
@@ -197,6 +197,14 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'current_state_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'listen_deletion', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'no_dependencies', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+  ],
+  [ENTITY_TYPE_HISTORY]: [
+    { name: 'context_data', type: 'json', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'event_scope', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'event_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'group_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'organization_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
 };
 

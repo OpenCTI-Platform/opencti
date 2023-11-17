@@ -21,7 +21,7 @@ class StixSightingRelationshipLatestHistory extends Component {
             filters: {
               mode: 'and',
               filters: [
-                { key: 'entity_id', values: [stixSightingRelationshipId] },
+                { key: 'context_data.id', values: [stixSightingRelationshipId] },
                 { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
               ],
               filterGroups: [],

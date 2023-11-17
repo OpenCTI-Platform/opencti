@@ -71,7 +71,7 @@ class StixCoreObjectHistory extends Component {
                 mode: 'and',
                 filterGroups: [],
                 filters: [
-                  { key: 'entity_id', values: [stixCoreObjectId] },
+                  { key: 'context_data.id', values: [stixCoreObjectId] },
                   {
                     key: 'event_type',
                     values: ['mutation', 'create', 'update', 'delete', 'merge'],
@@ -121,7 +121,7 @@ class StixCoreObjectHistory extends Component {
                   mode: 'and',
                   filters: [
                     {
-                      key: 'connection_id',
+                      key: 'context_data.id',
                       values: [stixCoreObjectId],
                       operator: 'wildcard',
                     },
