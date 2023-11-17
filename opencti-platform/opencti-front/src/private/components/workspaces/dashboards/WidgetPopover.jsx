@@ -58,7 +58,7 @@ const WidgetPopover = ({
     const blob = new Blob([widgetConfig], { type: 'text/json ' });
     const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
     const fileName = `${year}${month}${day}_octi_widget_${widget.type}`;
-
+    console.log('widgetConfig', widgetConfig);
     fileDownload(blob, fileName, 'application/json');
   };
   console.log('widget', widget);

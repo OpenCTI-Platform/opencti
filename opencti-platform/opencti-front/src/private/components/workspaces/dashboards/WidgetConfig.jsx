@@ -1,5 +1,5 @@
 /* eslint-disable custom-rules/classes-rule */
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
@@ -17,16 +17,14 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import {
-  Add,
   AddOutlined,
   CancelOutlined,
   FormatShapesOutlined,
   LibraryBooksOutlined,
-  MapOutlined,
+  MapOutlined, CloudUploadOutlined, WidgetsOutlined,
 } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
@@ -55,6 +53,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import ReactMde from 'react-mde';
+import SpeedDial from '@mui/material/SpeedDial';
+import { SpeedDialIcon } from '@mui/material';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
@@ -78,7 +80,17 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    zIndex: 1001,
+    zIndex: 1100,
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
   card: {
     height: 180,
@@ -367,6 +379,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const [selectedTab, setSelectedTab] = useState('write');
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState(widget?.type ?? null);
+  const inputRef = useRef();
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const initialSelection = {
     label: '',
@@ -382,6 +395,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
+
+  const handleWidgetImport = (event) => {
+    const importedWidget = event.target.files[0];
+    console.log('importedWidget', importedWidget);
+  };
   const handleClose = () => {
     if (!widget) {
       setStepIndex(0);
@@ -1505,16 +1523,28 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   };
   return (
     <div>
-      {!widget && (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
+      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
+      <SpeedDial
           className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-      )}
+          ariaLabel="Create"
+          icon={<SpeedDialIcon />}
+          FabProps={{ color: 'secondary' }}
+      >
+        <SpeedDialAction
+            title={t('Import a widget')}
+            icon={<CloudUploadOutlined />}
+            tooltipTitle={t('Import a widget')}
+            onClick={() => inputRef.current?.click()}
+            FabProps={{ classes: { root: classes.speedDialButton } }}
+        />
+        <SpeedDialAction
+            title={t('Create a widget')}
+            icon={<WidgetsOutlined />}
+            tooltipTitle={t('Create a widget')}
+            onClick={() => setOpen(true)}
+            FabProps={{ classes: { root: classes.speedDialButton } }}
+        />
+      </SpeedDial>
       {widget && (
         <MenuItem
           onClick={() => {
