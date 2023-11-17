@@ -109,7 +109,7 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-sro';
 import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
-import { isStixMatchFilterGroup } from '../../utils/stix-filtering/stix-filtering';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);

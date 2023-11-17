@@ -30,7 +30,9 @@ import {
   type BasicStoreEntityTrigger,
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
-import { adaptFiltersIds, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
+import { adaptFiltersIds } from '../utils/filtering/filtering-utils';
+import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
+import { isStixMatchFilters } from '../utils/filtering/filtering-stix/stix-filtering-legacy';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -381,7 +383,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
   previousData?: StixCoreObject | StixRelationshipObject,
 ) => {
   // Get ids from the user trigger filters that user has access to
-  const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+  const listenedInstanceIdsMap = await resolveFiltersMapForUser(context, user, frontendFilters);
   // -- 01. Notification for relationships (creation/deletion/newly visible/no more visible)
   if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type) // the event is a relationship
     && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting) // and the relationship from/to contains an instance of the trigger filters
@@ -469,7 +471,7 @@ export const buildTargetEvents = async (
       } else { // useSideEventMatching = true: Case side events for instance triggers
         // eslint-disable-next-line no-lonely-if
         if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
-          const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+          const listenedInstanceIdsMap = await resolveFiltersMapForUser(context, user, frontendFilters);
           // eslint-disable-next-line max-len
           const translatedType = await eventTypeTranslaterForSideEvents(context, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
           const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, translatedType, updatePatch, previous);

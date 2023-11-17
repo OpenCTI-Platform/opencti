@@ -20,7 +20,8 @@ import type {
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, checkAndConvertFilters, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {

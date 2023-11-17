@@ -43,7 +43,9 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { convertFiltersToQueryOptions, findFilterFromKey, MARKING_FILTER } from '../utils/filtering';
+import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
+import { findFilterFromKey } from '../utils/filtering/filtering-utils';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
@@ -53,7 +55,7 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
-import { isStixMatchFilterGroup } from '../utils/stix-filtering/stix-filtering';
+import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];

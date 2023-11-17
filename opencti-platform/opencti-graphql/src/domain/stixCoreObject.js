@@ -70,7 +70,8 @@ import {
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter, extractFilterIds, specialFilterKeys } from '../utils/filtering';
+import { addFilter, extractFilterIds } from '../utils/filtering/filtering-utils';
+import { specialFilterKeys } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {

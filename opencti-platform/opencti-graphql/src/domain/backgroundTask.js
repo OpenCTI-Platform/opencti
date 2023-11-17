@@ -2,7 +2,9 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { checkAndConvertFilters, TYPE_FILTER } from '../utils/filtering';
+import { TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
+import { resolveFilterGroupValuesWithCache } from '../utils/filtering/filtering-resolution';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -15,7 +17,6 @@ import {
 } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
-import { resolveFilterGroupValuesWithCache } from '../utils/stix-filtering/stix-filtering';
 
 export const MAX_TASK_ELEMENTS = 500;
 

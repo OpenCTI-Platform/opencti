@@ -34,7 +34,7 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
-import { addFilter } from '../../utils/filtering';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 import { streamToString } from '../../database/file-storage';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {

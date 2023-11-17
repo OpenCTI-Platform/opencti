@@ -28,7 +28,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../utils/syntax';
 import { computeValidPeriod } from '../utils/indicator-utils';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, indicatorId) => {
   return storeLoadById(context, user, indicatorId, ENTITY_TYPE_INDICATOR);

@@ -10,7 +10,7 @@ import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
 import { READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.

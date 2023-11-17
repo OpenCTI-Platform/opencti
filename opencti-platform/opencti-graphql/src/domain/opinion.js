@@ -15,7 +15,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { now } from '../utils/format';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);

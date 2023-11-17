@@ -21,7 +21,7 @@ import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/st
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { addFilter } from "../utils/filtering";
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);

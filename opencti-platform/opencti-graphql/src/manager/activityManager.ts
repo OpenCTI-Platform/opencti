@@ -44,7 +44,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
-import { isEventMatchFilterGroup } from '../utils/stix-filtering/stix-filtering';
+import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -72,7 +72,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
       const { trigger, users } = triggers[triggerIndex];
       const { internal_id: notification_id, notifiers } = trigger;
       // Filter the event
-      const isMatchFilter = await isEventMatchFilterGroup(event.data, JSON.parse(trigger.filters));
+      const isMatchFilter = await isActivityEventMatchFilterGroup(event.data, JSON.parse(trigger.filters));
       if (isMatchFilter) {
         const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;

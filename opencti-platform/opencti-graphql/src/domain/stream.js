@@ -11,8 +11,8 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
-import { addFilter } from '../utils/filtering';
-import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
+import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {

@@ -11,7 +11,7 @@ import stixRfis from '../../data/stream-events/stream-event-stix2-rfis.json';
 import stixSightings from '../../data/stream-events/stream-event-stix2-sightings.json';
 import stixRelationships from '../../data/stream-events/stream-event-stix2-relationships.json';
 
-import * as testers from '../../../src/utils/stix-filtering/stix-testers';
+import * as testers from '../../../src/utils/filtering/filtering-stix/stix-testers';
 import type { Filter } from '../../../src/generated/graphql';
 
 describe('Stix filter testers', () => {

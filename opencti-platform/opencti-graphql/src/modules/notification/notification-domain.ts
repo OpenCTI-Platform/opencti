@@ -31,7 +31,7 @@ import {
 import { now } from '../../utils/format';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { addFilter } from '../../utils/filtering';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { BasicStoreEntity, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
@@ -48,10 +48,8 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import {
-  validateFilterGroupForEventMatch,
-  validateFilterGroupForStixMatch
-} from '../../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForActivityEventMatch } from '../../utils/filtering/filtering-activity-event/activity-event-filtering';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -139,7 +137,7 @@ export const addTriggerActivity = async (
   const input = triggerInput as TriggerActivityLiveAddInput;
   if (type === TriggerTypeValue.Live && input.filters) {
     const filters = JSON.parse(input.filters) as FilterGroup;
-    validateFilterGroupForEventMatch(filters);
+    validateFilterGroupForActivityEventMatch(filters);
   }
 
   const defaultOpts = {
@@ -194,7 +192,7 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
         validateFilterGroupForStixMatch(filterGroup);
       }
       if (trigger.trigger_scope === 'activity') {
-        validateFilterGroupForEventMatch(filterGroup);
+        validateFilterGroupForActivityEventMatch(filterGroup);
       }
     }
   }

@@ -1,10 +1,10 @@
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
-import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../schema/general';
-import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../../schema/identifier';
-import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from './boolean-logic-engine';
-import type { TesterFunction } from './boolean-logic-engine';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-extensions';
+import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
+import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
+import { generateStandardId } from '../../../schema/identifier';
+import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from '../boolean-logic-engine';
+import type { TesterFunction } from '../boolean-logic-engine';
 
 import {
   ASSIGNEE_FILTER,
@@ -20,14 +20,14 @@ import {
   // OBJECT_CONTAINS_FILTER,
   PATTERN_FILTER, PRIORITY_FILTER,
   RELATION_FROM_FILTER,
-  RELATION_FROM_TYPES,
-  RELATION_TO_FILTER, RELATION_TO_TYPES,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER, RELATION_TO_TYPES_FILTER,
   REVOKED_FILTER,
   SCORE_FILTER, SEVERITY_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
-} from '../filtering';
-import type { Filter } from '../../generated/graphql';
+} from '../filtering-constants';
+import type { Filter } from '../../../generated/graphql';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -324,7 +324,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo,
   [RELATION_FROM_FILTER]: testRelationFrom,
-  [RELATION_FROM_TYPES]: testRelationFromTypes,
+  [RELATION_FROM_TYPES_FILTER]: testRelationFromTypes,
   [RELATION_TO_FILTER]: testRelationTo,
-  [RELATION_TO_TYPES]: testRelationToTypes,
+  [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
 };

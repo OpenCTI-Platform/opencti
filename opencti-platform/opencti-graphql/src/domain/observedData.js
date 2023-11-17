@@ -11,7 +11,7 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);

@@ -6,7 +6,7 @@ import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, campaignId) => {
   return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);

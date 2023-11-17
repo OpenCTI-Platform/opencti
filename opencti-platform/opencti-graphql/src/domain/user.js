@@ -32,7 +32,7 @@ import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, 
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, VIRTUAL_ORGANIZATION_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';

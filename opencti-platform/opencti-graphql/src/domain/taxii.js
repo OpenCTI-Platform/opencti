@@ -14,10 +14,11 @@ import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { addFilter, convertFiltersToQueryOptions } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { validateFilterGroupForStixMatch } from '../utils/stix-filtering/stix-filtering';
+import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 
 const MAX_PAGINATION_ELEMENTS = 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';

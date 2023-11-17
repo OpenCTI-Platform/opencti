@@ -16,7 +16,7 @@ import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';

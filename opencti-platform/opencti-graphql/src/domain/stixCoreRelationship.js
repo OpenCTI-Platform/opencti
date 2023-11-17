@@ -60,7 +60,7 @@ import {
   stixObjectOrRelationshipAddRefRelations,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);

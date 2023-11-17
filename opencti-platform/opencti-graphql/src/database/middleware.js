@@ -6,7 +6,7 @@ import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { JSONPath } from 'jsonpath-plus';
 import * as jsonpatch from 'fast-json-patch';
-import { checkAndConvertFilters } from '../utils/filtering';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 
 import {
   ALREADY_DELETED_ERROR,

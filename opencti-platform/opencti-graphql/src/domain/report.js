@@ -24,7 +24,7 @@ import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } fr
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { addFilter } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
