@@ -1130,6 +1130,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '¡Estás seleccionando más de 1000 entidades en esta tarea en segundo plano así que estáte seguro de que sabes lo que haces!',
       Filters: 'Filtros',
+      'Filters are not fully displayed': 'Los filtros no se muestran completamente',
+      'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ': 'Este filtro contiene grupos de filtros imbricados, que aún no son completamente compatibles en la visualización de la plataforma y solo se pueden editar a través de la API. Es posible que se hayan creado a través de la API o una migración desde un formato de filtro anterior. Para tu información, aquí está el contenido del objeto de filtro:',
       'Number of elements': 'Número de elementos',
       'Download this file': 'Descargar este fichero',
       'Download in pdf': 'Descargar en pdf',
@@ -3421,6 +3423,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites !',
       Filters: 'Filtres',
+      'Filters are not fully displayed': 'Les filtres ne sont pas entièrement affichés',
+      'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ': 'Ce filtre contient des groupes de filtres imbriqués, qui ne sont pas encore totalement pris en charge dans l\'affichage de la plateforme et ne peuvent être modifiés que via l\'API. Ils peuvent avoir été créés via l\'API ou lors d\'une migration à partir d\'un format de filtre précédent. Pour votre information, voici le contenu de l\'objet de filtre:',
       'Number of elements': "Nombre d'éléments",
       'Download this file': 'Télécharger ce fichier',
       'Download in pdf': 'Télécharger en pdf',
@@ -5653,6 +5657,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'このバックグラウンドタスクで1000以上のエンティティをターゲットにしています。実行内容を確認してください。',
       Filters: 'フィルタ',
+      'Filters are not fully displayed': 'フィルターが完全に表示されていません',
+      'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ': 'このフィルターには、プラットフォームの表示ではまだ完全にサポートされていない、入れ子になったフィルターグループが含まれており、API経由でのみ編集することができます。これらはAPI経由で作成されたか、以前のフィルターフォーマットからの移行で作成された可能性があります。フィルターオブジェクトの内容は次のとおりです',
       'Number of elements': '要素数',
       'Download this file': 'ファイルのダウンロード',
       'Download in pdf': 'PDFでダウンロード',
@@ -7765,6 +7771,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '您正在使用此后台任务针对超过1000个实体，请确保您正在执行的操作!',
       Filters: '过滤器',
+      'Filters are not fully displayed': '篩選器未完全顯示',
+      'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ': '这个过滤器包含嵌套的过滤器组，目前平台显示不完全支持，只能通过API进行编辑。它们可能是通过API或从之前的过滤器格式迁移而来。供您参考，以下是过滤器对象的内容',
       'Number of elements': '元素数量',
       'Download this file': '下载此文件',
       'Download in pdf': '以pdf格式下載',

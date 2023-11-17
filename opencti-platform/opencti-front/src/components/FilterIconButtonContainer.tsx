@@ -4,6 +4,7 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { InformationOutline } from 'mdi-material-ui';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
@@ -61,6 +62,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
   },
 }));
 
@@ -76,6 +80,7 @@ interface FilterIconButtonContainerProps {
   redirection?: boolean;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
   chipColor?: string;
+  filterGroups?: FilterGroup[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProps> = ({
@@ -88,6 +93,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
   redirection,
   filtersRepresentativesQueryRef,
   chipColor,
+  filterGroups,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -189,7 +195,29 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
               )}
             </span>
           );
-        })}
+        })
+      }
+      {filterGroups && filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+        && (
+        <Chip
+          classes={{ root: classFilter, label: classes.chipLabel }}
+          color={'warning'}
+          label={
+          <>
+            {t('Filters are not fully displayed')}
+            <Tooltip title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
+            They might have been created via the API or a migration from a previous filter format.
+            For your information, here is the content of the filter object: ${JSON.stringify(filterGroups)}`}>
+              <InformationOutline
+                fontSize="small"
+                color="secondary"
+                style={{ cursor: 'default' }}
+              />
+            </Tooltip>
+          </>
+          }
+        />)
+      }
     </>
   );
 };
