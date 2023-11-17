@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
+import { BoundaryRoute, NoMatch } from '@components/Error';
 import Search from './components/Search';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
@@ -23,7 +24,6 @@ import RootNotifications from './components/profile/Root';
 import RootData from './components/data/Root';
 import RootWorkspaces from './components/workspaces/Root';
 import Message from '../components/Message';
-import { BoundaryRoute, NoMatch } from './components/Error';
 import StixObjectOrStixRelationship from './components/StixObjectOrStixRelationship';
 import SearchBulk from './components/SearchBulk';
 import RootCases from './components/cases/Root';
@@ -31,13 +31,19 @@ import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
+import { Theme } from '../components/Theme';
+import { RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const Index = ({ settings }) => {
-  const theme = useTheme();
+interface IndexProps {
+  settings: RootPrivateQuery$data['settings']
+}
+
+const Index = ({ settings }: IndexProps) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const {
     bannerSettings: { bannerHeight },
@@ -52,10 +58,29 @@ const Index = ({ settings }) => {
     overflowX: 'hidden',
   };
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
+  // Change the theme body attribute when the mode changes in
+  // the palette because some components like CKEditor uses this
+  // body attribute to display correct styles.
+  useEffect(() => {
+    const body = document.querySelector('body');
+    if (body) {
+      const bodyMode = body.getAttribute('data-theme');
+      const themeMode = `${theme.palette.mode}`;
+      if (bodyMode !== themeMode) {
+        body.setAttribute('data-theme', themeMode);
+      }
+    }
+  }, [theme]);
+
   return (
     <>
       <SystemBanners settings={settings} />
-      {settings.platform_session_idle_timeout > 0 && <TimeoutLock />}
+      {
+        settings.platform_session_idle_timeout
+        && settings.platform_session_idle_timeout > 0
+        && <TimeoutLock />
+      }
       <SettingsMessagesBanner />
       <Box
         sx={{
@@ -100,6 +125,10 @@ const Index = ({ settings }) => {
             <BoundaryRoute path="/dashboard/events" component={RootEvents} />
             <Route
               path="/dashboard/observations"
+              // Because mismatch of types between react-router v5 and v6.
+              // It uses types of v6, but we are using v5 here and compiler is lost.
+              /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+              /* @ts-ignore */
               component={RootObservations}
             />
             <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
@@ -131,7 +160,13 @@ const Index = ({ settings }) => {
               path="/dashboard/profile"
               component={RootNotifications}
             />
-            <Route component={NoMatch} />
+            <Route
+              // Because mismatch of types between react-router v5 and v6.
+              // It uses types of v6, but we are using v5 here and compiler is lost.
+              /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+              /* @ts-ignore */
+              component={NoMatch}
+            />
           </Switch>
         </Box>
       </Box>

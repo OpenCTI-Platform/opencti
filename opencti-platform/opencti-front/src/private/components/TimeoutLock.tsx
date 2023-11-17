@@ -64,11 +64,7 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
   return state;
 };
 
-interface TimeoutLockProps {
-  handleLogout: (url?: string) => void;
-}
-
-const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
+const TimeoutLock: React.FunctionComponent = () => {
   const { t } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit },
