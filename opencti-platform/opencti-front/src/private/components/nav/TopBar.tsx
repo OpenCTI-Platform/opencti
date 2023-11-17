@@ -67,7 +67,7 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
-import { MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
@@ -563,9 +563,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
               <MenuItem
-                id="logout-button"
                 component="a"
-                href="/logout"
+                href={`${APP_BASE_PATH}/logout`}
                 rel="noreferrer"
               >
                 {t('Logout')}
