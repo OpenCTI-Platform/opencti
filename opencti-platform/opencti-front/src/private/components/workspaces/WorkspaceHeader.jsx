@@ -72,10 +72,6 @@ const useStyles = makeStyles(() => ({
     marginRight: 7,
     paddingBottom: 2,
   },
-  tagsWithMargin: {
-    float: 'right',
-    marginTop: '8px',
-  },
   tagsInput: {
     margin: '4px 15px 0 10px',
     float: 'right',
@@ -123,7 +119,7 @@ const WorkspaceHeader = ({
     const currentTags = getCurrentTags();
     if (
       (currentTags === null || !currentTags.includes(newTag))
-      && newTag !== ''
+        && newTag !== ''
     ) {
       commitMutation({
         mutation: workspaceMutation,
@@ -193,7 +189,6 @@ const WorkspaceHeader = ({
 
   const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
   const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
-  const shouldApplyMargin = tags.length > 3;
 
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
