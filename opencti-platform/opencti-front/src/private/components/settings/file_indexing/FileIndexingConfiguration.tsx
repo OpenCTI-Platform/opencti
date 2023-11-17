@@ -164,9 +164,9 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
         >
         {({ submitForm, setFieldValue, values }) => (
           <Form>
-              <Typography variant="h4" gutterBottom={true}>
-                  {t('Mime-Types to index')}
-              </Typography>
+            <Typography variant="h4" gutterBottom={true}>
+                {t('Mime-Types to index')}
+            </Typography>
             <List style={{ marginLeft: 25 }}>
             { defaultMimeTypes.map((mimeType) => (
               <ListItem key={mimeType} divider={true} dense={true} style={{ height: 36 }}>
@@ -187,6 +187,13 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               </ListItem>
             ))}
             </List>
+            <Field
+                component={TextField}
+                fullWidth
+                type="number"
+                name="max_file_size"
+                label={t('Max file size to index')}
+            />
             <Field
               component={SwitchField}
               type="checkbox"
