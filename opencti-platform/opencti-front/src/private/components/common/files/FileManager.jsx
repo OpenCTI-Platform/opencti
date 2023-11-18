@@ -146,6 +146,7 @@ const FileManager = ({
   classes,
   connectorsExport,
   connectorsImport,
+  isArtifact,
 }) => {
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
@@ -218,7 +219,9 @@ const FileManager = ({
     });
   };
 
-  const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations));
+  const connectors = connectorsImport
+    .filter((n) => !n.only_contextual)
+    .filter((n) => !R.isEmpty(n.configurations));
   const importConnsPerFormat = scopesConn(connectors);
 
   const handleSelectConnector = (_, value) => {
@@ -246,6 +249,7 @@ const FileManager = ({
           entity={entity}
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
+          isArtifact={isArtifact}
         />
         <WorkbenchFileViewer
           entity={entity}
@@ -260,15 +264,16 @@ const FileManager = ({
           entity={entity}
           handleOpenImport={handleOpenImport}
         />
-        {hasPictureManagement
-          && <PictureManagementViewer entity={entity} />
-        }
+        {hasPictureManagement && <PictureManagementViewer entity={entity} />}
       </Grid>
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={{ connector_id: '', configuration: '' }}
-          validationSchema={importValidation(t, selectedConnector?.configurations?.length > 0)}
+          validationSchema={importValidation(
+            t,
+            selectedConnector?.configurations?.length > 0,
+          )}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
         >
@@ -310,8 +315,8 @@ const FileManager = ({
                       );
                     })}
                   </Field>
-                  {selectedConnector?.configurations?.length > 0
-                    && <Field
+                  {selectedConnector?.configurations?.length > 0 && (
+                    <Field
                       component={SelectField}
                       variant="standard"
                       name="configuration"
@@ -330,7 +335,7 @@ const FileManager = ({
                         );
                       })}
                     </Field>
-                  }
+                  )}
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
@@ -486,7 +491,7 @@ const FileManagerFragment = createFragmentContainer(FileManager, {
       updated_at
       configurations {
         id
-        name,
+        name
         configuration
       }
     }

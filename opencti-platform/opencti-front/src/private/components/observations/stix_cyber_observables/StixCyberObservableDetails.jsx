@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
@@ -8,6 +8,8 @@ import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -35,6 +37,17 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   const classes = useStyles();
   const { t, b, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleLink = (url) => {
+    handleClose();
+    window.location.pathname = url;
+  };
   const observableAttributes = pipe(
     dissoc('id'),
     dissoc('entity_type'),
@@ -59,6 +72,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
     'Artifact',
     'Network-Traffic',
   ].includes(stixCyberObservable.entity_type);
+  const encodedFilePath = file && encodeURIComponent(file.id);
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
@@ -72,16 +86,38 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 {t('File')}
               </Typography>
               <Button
-                href={`${APP_BASE_PATH}/storage/encrypted/${encodeURIComponent(
-                  file.id,
-                )}`}
                 variant="outlined"
                 color="secondary"
                 size="small"
                 startIcon={<GetAppOutlined />}
+                onClick={handleOpen}
               >
                 {t('Download')} ({b(file.size)})
               </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem
+                  dense={true}
+                  onClick={() => handleLink(
+                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+                  )
+                  }
+                >
+                  {t('Encrypted archive')}
+                </MenuItem>
+                <MenuItem
+                  dense={true}
+                  onClick={() => handleLink(
+                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                  )
+                  }
+                >
+                  {t('Raw file')}
+                </MenuItem>
+              </Menu>
             </Grid>
           )}
           <Grid item={true} xs={6}>

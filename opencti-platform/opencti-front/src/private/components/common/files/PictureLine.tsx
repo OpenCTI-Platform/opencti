@@ -101,7 +101,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <NorthEastOutlined />
+          <NorthEastOutlined fontSize="small" />
         </ListItemIcon>
       </ListItem>
       <Drawer

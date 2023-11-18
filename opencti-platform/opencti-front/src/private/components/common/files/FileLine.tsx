@@ -31,6 +31,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -91,6 +92,7 @@ interface FileLineComponentProps {
   isExternalReferenceAttachment?: boolean;
   onDelete?: () => void;
   onClick?: () => void;
+  isArtifact?: boolean;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -105,6 +107,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   isExternalReferenceAttachment,
   onDelete,
   onClick,
+  isArtifact,
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
@@ -112,6 +115,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayDownload, setDisplayDownload] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleOpen = (event: React.SyntheticEvent) => {
@@ -164,6 +168,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     setDisplayRemove(false);
   };
 
+  const handleCloseDownload = () => {
+    setDisplayDownload(false);
+  };
+
   const executeRemove = (
     mutation: GraphQLTaggedNode,
     variables: { fileName: string } | { workId: string },
@@ -214,6 +222,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   };
 
   const handleLink = (url: string) => {
+    handleCloseDownload();
     handleClose();
     window.location.pathname = url;
   };
@@ -225,7 +234,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       <FileOutline color={nested ? 'primary' : 'inherit'} />
     );
   };
-
+  const listUri = `${APP_BASE_PATH}/storage/${
+    directDownload ? 'get' : 'view'
+  }/${encodedFilePath}`;
+  const isWarning = isArtifact
+    || encodedFilePath.endsWith('.exe')
+    || encodedFilePath.endsWith('.dll');
   return (
     <>
       <ListItem
@@ -234,7 +248,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         button={true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         rel="noopener noreferrer"
-        onClick={onClick}
+        onClick={
+          onClick
+          || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri)))
+        }
       >
         <ListItemIcon>
           {isProgress && (
@@ -268,7 +285,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             }
           />
         </Tooltip>
-        <>
+        <ListItemSecondaryAction>
           {!disableImport && (
             <Tooltip title={t('Launch an import of this file')}>
               <span>
@@ -294,7 +311,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    onClick={handleOpen}
+                    onClick={
+                      isWarning
+                        ? handleOpen
+                        : () => handleLink(
+                          `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                        )
+                    }
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="small"
@@ -360,7 +383,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               )}
             </>
           )}
-        </>
+        </ListItemSecondaryAction>
       </ListItem>
       <FileWork file={file} nested={workNested} />
       <Dialog
@@ -421,6 +444,49 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             disabled={deleting}
           >
             {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={displayDownload}
+        PaperProps={{ elevation: 1 }}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseDownload}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('How do you want to download this file?')}
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ position: 'relative', marginTop: 20 }}
+            >
+              {t(
+                'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
+              )}
+            </Alert>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDownload} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            color="warning"
+            onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
+            }
+          >
+            {t('Raw file')}
+          </Button>
+          <Button
+            color="success"
+            onClick={() => handleLink(
+              `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+            )
+            }
+          >
+            {t('Encrypted archive')}
           </Button>
         </DialogActions>
       </Dialog>

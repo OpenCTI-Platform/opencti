@@ -32,11 +32,19 @@ interface FileImportViewerComponentProps {
   handleOpenImport: (file: FileLine_file$data | undefined) => void;
   connectors: { [p: string]: { data: { name: string; active: boolean } }[] };
   relay: RelayRefetchProp;
+  isArtifact?: boolean;
 }
 
 const FileImportViewerComponent: FunctionComponent<
 FileImportViewerComponentProps
-> = ({ entity, disableImport, handleOpenImport, connectors, relay }) => {
+> = ({
+  entity,
+  disableImport,
+  handleOpenImport,
+  connectors,
+  relay,
+  isArtifact,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { id, importFiles } = entity;
@@ -85,6 +93,7 @@ FileImportViewerComponentProps
                         && connectors[file?.node?.metaData?.mimetype ?? 0]
                       }
                       handleOpenImport={handleOpenImport}
+                      isArtifact={isArtifact}
                     />
                   )
                 );

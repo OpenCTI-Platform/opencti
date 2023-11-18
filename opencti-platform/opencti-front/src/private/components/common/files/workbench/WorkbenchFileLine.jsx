@@ -248,9 +248,9 @@ class WorkbenchFileLineComponent extends Component {
                     )}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    size="large"
+                    size="small"
                   >
-                    <GetAppOutlined />
+                    <GetAppOutlined fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -261,9 +261,9 @@ class WorkbenchFileLineComponent extends Component {
                   disabled={isProgress}
                   color={nested ? 'inherit' : 'primary'}
                   onClick={this.handleOpenDelete.bind(this)}
-                  size="large"
+                  size="small"
                 >
-                  <DeleteOutlined />
+                  <DeleteOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>

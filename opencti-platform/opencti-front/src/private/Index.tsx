@@ -76,11 +76,7 @@ const Index = ({ settings }: IndexProps) => {
   return (
     <>
       <SystemBanners settings={settings} />
-      {
-        settings.platform_session_idle_timeout
-        && settings.platform_session_idle_timeout > 0
-        && <TimeoutLock />
-      }
+      {(settings?.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
       <Box
         sx={{

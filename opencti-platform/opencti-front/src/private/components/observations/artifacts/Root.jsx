@@ -158,6 +158,7 @@ class RootArtifact extends Component {
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.stixCyberObservable}
+                            isArtifact={true}
                           />
                         </React.Fragment>
                       )}
