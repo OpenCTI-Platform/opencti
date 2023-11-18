@@ -438,6 +438,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective: selectedPerspective,
+      filters: selectedPerspective === n.perspective ? n.filters : {},
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
