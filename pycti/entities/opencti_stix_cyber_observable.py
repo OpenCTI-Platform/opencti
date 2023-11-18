@@ -155,6 +155,10 @@ class StixCyberObservable:
                             id
                             name
                             size
+                            metaData {
+                                mimetype
+                                version
+                            }
                         }
                     }
                 }
