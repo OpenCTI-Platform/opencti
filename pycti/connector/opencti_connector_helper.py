@@ -315,14 +315,17 @@ class ListenQueue(threading.Thread):
                 self.channel.start_consuming()
             except (KeyboardInterrupt, SystemExit):
                 self.channel.stop_consuming()
+                self.pika_connection.close()
                 LOGGER.info("Connector stop")
                 sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
+                self.pika_connection.close()
                 LOGGER.error("%s", err)
-            self.pika_connection.close()
+                sys.exit(1)
 
     def stop(self):
         self.exit_event.set()
+        self.pika_connection.close()
         if self.thread:
             self.thread.join()
 
@@ -433,7 +436,6 @@ class ListenStream(threading.Thread):
         self.recover_iso_date = recover_iso_date
         self.with_inferences = with_inferences
         self.exit_event = threading.Event()
-        self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
         try:
@@ -503,7 +505,7 @@ class ListenStream(threading.Thread):
             )
             # Iter on stream messages
             for msg in messages:
-                if self.exit:
+                if self.exit_event.is_set():
                     stream_alive.stop()
                     break
                 if msg.id is not None:
@@ -516,7 +518,7 @@ class ListenStream(threading.Thread):
                         # state can be None if reset from the UI
                         # In this case, default parameters will be used but SSE Client needs to be restarted
                         if state is None:
-                            self.exit = True
+                            self.exit_event.set()
                         else:
                             state["start_from"] = str(msg.id)
                             self.helper.set_state(state)
@@ -533,7 +535,6 @@ class ListenStream(threading.Thread):
             sys.excepthook(*sys.exc_info())
 
     def stop(self):
-        self.exit = True
         self.exit_event.set()
 
 
