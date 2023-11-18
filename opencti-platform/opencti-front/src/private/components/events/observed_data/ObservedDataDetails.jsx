@@ -6,8 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import inject18n from '../../../../components/i18n';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   paper: {
@@ -22,6 +22,16 @@ const styles = () => ({
 class ObservedDataDetailsComponent extends Component {
   render() {
     const { t, fldt, classes, observedData } = this.props;
+    const observablesDataSelection = [
+      {
+        attribute: 'entity_type',
+        filters: {
+          entity_type: [{ id: 'Stix-Core-Object' }],
+          elementId: [{ id: observedData.id }],
+          relationship_type: [{ id: 'object' }],
+        },
+      },
+    ];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -51,14 +61,11 @@ class ObservedDataDetailsComponent extends Component {
             </Grid>
           </Grid>
           <br />
-          <EntityStixCoreRelationshipsDonut
+          <StixCoreObjectsDonut
+            dataSelection={observablesDataSelection}
+            parameters={{ title: t('Observables distribution') }}
             variant="inEntity"
-            fromId={observedData.id}
-            toTypes={['Stix-Core-Object']}
-            relationshipType="object"
-            field="entity_type"
-            height={290}
-            isTo={true}
+            height={300}
           />
         </Paper>
       </div>

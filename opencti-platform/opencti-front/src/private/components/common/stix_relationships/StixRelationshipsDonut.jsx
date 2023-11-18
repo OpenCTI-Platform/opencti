@@ -44,6 +44,8 @@ const stixRelationshipsDonutsDistributionQuery = graphql`
     $search: String
     $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -66,6 +68,8 @@ const stixRelationshipsDonutsDistributionQuery = graphql`
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -275,6 +279,8 @@ const StixRelationshipsDonut = ({
       limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
+      dynamicFrom: convertFilters(selection.dynamicFrom),
+      dynamicTo: convertFilters(selection.dynamicTo),
     };
     return (
       <QueryRenderer

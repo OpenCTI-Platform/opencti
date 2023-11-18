@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import { List } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
@@ -81,7 +81,16 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     infrastructure,
   );
   const killChainPhases = data.killChainPhases?.edges ?? [];
-
+  const observablesDataSelection = [
+    {
+      attribute: 'entity_type',
+      filters: {
+        entity_type: [{ id: 'Stix-Cyber-Observable' }],
+        elementId: [{ id: data.id }],
+        relationship_type: [{ id: 'consists-of' }],
+      },
+    },
+  ];
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -93,55 +102,51 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Infrastructure types')}
             </Typography>
-            {data.infrastructure_types && data.infrastructure_types.length > 0
-              ? <List>{
-                data.infrastructure_types.map(
-                  (infrastructureType) => (
-                    <Chip
-                      key={infrastructureType}
-                      classes={{ root: classes.chip }}
-                      label={infrastructureType}
-                    />
-                  ),
-                )
-              }
+            {data.infrastructure_types
+            && data.infrastructure_types.length > 0 ? (
+              <List>
+                {data.infrastructure_types.map((infrastructureType) => (
+                  <Chip
+                    key={infrastructureType}
+                    classes={{ root: classes.chip }}
+                    label={infrastructureType}
+                  />
+                ))}
               </List>
-              : ('-')}
+              ) : (
+                '-'
+              )}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
             </Typography>
-            <ExpandableMarkdown
-              source={data.description}
-              limit={400}
-            />
+            <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t('First seen')}
             </Typography>
-            {data.first_seen ? fldt(data.first_seen) : ('-')}
+            {data.first_seen ? fldt(data.first_seen) : '-'}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Last seen')}
             </Typography>
-            {data.last_seen ? fldt(data.last_seen) : ('-')}
+            {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectKillChainPhasesView killChainPhasesEdges={killChainPhases} />
+            <StixCoreObjectKillChainPhasesView
+              killChainPhasesEdges={killChainPhases}
+            />
           </Grid>
         </Grid>
         <br />
-        <EntityStixCoreRelationshipsDonut
+        <StixCoreObjectsDonut
+          dataSelection={observablesDataSelection}
+          parameters={{ title: t('Observables distribution') }}
           variant="inEntity"
-          fromId={data.id}
-          toTypes={['Stix-Cyber-Observable']}
-          relationshipType="consists-of"
-          field="entity_type"
-          height={260}
-          isTo={true}
+          height={300}
         />
       </Paper>
     </div>
