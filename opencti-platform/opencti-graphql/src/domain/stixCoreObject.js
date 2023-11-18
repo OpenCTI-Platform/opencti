@@ -230,8 +230,31 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
 
 // region stats
 export const stixCoreObjectsTimeSeries = (context, user, args) => {
-  const { types } = args;
-  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], args);
+  let types = [];
+  if (isNotEmptyField(args.types)) {
+    types = R.filter((type) => isStixCoreObject(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
+    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+  }
+  let filters = args.filters ?? [];
+  if (isNotEmptyField(args.elementId)) {
+    // In case of element id, we look for a specific entity used by relationships independent of the direction
+    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+    // that are denormalized at relation creation.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    if (isNotEmptyField(args.relationship_type)) {
+      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+      // eslint-disable-next-line max-len
+      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    } else {
+      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    }
+  }
+  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
@@ -245,8 +268,31 @@ export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
 
 export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
-    const { types } = timeSeriesParameter;
-    return { data: timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...timeSeriesParameter }) };
+    let types = [];
+    if (isNotEmptyField(timeSeriesParameter.types)) {
+      types = R.filter((type) => isStixCoreObject(type), timeSeriesParameter.types);
+    }
+    if (types.length === 0) {
+      types.push(ABSTRACT_STIX_CORE_OBJECT);
+    }
+    if (isNotEmptyField(timeSeriesParameter.relationship_type) && isEmptyField(timeSeriesParameter.elementId)) {
+      throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+    }
+    let filters = timeSeriesParameter.filters ?? [];
+    if (isNotEmptyField(timeSeriesParameter.elementId)) {
+      // In case of element id, we look for a specific entity used by relationships independent of the direction
+      // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+      // that are denormalized at relation creation.
+      // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+      if (isNotEmptyField(timeSeriesParameter.relationship_type)) {
+        const relationshipFilterKeys = timeSeriesParameter.relationship_type.map((n) => buildRefRelationKey(n));
+        // eslint-disable-next-line max-len
+        filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(timeSeriesParameter.elementId) ? timeSeriesParameter.elementId : [timeSeriesParameter.elementId] }];
+      } else {
+        filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(timeSeriesParameter.elementId) ? timeSeriesParameter.elementId : [timeSeriesParameter.elementId] }];
+      }
+    }
+    return { data: timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...R.omit(['elementId', 'relationship_type'], timeSeriesParameter), filters }) };
   }));
 };
 

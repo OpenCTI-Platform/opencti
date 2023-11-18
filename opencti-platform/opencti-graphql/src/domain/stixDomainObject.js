@@ -16,7 +16,11 @@ import {
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
+} from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -31,19 +35,27 @@ import { usersSessionRefresh } from './user';
 
 export const findAll = async (context, user, args) => {
   let types = [];
-  if (args.types && args.types.length > 0) {
+  if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixDomainObject(type), args.types);
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
+  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
+    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+  }
   let filters = args.filters ?? [];
-  if (isNotEmptyField(args.elementId) && isNotEmptyField(args.relationship_type)) {
-    const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-    filters = [
-      ...filters,
-      { key: relationshipFilterKeys, values: [args.elementId] },
-    ];
+  if (isNotEmptyField(args.elementId)) {
+    // In case of element id, we look for a specific entity used by relationships independent of the direction
+    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+    // that are denormalized at relation creation.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    if (isNotEmptyField(args.relationship_type)) {
+      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    } else {
+      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    }
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
@@ -62,8 +74,30 @@ export const batchAssignees = (context, user, stixDomainObjectIds) => {
 
 // region time series
 export const stixDomainObjectsTimeSeries = (context, user, args) => {
-  const { types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
-  return timeSeriesEntities(context, user, types, args);
+  let types = [];
+  if (isNotEmptyField(args.types)) {
+    types = R.filter((type) => isStixDomainObject(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
+  }
+  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
+    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+  }
+  let filters = args.filters ?? [];
+  if (isNotEmptyField(args.elementId)) {
+    // In case of element id, we look for a specific entity used by relationships independent of the direction
+    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+    // that are denormalized at relation creation.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    if (isNotEmptyField(args.relationship_type)) {
+      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    } else {
+      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    }
+  }
+  return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {

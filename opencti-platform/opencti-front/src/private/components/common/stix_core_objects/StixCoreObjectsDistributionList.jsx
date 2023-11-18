@@ -137,7 +137,7 @@ const StixCoreObjectsDistributionList = ({
     const dataSelectionTypes = R.head(
       finalFilters.filter((o) => o.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = finalFilters.filter((o) => o.key === 'elementId')?.values || null;
+    const dataSelectionObjectId = R.head(finalFilters.filter((o) => o.key === 'elementId'))?.values || null;
     const dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
       ?.values || null;
     const dataSelectionToTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;

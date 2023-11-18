@@ -62,28 +62,30 @@ const StixCoreObjectsMultiAreaChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let types = ['Stix-Core-Object'];
-      if (
-        selection.filters.entity_type
-        && selection.filters.entity_type.length > 0
-      ) {
-        if (
-          selection.filters.entity_type.filter((n) => n.id === 'all').length
-          === 0
-        ) {
-          types = selection.filters.entity_type.map((o) => o.id);
-        }
-      }
-      const filters = convertFilters(
-        R.dissoc('entity_type', selection.filters),
+      let finalFilters = convertFilters(selection.filters);
+      const dataSelectionTypes = R.head(
+        finalFilters.filter((n) => n.key === 'entity_type'),
+      )?.values || ['Stix-Core-Object'];
+      const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+      const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+        ?.values || null;
+      finalFilters = finalFilters.filter(
+        (n) => ![
+          'entity_type',
+          'elementId',
+          'relationship_type',
+          'toTypes',
+        ].includes(n.key),
       );
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'created_at',
-        types,
-        filters,
+        types: dataSelectionTypes,
+        filters: finalFilters,
+        relationship_type: dataSelectionRelationshipType,
+        elementId: dataSelectionObjectId,
       };
     });
     let formatter = fsd;
