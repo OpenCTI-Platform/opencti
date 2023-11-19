@@ -7,7 +7,6 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { Option } from './ReferenceField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { OpenVocabFieldQuery } from './__generated__/OpenVocabFieldQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RenderOption } from '../../../../components/list_lines';
