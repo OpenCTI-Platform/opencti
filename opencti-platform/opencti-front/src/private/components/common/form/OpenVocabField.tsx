@@ -116,7 +116,8 @@ Omit<OpenVocabProps, 'type'>
         style={containerStyle}
         options={openVocabList}
         renderOption={renderOption}
-        isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+        isOptionEqualToValue={(option: Option, value: string) => option.value === value
+        }
         textfieldprops={{
           label,
           helperText: editContext ? (
@@ -136,7 +137,8 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+      isOptionEqualToValue={(option: Option, value: string) => option.value === value
+      }
       textfieldprops={{
         label,
         helperText: editContext ? (
@@ -150,16 +152,45 @@ Omit<OpenVocabProps, 'type'>
 const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
   props,
 ) => {
+  const { name, label, multiple, containerStyle } = props;
   const { typeToCategory } = useVocabularyCategory();
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {
     category: typeToCategory(props.type),
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense
+      fallback={
+        <Field
+          component={AutocompleteField}
+          name={name}
+          disabled={true}
+          fullWidth={true}
+          multiple={multiple}
+          style={containerStyle}
+          options={[]}
+          renderOption={() => null}
+          textfieldprops={{
+            label,
+          }}
+        />
+      }
+    >
       <OpenVocabFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Field
+      component={AutocompleteField}
+      name={name}
+      disabled={true}
+      fullWidth={true}
+      multiple={multiple}
+      style={containerStyle}
+      options={[]}
+      renderOption={() => null}
+      textfieldprops={{
+        label,
+      }}
+    />
   );
 };
 

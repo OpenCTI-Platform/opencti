@@ -9,13 +9,9 @@ import {
   identitySearchCreatorsSearchQuery,
   identitySearchIdentitiesSearchQuery,
 } from '../../private/components/common/identities/IdentitySearch';
-import {
-  stixDomainObjectsLinesSearchQuery,
-} from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
+import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
-import {
-  killChainPhasesLinesSearchQuery,
-} from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
+import { killChainPhasesLinesSearchQuery } from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
 import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
@@ -26,57 +22,27 @@ import {
   objectAssigneeFieldAssigneesSearchQuery,
   objectAssigneeFieldMembersSearchQuery,
 } from '../../private/components/common/form/ObjectAssigneeField';
-import {
-  IdentitySearchIdentitiesSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
-import {
-  IdentitySearchCreatorsSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
-import {
-  ObjectAssigneeFieldAssigneesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
-import {
-  StixDomainObjectsLinesSearchQuery$data,
-} from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
-import {
-  useSearchEntitiesStixCoreObjectsSearchQuery$data,
-} from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
-import {
-  MarkingDefinitionsLinesSearchQuery$data,
-} from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
-import {
-  KillChainPhasesLinesSearchQuery$data,
-} from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
-import {
-  LabelsQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
-import {
-  AttributesQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
-import {
-  StatusFieldStatusesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
+import { IdentitySearchIdentitiesSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
+import { IdentitySearchCreatorsSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
+import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
+import { StixDomainObjectsLinesSearchQuery$data } from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
+import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
+import { MarkingDefinitionsLinesSearchQuery$data } from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { KillChainPhasesLinesSearchQuery$data } from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
+import { LabelsQuerySearchQuery$data } from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
+import { AttributesQuerySearchQuery$data } from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
+import { StatusFieldStatusesSearchQuery$data } from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 import { buildScaleFilters } from '../hooks/useScale';
-import {
-  ObjectAssigneeFieldMembersSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
-import {
-  ObjectParticipantFieldParticipantsSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
-import {
-  objectParticipantFieldParticipantsSearchQuery,
-} from '../../private/components/common/form/ObjectParticipantField';
-import {
-  useSearchEntitiesStixCoreObjectsContainersSearchQuery$data,
-} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
+import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
+import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
+import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { isNotEmptyField } from '../utils';
-import {
-  useSearchEntitiesSchemaSCOSearchQuery$data,
-} from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
+import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -1082,7 +1048,7 @@ const useSearchEntities = ({
                 type: 'Vocabulary',
               }))
               .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
-              .sort((a, b) => (a.group).localeCompare(b.group));
+              .sort((a, b) => a.group.localeCompare(b.group));
             unionSetEntities('x_opencti_workflow_id', statusEntities);
           });
         break;
@@ -1365,6 +1331,71 @@ const useSearchEntities = ({
             });
           }
           unionSetEntities('entity_type', entitiesTypes);
+        }
+        break;
+      case 'elementType':
+        // eslint-disable-next-line no-case-declarations
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          const fromTypesTypes = availableEntityTypes
+            .map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            fromTypesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
+          }
+          unionSetEntities('elementType', fromTypesTypes);
+        } else {
+          let result = [] as EntityWithLabelValue[];
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Cyber-Observable')
+          ) {
+            result = [
+              ...(schema.scos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Domain-Object')
+          ) {
+            result = [
+              ...(schema.sdos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            entitiesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
+          }
+          unionSetEntities('elementType', entitiesTypes);
         }
         break;
       case 'fromTypes':

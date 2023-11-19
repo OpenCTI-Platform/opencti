@@ -181,13 +181,17 @@ const relationshipsFilters = [
 ];
 
 const auditsFilters = [
-  'entity_type',
-  'elementId',
   'event_type',
   'event_scope',
   'members_group',
   'members_organization',
   'members_user',
+  'elementType',
+  'elementId',
+  'createdBy',
+  'markedBy',
+  'labelledBy',
+  'creator',
 ];
 
 const visualizationTypes = [
@@ -305,7 +309,7 @@ const visualizationTypes = [
     name: 'Heatmap',
     dataSelectionLimit: 5,
     category: 'timeseries',
-    availableParameters: ['stacked', 'legend'],
+    availableParameters: [],
     isRelationships: true,
     isEntities: true,
     isAudits: true,
@@ -834,7 +838,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             } else if (dataSelection[i].perspective === 'audits') {
               style = 'step_audit';
               availableFilterKeys = auditsFilters;
-              availableEntityTypes = ['History', 'Activity'];
+              availableEntityTypes = [
+                'Stix-Domain-Object',
+                'Stix-Cyber-Observable',
+              ];
             }
             return (
               <div key={i} className={classes[style]}>
@@ -1513,11 +1520,15 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           >
                             {[
                               { value: 'entity_type' },
+                              { value: 'context_data.id' },
+                              { value: 'context_data.created_by_ref_id' },
+                              { value: 'context_data.labels_ids' },
+                              { value: 'context_data.object_marking_refs_ids' },
+                              { value: 'context_data.creator_ids' },
                               { value: 'event_type' },
                               {
                                 value: 'event_scope',
                               },
-                              { value: 'context_data.id' },
                               {
                                 value: 'user_id',
                               },

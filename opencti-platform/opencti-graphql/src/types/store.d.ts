@@ -33,7 +33,7 @@ import {
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
-  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT
 } from '../schema/stixRefRelationship';
@@ -161,6 +161,8 @@ interface BasicStoreCommon extends BasicStoreBase {
   // inputs
   [RELATION_GRANTED_TO]?: Array<string>;
   [RELATION_OBJECT_MARKING]?: Array<string>;
+  [RELATION_OBJECT_LABEL]?: Array<string>;
+  [RELATION_CREATED_BY]?: string;
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;

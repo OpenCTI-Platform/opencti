@@ -379,19 +379,24 @@ enum LogsOrdering {
 }
 
 enum LogsFilter {
-  elementId
+  entity_type
   event_type
   event_scope
-  entity_id
   created
   connection_id
   user_id
-  creator
   members_user
   members_group
   members_organization
   applicant_id
   created_at
+  elementId
+  elementType
+  entity_id
+  createdBy
+  markedBy
+  labelledBy
+  creator
 }
 
 type LogConnection {

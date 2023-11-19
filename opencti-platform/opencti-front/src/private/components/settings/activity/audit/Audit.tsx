@@ -141,12 +141,17 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'elementId',
           'members_user',
           'members_organization',
           'members_group',
           'created_start_date',
           'created_end_date',
+          'elementType',
+          'elementId',
+          'createdBy',
+          'markedBy',
+          'labelledBy',
+          'creator',
         ]}
       >
         {queryRef && (

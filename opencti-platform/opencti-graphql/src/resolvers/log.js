@@ -43,8 +43,13 @@ const logResolvers = {
   },
   LogsFilter: {
     entity_id: 'context_data.id',
-    elementId: 'context_data.*id', // Compatibility with standard filters
     connection_id: 'context_data.*_id', // Compatibility with standard filters
+    elementId: 'context_data.*id', // Compatibility with standard filters
+    elementType: 'context_data.entity_type',
+    creator: 'context_data.creator_id',
+    createdBy: 'context_data.created_by_ref_id',
+    markedBy: 'context_data.object_marking_refs_ids',
+    labelledBy: 'context_data.labels_ids',
     created: 'timestamp',
     user_id: 'user_id',
     members_user: 'user_id',

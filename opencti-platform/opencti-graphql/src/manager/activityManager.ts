@@ -102,6 +102,12 @@ const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntit
           return false;
         }
       }
+      if (key === 'activity_statuses') {
+        const ids = values.map((v) => v.id);
+        if (!ids.includes(status)) {
+          return false;
+        }
+      }
     }
   }
   return true;

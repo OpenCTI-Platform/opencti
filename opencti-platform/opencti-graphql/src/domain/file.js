@@ -7,6 +7,12 @@ import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { elSearchFiles, getStats } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { READ_INDEX_FILES } from '../database/utils';
+import {
+  RELATION_CREATED_BY,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixRefRelationship';
 
 export const filesMetrics = async (context, user, args) => {
   const { excludedPaths = [] } = args;
@@ -45,20 +51,36 @@ export const askJobImport = async (context, user, args) => {
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
+  const contextData = {
+    id: entityId,
+    file_id: file.id,
+    file_name: file.name,
+    file_mime: file.metaData.mimetype,
+    connectors: connectors.map((c) => c.name),
+    entity_name: entityName,
+    entity_type: entityType
+  };
+  if (entity.creator_id) {
+    contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
+  }
+  if (entity[RELATION_GRANTED_TO]) {
+    contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
+  }
+  if (entity[RELATION_OBJECT_MARKING]) {
+    contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
+  }
+  if (entity[RELATION_CREATED_BY]) {
+    contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
+  }
+  if (entity[RELATION_OBJECT_LABEL]) {
+    contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
+  }
   await publishUserAction({
     user,
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'import',
-    context_data: {
-      id: entityId,
-      file_id: file.id,
-      file_name: file.name,
-      file_mime: file.metaData.mimetype,
-      connectors: connectors.map((c) => c.name),
-      entity_name: entityName,
-      entity_type: entityType
-    }
+    context_data: contextData
   });
   return file;
 };

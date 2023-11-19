@@ -285,7 +285,8 @@ const AuditsHorizontalBars = ({
             const data = props.auditsDistribution.map((n) => ({
               x:
                 // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('_id')
+                selection.attribute.endsWith('.id')
+                || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
                   ? defaultValue(n.entity)
                   : selection.attribute === 'entity_type'
@@ -293,7 +294,8 @@ const AuditsHorizontalBars = ({
                     : n.label,
               y: n.value,
               fillColor:
-                selection.attribute.endsWith('_id')
+                selection.attribute.endsWith('.id')
+                || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
                   ? itemColor(n.entity.entity_type)
                   : itemColor(n.label),
@@ -304,7 +306,9 @@ const AuditsHorizontalBars = ({
                 data,
               },
             ];
-            const redirectionUtils = selection.attribute === 'name'
+            const redirectionUtils = selection.attribute.endsWith('.id')
+              || selection.attribute.endsWith('_id')
+              || selection.attribute.endsWith('_ids')
               ? props.auditsDistribution.map((n) => ({
                 id: n.entity.id,
                 entity_type: n.entity.entity_type,

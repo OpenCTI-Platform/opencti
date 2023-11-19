@@ -27,12 +27,9 @@ export const directFilters = [
   'trigger_type',
   'instance_trigger',
   'containers',
+  'objectContains',
 ];
-export const inlineFilters = [
-  'is_read',
-  'trigger_type',
-  'instance_trigger',
-];
+export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 // filters that can have 'eq' or 'not_eq' operator
 export const EqFilters = [
   'labelledBy',

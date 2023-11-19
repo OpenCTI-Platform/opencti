@@ -320,7 +320,8 @@ const AuditsDistributionList = ({
             const data = props.auditsDistribution.map((o) => ({
               label:
                 // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('_id')
+                selection.attribute.endsWith('.id')
+                || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
                   ? defaultValue(o.entity)
                   : selection.attribute === 'entity_type'
@@ -328,12 +329,14 @@ const AuditsDistributionList = ({
                     : o.label,
               value: o.value,
               id:
-                selection.attribute.endsWith('_id')
+                selection.attribute.endsWith('.id')
+                || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
                   ? o.entity.id
                   : null,
               type:
-                selection.attribute.endsWith('_id')
+                selection.attribute.endsWith('.id')
+                || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
                   ? o.entity.entity_type
                   : o.label,
