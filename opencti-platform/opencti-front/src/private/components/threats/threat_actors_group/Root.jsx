@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import * as R from 'ramda';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -16,6 +20,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -79,13 +84,15 @@ class RootThreatActorGroup extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { threatActorGroupId },
       },
     } = this.props;
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -114,65 +121,116 @@ class RootThreatActorGroup extends Component {
           render={({ props }) => {
             if (props) {
               if (props.threatActorGroup) {
+                const { threatActorGroup } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
-                      render={(routeProps) => (
-                        <ThreatActorGroup
-                          {...routeProps}
-                          threatActorGroup={props.threatActorGroup}
-                        />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Threat-Actor-Group"
+                      stixDomainObject={threatActorGroup}
+                      PopoverComponent={<ThreatActorGroupPopover />}
+                      enableQuickSubscription={true}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 5,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
+                          )
+                            ? `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
-                      render={(routeProps) => (
-                        <ThreatActorGroupKnowledge
-                          {...routeProps}
-                          threatActorGroup={props.threatActorGroup}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Threat-Actor-Group'}
-                            stixDomainObject={props.threatActorGroup}
-                            PopoverComponent={<ThreatActorGroupPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/files`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
+                          label={t('Activity')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
+                        render={(routeProps) => (
+                          <ThreatActorGroup
+                            {...routeProps}
+                            threatActorGroup={props.threatActorGroup}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
+                        render={(routeProps) => (
+                          <ThreatActorGroupKnowledge
+                            {...routeProps}
+                            threatActorGroup={props.threatActorGroup}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.threatActorGroup
                             }
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Threat-Actor-Group'}
-                            stixDomainObject={props.threatActorGroup}
-                            PopoverComponent={<ThreatActorGroupPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={threatActorGroupId}
@@ -180,27 +238,20 @@ class RootThreatActorGroup extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.threatActorGroup}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Threat-Actor-Group'}
-                            stixDomainObject={props.threatActorGroup}
-                            PopoverComponent={<ThreatActorGroupPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={threatActorGroupId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -208,7 +259,7 @@ class RootThreatActorGroup extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -218,4 +269,4 @@ RootThreatActorGroup.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootThreatActorGroup);
+export default R.compose(inject18n, withRouter)(RootThreatActorGroup);

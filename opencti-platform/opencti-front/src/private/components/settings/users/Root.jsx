@@ -1,17 +1,41 @@
 import React, { useEffect, useMemo } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Switch, useParams } from 'react-router-dom';
 import {
   graphql,
   usePreloadedQuery,
   useQueryLoader,
   useSubscription,
 } from 'react-relay';
-import User, { userQuery } from './User';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useLocation } from 'react-router-dom-v5-compat';
+import makeStyles from '@mui/styles/makeStyles';
+import UserPopover from './UserPopover';
+import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
+import {
+  VIRTUAL_ORGANIZATION_ADMIN,
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import User from './User';
+import UserAnalytics from './UserAnalytics';
+import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
+
+const useStyles = makeStyles(() => ({
+  title: {
+    float: 'left',
+  },
+  popover: {
+    float: 'left',
+    marginTop: '-13px',
+  },
+}));
 
 const subscription = graphql`
   subscription RootUsersSubscription(
@@ -46,6 +70,33 @@ const subscription = graphql`
   }
 `;
 
+const userQuery = graphql`
+  query RootUserQuery(
+    $id: String!
+    $rolesOrderBy: RolesOrdering
+    $rolesOrderMode: OrderingMode
+    $groupsOrderBy: GroupsOrdering
+    $groupsOrderMode: OrderingMode
+    $organizationsOrderBy: OrganizationsOrdering
+    $organizationsOrderMode: OrderingMode
+  ) {
+    user(id: $id) {
+      id
+      name
+      ...User_user
+        @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
+      ...UserAnalytics_user
+    }
+  }
+`;
+
 const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const subConfig = useMemo(
     () => ({
@@ -54,22 +105,65 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     }),
     [userId],
   );
+  const location = useLocation();
+  const classes = useStyles();
+  const { t } = useFormatter();
   useSubscription(subConfig);
-  const data = usePreloadedQuery(userQuery, queryRef);
-  const { user } = data;
-
+  const { me } = useAuth();
+  const { user: data } = usePreloadedQuery(userQuery, queryRef);
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
-      {user ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/settings/accesses/users/:userId"
-            render={(routeProps) => (
-              <User {...routeProps} userData={user} refetch={refetch} />
-            )}
-          />
-        </Switch>
+      {data ? (
+        <div style={{ paddingRight: 200 }}>
+          <AccessesMenu />
+          <>
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              classes={{ root: classes.title }}
+            >
+              {data.name}
+            </Typography>
+            <div className={classes.popover}>
+              <UserPopover userId={data.id} disabled={data.id === me.id} />
+            </div>
+            <div className="clearfix" />
+          </>
+          <Box
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 5 }}
+          >
+            <Tabs value={location.pathname}>
+              <Tab
+                component={Link}
+                to={`/dashboard/settings/accesses/users/${data.id}`}
+                value={`/dashboard/settings/accesses/users/${data.id}`}
+                label={t('Overview')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/settings/accesses/users/${data.id}/analytics`}
+                value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
+                label={t('Analytics')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/settings/accesses/users/:userId"
+              render={(routeProps) => (
+                <User {...routeProps} data={data} refetch={refetch} />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/settings/accesses/users/:userId/analytics"
+              render={(routeProps) => (
+                <UserAnalytics {...routeProps} data={data} refetch={refetch} />
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
@@ -92,14 +186,12 @@ const RootUser = () => {
   useEffect(() => {
     loadQuery(queryParams, { fetchPolicy: 'store-and-network' });
   }, []);
-
   const refetch = React.useCallback(() => {
     loadQuery(queryParams, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
-
   return (
     <>
-            {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootUserComponent
             queryRef={queryRef}
@@ -107,9 +199,7 @@ const RootUser = () => {
             refetch={refetch}
           />
         </React.Suspense>
-            ) : (
-        <Loader variant={LoaderVariant.container} />
-            )}
+      )}
     </>
   );
 };

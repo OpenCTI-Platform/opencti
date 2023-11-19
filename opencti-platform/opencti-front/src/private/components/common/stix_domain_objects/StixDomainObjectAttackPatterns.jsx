@@ -22,10 +22,10 @@ const StixDomainObjectAttackPatterns = ({
   defaultStartTime,
   defaultStopTime,
   disableExport,
+  tabMode,
 }) => {
   const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
-
   const {
     viewStorage,
     helpers,
@@ -71,6 +71,7 @@ const StixDomainObjectAttackPatterns = ({
                   disableExport ? null : helpers.handleToggleExports
                 }
                 openExports={openExports}
+                tabMode={tabMode}
               />
             );
           }

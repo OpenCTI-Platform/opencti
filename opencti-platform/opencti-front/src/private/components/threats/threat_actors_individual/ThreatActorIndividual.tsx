@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -14,7 +13,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import ThreatActorIndividualBiographics from './ThreatActorIndividualBiographics';
 import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographics';
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
-import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import {
   ThreatActorIndividual_ThreatActorIndividual$data,
@@ -24,9 +22,6 @@ import {
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
 }));
 
@@ -167,13 +162,7 @@ const ThreatActorIndividualComponent = ({
     data,
   );
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType="Threat-Actor-Individual"
-        stixDomainObject={threatActorIndividual}
-        PopoverComponent={ThreatActorIndividualPopover}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -234,7 +223,7 @@ const ThreatActorIndividualComponent = ({
           threatActorIndividualId={threatActorIndividual.id}
         />
       </Security>
-    </div>
+    </>
   );
 };
 

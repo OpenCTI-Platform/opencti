@@ -26,7 +26,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { truncate } from '../../../../utils/String';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { defaultValue } from '../../../../utils/Graph';
@@ -196,10 +195,10 @@ const auditsRadarDistributionQuery = graphql`
 `;
 
 const AuditsRadar = ({
-  variant,
+  variant = null,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
   withExportPopover = false,
@@ -258,31 +257,32 @@ const AuditsRadar = ({
             && props.auditsDistribution
             && props.auditsDistribution.length > 0
           ) {
-            const data = props.auditsDistribution.map((n) => n.value);
+            let data = props.auditsDistribution;
+            if (
+              selection.attribute.endsWith('.id')
+              || selection.attribute.endsWith('_id')
+              || selection.attribute.endsWith('_ids')
+            ) {
+              data = R.map(
+                (n) => R.assoc('label', defaultValue(n.entity), n),
+                props.auditsDistribution,
+              );
+            }
+            const valueData = data.map((n) => n.value);
             const chartData = [
               {
                 name: selection.label || t('Number of history entries'),
-                data,
+                data: valueData,
               },
             ];
-            const labels = props.auditsDistribution.map((n) => truncate(
-              // eslint-disable-next-line no-nested-ternary
-              selection.attribute.endsWith('.id')
-                  || selection.attribute.endsWith('_id')
-                  || selection.attribute.endsWith('_ids')
-                ? defaultValue(n.entity)
-                : selection.attribute === 'entity_type'
-                  ? t(`entity_${n.label}`)
-                  : n.label,
-              20,
-            ));
+            const labels = data.map((n) => n.label);
             return (
               <Chart
                 options={radarChartOptions(theme, labels, [], true, false)}
                 series={chartData}
                 type="radar"
                 width="100%"
-                height="100%"
+                height="120%"
                 withExportPopover={withExportPopover}
                 isReadOnly={isReadOnly}
               />

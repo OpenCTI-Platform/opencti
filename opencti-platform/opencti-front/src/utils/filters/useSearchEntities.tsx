@@ -1335,68 +1335,26 @@ const useSearchEntities = ({
         break;
       case 'elementType':
         // eslint-disable-next-line no-case-declarations
-        if (
-          availableEntityTypes
-          && !availableEntityTypes.includes('Stix-Cyber-Observable')
-          && !availableEntityTypes.includes('Stix-Domain-Object')
-        ) {
-          const fromTypesTypes = availableEntityTypes
-            .map((n) => ({
-              label: t(
-                n.toString()[0] === n.toString()[0].toUpperCase()
-                  ? `entity_${n.toString()}`
-                  : `relationship_${n.toString()}`,
-              ),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            fromTypesTypes.unshift({
-              label: t('entity_All'),
-              value: 'all',
-              type: 'entity',
-            });
-          }
-          unionSetEntities('elementType', fromTypesTypes);
-        } else {
-          let result = [] as EntityWithLabelValue[];
-          if (
-            !availableEntityTypes
-            || availableEntityTypes.includes('Stix-Cyber-Observable')
-          ) {
-            result = [
-              ...(schema.scos ?? []).map((n) => ({
-                label: t(`entity_${n.label}`),
-                value: n.label,
-                type: n.label,
-              })),
-              ...result,
-            ];
-          }
-          if (
-            !availableEntityTypes
-            || availableEntityTypes.includes('Stix-Domain-Object')
-          ) {
-            result = [
-              ...(schema.sdos ?? []).map((n) => ({
-                label: t(`entity_${n.label}`),
-                value: n.label,
-                type: n.label,
-              })),
-              ...result,
-            ];
-          }
-          const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            entitiesTypes.unshift({
-              label: t('entity_All'),
-              value: 'all',
-              type: 'entity',
-            });
-          }
-          unionSetEntities('elementType', entitiesTypes);
-        }
+        let elementTypeResult = [] as EntityWithLabelValue[];
+        elementTypeResult = [
+          ...(schema.scos ?? []).map((n) => ({
+            label: t(`entity_${n.label}`),
+            value: n.label,
+            type: n.label,
+          })),
+          ...elementTypeResult,
+        ];
+        elementTypeResult = [
+          ...(schema.sdos ?? []).map((n) => ({
+            label: t(`entity_${n.label}`),
+            value: n.label,
+            type: n.label,
+          })),
+          ...elementTypeResult,
+        ];
+        // eslint-disable-next-line no-case-declarations
+        const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
+        unionSetEntities('elementType', elementTypeTypes);
         break;
       case 'fromTypes':
         // eslint-disable-next-line no-case-declarations

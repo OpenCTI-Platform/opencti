@@ -181,6 +181,7 @@ const relationshipsFilters = [
 ];
 
 const auditsFilters = [
+  'entity_type',
   'event_type',
   'event_scope',
   'members_group',
@@ -838,10 +839,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             } else if (dataSelection[i].perspective === 'audits') {
               style = 'step_audit';
               availableFilterKeys = auditsFilters;
-              availableEntityTypes = [
-                'Stix-Domain-Object',
-                'Stix-Cyber-Observable',
-              ];
+              availableEntityTypes = ['History', 'Activity'];
             }
             return (
               <div key={i} className={classes[style]}>
@@ -1525,6 +1523,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               { value: 'context_data.labels_ids' },
                               { value: 'context_data.object_marking_refs_ids' },
                               { value: 'context_data.creator_ids' },
+                              { value: 'context_data.search' },
                               { value: 'event_type' },
                               {
                                 value: 'event_scope',

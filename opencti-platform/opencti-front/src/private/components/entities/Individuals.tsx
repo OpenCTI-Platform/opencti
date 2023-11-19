@@ -72,7 +72,7 @@ const Individuals = () => {
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="User"
+        exportEntityType="UserOverview"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

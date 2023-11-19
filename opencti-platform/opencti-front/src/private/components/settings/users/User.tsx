@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -15,7 +15,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -24,16 +23,15 @@ import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
-import UserPopover, { userEditionQuery } from './UserPopover';
+import { userEditionQuery } from './UserPopover';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { FIVE_SECONDS, now, timestamp, yearsAgo } from '../../../../utils/Time';
+import { now, timestamp, yearsAgo } from '../../../../utils/Time';
 import UserHistory from './UserHistory';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Transition from '../../../../components/Transition';
 import { User_user$key } from './__generated__/User_user.graphql';
-import AccessesMenu from '../AccessesMenu';
 import Chart from '../../common/charts/Chart';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
@@ -50,30 +48,16 @@ import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Theme } from '../../../../components/Theme';
 
-Transition.displayName = 'TransitionSlide';
-
-const interval$ = interval(FIVE_SECONDS);
 const startDate = yearsAgo(1);
 const endDate = now();
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
   floatingButton: {
     float: 'left',
     margin: '-8px 0 0 5px',
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  title: {
-    float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
   paper: {
     height: '100%',
@@ -104,7 +88,7 @@ export const userOtpDeactivationMutation = graphql`
   }
 `;
 
-const userAuditsTimeSeriesQuery = graphql`
+const UserAuditsTimeSeriesQuery = graphql`
   query UserAuditsTimeSeriesQuery(
     $types: [String!]
     $field: String!
@@ -131,7 +115,7 @@ const userAuditsTimeSeriesQuery = graphql`
   }
 `;
 
-const userFragment = graphql`
+const UserFragment = graphql`
   fragment User_user on User
   @argumentDefinitions(
     rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
@@ -199,11 +183,10 @@ type Session = {
 };
 
 interface UserProps {
-  userData: User_user$key;
-  refetch: () => void;
+  data: User_user$key;
 }
 
-const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
+const User: FunctionComponent<UserProps> = ({ data }) => {
   const classes = useStyles();
   const { t, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -212,7 +195,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
-  const user = useFragment(userFragment, userData);
+  const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   const [commitUserSessionKill] = useMutation<UserSessionKillMutation>(
     userSessionKillMutation,
@@ -221,15 +204,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const [commitUserOtpDeactivation] = useMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
-  useEffect(() => {
-    // Refresh the export viewer every interval
-    const subscription = interval$.subscribe(() => {
-      refetch();
-    });
-    return function cleanup() {
-      subscription.unsubscribe();
-    };
-  }, []);
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsCapability = userCapabilities.includes(SETTINGS) || userCapabilities.includes(BYPASS);
   const handleOpenKillSession = (sessionId: string) => {
@@ -299,24 +273,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     .sort(
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
-
   const accountExpireDate = fldt(user.account_lock_after_date);
   return (
-    <div className={classes.container}>
-      <AccessesMenu />
-      <>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {user.name}
-        </Typography>
-        <div className={classes.popover}>
-          <UserPopover userId={user.id} disabled={user.id === me.id} />
-        </div>
-        <div className="clearfix" />
-      </>
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -494,7 +453,10 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                                 organizationEdge.node.authorized_authorities
                                 ?? []
                               ).includes(user.id)
-                                ? (theme.palette.warning as SimplePaletteColorOptions).main
+                                ? (
+                                  theme.palette
+                                    .warning as SimplePaletteColorOptions
+                                ).main
                                 : theme.palette.primary.main
                             }
                           />
@@ -568,7 +530,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []} />
+                <HiddenTypesChipList
+                  hiddenTypes={user.default_hidden_types ?? []}
+                />
               </Grid>
             </Grid>
           </Paper>
@@ -599,7 +563,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
               </div>
             ) : (
               <QueryRenderer
-                query={userAuditsTimeSeriesQuery}
+                query={UserAuditsTimeSeriesQuery}
                 variables={{
                   types: ['History'],
                   field: 'timestamp',
@@ -664,11 +628,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         variables={{ id: user.id }}
         render={({ props }: { props: UserPopoverEditionQuery$data }) => {
           if (props && props.user) {
-            return (
-              <UserEdition
-                user={props.user}
-              />
-            );
+            return <UserEdition user={props.user} />;
           }
           return <Loader variant={LoaderVariant.inElement} />;
         }}
@@ -698,7 +658,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         open={displayKillSessions}
         PaperProps={{ elevation: 1 }}
@@ -724,34 +683,8 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
-
-export const userQuery = graphql`
-  query UserQuery(
-    $id: String!
-    $rolesOrderBy: RolesOrdering
-    $rolesOrderMode: OrderingMode
-    $groupsOrderBy: GroupsOrdering
-    $groupsOrderMode: OrderingMode
-    $organizationsOrderBy: OrganizationsOrdering
-    $organizationsOrderMode: OrderingMode
-  ) {
-    user(id: $id) {
-      id
-      name
-      ...User_user
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
-    }
-  }
-`;
 
 export default User;

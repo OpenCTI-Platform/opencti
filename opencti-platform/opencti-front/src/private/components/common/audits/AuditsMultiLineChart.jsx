@@ -65,10 +65,10 @@ const auditsMultiLineChartTimeSeriesQuery = graphql`
 `;
 
 const AuditsMultiLineChart = ({
-  variant,
+  variant = null,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
   withExportPopover = false,

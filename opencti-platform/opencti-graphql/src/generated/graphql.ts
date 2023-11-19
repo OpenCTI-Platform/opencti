@@ -3976,6 +3976,7 @@ export type ContextData = {
   entity_type?: Maybe<Scalars['String']['output']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   to_id?: Maybe<Scalars['String']['output']>;
 };
@@ -31954,6 +31955,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

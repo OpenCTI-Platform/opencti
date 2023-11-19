@@ -319,7 +319,7 @@ const StixRelationshipsRadar = ({
                 series={chartData}
                 type="radar"
                 width="100%"
-                height="100%"
+                height="120%"
                 withExportPopover={withExportPopover}
                 isReadOnly={isReadOnly}
               />

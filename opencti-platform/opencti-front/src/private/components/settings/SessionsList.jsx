@@ -158,7 +158,7 @@ class SessionsListComponent extends Component {
                   to={`/dashboard/settings/accesses/users/${user.id}`}
                 >
                   <ListItemIcon>
-                    <ItemIcon type="User" />
+                    <ItemIcon type="UserOverview" />
                   </ListItemIcon>
                   <ListItemText
                     primary={

@@ -34,6 +34,7 @@ class AttackPatternsMatrix extends Component {
       currentModeOnlyActive,
       hideBar,
       handleAdd,
+      tabMode,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -59,6 +60,7 @@ class AttackPatternsMatrix extends Component {
                   currentModeOnlyActive={currentModeOnlyActive}
                   hideBar={hideBar}
                   handleAdd={handleAdd}
+                  tabMode={tabMode}
                 />
               );
             }
@@ -86,6 +88,7 @@ AttackPatternsMatrix.propTypes = {
   currentModeOnlyActive: PropTypes.bool,
   hideBar: PropTypes.bool,
   handleAdd: PropTypes.func,
+  tabMode: PropTypes.bool,
 };
 
 export default compose(

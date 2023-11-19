@@ -65,10 +65,10 @@ const auditsMultiVerticalBarsTimeSeriesQuery = graphql`
 `;
 
 const AuditsMultiVerticalBars = ({
-  variant,
+  variant = null,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
   withExportPopover = false,

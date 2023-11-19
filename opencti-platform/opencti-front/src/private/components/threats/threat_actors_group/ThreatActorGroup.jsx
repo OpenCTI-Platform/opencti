@@ -7,8 +7,6 @@ import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ThreatActorGroupDetails from './ThreatActorGroupDetails';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
-import ThreatActorGroupPopover from './ThreatActorGroupPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -31,13 +29,7 @@ class ThreatActorGroupComponent extends Component {
   render() {
     const { classes, threatActorGroup } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType="Threat-Actor-Group"
-          stixDomainObject={threatActorGroup}
-          PopoverComponent={<ThreatActorGroupPopover />}
-          enableQuickSubscription={true}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -80,7 +72,7 @@ class ThreatActorGroupComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }

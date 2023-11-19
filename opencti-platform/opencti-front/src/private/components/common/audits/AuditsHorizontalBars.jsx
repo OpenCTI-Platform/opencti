@@ -213,16 +213,20 @@ const auditsHorizontalBarsDistributionQuery = graphql`
         ... on Group {
           name
         }
+        ... on Workspace {
+          name
+          type
+        }
       }
     }
   }
 `;
 
 const AuditsHorizontalBars = ({
-  variant,
+  variant = null,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
   withExportPopover = false,
@@ -311,7 +315,10 @@ const AuditsHorizontalBars = ({
               || selection.attribute.endsWith('_ids')
               ? props.auditsDistribution.map((n) => ({
                 id: n.entity.id,
-                entity_type: n.entity.entity_type,
+                entity_type:
+                      n.entity.entity_type === 'Workspace'
+                        ? n.entity.type
+                        : n.entity.entity_type,
               }))
               : null;
             return (

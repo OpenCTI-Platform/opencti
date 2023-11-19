@@ -28,6 +28,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -500,6 +501,9 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
     }
     if (data[RELATION_OBJECT_LABEL]) {
       contextData.labels_ids = data[RELATION_OBJECT_LABEL];
+    }
+    if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
+      contextData.workspace_type = data.type;
     }
     await publishUserAction({
       user,

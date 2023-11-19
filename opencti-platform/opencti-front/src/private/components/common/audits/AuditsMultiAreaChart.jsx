@@ -67,8 +67,8 @@ const auditsMultiAreaChartTimeSeriesQuery = graphql`
 const AuditsMultiAreaChart = ({
   variant,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
   withExportPopover = false,

@@ -180,7 +180,6 @@ const aliasValidation = (t) => Yup.object().shape({
 const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const {
     stixDomainObject,
     isOpenctiAlias,
@@ -193,7 +192,6 @@ const StixDomainObjectHeader = (props) => {
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
   } = props;
-
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);

@@ -98,6 +98,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
   creator_id?: string | string[];
+  type?: string;
   // representative
   representative: Representative
 }

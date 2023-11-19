@@ -97,12 +97,18 @@ export const findAll = async (context, user, args) => {
     }
   }
   if (args.globalSearch) {
+    const contextData = {
+      input: R.omit(['search'], args)
+    };
+    if (args.search && args.search.length > 0) {
+      contextData.search = args.search;
+    }
     await publishUserAction({
       user,
       event_type: 'command',
       event_scope: 'search',
       event_access: 'extended',
-      context_data: { input: args }
+      context_data: contextData,
     });
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });

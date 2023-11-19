@@ -39,7 +39,7 @@ const styles = (theme) => ({
     padding: 0,
   },
   parameters: {
-    margin: '0 0 20px 0',
+    marginBottom: 20,
     padding: 0,
   },
   filtersDialog: {
@@ -113,6 +113,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       openExports,
       handleToggleExports,
       exportContext,
+      tabMode,
     } = this.props;
     const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
@@ -125,8 +126,11 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
     }
     const exportDisabled = targetEntities.length > export_max_size;
     return (
-      <div>
-        <div className={classes.parameters}>
+      <>
+        <div
+          className={classes.parameters}
+          style={{ marginTop: tabMode ? -12 : 0 }}
+        >
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
               variant="small"
@@ -221,9 +225,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                   />
                 </ToggleButton>
               </Tooltip>
-              {typeof handleToggleExports === 'function'
-                && !exportDisabled
-                && <Tooltip title={t('Open export panel')}>
+              {typeof handleToggleExports === 'function' && !exportDisabled && (
+                <Tooltip title={t('Open export panel')}>
                   <ToggleButton
                     value="export"
                     aria-label="export"
@@ -235,24 +238,27 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                     />
                   </ToggleButton>
                 </Tooltip>
-              }
-              {typeof handleToggleExports === 'function'
-                && exportDisabled
-                && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
+              )}
+              {typeof handleToggleExports === 'function' && exportDisabled && (
+                <Tooltip
+                  title={`${
+                    t(
+                      'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                    ) + export_max_size
+                  })`}
+                >
                   <span>
-                  <ToggleButton
-                    size="small"
-                    value="export"
-                    aria-label="export"
-                    disabled={true}
-                  >
-                    <FileDownloadOutlined
-                      fontSize="small"
-                    />
-                  </ToggleButton>
+                    <ToggleButton
+                      size="small"
+                      value="export"
+                      aria-label="export"
+                      disabled={true}
+                    >
+                      <FileDownloadOutlined fontSize="small" />
+                    </ToggleButton>
                   </span>
                 </Tooltip>
-              }
+              )}
             </ToggleButtonGroup>
             <div className={classes.export}>
               <ExportButtons
@@ -289,6 +295,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               currentColorsReversed={currentColorsReversed}
               currentModeOnlyActive={currentModeOnlyActive}
               handleAdd={this.handleAdd.bind(this)}
+              tabMode={tabMode}
             />
           )}
           {currentView === 'courses-of-action' && (
@@ -321,7 +328,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             />
           </Security>
         </div>
-      </div>
+      </>
     );
   }
 }

@@ -46,7 +46,6 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
-import TopMenuThreatActorGroup from './TopMenuThreatActorGroup';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuArsenal from './TopMenuArsenal';
@@ -103,7 +102,6 @@ import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
 import useAuth from '../../../utils/hooks/useAuth';
-import TopMenuThreatActorIndividual from './TopMenuThreatActorIndividual';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
@@ -218,12 +216,6 @@ const routes = {
   ),
   '/dashboard/observations': () => <TopMenuObservations />,
   // THREATS
-  '/dashboard/threats/threat_actors_group/': (id: string) => (
-    <TopMenuThreatActorGroup id={id} />
-  ),
-  '/dashboard/threats/threat_actors_individual/': (id: string) => (
-    <TopMenuThreatActorIndividual id={id} />
-  ),
   '/dashboard/threats/intrusion_sets/': (id: string) => (
     <TopMenuIntrusionSet id={id} />
   ),

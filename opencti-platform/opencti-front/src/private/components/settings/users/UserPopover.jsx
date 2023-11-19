@@ -16,7 +16,6 @@ import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
-import Loader from '../../../../components/Loader';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -131,7 +130,7 @@ class UserPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
         <Dialog

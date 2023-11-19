@@ -1,7 +1,11 @@
 export const resolveLink = (type: string): string | null => {
   switch (type) {
     case 'Dashboard':
+    case 'dashboard':
       return '/dashboard/workspaces/dashboards';
+    case 'Investigation':
+    case 'investigation':
+      return '/dashboard/workspaces/investigations';
     case 'Attack-Pattern':
       return '/dashboard/techniques/attack_patterns';
     case 'Campaign':

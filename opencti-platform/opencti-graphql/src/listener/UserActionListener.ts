@@ -17,12 +17,14 @@ interface BasicUserAction {
 }
 
 // region actions
+export interface UserSearchActionContextData {
+  input: unknown,
+  search?: string,
+}
 export interface UserSearchAction extends BasicUserAction {
   event_type: 'command'
   event_scope: 'search'
-  context_data: {
-    input: unknown,
-  }
+  context_data: UserSearchActionContextData
 }
 export interface UserEnrichActionContextData {
   id: string
@@ -114,6 +116,7 @@ export interface UserReadActionContextData {
   object_marking_refs_ids?: string[]
   created_by_ref_id?: string
   labels_ids?: string[]
+  workspace_type?: string
 }
 export interface UserReadAction extends BasicUserAction {
   event_type: 'read'

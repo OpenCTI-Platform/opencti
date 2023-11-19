@@ -10,15 +10,21 @@ import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEdition_user$data } from './__generated__/UserEdition_user.graphql';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 
 interface UserEditionProps {
-  handleClose?: () => void
-  user: UserEdition_user$data
-  open?: boolean
+  handleClose?: () => void;
+  user: UserEdition_user$data;
+  open?: boolean;
 }
 
-const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose = () => {}, user, open }) => {
+const UserEdition: FunctionComponent<UserEditionProps> = ({
+  handleClose = () => {},
+  user,
+  open,
+}) => {
   const { t } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const { editContext } = user;
@@ -27,7 +33,6 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose = () => 
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-
   return (
     <Drawer
       title={t('Update a user')}
@@ -45,7 +50,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose = () => 
             <Tab label={t('Overview')} />
             <Tab disabled={external} label={t('Password')} />
             <Tab label={t('Groups')} />
-            { hasSetAccess && <Tab label={t('Organizations admin')} /> }
+            {hasSetAccess && <Tab label={t('Organizations admin')} />}
           </Tabs>
         </Box>
         {currentTab === 0 && (
@@ -54,9 +59,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose = () => 
         {currentTab === 1 && (
           <UserEditionPassword user={user} context={editContext} />
         )}
-        {currentTab === 2 && (
-          <UserEditionGroups user={user} />
-        )}
+        {currentTab === 2 && <UserEditionGroups user={user} />}
         {hasSetAccess && currentTab === 3 && (
           <UserEditionOrganizationsAdmin user={user} />
         )}
@@ -73,31 +76,34 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
       rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
       groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
       groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+      organizationsOrderBy: {
+        type: "OrganizationsOrdering"
+        defaultValue: name
+      }
       organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
       external
       ...UserEditionOverview_user
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
       ...UserEditionPassword_user
       ...UserEditionGroups_user
-      @arguments(
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
       ...UserEditionOrganizationsAdmin_user
-      @arguments(
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
       editContext {
         name
         focusOn

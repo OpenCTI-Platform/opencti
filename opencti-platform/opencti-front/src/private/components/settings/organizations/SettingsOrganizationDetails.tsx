@@ -32,7 +32,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface SettingsOrganizationDetailsProps {
   settingsOrganization: SettingsOrganization_organization$data;
-
 }
 
 const SettingsOrganizationDetails: FunctionComponent<
@@ -41,7 +40,6 @@ SettingsOrganizationDetailsProps
   const { t } = useFormatter();
   const classes = useStyles();
   const organization = settingsOrganization;
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -68,10 +66,7 @@ SettingsOrganizationDetailsProps
             >
               {t('Description')}
             </Typography>
-            <ExpandableMarkdown
-              source={organization.description}
-              limit={400}
-            />
+            <ExpandableMarkdown source={organization.description} limit={400} />
             <Typography
               variant="h3"
               gutterBottom={true}

@@ -3,12 +3,9 @@ import PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import ThreatActorGroupPopover from './ThreatActorGroupPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
@@ -17,24 +14,12 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class ThreatActorGroupKnowledgeComponent extends Component {
   render() {
-    const { classes, threatActorGroup } = this.props;
+    const { threatActorGroup } = this.props;
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType="Threat-Actor-Group"
-          stixDomainObject={threatActorGroup}
-          PopoverComponent={<ThreatActorGroupPopover />}
-        />
+      <>
         <Route
           exact
           path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/relations/:relationId"
@@ -153,6 +138,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
+              tabMode={true}
               {...routeProps}
             />
           )}
@@ -316,7 +302,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             />
           )}
         />
-      </div>
+      </>
     );
   }
 }
@@ -342,8 +328,4 @@ const ThreatActorGroupKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ThreatActorGroupKnowledge);
+export default compose(inject18n, withRouter)(ThreatActorGroupKnowledge);

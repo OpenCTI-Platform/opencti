@@ -106,7 +106,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <ItemIcon type="User" />
+              <ItemIcon type="UserOverview" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

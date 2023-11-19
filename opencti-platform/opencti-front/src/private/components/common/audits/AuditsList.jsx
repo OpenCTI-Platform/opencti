@@ -96,6 +96,7 @@ const auditsListQuery = graphql`
             name
           }
           context_data {
+            id
             entity_type
             entity_name
             message
@@ -107,10 +108,10 @@ const auditsListQuery = graphql`
 `;
 
 const AuditsList = ({
-  variant,
+  variant = null,
   height,
-  startDate,
-  endDate,
+  startDate = null,
+  endDate = null,
   dataSelection,
   parameters = {},
 }) => {
@@ -192,6 +193,13 @@ const AuditsList = ({
                         ? `for \`${audit.context_data?.entity_name}\` (${audit.context_data?.entity_type})`
                         : ''
                     }`;
+                    const link = audit.context_data?.entity_type
+                      ? `${resolveLink(
+                        audit.context_data?.entity_type === 'Workspace'
+                          ? audit.context_data?.workspace_type
+                          : audit.context_data?.entity_type,
+                      )}/${audit.context_data?.id}`
+                      : undefined;
                     return (
                       <ListItem
                         key={audit.id}
@@ -199,8 +207,8 @@ const AuditsList = ({
                         button={true}
                         classes={{ root: classes.item }}
                         divider={true}
-                        component={Link}
-                        to={`${resolveLink(audit.entity_type)}/${audit.id}`}
+                        component={link ? Link : undefined}
+                        to={link}
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -224,21 +232,22 @@ const AuditsList = ({
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '15%' }}
+                                style={{ width: '18%' }}
                               >
                                 {audit.user?.name ?? '-'}
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '12%' }}
+                                style={{ width: '15%' }}
                               >
-                                {audit.event_type}
+                                {audit.event_scope}
                               </div>
                               <div
                                 className={classes.bodyItem}
-                                style={{ width: '12%' }}
+                                style={{ width: '22%' }}
                               >
-                                {audit.event_scope}
+                                {audit.context_data?.entity_name
+                                  ?? audit.event_type}
                               </div>
                               <div
                                 className={classes.bodyItem}

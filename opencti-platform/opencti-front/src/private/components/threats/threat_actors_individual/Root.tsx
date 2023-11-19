@@ -3,9 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -19,6 +23,7 @@ import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -43,6 +48,7 @@ const ThreatActorIndividualQuery = graphql`
       standard_id
       entity_type
       name
+      aliases
       x_opencti_graph_data
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
@@ -76,6 +82,8 @@ const RootThreatActorIndividualComponent = ({
     [threatActorIndividualId],
   );
   useSubscription(subConfig);
+  const location = useLocation();
+  const { t } = useFormatter();
   const {
     threatActorIndividual: data,
     connectorsForExport,
@@ -113,63 +121,105 @@ const RootThreatActorIndividualComponent = ({
       </Route>
       <>
         {data ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
-              render={(routeProps: any) => (
-                <ThreatActorIndividual {...routeProps} data={data} />
-              )}
+          <div
+            style={{
+              paddingRight: location.pathname.includes(
+                `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
+              )
+                ? 200
+                : 0,
+            }}
+          >
+            <StixDomainObjectHeader
+              entityType="Threat-Actor-Individual"
+              stixDomainObject={data}
+              PopoverComponent={ThreatActorIndividualPopover}
+              enableQuickSubscription={true}
             />
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`}
+            <Box
+              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 5 }}
+            >
+              <Tabs
+                value={
+                  location.pathname.includes(
+                    `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
+                  )
+                    ? `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`
+                    : location.pathname
+                }
+              >
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}`}
+                  label={t('Overview')}
                 />
-              )}
-            />
-            <Route
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
-              render={(routeProps: any) => (
-                <ThreatActorIndividualKnowledge
-                  {...routeProps}
-                  threatActorIndividualData={data}
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
+                  label={t('Knowledge')}
                 />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/analyses"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Threat-Actor-Individual'}
-                    stixDomainObject={data}
-                    PopoverComponent={
-                      <ThreatActorIndividualPopover id={data.id} />
-                    }
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
+                  label={t('Analyses')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
+                  label={t('Data')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
+                  label={t('Activity')}
+                />
+              </Tabs>
+            </Box>
+            <Switch>
+              <Route
+                exact
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
+                render={(routeProps: any) => (
+                  <ThreatActorIndividual {...routeProps} data={data} />
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
+                render={() => (
+                  <Redirect
+                    to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`}
                   />
+                )}
+              />
+              <Route
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
+                render={(routeProps: any) => (
+                  <ThreatActorIndividualKnowledge
+                    {...routeProps}
+                    threatActorIndividualData={data}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/analyses"
+                render={(routeProps: any) => (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     {...routeProps}
                     stixDomainObjectOrStixCoreRelationship={data}
                   />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/files"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Threat-Actor-Individual'}
-                    stixDomainObject={data}
-                    PopoverComponent={
-                      <ThreatActorIndividualPopover id={data.id} />
-                    }
-                  />
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/files"
+                render={(routeProps: any) => (
                   <FileManager
                     {...routeProps}
                     id={threatActorIndividualId}
@@ -177,29 +227,20 @@ const RootThreatActorIndividualComponent = ({
                     connectorsExport={connectorsForExport}
                     entity={data}
                   />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Threat-Actor-Individual'}
-                    stixDomainObject={data}
-                    PopoverComponent={
-                      <ThreatActorIndividualPopover id={data.id} />
-                    }
-                  />
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/history"
+                render={(routeProps: any) => (
                   <StixCoreObjectHistory
                     {...routeProps}
                     stixCoreObjectId={threatActorIndividualId}
                   />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
+                )}
+              />
+            </Switch>
+          </div>
         ) : (
           <ErrorNotFound />
         )}
