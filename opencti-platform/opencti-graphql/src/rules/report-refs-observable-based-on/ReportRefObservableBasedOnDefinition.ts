@@ -3,9 +3,9 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
-const id = 'report_ref_indicator_based_on';
-const name = 'Observables propagation in reports';
-const description = 'Propagate observables of an indicator in a report.';
+const id = 'report_ref_observable_based_on';
+const name = 'Indicators propagation in reports';
+const description = 'Propagate indicators of an observable in a report.';
 const category = 'Report propagation';
 const display = {
   if: [
@@ -13,14 +13,14 @@ const display = {
       source: 'Report A',
       source_color: '#ff9800',
       relation: 'relationship_object',
-      target: 'Indicator B',
-      target_color: '#4caf50',
+      target: 'Observable B',
+      target_color: '#00bcd4',
     },
     {
-      source: 'Indicator B',
+      source: 'Indicator C',
       source_color: '#4caf50',
       relation: 'relationship_based-on',
-      target: 'Observable C',
+      target: 'Observable B',
       target_color: '#00bcd4',
       identifier: 'Relation D',
       identifier_color: '#673ab7',
@@ -32,8 +32,8 @@ const display = {
       relation: 'relationship_object',
       source: 'Report A',
       source_color: '#ff9800',
-      target: 'Observable C',
-      target_color: '#00bcd4',
+      target: 'Indicator C',
+      target_color: '#4caf50',
     },
     {
       action: 'CREATE',
