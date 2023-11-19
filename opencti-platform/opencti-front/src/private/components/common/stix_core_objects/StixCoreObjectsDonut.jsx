@@ -180,6 +180,7 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
         ... on MarkingDefinition {
           definition_type
           definition
+          x_opencti_color
         }
         ... on KillChainPhase {
           kill_chain_name
@@ -190,6 +191,7 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
         }
         ... on Label {
           value
+          color
         }
       }
     }
@@ -274,9 +276,27 @@ const StixCoreObjectsDonut = ({
               : selection.attribute === 'entity_type'
                 ? t(`entity_${n.label}`)
                 : n.label));
+            let chartColors = [];
+            if (data.at(0)?.entity?.color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+                ? '#000000'
+                : n.entity.color));
+            }
+            if (data.at(0)?.entity?.x_opencti_color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light'
+                && n.entity.x_opencti_color === '#ffffff'
+                ? '#000000'
+                : n.entity.x_opencti_color));
+            }
             return (
               <Chart
-                options={donutChartOptions(theme, labels)}
+                options={donutChartOptions(
+                  theme,
+                  labels,
+                  'bottom',
+                  false,
+                  chartColors,
+                )}
                 series={chartData}
                 type="donut"
                 width="100%"

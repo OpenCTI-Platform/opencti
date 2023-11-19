@@ -10,6 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { convertFilters } from '../../../../utils/ListParameters';
@@ -115,6 +116,12 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
             main
           }
         }
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
       }
     }
   }
@@ -129,6 +136,7 @@ const StixCoreObjectsDistributionList = ({
   parameters = {},
 }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t, n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
@@ -146,7 +154,6 @@ const StixCoreObjectsDistributionList = ({
         o.key,
       ),
     );
-
     const computeLink = (entry) => {
       const resolution = resolveLink(entry.type);
       if (resolution) {
@@ -189,6 +196,7 @@ const StixCoreObjectsDistributionList = ({
                     ? t(`entity_${o.label}`)
                     : o.label,
               value: o.value,
+              color: o.entity?.color ?? o.entity?.x_opencti_color,
               id: selection.attribute.endsWith('_id') ? o.entity.id : null,
               type: selection.attribute.endsWith('_id')
                 ? o.entity.entity_type
@@ -215,7 +223,15 @@ const StixCoreObjectsDistributionList = ({
                         to={link || null}
                       >
                         <ListItemIcon>
-                          <ItemIcon type={entry.type} />
+                          <ItemIcon
+                            color={
+                              theme.palette.mode === 'light'
+                              && entry.color === '#ffffff'
+                                ? '#000000'
+                                : entry.color
+                            }
+                            type={entry.type}
+                          />
                         </ListItemIcon>
                         <ListItemText
                           primary={

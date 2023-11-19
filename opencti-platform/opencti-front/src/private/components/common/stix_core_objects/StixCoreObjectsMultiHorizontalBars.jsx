@@ -350,6 +350,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on MarkingDefinition {
           definition_type
           definition
+          x_opencti_color
         }
         ... on Creator {
           name
@@ -369,6 +370,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         }
         ... on Label {
           value
+          color
         }
       }
     }
@@ -459,19 +461,33 @@ const stixCoreObjectsMultiHorizontalBars = ({
             && props.stixCoreObjectsDistribution
             && props.stixCoreObjectsDistribution.length > 0
           ) {
-            const data = props.stixCoreObjectsDistribution.map((n) => ({
-              x:
-                // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('_id')
-                  ? defaultValue(n.entity)
-                  : selection.attribute === 'entity_type'
-                    ? t(`entity_${n.label}`)
-                    : n.label,
-              y: n.value,
-              fillColor: selection.attribute.endsWith('_id')
+            const data = props.stixCoreObjectsDistribution.map((n) => {
+              let color = selection.attribute.endsWith('_id')
                 ? itemColor(n.entity.entity_type)
-                : itemColor(n.label),
-            }));
+                : itemColor(n.label);
+              if (n.entity?.color) {
+                color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+                  ? '#000000'
+                  : n.entity.color;
+              }
+              if (n.entity?.x_opencti_color) {
+                color = theme.palette.mode === 'light'
+                  && n.entity.x_opencti_color === '#ffffff'
+                  ? '#000000'
+                  : n.entity.x_opencti_color;
+              }
+              return {
+                x:
+                  // eslint-disable-next-line no-nested-ternary
+                  selection.attribute.endsWith('_id')
+                    ? defaultValue(n.entity)
+                    : selection.attribute === 'entity_type'
+                      ? t(`entity_${n.label}`)
+                      : n.label,
+                y: n.value,
+                fillColor: color,
+              };
+            });
             const chartData = [
               {
                 name: selection.label || t('Number of relationships'),

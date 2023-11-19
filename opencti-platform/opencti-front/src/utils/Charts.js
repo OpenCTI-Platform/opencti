@@ -655,20 +655,29 @@ export const donutChartOptions = (
   labels,
   legendPosition = 'bottom',
   reversed = false,
+  chartColors = [],
 ) => {
   const temp = theme.palette.mode === 'dark' ? 400 : 600;
-  let chartColors = colors(temp);
-  if (labels.length === 2 && labels[0] === 'true') {
-    if (reversed) {
-      chartColors = [C.red[temp], C.green[temp]];
-    } else {
-      chartColors = [C.green[temp], C.red[temp]];
-    }
-  } else if (labels.length === 2 && labels[0] === 'false') {
-    if (reversed) {
-      chartColors = [C.green[temp], C.red[temp]];
-    } else {
-      chartColors = [C.red[temp], C.green[temp]];
+  let dataLabelsColors = labels.map(() => theme.palette.text.primary);
+  if (chartColors.length > 0) {
+    dataLabelsColors = chartColors.map((n) => (n === '#ffffff' ? '#000000' : theme.palette.text.primary));
+  }
+
+  let chartFinalColors = chartColors;
+  if (chartFinalColors.length === 0) {
+    chartFinalColors = colors(temp);
+    if (labels.length === 2 && labels[0] === 'true') {
+      if (reversed) {
+        chartFinalColors = [C.red[temp], C.green[temp]];
+      } else {
+        chartFinalColors = [C.green[temp], C.red[temp]];
+      }
+    } else if (labels.length === 2 && labels[0] === 'false') {
+      if (reversed) {
+        chartFinalColors = [C.green[temp], C.red[temp]];
+      } else {
+        chartFinalColors = [C.red[temp], C.green[temp]];
+      }
     }
   }
   return {
@@ -683,7 +692,7 @@ export const donutChartOptions = (
     theme: {
       mode: theme.palette.mode,
     },
-    colors: chartColors,
+    colors: chartFinalColors,
     labels,
     fill: {
       opacity: 1,
@@ -712,6 +721,7 @@ export const donutChartOptions = (
         fontSize: '10px',
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
+        colors: dataLabelsColors,
       },
       background: {
         enabled: false,
