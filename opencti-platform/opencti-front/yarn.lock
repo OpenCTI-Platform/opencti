@@ -5347,6 +5347,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-csv@npm:1.1.8":
+  version: 1.1.8
+  resolution: "@types/react-csv@npm:1.1.8"
+  dependencies:
+    "@types/react": "*"
+  checksum: 6f3d9015fa05846ebe28445738f6ba3889621b4fddddb7e17feb200ffecd425c99cd473d2aff0492be1bc0a56d2ba2163268ccc1ce6d9d11d27fb70fd89bc1fc
+  languageName: node
+  linkType: hard
+
 "@types/react-dom@npm:18.2.7, @types/react-dom@npm:^18.0.0":
   version: 18.2.7
   resolution: "@types/react-dom@npm:18.2.7"
@@ -14977,6 +14986,7 @@ __metadata:
     "@types/qrcode": 1.5.2
     "@types/ramda": 0.29.6
     "@types/react": 18.2.22
+    "@types/react-csv": 1.1.8
     "@types/react-dom": 18.2.7
     "@types/react-relay": 14.1.6
     "@types/react-router-dom": 5.3.3

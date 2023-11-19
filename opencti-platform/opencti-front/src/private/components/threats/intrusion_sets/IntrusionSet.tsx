@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
-import IntrusionSetPopover from './IntrusionSetPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -17,9 +15,6 @@ import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intr
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -93,13 +88,7 @@ const IntrusionSetComponent = ({
   const intrusionSetData = useFragment(intrusionSetFragment, intrusionSet);
   const classes = useStyles();
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType="Intrusion-Set"
-        stixDomainObject={intrusionSetData}
-        PopoverComponent={<IntrusionSetPopover />}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -140,7 +129,7 @@ const IntrusionSetComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IntrusionSetEdition intrusionSetId={intrusionSetData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

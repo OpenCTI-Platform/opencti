@@ -12,16 +12,17 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useMutation,
+  usePreloadedQuery,
+} from 'react-relay';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
-import {
-  StixCoreObjectFileExportQuery,
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
-import {
-  MarkingDefinitionsLinesSearchQuery$data,
-} from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
+import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -30,6 +31,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { resolveLink } from '../../../../utils/Entity';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -47,8 +49,9 @@ const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
   format: Yup.string().required(t('This field is required')),
 });
 interface StixCoreObjectFileExportComponentProps {
-  queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>
-  id: string
+  queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
+  id: string;
+  type: string;
 }
 
 interface FormValues {
@@ -60,18 +63,22 @@ interface FormValues {
 const StixCoreObjectFileExportComponent = ({
   queryRef,
   id,
-}:StixCoreObjectFileExportComponentProps) => {
+  type,
+}: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t } = useFormatter();
-
   const data = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     queryRef,
   );
-  const [commitExport] = useMutation<FileManagerExportMutation>(fileManagerExportMutation);
+  const [commitExport] = useMutation<FileManagerExportMutation>(
+    fileManagerExportMutation,
+  );
   const [open, setOpen] = useState(false);
-
-  const onSubmitExport = (values: FormValues, { setSubmitting, resetForm }: FormikHelpers<FormValues>) => {
+  const onSubmitExport = (
+    values: FormValues,
+    { setSubmitting, resetForm }: FormikHelpers<FormValues>,
+  ) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -82,37 +89,38 @@ const StixCoreObjectFileExportComponent = ({
         exportType: values.type,
         maxMarkingDefinition,
       },
-
       onCompleted: (exportData) => {
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
         navigate({
-          pathname: `/dashboard/analyses/reports/${id}/content`,
-          search: fileId ? `?${createSearchParams({ currentFileId: fileId })}` : '',
+          pathname:
+            values.format === 'application/pdf'
+              ? `${resolveLink(type)}/${id}/content`
+              : `${resolveLink(type)}/${id}/files`,
+          search: fileId
+            ? `?${createSearchParams({ currentFileId: fileId })}`
+            : '',
         });
       },
     });
   };
-
   const handleClickOpen = () => {
     setOpen(true);
   };
-
   const connectorsExport = data.connectorsForExport ?? [];
-
-  const exportScopes = R.uniq(connectorsExport.map((c) => c?.connector_scope).flat());
-
-  // Handling only pdf for now
-  const formatValue = 'application/pdf';
-
-  const isExportPossible = connectorsExport.some((connector) => {
-    return connector?.connector_scope?.includes(formatValue) && connector?.active;
-  });
-
+  const exportScopes = R.uniq(
+    connectorsExport.map((c) => c?.connector_scope).flat(),
+  );
+  // All formats are supported PDF is selected by default if available
+  // Redirecting to content for PDF export, to file for everything else
+  const formatValue = exportScopes.filter((s) => s === 'application/pdf')
+    ? 'application/pdf'
+    : exportScopes.at(0);
+  const isExportPossible = connectorsExport.length > 0;
   return (
-    <div>
+    <>
       <Tooltip
         title={
           isExportPossible
@@ -132,14 +140,14 @@ const StixCoreObjectFileExportComponent = ({
         >
           <FileExportOutline
             fontSize="small"
-            color={isExportPossible ? 'primary' : 'disabled' }
+            color={isExportPossible ? 'primary' : 'disabled'}
           />
         </ToggleButton>
       </Tooltip>
       <Formik<FormValues>
         enableReinitialize={true}
         initialValues={{
-          format: formatValue,
+          format: formatValue ?? 'unknown',
           type: 'full',
           maxMarkingDefinition: 'none',
         }}
@@ -160,7 +168,11 @@ const StixCoreObjectFileExportComponent = ({
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
                 variables={{ first: 200 }}
-                render={({ props }: { props: MarkingDefinitionsLinesSearchQuery$data }) => {
+                render={({
+                  props,
+                }: {
+                  props: MarkingDefinitionsLinesSearchQuery$data;
+                }) => {
                   if (props && props.markingDefinitions) {
                     return (
                       <DialogContent>
@@ -170,14 +182,10 @@ const StixCoreObjectFileExportComponent = ({
                           name="format"
                           label={t('Export format')}
                           fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                          disabled
+                          containerstyle={{ width: '100%' }}
                         >
                           {exportScopes.map((value, i) => (
-                            <MenuItem
-                              key={i}
-                              value={value ?? ''}
-                            >
+                            <MenuItem key={i} value={value ?? ''}>
                               {value}
                             </MenuItem>
                           ))}
@@ -225,7 +233,9 @@ const StixCoreObjectFileExportComponent = ({
                 }}
               />
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>Cancel</Button>
+                <Button onClick={handleReset} disabled={isSubmitting}>
+                  Cancel
+                </Button>
                 <Button
                   color="secondary"
                   onClick={(e) => {
@@ -241,21 +251,44 @@ const StixCoreObjectFileExportComponent = ({
           </Form>
         )}
       </Formik>
-    </div>
+    </>
   );
 };
 
-const StixCoreObjectFileExport = (
-  { id }: { id: string },
-) => {
-  const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(stixCoreObjectFileExportQuery, { id });
-
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <StixCoreObjectFileExportComponent id={id} queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+const StixCoreObjectFileExport = ({
+  id,
+  type,
+}: {
+  id: string;
+  type: string;
+}) => {
+  const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
+    stixCoreObjectFileExportQuery,
+    { id },
+  );
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={
+            <ToggleButton
+              value="quick-export"
+              size="small"
+              style={{ marginRight: 3 }}
+              disabled={true}
+            >
+              <FileExportOutline fontSize="small" />
+            </ToggleButton>
+          }
+        >
+          <StixCoreObjectFileExportComponent
+            id={id}
+            type={type}
+            queryRef={queryRef}
+          />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

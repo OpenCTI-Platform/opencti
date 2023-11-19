@@ -13,11 +13,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
+import { CSVLink } from 'react-csv';
+import { graphql } from 'react-relay';
 import ActivityMenu from '../../ActivityMenu';
 import { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -33,6 +35,7 @@ import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
+import { fetchQuery } from '../../../../../relay/environment';
 
 const LOCAL_STORAGE_KEY = 'view-audit';
 
@@ -43,8 +46,56 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+export const AuditCSVQuery = graphql`
+  query AuditCSVQuery(
+    $search: String
+    $types: [String!]
+    $first: Int!
+    $orderBy: LogsOrdering
+    $orderMode: OrderingMode
+    $filters: [LogsFiltering!]
+  ) {
+    audits(
+      search: $search
+      types: $types
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          event_type
+          event_scope
+          event_status
+          timestamp
+          context_uri
+          user {
+            id
+            name
+          }
+          context_data {
+            id
+            entity_type
+            entity_name
+            message
+          }
+        }
+      }
+    }
+  }
+`;
+
 const Audit = () => {
   const classes = useStyles();
+  const csvLink = useRef<
+  CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
+  >(null);
+  const hasPageRendered = useRef(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
   const { settings } = useAuth();
   const { t } = useFormatter();
   const {
@@ -97,6 +148,46 @@ const Audit = () => {
     AuditLinesQuery,
     paginationOptions,
   );
+  useEffect(() => {
+    if (!loading && hasPageRendered.current) {
+      csvLink?.current?.link?.click();
+    }
+    hasPageRendered.current = true;
+  }, [loading]);
+  const handleExportCsv = async () => {
+    setLoading(true);
+    await fetchQuery(AuditCSVQuery, { ...paginationOptions, first: 5000 })
+      .toPromise()
+      .then((result) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const { audits } = result;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const csvData = audits.edges.map((n) => {
+          const { node } = n;
+          return {
+            id: node.id,
+            entity_type: node.entity_type,
+            event_type: node.event_type,
+            event_scope: node.event_scope,
+            event_status: node.event_status,
+            timestamp: node.timestamp,
+            context_uri: node.context_uri,
+            user_id: node.user?.id ?? 'undefined',
+            user_name: node.user?.name ?? 'undefined',
+            context_data_id: node.context_data?.id ?? 'undefined',
+            context_data_entity_type:
+              node.context_data?.entity_type ?? 'undefined',
+            context_data_entity_name:
+              node.context_data?.entity_name ?? 'undefined',
+            context_data_message: node.context_data?.message ?? 'undefined',
+          };
+        });
+        setData(csvData);
+        setLoading(false);
+      });
+  };
   const extraFields = (
     <div style={{ float: 'left' }}>
       <FormControlLabel
@@ -140,6 +231,7 @@ const Audit = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        handleExportCsv={handleExportCsv}
         availableFilterKeys={[
           'members_user',
           'members_organization',
@@ -180,6 +272,7 @@ const Audit = () => {
           </React.Suspense>
         )}
       </ListLines>
+      <CSVLink filename={`${t('Audit logs')}.csv`} ref={csvLink} data={data} />
     </div>
   );
 };

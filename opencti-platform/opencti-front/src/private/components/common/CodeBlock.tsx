@@ -9,10 +9,11 @@ interface CodeBlockProps {
 
 const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code }) => {
   return (
-    <SyntaxHighlighter language={language}
-                       style={a11yDark}
-                       customStyle={{ height: '400px', minWidth: '550px' }}
-                       showLineNumbers
+    <SyntaxHighlighter
+      language={language}
+      style={a11yDark}
+      customStyle={{ height: '400px', minWidth: '550px' }}
+      showLineNumbers
     >
       {code}
     </SyntaxHighlighter>

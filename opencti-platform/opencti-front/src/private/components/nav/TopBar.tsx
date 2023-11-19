@@ -46,7 +46,6 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
-import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
@@ -216,9 +215,6 @@ const routes = {
   ),
   '/dashboard/observations': () => <TopMenuObservations />,
   // THREATS
-  '/dashboard/threats/intrusion_sets/': (id: string) => (
-    <TopMenuIntrusionSet id={id} />
-  ),
   '/dashboard/threats/campaigns/': (id: string) => <TopMenuCampaign id={id} />,
   '/dashboard/threats': () => <TopMenuThreats />,
   // ARSENAL

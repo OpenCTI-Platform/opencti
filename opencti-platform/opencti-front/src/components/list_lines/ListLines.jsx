@@ -26,6 +26,7 @@ import {
   RelationManyToMany,
   VectorPolygon,
   Group,
+  FileDelimitedOutline,
 } from 'mdi-material-ui';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
@@ -204,6 +205,7 @@ class ListLines extends Component {
       redirectionMode,
       parametersWithPadding,
       searchContext,
+      handleExportCsv,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -274,7 +276,8 @@ class ListLines extends Component {
               </div>
             )}
             {(typeof handleChangeView === 'function'
-              || typeof handleToggleExports === 'function') && (
+              || typeof handleToggleExports === 'function'
+              || typeof handleExportCsv === 'function') && (
               <ToggleButtonGroup
                 size="small"
                 color="secondary"
@@ -285,7 +288,7 @@ class ListLines extends Component {
                     handleToggleExports();
                   } else if (value && value === 'settings') {
                     this.handleOpenSettings();
-                  } else if (value) {
+                  } else if (value !== 'export-csv') {
                     handleChangeView(value);
                   }
                 }}
@@ -395,6 +398,17 @@ class ListLines extends Component {
                         />
                       </Tooltip>
                     </ToggleButton>
+                )}
+                {typeof handleExportCsv === 'function' && !exportDisabled && (
+                  <ToggleButton
+                    value="export-csv"
+                    onClick={() => handleExportCsv()}
+                    aria-label="export"
+                  >
+                    <Tooltip title={t('Export first 5000 rows in CSV')}>
+                      <FileDelimitedOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                  </ToggleButton>
                 )}
                 {typeof handleToggleExports === 'function'
                   && exportDisabled && (
@@ -664,6 +678,7 @@ ListLines.propTypes = {
   parametersWithPadding: PropTypes.bool,
   inline: PropTypes.bool,
   searchContext: PropTypes.object,
+  handleExportCsv: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

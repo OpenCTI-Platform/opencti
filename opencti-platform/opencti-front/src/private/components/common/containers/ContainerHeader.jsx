@@ -870,7 +870,7 @@ const ContainerHeader = (props) => {
                         />
                       )}
                       {enableQuickExport && (
-                        <StixCoreObjectFileExport id={container.id}/>
+                        <StixCoreObjectFileExport id={container.id} type={container.entity_type}/>
                       )}
                       {enableSuggestions && (
                         <React.Fragment>
@@ -1026,6 +1026,7 @@ export default createFragmentContainer(ContainerHeader, {
   container: graphql`
     fragment ContainerHeader_container on Container {
       id
+      entity_type
       standard_id
       confidence
       created

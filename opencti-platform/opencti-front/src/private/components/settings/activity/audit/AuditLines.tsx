@@ -7,7 +7,10 @@ import {
   AuditLinesPaginationQuery$variables,
 } from './__generated__/AuditLinesPaginationQuery.graphql';
 import { AuditLines_data$key } from './__generated__/AuditLines_data.graphql';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
@@ -60,15 +63,15 @@ export const AuditLinesQuery = graphql`
     $filters: [LogsFiltering!]
   ) {
     ...AuditLines_data
-    @arguments(
-      search: $search
-      types: $types
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        types: $types
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -81,7 +84,7 @@ interface AuditLinesProps {
   deSelectedElements: Record<string, AuditLine_node$data>;
   onToggleEntity: (
     entity: AuditLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
