@@ -8,7 +8,6 @@ import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '../../common/drawer/Drawer';
-import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
@@ -32,7 +31,6 @@ const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipReferences,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -69,7 +67,6 @@ const AddExternalReferences = ({
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
-              placeholder={`${t('Search')}...`}
               onSubmit={handleSearch}
             />
           </div>

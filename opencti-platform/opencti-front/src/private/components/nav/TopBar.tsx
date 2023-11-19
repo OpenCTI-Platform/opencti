@@ -405,6 +405,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   onSubmit={handleSearch}
                   keyword={keyword}
                   variant="topBar"
+                  placeholder={`${t('Search OpenCTI')}...`}
                 />
                 <Filters
                   variant="dialog"

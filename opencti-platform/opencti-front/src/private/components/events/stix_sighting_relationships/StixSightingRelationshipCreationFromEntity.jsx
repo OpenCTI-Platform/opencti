@@ -379,7 +379,6 @@ const StixSightingRelationshipCreationFromEntity = ({
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
-              placeholder={`${t('Search')}...`}
               keyword={search}
               onSubmit={handleSearch}
             />

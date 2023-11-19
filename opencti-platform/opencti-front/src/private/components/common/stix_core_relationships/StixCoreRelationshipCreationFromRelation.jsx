@@ -422,7 +422,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
-              placeholder={`${t('Search')}...`}
               onSubmit={this.handleSearch.bind(this)}
             />
           </div>

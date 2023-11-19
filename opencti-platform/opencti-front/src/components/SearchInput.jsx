@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import TextField from '@mui/material/TextField';
@@ -53,7 +53,11 @@ const styles = (theme) => ({
 
 class SearchInput extends Component {
   render() {
-    const { t, classes, onChange, onSubmit, variant, keyword, fullWidth } = this.props;
+    const {
+      t,
+      classes, onChange, onSubmit, variant, keyword, fullWidth,
+      placeholder = `${t('Search these results')}...`,
+    } = this.props;
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
       classRoot = classes.searchRootInDrawer;
@@ -71,7 +75,7 @@ class SearchInput extends Component {
         defaultValue={keyword}
         variant="outlined"
         size="small"
-        placeholder={`${t('Search')}...`}
+        placeholder={placeholder}
         onChange={(event) => {
           const { value } = event.target;
           if (typeof onChange === 'function') {
@@ -115,6 +119,7 @@ SearchInput.propTypes = {
   onSubmit: PropTypes.func,
   variant: PropTypes.string,
   fullWidth: PropTypes.bool,
+  placeholder: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(SearchInput);

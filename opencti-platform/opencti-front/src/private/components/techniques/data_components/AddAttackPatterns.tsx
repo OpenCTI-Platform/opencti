@@ -66,7 +66,6 @@ const AddAttackPatterns: FunctionComponent<{
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
-              placeholder={`${t('Search')}...`}
               onSubmit={handleSearch}
             />
           </div>
