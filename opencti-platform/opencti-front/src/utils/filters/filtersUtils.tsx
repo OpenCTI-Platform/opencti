@@ -57,6 +57,7 @@ export const EqFilters = [
   'objectContains',
   'indicates',
   'targets',
+  'x_opencti_main_observable_type',
 ];
 const uniqFilters = [
   'revoked',
