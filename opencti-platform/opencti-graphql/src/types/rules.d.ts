@@ -23,6 +23,7 @@ interface RelationTypes {
   leftType: string;
   rightType: string;
   creationType: string;
+  isSource?: boolean;
 }
 
 interface StepDefinition {

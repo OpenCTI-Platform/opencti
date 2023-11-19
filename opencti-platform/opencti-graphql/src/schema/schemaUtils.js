@@ -1,6 +1,11 @@
 import crypto from 'node:crypto';
 import validator from 'validator';
-import { isStixCyberObservable } from './stixCyberObservable';
+import {
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  ENTITY_IPV4_ADDR,
+  ENTITY_IPV6_ADDR,
+  isStixCyberObservable
+} from './stixCyberObservable';
 import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
@@ -26,7 +31,8 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_THREAT_ACTOR,
   STIX_TYPE_RELATION,
   STIX_TYPE_SIGHTING,
 } from './general';
@@ -86,11 +92,11 @@ export const generateInternalType = (entity) => {
     case 'location':
       return entity.x_opencti_location_type;
     case 'ipv4-addr':
-      return 'IPv4-Addr';
+      return ENTITY_IPV4_ADDR;
     case 'ipv6-addr':
-      return 'IPv6-Addr';
+      return ENTITY_IPV6_ADDR;
     case 'file':
-      return 'StixFile';
+      return ENTITY_HASHED_OBSERVABLE_STIX_FILE;
     default:
       return pascalize(entity.type);
   }
@@ -148,6 +154,31 @@ export const getParentTypes = (type) => {
   if (parentTypes.length === 0) {
     throw DatabaseError(`Type ${type} not supported`);
   }
-
   return parentTypes;
+};
+
+// This function may generate abstract types only, use carefully (best effort)
+export const convertStixToInternalTypes = (type) => {
+  switch (type) {
+    case STIX_TYPE_SIGHTING:
+    case 'Stix-Sighting-Relationship':
+    case 'stix-sighting-relationship':
+      return [STIX_SIGHTING_RELATIONSHIP, ...getParentTypes(STIX_SIGHTING_RELATIONSHIP)];
+    case STIX_TYPE_RELATION:
+      return [STIX_SIGHTING_RELATIONSHIP, ...getParentTypes(ABSTRACT_STIX_CORE_RELATIONSHIP)];
+    case 'identity':
+      return [ENTITY_TYPE_IDENTITY, ...getParentTypes(ENTITY_TYPE_IDENTITY)];
+    case 'threat-actor':
+      return [ENTITY_TYPE_THREAT_ACTOR, ...getParentTypes(ENTITY_TYPE_THREAT_ACTOR)];
+    case 'location':
+      return [ENTITY_TYPE_LOCATION, ...getParentTypes(ENTITY_TYPE_LOCATION)];
+    case 'ipv4-addr':
+      return [ENTITY_IPV4_ADDR, ...getParentTypes(ENTITY_IPV4_ADDR)];
+    case 'ipv6-addr':
+      return [ENTITY_IPV6_ADDR, ...getParentTypes(ENTITY_IPV6_ADDR)];
+    case 'file':
+      return [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ...getParentTypes(ENTITY_HASHED_OBSERVABLE_STIX_FILE)];
+    default:
+      return pascalize(type);
+  }
 };
