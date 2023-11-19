@@ -542,12 +542,12 @@ export const applyNodeFilters = (
     R.filter((n) => !R.includes(n.entity_type, stixCoreObjectsTypes)),
     R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
     R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
-    R.filter(
-      (n) => interval.length === 0
-        || isNone(n.defaultDate)
-        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-    ),
-    R.filter(filterByKeyword),
+    R.map((n) => (filterByKeyword(n) ? n : { ...n, disabled: true })),
+    R.map((n) => (interval.length === 0
+      || isNone(n.defaultDate)
+      || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1])
+      ? n
+      : { ...n, disabled: true })),
   )(nodesData);
 };
 
@@ -556,15 +556,17 @@ export const applyLinkFilters = (
   markedBy = [],
   createdBy = [],
   interval = [],
-) => R.pipe(
-  R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
-  R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
-  R.filter(
-    (n) => interval.length === 0
-        || isNone(n.defaultDate)
-        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-  ),
-)(linksData);
+) => {
+  return R.pipe(
+    R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
+    R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
+    R.map((n) => (interval.length === 0
+      || isNone(n.defaultDate)
+      || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1])
+      ? n
+      : { ...n, disabled: true })),
+  )(linksData);
+};
 
 export const applyFilters = (
   graphData,
@@ -1175,10 +1177,11 @@ export const nodePaint = (
   ctx,
   selected = false,
   inferred = false,
+  disabled = false,
   showNbConnectedElements = false,
 ) => {
   ctx.beginPath();
-  ctx.fillStyle = color;
+  ctx.fillStyle = disabled ? colors.disabled : color;
   ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
   ctx.fill();
 
@@ -1189,6 +1192,10 @@ export const nodePaint = (
   } else if (inferred) {
     ctx.lineWidth = 0.8;
     ctx.strokeStyle = colors.inferred;
+    ctx.stroke();
+  } else if (disabled) {
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = colors.disabled;
     ctx.stroke();
   }
 
@@ -1204,7 +1211,7 @@ export const nodePaint = (
     ctx.beginPath();
     ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
     ctx.lineWidth = 0.4;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = disabled ? colors.disabled : color;
     ctx.stroke();
     ctx.fillStyle = colors.numbersBackground;
     ctx.fill();

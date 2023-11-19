@@ -161,6 +161,7 @@ class StixSightingRelationshipInference extends Component {
             node.color,
             ctx,
             false,
+            node.disabled,
           )
           }
           nodePointerAreaPaint={nodeAreaPaint}

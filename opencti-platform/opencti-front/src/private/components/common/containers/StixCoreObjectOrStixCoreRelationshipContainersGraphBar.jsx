@@ -834,7 +834,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                       width: '100%',
                       height: '100%',
                       bottom: -50,
-                      left: 120,
+                      left: navOpen ? 120 : 0,
                     }}
                   >
                     <ResponsiveContainer width="100%" height={60}>
@@ -843,7 +843,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                         height={60}
                         margin={{
                           top: 32,
-                          right: 150,
+                          right: navOpen ? 150 : 20,
                           bottom: 0,
                           left: 0,
                         }}

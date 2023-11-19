@@ -1612,12 +1612,14 @@ class ReportKnowledgeGraphComponent extends Component {
                         {
                           selected: theme.palette.secondary.main,
                           inferred: theme.palette.warning.main,
+                          disabled: theme.palette.grey[600],
                         },
                         node,
                         node.color,
                         ctx,
                         this.selectedNodes.has(node),
                         node.isNestedInferred,
+                        node.disabled,
                       )
                       }
                       nodePointerAreaPaint={nodeAreaPaint}
@@ -1630,12 +1632,16 @@ class ReportKnowledgeGraphComponent extends Component {
                         : null)
                       }
                       linkColor={(link) => {
-                        // eslint-disable-next-line no-nested-ternary
-                        return this.selectedLinks.has(link)
-                          ? theme.palette.secondary.main
-                          : link.isNestedInferred
-                            ? theme.palette.warning.main
-                            : theme.palette.primary.main;
+                        if (this.selectedLinks.has(link)) {
+                          return theme.palette.secondary.main;
+                        }
+                        if (link.isNestedInferred) {
+                          return theme.palette.warning.main;
+                        }
+                        if (link.disabled) {
+                          return theme.palette.action.disabled;
+                        }
+                        return theme.palette.primary.main;
                       }}
                       linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)
                       }

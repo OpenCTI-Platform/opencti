@@ -41,9 +41,7 @@ import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import {
-  investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-} from './InvestigationAddStixCoreObjectsLines';
+import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -2259,12 +2257,14 @@ class InvestigationGraphComponent extends Component {
                             inferred: theme.palette.warning.main,
                             numbersBackground: theme.palette.background.default,
                             numberText: theme.palette.text.secondary,
+                            disabled: theme.palette.grey[600],
                           },
                           node,
                           node.color,
                           ctx,
                           this.selectedNodes.has(node),
                           false,
+                          node.disabled,
                           true,
                         )
                       }

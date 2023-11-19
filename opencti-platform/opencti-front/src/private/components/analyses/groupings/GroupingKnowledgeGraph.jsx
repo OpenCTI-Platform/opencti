@@ -1559,12 +1559,14 @@ class GroupingKnowledgeGraphComponent extends Component {
                         {
                           selected: theme.palette.secondary.main,
                           inferred: theme.palette.warning.main,
+                          disabled: theme.palette.grey[600],
                         },
                         node,
                         node.color,
                         ctx,
                         this.selectedNodes.has(node),
                         node.isNestedInferred,
+                        node.disabled,
                       )
                       }
                       nodePointerAreaPaint={nodeAreaPaint}

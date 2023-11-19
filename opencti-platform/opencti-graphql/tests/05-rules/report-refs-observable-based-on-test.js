@@ -21,7 +21,7 @@ import { addIndicator } from '../../src/domain/indicator';
 import ReportRefsObservableBasedOnRule
   from '../../src/rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
 
-describe('Report refs identity rule', () => {
+describe('Report refs observable rule', () => {
   it(
     'Should rule successfully activated',
     async () => {
@@ -38,14 +38,10 @@ describe('Report refs identity rule', () => {
       // ---- REPORT - ref - OBSERVABLE C
       // -> REPORT - ref - part of (REL02)
       // -> REPORT - ref - INDICATOR D
-      // 3. Add new part of relation (reverse order) with IDENTITY E and F I(D)- part of - I(E) - part of - I(F)
+      // 3. Add new based on relation with INDICATOR E
       // A creation cascade must occurs
-      // -> REPORT - ref - part of (DE)
-      // -> REPORT - ref - IDENTITY E
-      // -> REPORT - ref - part of (EF)
-      // -> REPORT - ref - IDENTITY F
       // 4. Remove a ref from report
-      // 5. Remove a part of relation
+      // 5. Remove a based ib relation
       // Delete all reports
       const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
       await elDeleteElements(testContext, SYSTEM_USER, reports);
@@ -162,7 +158,7 @@ describe('Report refs identity rule', () => {
       expect(afterDeleteARelations.length).toBe(4);
       // endregion
 
-      // region 5............................ Remove a part of relation
+      // region 5............................ Remove a based on relation
       await deleteElementById(testContext, SYSTEM_USER, indicatorDBasedOnObservableC.internal_id, indicatorDBasedOnObservableC.entity_type);
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteDERelations = await getInferences(RELATION_OBJECT);
