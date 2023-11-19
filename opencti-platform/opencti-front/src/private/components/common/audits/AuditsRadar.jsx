@@ -267,7 +267,8 @@ const AuditsRadar = ({
             ];
             const labels = props.auditsDistribution.map((n) => truncate(
               // eslint-disable-next-line no-nested-ternary
-              selection.attribute.endsWith('_id')
+              selection.attribute.endsWith('.id')
+                  || selection.attribute.endsWith('_id')
                   || selection.attribute.endsWith('_ids')
                 ? defaultValue(n.entity)
                 : selection.attribute === 'entity_type'

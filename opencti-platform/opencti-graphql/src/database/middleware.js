@@ -576,11 +576,11 @@ export const timeSeriesRelations = async (context, user, args) => {
 };
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && !field.endsWith('internal_id')) {
+  if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.' && !field.includes('context_data'))) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -592,10 +592,10 @@ export const distributionHistory = async (context, user, types, args) => {
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'group_ids' || field === 'organization_ids' || field === 'context_data.id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'group_ids' || field === 'organization_ids' || field.includes('context_data')) {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
-  if (field === 'name') {
+  if (field === 'name' || field === 'context_data.id') {
     let result = [];
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {

@@ -102,6 +102,12 @@ const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntit
           return false;
         }
       }
+      if (key === 'activity_statuses') {
+        const ids = values.map((v) => v.id);
+        if (!ids.includes(status)) {
+          return false;
+        }
+      }
     }
   }
   return true;
@@ -162,6 +168,8 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         applicant_id: event.data.origin?.applicant_id,
         timestamp: eventDate,
         context_data: contextData,
+        'rel_object-marking.internal_id': event.data.data.object_marking_refs_ids,
+        'rel_granted.internal_id': event.data.data.granted_refs_ids,
       };
     });
   // Bulk the history data insertions

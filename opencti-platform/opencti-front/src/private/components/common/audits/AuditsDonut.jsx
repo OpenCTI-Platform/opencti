@@ -268,7 +268,8 @@ const AuditsDonut = ({
             const data = props.auditsDistribution;
             const chartData = data.map((n) => n.value);
             // eslint-disable-next-line no-nested-ternary
-            const labels = data.map((n) => (selection.attribute.endsWith('_id')
+            const labels = data.map((n) => (selection.attribute.endsWith('.id')
+              || selection.attribute.endsWith('_id')
               || selection.attribute.endsWith('_ids')
               ? defaultValue(n.entity)
               : selection.attribute === 'entity_type'

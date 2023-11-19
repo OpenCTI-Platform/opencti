@@ -201,8 +201,9 @@ const i18n = {
       'Do you want to delete this workbench?':
         '¿Quieres eliminar este espacio de trabajo?',
       'You are about to change the marking with another rank.':
-          'Está a punto de cambiar la marca con otro rango.',
-      'Are you sure you want to make the change?': 'Estás seguro de que quieres hacer el cambio?',
+        'Está a punto de cambiar la marca con otro rango.',
+      'Are you sure you want to make the change?':
+        'Estás seguro de que quieres hacer el cambio?',
       'Applying this rule on the existing data':
         'Aplicando esta regla a los datos existentes',
       'This rule has been applied on the existing data':
@@ -723,7 +724,8 @@ const i18n = {
       'Files indexed': 'Ficheros indexados',
       'Volume indexed': 'Volumen indexado',
       Requirements: 'Requisitos',
-      'File indexing needs one of these requirements': 'La indexación de archivos necesita uno de estos requisitos',
+      'File indexing needs one of these requirements':
+        'La indexación de archivos necesita uno de estos requisitos',
       'Upload date': 'Fecha de carga',
       Occurrences: 'Ocurrencias',
       'Attached entity type': 'Tipo de entidad adjunta',
@@ -732,7 +734,8 @@ const i18n = {
       'Create a csv mapper': 'Crear un mapeador de CSV',
       'Csv Mapper edition': 'Edición del mapeador de CSV',
       'My csv file contains header': 'Mi archivo CSV contiene encabezado',
-      'If this option is selected, we will skip the first line of your csv file': 'Si esta opción está seleccionada, saltaremos la primera línea de su archivo CSV',
+      'If this option is selected, we will skip the first line of your csv file':
+        'Si esta opción está seleccionada, saltaremos la primera línea de su archivo CSV',
       'CSV separator': 'Separador de CSV',
       Comma: 'Coma',
       Semicolon: 'Punto y coma',
@@ -741,17 +744,23 @@ const i18n = {
       'New entity representation': 'Nueva representación de entidad',
       'Column index': 'Índice de columna',
       'List separator': 'Separador de lista',
-      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)': 'Si este campo contiene múltiples valores, puede especificar el separador utilizado entre cada valor (por ejemplo, | o +)',
+      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)':
+        'Si este campo contiene múltiples valores, puede especificar el separador utilizado entre cada valor (por ejemplo, | o +)',
       'Date pattern': 'Formato de fecha',
-      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)': 'Por defecto aceptamos la fecha ISO (AAAA-MM-DD), pero puede especificar su propio formato de fecha en notación ISO (por ejemplo, DD.MM.AAAA)',
+      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)':
+        'Por defecto aceptamos la fecha ISO (AAAA-MM-DD), pero puede especificar su propio formato de fecha en notación ISO (por ejemplo, DD.MM.AAAA)',
       'Representation entity': 'Representación de entidad',
       'Representations for relationship': 'Representaciones para relación',
       'New relationship representation': 'Nueva representación de relación',
       'Testing csv mapper': 'Probando el mapeador de CSV',
-      'Your testing file (csv only, max 5MB)': 'Su archivo de prueba (CSV, 5MB max)',
-      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.': 'Seleccione un archivo de muestra en formato CSV, con un tamaño máximo de 5MB para limitar el tiempo de procesamiento.',
-      'You will find here the result in JSON format': 'Aquí encontrará el resultado en formato JSON',
-      'Do you want to delete this representation?': '¿Desea eliminar esta representación?',
+      'Your testing file (csv only, max 5MB)':
+        'Su archivo de prueba (CSV, 5MB max)',
+      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.':
+        'Seleccione un archivo de muestra en formato CSV, con un tamaño máximo de 5MB para limitar el tiempo de procesamiento.',
+      'You will find here the result in JSON format':
+        'Aquí encontrará el resultado en formato JSON',
+      'Do you want to delete this representation?':
+        '¿Desea eliminar esta representación?',
       // Settings Messages
       'Dashboard settings': 'Cuadro de mando de configuración',
       'Platform announcement': 'Anuncio de plataforma',
@@ -978,7 +987,8 @@ const i18n = {
       'Remove selected items': 'Quitar los elementos seleccionados',
       'Remove from this entity': 'Quitar esta entidad',
       'Remove from this object': 'Quitar este objeto',
-      'Open the entity overview in a separated tab': 'Abrir la descripción general de la entidad en una pestaña separada',
+      'Open the entity overview in a separated tab':
+        'Abrir la descripción general de la entidad en una pestaña separada',
       'All observables': 'Todos los observables',
       'Autonomous system': 'Sistema autónomo (AS)',
       'Domain names': 'Nombres de dominio',
@@ -1088,10 +1098,14 @@ const i18n = {
       'Launch a background task': 'Lanzar una tarea en segundo plano',
       'Take deletions into account': 'Tener en cuenta los borrados',
       'Advanced options': 'Opciones avanzadas',
-      'Use these options if you know what you are doing': 'Utilice estas opciones si sabe lo que está haciendo',
-      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)': 'Utilice esta opción si desea evitar resoluciones de relaciones integradas (las referencias como creadas por aún se resolverán automáticamente)',
-      'Use this option only in case of platform to platform replication': 'Utilice esta opción sólo en caso de replicación de plataforma a plataforma.',
-      'Every data fetched from this synchronizer will be written as the only source of truth': 'Todos los datos obtenidos de este sincronizador se escribirán como la única fuente de verdad',
+      'Use these options if you know what you are doing':
+        'Utilice estas opciones si sabe lo que está haciendo',
+      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)':
+        'Utilice esta opción si desea evitar resoluciones de relaciones integradas (las referencias como creadas por aún se resolverán automáticamente)',
+      'Use this option only in case of platform to platform replication':
+        'Utilice esta opción sólo en caso de replicación de plataforma a plataforma.',
+      'Every data fetched from this synchronizer will be written as the only source of truth':
+        'Todos los datos obtenidos de este sincronizador se escribirán como la única fuente de verdad',
       'Avoid dependencies resolution': 'Evitar resolución de dependencias',
       Initiator: 'Iniciador',
       'Targeted entities': 'Entidades',
@@ -1322,7 +1336,8 @@ const i18n = {
       Activities: 'Actividad',
       Activity: 'Actividad',
       'Extended activity logging': 'Registro de actividad extendido',
-      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.': 'Se puede habilitar el registro de actividad extendido en usuarios, grupos y organizaciones para registrar sus acciones como lectura, carga, descarga, etc.',
+      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.':
+        'Se puede habilitar el registro de actividad extendido en usuarios, grupos y organizaciones para registrar sus acciones como lectura, carga, descarga, etc.',
       'Relative time': 'Tiempo relativo',
       'Last 24 hours': 'Últiimas 24 horas',
       'Last 7 days': 'Últimos 7 días',
@@ -1342,7 +1357,8 @@ const i18n = {
       'Valid until': 'Válido hasta',
       Score: 'Puntuación',
       'Search for an entity': 'Buscar una entidad',
-      'Extend this search to indexed files': 'Extender esta búsqueda a archivos indexados',
+      'Extend this search to indexed files':
+        'Extender esta búsqueda a archivos indexados',
       'Linked knowledge': 'Conocimiento relacionado',
       'Linked entities': 'Entidades relacionadas',
       'Nested objects': 'Objetos anidados',
@@ -2007,6 +2023,7 @@ const i18n = {
       filter_createdBy_not_eq: 'NO Autor',
       filter_category: 'Categoría',
       filter_entity_types: 'Tipo de entidads',
+      filter_elementType: 'Tipo de entidads',
       filter_members_user: 'Usuario',
       filter_members_group: 'Grupo',
       filter_members_organization: 'Organización',
@@ -2022,6 +2039,8 @@ const i18n = {
       filter_report_types_not_eq: 'NO Tipo de informe',
       filter_channel_types: 'Tipo de canal',
       filter_channel_types_not_eq: 'NO Tipo de canal',
+      filter_event_scope: 'Event scope',
+      filter_event_scope_not_eq: 'NOT Event scope',
       filter_event_type: 'Tipo de evento',
       filter_event_type_not_eq: 'NO Tipo de evento',
       filter_event_types: 'Tipo de evento',
@@ -2102,6 +2121,10 @@ const i18n = {
       Event_type: 'Event type',
       Event_scope: 'Event scope',
       'Context_data.id': 'Related entity',
+      'Context_data.created_by_ref_id': 'Author',
+      'Context_data.labels_ids': 'Labels',
+      'Context_data.object_marking_refs_ids': 'Marking definition',
+      'Context_data.creator_ids': 'Creator',
       Indicator_types: 'Indicator types',
       Pattern_type: 'Pattern type',
       Valid_from: 'Valid from',
@@ -2194,9 +2217,11 @@ const i18n = {
       'Choose target': 'Elegir objetivo',
       'Notifier edition': 'Edición de notificador',
       'Create a notifier': 'Crear un notificador',
-      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Hay dos notificadores integrados en la plataforma: Interfaz de usuario y Mailer predeterminado. No son configurables y puede crear sus personalizados aquí.',
+      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.':
+        'Hay dos notificadores integrados en la plataforma: Interfaz de usuario y Mailer predeterminado. No son configurables y puede crear sus personalizados aquí.',
       Expired: 'Caducada',
-      'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.',
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
+        'Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
@@ -2234,18 +2259,24 @@ const i18n = {
       'Child organizations': 'Organizaciones hijas',
       'Organization administrator': ' Administrador de organización',
       Member: 'Miembro',
-      'Grantable groups by organization administrators': 'Grupos autorizables por los administradores de la organización',
-      'This Group allows the user to bypass restriction. It should not be added here.': 'Este grupo permite al usuario saltarse las restricciones. No debe añadirse aquí',
+      'Grantable groups by organization administrators':
+        'Grupos autorizables por los administradores de la organización',
+      'This Group allows the user to bypass restriction. It should not be added here.':
+        'Este grupo permite al usuario saltarse las restricciones. No debe añadirse aquí',
       'Add a group': 'Añadir un grupo',
       'Char to escape line': 'Carácter para escapar la línea',
       Processing: 'Procesamiento',
       Automation: 'Automatización',
       'My CSV file contains headers': 'Mi archivo CSV contiene encabezados',
       'Objects found': 'Objetos encontrados',
-      'Please contact an administrator': 'Por favor, póngase en contacto con un administrador',
-      'Create a CSV Mapper configuration': 'Crear una configuración de mapeo CSV',
-      'There are not any configurations set yet': 'Todavía no se han configurado ninguna configuración',
-      'Do you want to delete this CSV mapper ?': '¿Desea eliminar este mapeador CSV?',
+      'Please contact an administrator':
+        'Por favor, póngase en contacto con un administrador',
+      'Create a CSV Mapper configuration':
+        'Crear una configuración de mapeo CSV',
+      'There are not any configurations set yet':
+        'Todavía no se han configurado ninguna configuración',
+      'Do you want to delete this CSV mapper ?':
+        '¿Desea eliminar este mapeador CSV?',
       'Attribute mapping configuration': 'Configuración de mapeo de atributos',
     },
     'fr-fr': {
@@ -2474,8 +2505,9 @@ const i18n = {
       'Do you want to delete this workbench?':
         'Souhaitez-vous supprimer cet espace de travail ?',
       'You are about to change the marking with another rank.':
-        'Vous êtes sur le point de changer le rang d\'un marking de même type.',
-      'Are you sure you want to make the change?': 'Êtes-vous sûr de vouloir effectuer le changement ?',
+        "Vous êtes sur le point de changer le rang d'un marking de même type.",
+      'Are you sure you want to make the change?':
+        'Êtes-vous sûr de vouloir effectuer le changement ?',
       'Applying this rule on the existing data':
         "En cours d'application de cette règle sur les données de la plateforme",
       'This rule has been applied on the existing data':
@@ -2498,7 +2530,7 @@ const i18n = {
       'Last reports': 'Derniers rapports',
       'Correlated reports': 'Rapports connexes',
       'Correlated groupings': 'Groupements connexes',
-      'Correlated intrusion sets': 'Ensembles d\'intrusions connexes',
+      'Correlated intrusion sets': "Ensembles d'intrusions connexes",
       Enable: 'Activer',
       Disable: 'Désactiver',
       Rescan: 'Rescanner',
@@ -2900,7 +2932,8 @@ const i18n = {
         "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
       'Add in container': 'Ajout dans un conteneur',
-      'Turn into a new Report or Case': 'Transformer en un nouveau rapport ou cas',
+      'Turn into a new Report or Case':
+        'Transformer en un nouveau rapport ou cas',
       'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
         "Copie désactivée : trop d’éléments sélectionnés (nombre maximum d'éléments pour une copie: ",
       Copy: 'Copie',
@@ -2965,7 +2998,7 @@ const i18n = {
       Settings: 'Paramètres',
       SETTINGS: 'PARAMÈTRES',
       'Entity settings': "Paramètres de l'entité",
-      'Do not forget to update your': 'N\'oubliez pas de mettre à jour votre',
+      'Do not forget to update your': "N'oubliez pas de mettre à jour votre",
       'consent message': 'message de consentement',
       'if needed': 'si nécessaire',
       // Ingestion Menu
@@ -2979,21 +3012,23 @@ const i18n = {
       'Configuration and impact': 'Configuration et impact',
       'Files will be indexed': 'Fichiers à indexer',
       'Storage size': 'Taille de stockage',
-      'Indexing information': 'Informations d\'indexation',
+      'Indexing information': "Informations d'indexation",
       Pause: 'Pause',
       'Files indexed': 'Fichiers indexés',
       'Volume indexed': 'Volume indexé',
       Requirements: 'Configuration requise',
-      'File indexing needs one of these requirements': 'L\'indexation des fichiers nécessite l\'une des configurations suivantes',
+      'File indexing needs one of these requirements':
+        "L'indexation des fichiers nécessite l'une des configurations suivantes",
       'Upload date': 'Date de téléchargement',
       Occurrences: 'Occurrences',
-      'Attached entity type': 'Type de l\'entité attachée',
-      'Attached entity name': 'Nom de l\'entité attachée',
+      'Attached entity type': "Type de l'entité attachée",
+      'Attached entity name': "Nom de l'entité attachée",
       // Csv Mappers
       'Create a csv mapper': 'Créer un mapping CSV',
       'Csv Mapper edition': 'Édition du mapping CSV',
       'My csv file contains header': 'Mon fichier CSV contient un en-tête',
-      'If this option is selected, we will skip the first line of your csv file': 'Si cette option est sélectionnée, nous sauterons la première ligne de votre fichier CSV',
+      'If this option is selected, we will skip the first line of your csv file':
+        'Si cette option est sélectionnée, nous sauterons la première ligne de votre fichier CSV',
       'CSV separator': 'Séparateur CSV',
       Comma: 'Virgule',
       Semicolon: 'Point-virgule',
@@ -3002,17 +3037,23 @@ const i18n = {
       'New entity representation': "Nouvelle représentation d'entité",
       'Column index': 'Indice de colonne',
       'List separator': 'Séparateur de liste',
-      'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)': 'Si ce champ contient plusieurs valeurs, vous pouvez spécifier le séparateur utilisé entre chaque valeur (par exemple | ou +)',
+      'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)':
+        'Si ce champ contient plusieurs valeurs, vous pouvez spécifier le séparateur utilisé entre chaque valeur (par exemple | ou +)',
       'Date pattern': 'Format de date',
-      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)': 'Par défaut, nous acceptons la date ISO (AAAA-MM-JJ), mais vous pouvez spécifier votre propre format de date en notation ISO (par exemple JJ.MM.AAAA)',
+      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)':
+        'Par défaut, nous acceptons la date ISO (AAAA-MM-JJ), mais vous pouvez spécifier votre propre format de date en notation ISO (par exemple JJ.MM.AAAA)',
       'Representation entity': "Représentation d'entité",
       'Representations for relationship': 'Représentations pour une relation',
       'New relationship representation': 'Nouvelle représentation de relation',
       'Testing csv mapper': 'Test du mapping CSV',
-      'Your testing file (csv only, max 5MB)': 'Votre fichier de test (format CSV, max 5MB)',
-      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.': 'Sélectionnez un fichier d\'exemple au format CSV, avec une taille maximale de 5 Mo pour limiter le temps de traitement.',
-      'You will find here the result in JSON format': 'Vous trouverez ici le résultat au format JSON',
-      'Do you want to delete this representation?': 'Voulez-vous supprimer cette représentation ?',
+      'Your testing file (csv only, max 5MB)':
+        'Votre fichier de test (format CSV, max 5MB)',
+      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.':
+        "Sélectionnez un fichier d'exemple au format CSV, avec une taille maximale de 5 Mo pour limiter le temps de traitement.",
+      'You will find here the result in JSON format':
+        'Vous trouverez ici le résultat au format JSON',
+      'Do you want to delete this representation?':
+        'Voulez-vous supprimer cette représentation ?',
       // Settings Messages
       'Dashboard settings': 'Paramètres du tableau de bord',
       'Platform announcement': 'Annonce de la plateforme',
@@ -3236,7 +3277,8 @@ const i18n = {
       'Remove selected items': 'Supprimer les éléments sélectionnés',
       'Remove from this entity': 'Retirer de cette entité',
       'Remove from this object': 'Retirer de cet objet',
-      'Open the entity overview in a separated tab': 'Ouvrir la vue d’ensemble de l’entité dans un onglet séparé',
+      'Open the entity overview in a separated tab':
+        'Ouvrir la vue d’ensemble de l’entité dans un onglet séparé',
       'All observables': 'Tous les observables',
       'Autonomous system': 'Système autonome',
       'Domain names': 'Noms de domaine',
@@ -3345,10 +3387,14 @@ const i18n = {
       'Launch a background task': 'Lancer une tâche de fond',
       'Take deletions into account': 'Prendre en compte les suppressions',
       'Advanced options': 'Options avancées',
-      'Use these options if you know what you are doing': 'Utilisez ces options si vous savez ce que vous faites',
-      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)': 'Utilisez cette option si vous souhaitez empêcher toute résolution intégrée des relations (les références telles que CreateBy seront toujours résolues automatiquement)',
-      'Use this option only in case of platform to platform replication': 'Utilisez cette option uniquement en cas de réplication de plateforme à plateforme',
-      'Every data fetched from this synchronizer will be written as the only source of truth': 'Toutes les données de ce synchroniseur seront écrites comme la seule source de vérité',
+      'Use these options if you know what you are doing':
+        'Utilisez ces options si vous savez ce que vous faites',
+      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)':
+        'Utilisez cette option si vous souhaitez empêcher toute résolution intégrée des relations (les références telles que CreateBy seront toujours résolues automatiquement)',
+      'Use this option only in case of platform to platform replication':
+        'Utilisez cette option uniquement en cas de réplication de plateforme à plateforme',
+      'Every data fetched from this synchronizer will be written as the only source of truth':
+        'Toutes les données de ce synchroniseur seront écrites comme la seule source de vérité',
       'Avoid dependencies resolution': 'Aucune résolution des dépendances',
       Initiator: 'Initiateur',
       'Targeted entities': 'Entités ciblées',
@@ -3578,7 +3624,8 @@ const i18n = {
       Activities: 'Activités',
       Activity: 'Activité',
       'Extended activity logging': 'Journalisation étendue des activités',
-      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.': 'La journalisation étendue des activités peut être activée sur les utilisateurs, les groupes et les organisations pour enregistrer leurs actions telles que la lecture, le téléchargement, le téléchargement, etc.',
+      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.':
+        'La journalisation étendue des activités peut être activée sur les utilisateurs, les groupes et les organisations pour enregistrer leurs actions telles que la lecture, le téléchargement, le téléchargement, etc.',
       'Relative time': 'Temps relatif',
       'Last 24 hours': 'Dernières 24 heures',
       'Last 7 days': 'Derniers 7 jours',
@@ -3598,7 +3645,8 @@ const i18n = {
       'Valid until': "Valide jusqu'à",
       Score: 'Score',
       'Search for an entity': 'Rechercher une entité',
-      'Extend this search to indexed files': 'Étendre la recherche aux fichiers indexés',
+      'Extend this search to indexed files':
+        'Étendre la recherche aux fichiers indexés',
       'Linked knowledge': 'Connaissance liée',
       'Linked entities': 'Entités liées',
       'Nested objects': 'Objets liés',
@@ -4185,7 +4233,7 @@ const i18n = {
       'relationship_host-vm': 'machine virtuelle hôte',
       'relationship_installed-software': 'logiciel installé',
       'relationship_opened-connection': 'connexion ouverte',
-      'relationship_operating-system': 'système d\'exploitation',
+      'relationship_operating-system': "système d'exploitation",
       relationship_parent: 'parent',
       'relationship_parent-directory': 'répertoire parent',
       'relationship_raw-email': 'e-mail brut',
@@ -4253,7 +4301,8 @@ const i18n = {
       filter_createdBy: 'Auteur',
       filter_createdBy_not_eq: 'SANS Auteur',
       filter_category: 'Catégorie',
-      filter_entity_types: "Type d'entités",
+      filter_entity_types: "Types d'entité",
+      filter_elementType: "Types d'entité",
       filter_members_user: 'Utilisateur',
       filter_members_group: 'Groupe',
       filter_members_organization: 'Organisation',
@@ -4269,6 +4318,8 @@ const i18n = {
       filter_report_types_not_eq: 'SANS Type de rapport',
       filter_channel_types: 'Type de canal',
       filter_channel_types_not_eq: 'SANS Type de canal',
+      filter_event_scope: 'Event scope',
+      filter_event_scope_not_eq: 'NOT Event scope',
       filter_event_type: "Type d'évènement",
       filter_event_type_not_eq: "SANS Type d'évènement",
       filter_event_types: "Type d'évènement",
@@ -4345,9 +4396,13 @@ const i18n = {
       'Object-label.internal_id': 'Label',
       X_opencti_reliability: 'Reliability',
       Report_types: 'Report types',
-      Event_type: 'Event type',
-      Event_scope: 'Event scope',
-      'Context_data.id': 'Related entity',
+      Event_type: "Type d'évenement",
+      Event_scope: "Scope d'événement",
+      'Context_data.id': 'Entité liée',
+      'Context_data.created_by_ref_id': 'Auteur',
+      'Context_data.labels_ids': 'Labels',
+      'Context_data.object_marking_refs_ids': 'Marquage',
+      'Context_data.creator_ids': 'Créateur',
       Indicator_types: 'Indicator types',
       Pattern_type: 'Pattern type',
       Valid_from: 'Valid from',
@@ -4445,9 +4500,11 @@ const i18n = {
       'Choose target': 'Choisir la cible',
       'Notifier edition': 'Edition de notificateur',
       'Create a notifier': 'Créer un notificateur',
-      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'Il existe deux notificateurs intégrés dans la plate-forme: Interface utilisateur et Expéditeur par défaut. Ils ne sont pas configurables et vous pouvez créer vos notificateurs personnalisés ici.',
+      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.':
+        'Il existe deux notificateurs intégrés dans la plate-forme: Interface utilisateur et Expéditeur par défaut. Ils ne sont pas configurables et vous pouvez créer vos notificateurs personnalisés ici.',
       Expired: 'Expiré',
-      'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Votre compte à expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.',
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
+        'Votre compte à expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
@@ -4461,7 +4518,7 @@ const i18n = {
       Ethnicity: 'Origine ethnique',
       Gender: 'Genre',
       'Marital Status': 'État civil',
-      'Job Title': 'Titre d\'emploi',
+      'Job Title': "Titre d'emploi",
       'Date Seen': 'Date de visualisation',
       'Add a height': 'Ajouter une hauteur',
       'Weight (Pounds)': 'Poids (livres)',
@@ -4471,22 +4528,24 @@ const i18n = {
       Biographics: 'Biographie',
       'Eye Color': 'Couleur des yeux',
       'Known observed eye color(s) for the Identity.':
-        'Couleur(s) des yeux observée(s) connue(s) pour l\'Identité.',
+        "Couleur(s) des yeux observée(s) connue(s) pour l'Identité.",
       'Hair Color': 'Couleur de cheveux',
       'Known observed hair color(s) for the Identity.':
-        'Couleur(s) de cheveux observée(s) connue(s) pour l\'Identité.',
+        "Couleur(s) de cheveux observée(s) connue(s) pour l'Identité.",
       Height: 'Hauteur',
       'Known observed height(s) for the Identity.':
-        'Hauteur(s) observée(s) connue(s) pour l\'identité.',
+        "Hauteur(s) observée(s) connue(s) pour l'identité.",
       Weight: 'Poid',
       'The value must be a string': 'La valeur doit être une chaîne',
       'Add a new member': 'Ajouter un nouveau membre',
       'Parent organizations': 'Organisations parentes',
       'Child organizations': 'Organisations enfants',
-      'Organization administrator': 'Administrateur de l\'organisation',
+      'Organization administrator': "Administrateur de l'organisation",
       Member: 'Membre',
-      'Grantable groups by organization administrators': 'Groupes autorisés par les administrateurs d\'organisations',
-      'This Group allows the user to bypass restriction. It should not be added here.': 'Ce groupe permet à l\'utilisateur de contourner les restrictions. Il ne doit pas être ajouté ici',
+      'Grantable groups by organization administrators':
+        "Groupes autorisés par les administrateurs d'organisations",
+      'This Group allows the user to bypass restriction. It should not be added here.':
+        "Ce groupe permet à l'utilisateur de contourner les restrictions. Il ne doit pas être ajouté ici",
       'Add a group': 'Ajouter un groupe',
       'Char to escape line': 'Caractère pour sauter une ligne',
       Processing: 'Traitement',
@@ -4494,10 +4553,13 @@ const i18n = {
       'My CSV file contains headers': 'Mon fichier CSV contient des en-têtes',
       'Objects found': 'Objets trouvés',
       'Please contact an administrator': 'Veuillez contacter un administrateur',
-      'Create a CSV Mapper configuration': 'Créer une configuration de mappage CSV',
-      'There are not any configurations set yet': 'Il n\'y a pas encore de configurations définies',
-      'Do you want to delete this CSV mapper ?': 'Voulez-vous supprimer ce mappage CSV ?',
-      'Attribute mapping configuration': 'Configuration de mappage d\'attributs',
+      'Create a CSV Mapper configuration':
+        'Créer une configuration de mappage CSV',
+      'There are not any configurations set yet':
+        "Il n'y a pas encore de configurations définies",
+      'Do you want to delete this CSV mapper ?':
+        'Voulez-vous supprimer ce mappage CSV ?',
+      'Attribute mapping configuration': "Configuration de mappage d'attributs",
     },
     'ja-jp': {
       // Titles
@@ -4683,7 +4745,7 @@ const i18n = {
       'Do you want to delete this workbench?':
         'このワークスペースを削除しますか?',
       'You are about to change the marking with another rank.':
-          '別のランクにマークを変更しようとしています。',
+        '別のランクにマークを変更しようとしています。',
       'Are you sure you want to make the change?': '本当に変更しますか？',
       'Applying this rule on the existing data':
         '既存のデータにルールを適用しています',
@@ -5194,12 +5256,15 @@ const i18n = {
       'Files indexed': '索引的文件',
       'Volume indexed': '卷索引',
       Requirements: '要求',
-      'File indexing needs one of these requirements': '文件索引需要满足以下要求之一',
+      'File indexing needs one of these requirements':
+        '文件索引需要满足以下要求之一',
       // Csv Mappers
       'Create a csv mapper': 'CSVマッパーを作成',
       'Csv Mapper edition': 'CSVマッパーの編集',
-      'My csv file contains header': '私のCSVファイルにはヘッダーが含まれています',
-      'If this option is selected, we will skip the first line of your csv file': 'このオプションが選択されている場合、CSVファイルの最初の行はスキップされます',
+      'My csv file contains header':
+        '私のCSVファイルにはヘッダーが含まれています',
+      'If this option is selected, we will skip the first line of your csv file':
+        'このオプションが選択されている場合、CSVファイルの最初の行はスキップされます',
       'CSV separator': 'CSVセパレータ',
       Comma: 'カンマ',
       Semicolon: 'セミコロン',
@@ -5208,16 +5273,21 @@ const i18n = {
       'New entity representation': '新しいエンティティの表現',
       'Column index': '列インデックス',
       'List separator': 'リストのセパレータ',
-      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)': 'このフィールドに複数の値が含まれている場合、各値の間に使用されるセパレータを指定できます（例：|または+）',
+      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)':
+        'このフィールドに複数の値が含まれている場合、各値の間に使用されるセパレータを指定できます（例：|または+）',
       'Date pattern': '日付パターン',
-      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)': 'デフォルトではISO日付（YYYY-MM-DD）を受け入れますが、ISO表記で独自の日付形式を指定できます（例：DD.MM.AAAA）',
+      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)':
+        'デフォルトではISO日付（YYYY-MM-DD）を受け入れますが、ISO表記で独自の日付形式を指定できます（例：DD.MM.AAAA）',
       'Representation entity': 'エンティティの表現',
       'Representations for relationship': '関係の表現',
       'New relationship representation': '新しい関係の表現',
       'Testing csv mapper': 'CSVマッパーのテスト',
-      'Your testing file (csv only, max 5MB)': 'テスト用のファイル (CSV, 最大5MB)',
-      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.': '処理時間を制限するために、最大サイズが5MBのCSV形式のサンプルファイルを選択してください。',
-      'You will find here the result in JSON format': 'こちらでJSON形式の結果が見つかります',
+      'Your testing file (csv only, max 5MB)':
+        'テスト用のファイル (CSV, 最大5MB)',
+      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.':
+        '処理時間を制限するために、最大サイズが5MBのCSV形式のサンプルファイルを選択してください。',
+      'You will find here the result in JSON format':
+        'こちらでJSON形式の結果が見つかります',
       'Do you want to delete this representation?': 'この表現を削除しますか？',
       // Settings Messages
       'Dashboard settings': 'ダッシュボードの設定',
@@ -5441,7 +5511,8 @@ const i18n = {
       'Remove selected items': '選択したアイテムを削除する',
       'Remove from this entity': 'このエンティティから削除する',
       'Remove from this object': 'このオブジェクトから削除する',
-      'Open the entity overview in a separated tab': 'エンティティの概要を別のタブで開く',
+      'Open the entity overview in a separated tab':
+        'エンティティの概要を別のタブで開く',
       'All observables': '観測結果',
       'Autonomous system': '自律システム (AS)',
       'Domain names': 'ドメイン名',
@@ -5548,10 +5619,14 @@ const i18n = {
       'Launch a background task': 'バックグラウンドタスクの起動',
       'Take deletions into account': '削除されたものを考慮する',
       'Advanced options': '高度なオプション',
-      'Use these options if you know what you are doing': '自分が何をしようとしているのかわかっている場合は、これらのオプションを使用してください',
-      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)': '組み込みのリレーション解決を回避したい場合は、このオプションを使用します (createdBy などの参照は引き続き自動解決されます)。',
-      'Use this option only in case of platform to platform replication': 'このオプションは、プラットフォーム間のレプリケーションの場合にのみ使用してください。',
-      'Every data fetched from this synchronizer will be written as the only source of truth': 'このシンクロナイザーからフェッチされたすべてのデータは、唯一の信頼できる情報源として書き込まれます。',
+      'Use these options if you know what you are doing':
+        '自分が何をしようとしているのかわかっている場合は、これらのオプションを使用してください',
+      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)':
+        '組み込みのリレーション解決を回避したい場合は、このオプションを使用します (createdBy などの参照は引き続き自動解決されます)。',
+      'Use this option only in case of platform to platform replication':
+        'このオプションは、プラットフォーム間のレプリケーションの場合にのみ使用してください。',
+      'Every data fetched from this synchronizer will be written as the only source of truth':
+        'このシンクロナイザーからフェッチされたすべてのデータは、唯一の信頼できる情報源として書き込まれます。',
       'Avoid dependencies resolution': '避免依賴解析',
       Initiator: 'イニシエータ',
       'Targeted entities': '対象エンティティ',
@@ -5778,7 +5853,8 @@ const i18n = {
       Activities: 'アクティビティ',
       Activity: 'アクティビティ',
       'Extended activity logging': '拡張アクティビティログ',
-      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.': 'ユーザー、グループ、組織で拡張アクティビティ ログを有効にして、読み取り、アップロード、ダウンロードなどのアクションをログに記録できます。',
+      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.':
+        'ユーザー、グループ、組織で拡張アクティビティ ログを有効にして、読み取り、アップロード、ダウンロードなどのアクションをログに記録できます。',
       'Relative time': '相対時間',
       'Last 24 hours': '過去24時間',
       'Last 7 days': '過去7日間',
@@ -5798,7 +5874,8 @@ const i18n = {
       'Valid until': '有効期間(終了)',
       Score: 'スコア',
       'Search for an entity': 'エンティティを検索',
-      'Extend this search to indexed files': 'この検索をインデックス付きファイルに拡張します',
+      'Extend this search to indexed files':
+        'この検索をインデックス付きファイルに拡張します',
       'Linked knowledge': 'リンクされたナレッジ',
       'Linked entities': 'リンクされたエンティティ',
       'Nested objects': '階層化されたオブジェクト',
@@ -6447,6 +6524,8 @@ const i18n = {
       filter_report_types_not_eq: 'レポート種別なし',
       filter_channel_types: 'チャネル種別',
       filter_channel_types_not_eq: 'チャネル種別なし',
+      filter_event_scope: 'Event scope',
+      filter_event_scope_not_eq: 'NOT Event scope',
       filter_event_type: 'イベント・タイプ',
       filter_event_type_not_eq: 'イベント・タイプなし',
       filter_event_types: 'イベント・タイプ',
@@ -6526,6 +6605,10 @@ const i18n = {
       Event_type: 'Event type',
       Event_scope: 'Event scope',
       'Context_data.id': 'Related entity',
+      'Context_data.created_by_ref_id': 'Author',
+      'Context_data.labels_ids': 'Labels',
+      'Context_data.object_marking_refs_ids': 'Marking definition',
+      'Context_data.creator_ids': 'Creator',
       Indicator_types: 'Indicator types',
       Pattern_type: 'Pattern type',
       Valid_from: 'Valid from',
@@ -6615,9 +6698,11 @@ const i18n = {
       'Choose target': 'ターゲットを選択',
       'Notifier edition': '通知エージェントの編集',
       'Create a notifier': '通知エージェントを作成する',
-      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': 'プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。',
+      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.':
+        'プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。',
       Expired: '期限切れ',
-      'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。',
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
+        'アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
@@ -6655,8 +6740,10 @@ const i18n = {
       'Child organizations': '子組織',
       'Organization administrator': '組織管理者',
       Member: 'メンバー',
-      'Grantable groups by organization administrators': '組織管理者が付与可能なグループ',
-      'This Group allows the user to bypass restriction. It should not be added here.': 'このグループは、ユーザーが制限をバイパスすることができます。ここには追加しないでください、',
+      'Grantable groups by organization administrators':
+        '組織管理者が付与可能なグループ',
+      'This Group allows the user to bypass restriction. It should not be added here.':
+        'このグループは、ユーザーが制限をバイパスすることができます。ここには追加しないでください、',
       'Add a group': 'グループを追加します',
       'Char to escape line': 'ラインをエスケープするための文字',
       Processing: '処理',
@@ -6666,7 +6753,8 @@ const i18n = {
       'Please contact an administrator': '管理者に連絡してください',
       'Create a CSV Mapper configuration': 'CSVマッパーの構成を作成',
       'There are not any configurations set yet': 'まだ設定がありません',
-      'Do you want to delete this CSV mapper ?': 'このCSVマッパーを削除しますか？',
+      'Do you want to delete this CSV mapper ?':
+        'このCSVマッパーを削除しますか？',
       'Attribute mapping configuration': '属性マッピングの設定',
     },
     'zh-cn': {
@@ -6829,7 +6917,7 @@ const i18n = {
       'Do you want to disable this rule?': '是否要禁用该规则？',
       'Do you want to delete this workbench?': '是否要丢弃此捆绑包?',
       'You are about to change the marking with another rank.':
-          '您即将用另一个级别更改标记。',
+        '您即将用另一个级别更改标记。',
       'Are you sure you want to make the change?': '您确定要更改吗？',
       'Applying this rule on the existing data': '对现有数据应用此规则',
       'This rule has been applied on the existing data':
@@ -7299,12 +7387,14 @@ const i18n = {
       'Files indexed': 'インデックスされたファイル',
       'Volume indexed': '巻数索引',
       Requirements: '必要条件',
-      'File indexing needs one of these requirements': 'ファイルのインデックス作成には、次のいずれかの要件が必要です。',
+      'File indexing needs one of these requirements':
+        'ファイルのインデックス作成には、次のいずれかの要件が必要です。',
       // Csv Mappers
       'Create a csv mapper': '创建CSV映射器',
       'Csv Mapper edition': 'CSV映射器编辑',
       'My csv file contains header': '我的CSV文件包含标题',
-      'If this option is selected, we will skip the first line of your csv file': '如果选择此选项，我们将跳过CSV文件的第一行',
+      'If this option is selected, we will skip the first line of your csv file':
+        '如果选择此选项，我们将跳过CSV文件的第一行',
       'CSV separator': 'CSV分隔符',
       Comma: '逗号',
       Semicolon: '分号',
@@ -7313,16 +7403,20 @@ const i18n = {
       'New entity representation': '新实体表达',
       'Column index': '列索引',
       'List separator': '列表分隔符',
-      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)': '如果此字段包含多个值，您可以指定用于每个值之间的分隔符（例如：|或+）',
+      'If this field contains multiple values, you can specify the separator used between each value (for instance | or +)':
+        '如果此字段包含多个值，您可以指定用于每个值之间的分隔符（例如：|或+）',
       'Date pattern': '日期格式',
-      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)': '默认情况下，我们接受ISO日期（YYYY-MM-DD），但您可以在ISO表示法中指定自己的日期格式（例如DD.MM.AAAA）',
+      'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)':
+        '默认情况下，我们接受ISO日期（YYYY-MM-DD），但您可以在ISO表示法中指定自己的日期格式（例如DD.MM.AAAA）',
       'Representation entity': '实体表达',
       'Representations for relationship': '关系表达',
       'New relationship representation': '新关系表达',
       'Testing csv mapper': '测试CSV映射器',
       'Your testing file (csv only, max 5MB)': '您的测试文件 (CSV, 最大5MB)',
-      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.': '选择一个最大为5MB的CSV格式示例文件，以限制处理时间。',
-      'You will find here the result in JSON format': '您将在此处找到JSON格式的结果',
+      'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.':
+        '选择一个最大为5MB的CSV格式示例文件，以限制处理时间。',
+      'You will find here the result in JSON format':
+        '您将在此处找到JSON格式的结果',
       'Do you want to delete this representation?': '您是否要删除这个表示？',
       // Settings Messages
       'Dashboard settings': '仪表盘设置',
@@ -7530,7 +7624,8 @@ const i18n = {
       'Remove selected items': '移除选中项',
       'Remove from this entity': '从该实体中移除',
       'Remove from this object': '从该对象中移除',
-      'Open the entity overview in a separated tab': '在單獨的選項卡中打開實體概述',
+      'Open the entity overview in a separated tab':
+        '在單獨的選項卡中打開實體概述',
       'All observables': '所有可观测数据',
       'Autonomous system': '自治系统',
       'Domain names': '域名',
@@ -7634,10 +7729,14 @@ const i18n = {
       'Launch a background task': '启动后台任务',
       'Take deletions into account': '考虑删除',
       'Advanced options': '進階選項',
-      'Use these options if you know what you are doing': '如果您知道自己在做什麼，請使用這些選項',
-      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)': '如果您想阻止任何內建關係解析，請使用此選項（像createdBy這樣的引用仍然會自動解析）',
-      'Use this option only in case of platform to platform replication': '僅在平台到平台複製的情況下使用此選項',
-      'Every data fetched from this synchronizer will be written as the only source of truth': '從該同步器獲取的每個資料將寫入作為唯一的事實來源',
+      'Use these options if you know what you are doing':
+        '如果您知道自己在做什麼，請使用這些選項',
+      'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)':
+        '如果您想阻止任何內建關係解析，請使用此選項（像createdBy這樣的引用仍然會自動解析）',
+      'Use this option only in case of platform to platform replication':
+        '僅在平台到平台複製的情況下使用此選項',
+      'Every data fetched from this synchronizer will be written as the only source of truth':
+        '從該同步器獲取的每個資料將寫入作為唯一的事實來源',
       'Avoid dependencies resolution': '避免依賴解析',
       Initiator: '发起者',
       'Targeted entities': '针对的实体',
@@ -7864,7 +7963,8 @@ const i18n = {
       Activities: '活动',
       Activity: '活动',
       'Extended activity logging': '扩展活动记录',
-      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.': '可以对用户、组和组织启用扩展活动日志记录，以记录他们的操作，例如阅读、上传、下载等。',
+      'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.':
+        '可以对用户、组和组织启用扩展活动日志记录，以记录他们的操作，例如阅读、上传、下载等。',
       'Relative time': '相对时间',
       'Last 24 hours': '最近24小时',
       'Last 7 days': '最近7天',
@@ -8488,6 +8588,7 @@ const i18n = {
       filter_createdBy_not_eq: '非作者',
       filter_category: '類別',
       filter_entity_types: '實體類型',
+      filter_elementType: '實體類型',
       filter_members_user: '用戶',
       filter_members_group: '班組',
       filter_members_organization: '公家',
@@ -8503,6 +8604,8 @@ const i18n = {
       filter_report_types_not_eq: '非报告类型',
       filter_channel_types: '渠道类型',
       filter_channel_types_not_eq: '非渠道类型',
+      filter_event_scope: 'Event scope',
+      filter_event_scope_not_eq: 'NOT Event scope',
       filter_event_type: '事件類型',
       filter_event_type_not_eq: '非事件類型',
       filter_event_types: '事件類型',
@@ -8582,6 +8685,10 @@ const i18n = {
       Event_type: 'Event type',
       Event_scope: 'Event scope',
       'Context_data.id': 'Related entity',
+      'Context_data.created_by_ref_id': 'Author',
+      'Context_data.labels_ids': 'Labels',
+      'Context_data.object_marking_refs_ids': 'Marking definition',
+      'Context_data.creator_ids': 'Creator',
       Indicator_types: 'Indicator types',
       Pattern_type: 'Pattern type',
       Valid_from: 'Valid from',
@@ -8680,9 +8787,11 @@ const i18n = {
       'Choose target': '選擇目標',
       'Notifier edition': '通知器版本',
       'Create a notifier': '创建通知器',
-      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.': '平臺中有兩個內置通知程式：使用者介面和預設郵件程式。它們不可配置，您可以在此處創建自定義。',
+      'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.':
+        '平臺中有兩個內置通知程式：使用者介面和預設郵件程式。它們不可配置，您可以在此處創建自定義。',
       Expired: '已到期',
-      'Your account has expired. If you would like to reactivate your account, please contact your administrator.': '您的帳戶已過期。如果您想重新激活您的帳戶，請聯繫您的管理員。',
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
+        '您的帳戶已過期。如果您想重新激活您的帳戶，請聯繫您的管理員。',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
@@ -8712,8 +8821,7 @@ const i18n = {
       'Known observed hair color(s) for the Identity.':
         '已知观察到的身份的头发颜色。',
       Height: '高度',
-      'Known observed height(s) for the Identity.':
-        '已知的身份观测高度。',
+      'Known observed height(s) for the Identity.': '已知的身份观测高度。',
       Weight: '重量',
       'The value must be a string': '该值必须是字符串',
       'Add a new member': '添加新会员',
@@ -8722,7 +8830,8 @@ const i18n = {
       'Organization administrator': '组织管理员',
       Member: '成员',
       'Grantable groups by organization administrators': '组织管理员可授予的组',
-      'This Group allows the user to bypass restriction. It should not be added here.': '该组允许用户绕过限制。不应在此添加',
+      'This Group allows the user to bypass restriction. It should not be added here.':
+        '该组允许用户绕过限制。不应在此添加',
       'Add a group': '添加组',
       'Char to escape line': 'ラインをエスケープするための文字',
       Processing: '处理',
@@ -9005,6 +9114,7 @@ const i18n = {
       filter_createdBy_not_eq: 'NOT Author',
       filter_category: 'Category',
       filter_entity_types: 'Entity types',
+      filter_elementType: 'Entity types',
       filter_members_user: 'User',
       filter_members_group: 'Group',
       filter_members_organization: 'Organization',
@@ -9102,6 +9212,10 @@ const i18n = {
       Event_type: 'Event type',
       Event_scope: 'Event scope',
       'Context_data.id': 'Related entity',
+      'Context_data.created_by_ref_id': 'Author',
+      'Context_data.labels_ids': 'Labels',
+      'Context_data.object_marking_refs_ids': 'Marking definition',
+      'Context_data.creator_ids': 'Creator',
       Indicator_types: 'Indicator types',
       Pattern_type: 'Pattern type',
       Valid_from: 'Valid from',
@@ -9164,7 +9278,8 @@ const i18n = {
       dashboard: 'Dashboard',
       Inactive: 'Inactive',
       Expired: 'Expired',
-      'Your account has expired. If you would like to reactivate your account, please contact your administrator.': 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+      'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
+        'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',

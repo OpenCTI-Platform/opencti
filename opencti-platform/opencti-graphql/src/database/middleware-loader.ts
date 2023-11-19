@@ -20,8 +20,14 @@ import type {
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
-import { publishUserAction } from '../listener/UserActionListener';
+import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import {
+  RELATION_CREATED_BY,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixRefRelationship';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -469,22 +475,38 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
+    const contextData: UserReadActionContextData = {
+      id,
+      entity_name: extractEntityRepresentativeName(data),
+      entity_type: data.entity_type
+    };
+    if (data.creator_id) {
+      contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
+    }
+    if (data[RELATION_GRANTED_TO]) {
+      contextData.granted_refs_ids = data[RELATION_GRANTED_TO];
+    }
+    if (data[RELATION_OBJECT_MARKING]) {
+      contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
+    }
+    if (data[RELATION_CREATED_BY]) {
+      contextData.created_by_ref_id = data[RELATION_CREATED_BY];
+    }
+    if (data[RELATION_OBJECT_LABEL]) {
+      contextData.labels_ids = data[RELATION_OBJECT_LABEL];
+    }
     await publishUserAction({
       user,
       event_type: 'read',
       event_access: 'extended',
       event_scope: 'read',
-      context_data: {
-        id,
-        entity_name: extractEntityRepresentativeName(data),
-        entity_type: data.entity_type
-      }
+      context_data: contextData,
     });
   }
   return data;

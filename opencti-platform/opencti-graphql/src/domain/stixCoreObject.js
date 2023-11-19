@@ -29,7 +29,7 @@ import {
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
-  RELATION_EXTERNAL_REFERENCE,
+  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
@@ -212,18 +212,34 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
     },
   };
   await pushToConnector(connector.internal_id, message);
+  const contextData = {
+    id: elementId,
+    connector_id: connectorId,
+    connector_name: connector.name,
+    entity_name: extractEntityRepresentativeName(element),
+    entity_type: element.entity_type
+  };
+  if (element.creator_id) {
+    contextData.creator_ids = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
+  }
+  if (element[RELATION_GRANTED_TO]) {
+    contextData.granted_refs_ids = element[RELATION_GRANTED_TO];
+  }
+  if (element[RELATION_OBJECT_MARKING]) {
+    contextData.object_marking_refs_ids = element[RELATION_OBJECT_MARKING];
+  }
+  if (element[RELATION_CREATED_BY]) {
+    contextData.created_by_ref_id = element[RELATION_CREATED_BY];
+  }
+  if (element[RELATION_OBJECT_LABEL]) {
+    contextData.labels_ids = element[RELATION_OBJECT_LABEL];
+  }
   await publishUserAction({
     user,
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'enrich',
-    context_data: {
-      id: elementId,
-      connector_id: connectorId,
-      connector_name: connector.name,
-      entity_name: extractEntityRepresentativeName(element),
-      entity_type: element.entity_type
-    }
+    context_data: contextData,
   });
   return work;
 };
@@ -418,7 +434,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   }
   const path = `export/${previous.entity_type}/${entityId}`;
   const up = await upload(context, user, path, file, { entity: previous });
-  const contextData = buildContextDataForFile(null, path, up.name);
+  const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
     event_type: 'file',

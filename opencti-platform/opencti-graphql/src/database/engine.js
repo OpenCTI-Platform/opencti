@@ -1790,7 +1790,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
   const { field, types = null } = options;
-  const isIdFields = field.endsWith('internal_id');
+  const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
