@@ -272,13 +272,17 @@ export const testRefs = (stix: any, filter: Filter) => {
 };
 
 /**
- * CONNECTED TO
+ * CONNECTED TO for DIRECT EVENTS ONLY
+ * test if the stix is directly related to the instance id (for side events, see the function call in case useSideEventMatching = true)
  - depending on stix type (relation or sighting), we might search in different paths, aggregated
  */
-export const testConnectedTo = (stix: any, filter: Filter) => {
+export const testConnectedTo = (stix: any, filter: Filter, useSideEventMatching = false) => {
   // only applies with "eq" operator
   if (filter.operator !== 'eq') {
     return false;
+  }
+  if (!useSideEventMatching) {
+    return testStringFilter(filter, [stix.id]);
   }
 
   // advanced test between filter ids and the entity relations and refs

@@ -50,7 +50,8 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   user: AuthUser,
   stix: any,
   filterGroup: FilterGroup,
-  resolutionMap: FilterResolutionMap
+  resolutionMap: FilterResolutionMap,
+  useSideEventMatching: boolean,
 ) : Promise<boolean> => {
   // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
@@ -66,7 +67,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   const resolvedFilterGroup = resolveFilterGroup(filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
-  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP);
+  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP, useSideEventMatching);
 };
 
 /**
@@ -79,9 +80,10 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
  * @param user
  * @param stix stix object from the raw event stream
  * @param filterGroup
+ * @params useSideEventMatching for instance trigger (separate direct and side events)
  * @throws {Error} on invalid filter keys
  */
-export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUser, stix: any, filterGroup: FilterGroup) : Promise<boolean> => {
+export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUser, stix: any, filterGroup: FilterGroup, useSideEventMatching = false) : Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
   const map = new Map<string, string>();
@@ -90,5 +92,5 @@ export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUse
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   await buildResolutionMapForFilterGroup(context, user, map, filterGroup, cache);
 
-  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
+  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map, useSideEventMatching);
 };
