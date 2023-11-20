@@ -33,6 +33,10 @@ import { useMutation } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import Checkbox from '@mui/material/Checkbox';
 import Divider from '@mui/material/Divider';
+import {
+  fileIndexingDefaultMaxFileSize,
+  fileIndexingDefaultMimeTypes,
+} from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -90,11 +94,11 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
   const dataToIndex = filesMetrics?.globalSize ?? 0;
   const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
   const manager_setting = managerConfiguration?.manager_setting;
-  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  const defaultMimeTypes = [...fileIndexingDefaultMimeTypes];
   const initialValues = {
-    accept_mime_types: manager_setting.accept_mime_types,
-    include_global_files: manager_setting.include_global_files,
-    max_file_size: manager_setting.max_file_size,
+    accept_mime_types: manager_setting?.accept_mime_types ?? defaultMimeTypes,
+    include_global_files: manager_setting?.include_global_files || false,
+    max_file_size: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
   };
   const [commitManagerSetting] = useMutation(fileIndexingConfigurationFieldPatch);
   const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (

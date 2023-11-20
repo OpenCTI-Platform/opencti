@@ -37,6 +37,15 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
   }
 `;
 
+export const fileIndexingDefaultMimeTypes = [
+  'application/pdf',
+  'text/plain',
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+export const fileIndexingDefaultMaxFileSize = 5242880;
+
 interface FileIndexingConfigurationAndMonitoringComponentProps {
   managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
   queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
@@ -80,9 +89,9 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
   const manager_setting = managerConfiguration?.manager_setting;
   const queryArgs = {
-    mimeTypes: manager_setting.accept_mime_types,
-    maxFileSize: manager_setting.max_file_size,
-    excludedPaths: manager_setting.include_global_files ? [] : ['import/global'],
+    mimeTypes: manager_setting?.accept_mime_types ?? fileIndexingDefaultMimeTypes,
+    maxFileSize: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
+    excludedPaths: manager_setting?.include_global_files ? [] : ['import/global'],
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });

@@ -198,7 +198,7 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-const simpleFilesListing = async (context, user, directory, opts = {}) => {
+const simpleFilesListing = async (directory, opts = {}) => {
   const { recursive = false, modifiedSince, maxFileSize, excludedExtensions = [], excludedPaths = [], includedPaths = [] } = opts;
   const storageObjects = [];
   const requestParams = {
@@ -232,7 +232,7 @@ const simpleFilesListing = async (context, user, directory, opts = {}) => {
 };
 
 export const rawFilesListing = async (context, user, directory, opts = {}) => {
-  const storageObjects = await simpleFilesListing(context, user, directory, opts);
+  const storageObjects = await simpleFilesListing(directory, opts);
   // Load file metadata with 5 // call maximum
   return BluePromise.map(storageObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
@@ -361,7 +361,7 @@ export const filesListing = async (context, user, first, path, entity = null, pr
 export const fileListingForIndexing = async (context, user, path, opts = {}) => {
   const fileListingForIndexingFn = async () => {
     const excludedExtensions = ['.exe', '.json'];
-    const files = await simpleFilesListing(context, user, path, { ...opts, excludedExtensions, recursive: true });
+    const files = await simpleFilesListing(path, { ...opts, excludedExtensions, recursive: true });
     return files.sort((a, b) => a.LastModified - b.LastModified);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
