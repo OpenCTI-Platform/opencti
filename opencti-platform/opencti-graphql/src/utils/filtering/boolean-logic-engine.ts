@@ -150,7 +150,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
-export type TesterFunction = (data: any, filter: Filter, useSideEventMatching?: boolean) => boolean;
+export type TesterFunction = (data: any, filter: Filter) => boolean;
 
 /**
  * Recursive function that tests a complex filter group.
@@ -161,25 +161,25 @@ export type TesterFunction = (data: any, filter: Filter, useSideEventMatching?: 
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>, useSideEventMatching = false) : boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
       // note that we are not compatible with multiple keys yet, so we'll always check the first one only
-      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter, useSideEventMatching)));
+      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, useSideEventMatching)));
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
 
   if (filterGroup.mode === 'or') {
     if (filterGroup.filters.length > 0) {
-      return filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter, useSideEventMatching));
+      return filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter));
     }
     if (filterGroup.filterGroups.length > 0) {
-      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, useSideEventMatching));
+      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap));
     }
   }
 

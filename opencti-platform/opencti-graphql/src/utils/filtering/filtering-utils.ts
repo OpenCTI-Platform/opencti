@@ -1,16 +1,11 @@
 import { uniq } from 'ramda';
 import { buildRefRelationKey } from '../../schema/general';
-import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
-import type { StixObject } from '../../types/stix-common';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { getEntitiesMapFromCache } from '../../database/cache';
-import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { availableStixCoreRelationships } from '../../database/stix';
 import type { Filter, FilterGroup } from '../../generated/graphql';
-import { INSTANCE_FILTER, SIGHTED_BY_FILTER, specialFilterKeys } from './filtering-constants';
 import { FilterOperator } from '../../generated/graphql';
+import { INSTANCE_FILTER, SIGHTED_BY_FILTER, specialFilterKeys } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -108,6 +103,21 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
     ],
     filterGroups: filterGroup?.filterGroups ?? [],
   } as FilterGroup;
+};
+
+const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string) : Filter => {
+  return {
+    ...filter,
+    key: filter.key.map((k) => (k === oldKey ? newKey : oldKey)),
+  };
+};
+
+export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string) : FilterGroup => {
+  return {
+    ...filterGroup,
+    filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
+    filterGroups: filterGroup.filterGroups.map(((fg) => replaceFilterKey(fg, oldKey, newKey)))
+  };
 };
 
 //----------------------------------------------------------------------------------------------------------------------
