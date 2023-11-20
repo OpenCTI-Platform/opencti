@@ -24,8 +24,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   Filter,
-  FilterGroup,
   filtersAfterSwitchLocalMode,
   initialFilterGroup,
   serializeFilterGroupForBackend,
@@ -101,7 +101,7 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const filters = JSON.parse(trigger.filters ?? JSON.stringify(initialFilterGroup)) as FilterGroup;
+  const filters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
   const [instanceFilters, setInstanceFilters] = useState< FilterAutocompleteInputValue[]>([]);
   const handleAddFilter = (
@@ -133,7 +133,7 @@ TriggerEditionOverviewProps
       commitFieldPatch({
         variables: {
           id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+          input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
         },
       });
     }
@@ -149,7 +149,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
       },
     });
   };
