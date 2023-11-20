@@ -111,7 +111,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   const classes = useStyles();
   const { t, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
-  const filters = JSON.parse(data.filters ?? '{}');
+  const filters = data.filters ? JSON.parse(data.filters) : undefined;
   const currentTime = data.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
@@ -164,7 +164,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
-            {data.trigger_type === 'live' && (
+            {data.trigger_type === 'live' && filters && (
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}

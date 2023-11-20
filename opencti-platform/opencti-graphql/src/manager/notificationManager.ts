@@ -430,7 +430,7 @@ export const buildTargetEvents = async (
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters } = trigger;
-  const frontendFilters = JSON.parse(filters);
+  const frontendFilters = filters ? JSON.parse(filters) : null;
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
     triggerEventTypes = useSideEventMatching
