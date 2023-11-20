@@ -274,7 +274,6 @@ export const testRefs = (stix: any, filter: Filter) => {
 /**
  * CONNECTED TO for DIRECT EVENTS ONLY
  * test if the stix is directly related to the instance id
- - depending on stix type (relation or sighting), we might search in different paths, aggregated
  */
 export const testConnectedTo = (stix: any, filter: Filter) => {
   // only applies with "eq" operator
