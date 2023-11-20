@@ -193,7 +193,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       filters: JSON.stringify({
         mode: 'and',
         filters: [{
-          key: 'connectedToId',
+          key: ['connectedToId'],
           values: [instanceId],
           operator: 'eq',
           mode: 'or',
