@@ -38,7 +38,7 @@ const FormAuthorizedMembers = ({
 
   return (
     <Formik<FormAuthorizedMembersInputs>
-      enableReinitialize={true}
+      enableReinitialize
       initialValues={{
         authorizedMembers: existingAccessRules,
       }}
@@ -62,7 +62,7 @@ const FormAuthorizedMembers = ({
             handleClose();
           }}
         >
-          <DialogTitle>{t('Manage access')}</DialogTitle>
+          <DialogTitle>{t('Manage access restriction')}</DialogTitle>
           <DialogContent>
             <Form>
               <Field

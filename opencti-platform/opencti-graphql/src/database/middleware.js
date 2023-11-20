@@ -242,7 +242,6 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2258,9 +2257,9 @@ export const fillDefaultValues = (user, input, entitySetting) => {
         if (attr.name === INPUT_AUTHORIZED_MEMBERS && defaultValue) {
           const defaultAuthorizedMembers = defaultValue.map((v) => JSON.parse(v));
           // Replace dynamic creator rule with the id of the user making the query.
-          const creator = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
-          if (creator) {
-            creator.id = user.id;
+          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+          if (creatorRule) {
+            creatorRule.id = user.id;
           }
           filledValues.set(attr.name, defaultAuthorizedMembers);
         } else {
@@ -3113,13 +3112,6 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
-  }
-  // Feedback
-  if (type === ENTITY_TYPE_CONTAINER_FEEDBACK && !R.isNil(input.authorizedMembers)) {
-    data = R.pipe(
-      R.assoc('authorized_members', input.authorizedMembers),
-      R.dissoc('authorizedMembers'),
-    )(data);
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];

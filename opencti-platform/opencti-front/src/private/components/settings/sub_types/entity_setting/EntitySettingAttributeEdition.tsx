@@ -303,7 +303,6 @@ const EntitySettingAttributeEdition = ({
           name="default_values"
           component={AuthorizedMembersField}
           style={fieldSpacingContainerStyle}
-          emptyAccessListLabel={t('No default value for authorized members')}
           showAllMembersLine
           showCreatorLine
           canDeactivate

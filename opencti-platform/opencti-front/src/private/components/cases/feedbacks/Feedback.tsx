@@ -39,7 +39,7 @@ const feedbackFragment = graphql`
     description
     confidence
     currentUserAccessRight
-    authorizedMembers {
+    authorized_members {
       id
       name
       entity_type
@@ -109,7 +109,7 @@ const feedbackAuthorizedMembersMutation = graphql`
     $input: [MemberAccessInput!]
   ) {
     feedbackEditAuthorizedMembers(id: $id, input: $input) {
-      authorizedMembers {
+      authorized_members {
         id
         name
         entity_type
@@ -140,7 +140,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
         enableQuickSubscription
         enableManageAuthorizedMembers={canManage}
         authorizedMembersMutation={feedbackAuthorizedMembersMutation}
-        authorizedMembers={authorizedMembersToOptions(feedbackData.authorizedMembers)}
+        authorizedMembers={authorizedMembersToOptions(feedbackData.authorized_members)}
       />
       <Grid
         container={true}

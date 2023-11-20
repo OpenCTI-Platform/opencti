@@ -699,11 +699,11 @@ const i18n = {
       'Potential duplicate entities': 'Entidades potencialmente duplicadas',
       'Create an opinion': 'Crear una opinión',
       'Update opinion': 'Actualizar la opinión',
-      'Manage access': 'Administrar acceso',
-      'Add new access': 'Añadir un nuevo acceso',
+      'Manage access restriction': 'Administrar restricción de acceso',
+      'Add new specific access': 'Agregar nuevo acceso específico',
       'Access already granted': 'Acceso ya concedido',
       'Access right': 'Derecho de acceso',
-      'Current members access': 'Acceso a miembros actuales',
+      'Current specific accesses': 'Accesos específicos actuales',
       'Deleted or restricted member': 'Miembro eliminado o restringido',
       // Menu
       Dashboard: 'Cuadro de mando',
@@ -1428,7 +1428,7 @@ const i18n = {
       'Confidence level': 'Nivel de confianza',
       Confidence: 'Confianza',
       confidence: 'Confianza',
-      Authorized_members: 'Autorización',
+      Authorized_members: 'Restricción de acceso',
       'The min value cannot be greater than max value':
         'El valor mínimo no puede ser mayor que el valor máximo',
       'Each tick value must be between min and max value':
@@ -2310,13 +2310,15 @@ const i18n = {
         'Todavía no se han configurado ninguna configuración',
       'Do you want to delete this CSV mapper ?':
         '¿Desea eliminar este mapeador CSV?',
-      'No default value for authorized members': 'Sin valor predeterminado para miembros autorizados',
       'Default values are applied only during entity creation. So only for entities created after default values have been set': 'Los valores predeterminados se aplican sólo durante la creación de la entidad. Entonces, solo para entidades creadas después de que se hayan establecido los valores predeterminados',
-      'Activate/Deactivate authorized members': 'Activar/Desactivar miembros autorizados',
+      'Activate access restriction': 'Activar restricción de acceso',
       'Attribute mapping configuration': 'Configuración de mapeo de atributos',
       'I would like to use a EE feature ...':
         'Me gustaría utilizar una función EE ({feature}) pero no tengo EE activado.\nMe gustaría hablar con usted sobre la activación de EE.',
       'Organization sharing': 'Compartir organización',
+      info_authorizedmembers_workspace: 'El panel y las investigaciones siempre se someten a restricción de acceso. Sólo su creador tiene acceso a ellos de forma predeterminada. Puedes agregar accesos específicos para que usuarios, grupos y organizaciones los compartan. Nota: Los paneles y las investigaciones no se envían a las capas de control de acceso compartido de definiciones de marcado y organización.',
+      info_authorizedmembers_knowledge_on: 'Al activar la Restricción de Acceso, se negará todo acceso a esta Entidad a todos los usuarios de la plataforma, independientemente de sus capacidades globales y definiciones de marcado. Luego, podrás agregar accesos específicos a la entidad para usuarios, grupos u organizaciones. Esos accesos específicos son una capa adicional de control de acceso. Por lo tanto, los usuarios seguirán necesitando capacidades y marcas adecuadas para acceder a la Entidad.',
+      info_authorizedmembers_knowledge_off: 'Al desactivar la Restricción de acceso, se eliminarán los accesos específicos que usted creó y se eliminará la Restricción de acceso para esta Entidad. Pero la Entidad seguirá estando cubierta por la Definición de Marcado y el intercambio de Organización.',
     },
     'fr-fr': {
       // Titles
@@ -3031,11 +3033,11 @@ const i18n = {
       'Potential duplicate entities': "Duplicats potentiels d'entités",
       'Create an opinion': 'Créer une opinion',
       'Update opinion': "Modifier l'opinion",
-      'Manage access': "Gérer l'accès",
-      'Add new access': 'Ajouter un nouvel accès',
+      'Manage access restriction': "Gérer les restrictions d'accès",
+      'Add new specific access': 'Ajouter un nouvel accès spécifique',
       'Access already granted': 'Accès déjà accordé',
       'Access right': "Droit d'accès",
-      'Current members access': 'Accès des membres actuels',
+      'Current specific accesses': 'Accès spécifiques actuels',
       'Deleted or restricted member': 'Membre supprimé ou restreint',
       // Menu
       Dashboard: 'Tableau de bord',
@@ -3757,7 +3759,7 @@ const i18n = {
       'Confidence level': 'Niveau de confiance',
       Confidence: 'Confiance',
       confidence: 'Confiance',
-      Authorized_members: 'Autorisation',
+      Authorized_members: 'Restriction d\'accès',
       'The min value cannot be greater than max value':
         'La valeur min ne peut pas être supérieure à la valeur max',
       'Each tick value must be between min and max value':
@@ -4632,9 +4634,12 @@ const i18n = {
         "Il n'y a pas encore de configurations définies",
       'Do you want to delete this CSV mapper ?':
         'Voulez-vous supprimer ce mappage CSV ?',
-      'No default value for authorized members': 'Aucune valeur par défaut pour les membres autorisés',
       'Default values are applied only during entity creation. So only for entities created after default values have been set': 'Les valeurs par défaut sont appliquées uniquement lors de la création d\'une entité. Donc uniquement pour les entités créées après que les valeurs par défaut aient été définies',
-      'Activate/Deactivate authorized members': 'Activer/Désactiver les membres autorisés',
+      'Activate access restriction': 'Activer la restriction d\'accès',
+      'Attribute mapping configuration': 'Configuration de mappage d\'attributs',
+      info_authorizedmembers_workspace: 'Le tableau de bord et les enquêtes sont toujours soumis à la restriction d\'accès. Seul leur créateur y a accès par défaut. Vous pouvez ajouter des accès spécifiques pour les utilisateurs, groupes et organisations afin de les partager. A noter : Les tableaux de bord et les investigations ne sont pas soumis aux couches de contrôle d\'accès des définitions de marquage et au partage d\'organisation.',
+      info_authorizedmembers_knowledge_on: 'En activant la restriction d\'accès, tout accès à cette entité sera refusé à chaque utilisateur de la plateforme, quelles que soient ses capacités globales et ses définitions de marquage. Ensuite, vous pourrez ajouter des accès spécifiques à l\'entité pour des utilisateurs, des groupes ou des organisations. Ces accès spécifiques constituent une couche supplémentaire de contrôle d’accès. Ainsi, les utilisateurs auront toujours besoin de capacités et d’un marquage adéquats pour accéder à l’entité.',
+      info_authorizedmembers_knowledge_off: 'En désactivant la restriction d\'accès, les accès spécifiques que vous avez créés seront supprimés et la restriction d\'accès sera levée pour cette entité. Mais l’Entité sera toujours couverte par le partage de définition de marquage et d’organisation.',
       'I would like to use a EE feature ...':
         "J'aimerais utiliser une fonctionnalité ({feature}) sous Enterprise Edition qui n'est pas activée.\nJ'aimerais savoir si il est possible d'activer EE.",
       'Organization sharing': 'Partage dans les organisations',
@@ -5305,11 +5310,11 @@ const i18n = {
       'Potential duplicate entities': '重複する可能性のあるエンティティ',
       'Create an opinion': '意見を作成する',
       'Update opinion': 'オピニオンの更新',
-      'Manage access': 'アクセスの管理',
-      'Add new access': '新しいアクセスを追加',
+      'Manage access restriction': 'アクセス制限の管理',
+      'Add new specific access': '新しい特定のアクセス権を追加する',
       'Access already granted': 'アクセスはすでに許可されています',
       'Access right': 'アクセス権',
-      'Current members access': '現在のメンバー アクセス',
+      'Current specific accesses': '現在の特定のアクセス',
       'Deleted or restricted member': '削除または制限されたメンバー',
       // Menu
       Dashboard: 'ダッシュボード',
@@ -6016,7 +6021,7 @@ const i18n = {
       'Confidence level': '信頼水準',
       Confidence: '信頼度',
       confidence: '信頼度',
-      Authorized_members: '認可',
+      Authorized_members: 'アクセス制限',
       'The min value cannot be greater than max value':
         '最小値を最大値より大きくすることはできません',
       'Each tick value must be between min and max value':
@@ -6855,10 +6860,12 @@ const i18n = {
       'There are not any configurations set yet': 'まだ設定がありません',
       'Do you want to delete this CSV mapper ?':
         'このCSVマッパーを削除しますか？',
-      'No default value for authorized members': '承認されたメンバーのデフォルト値はありません',
       'Default values are applied only during entity creation. So only for entities created after default values have been set': 'デフォルト値はエンティティの作成時にのみ適用されます。したがって、デフォルト値が設定された後に作成されたエンティティのみが対象です',
-      'Activate/Deactivate authorized members': '許可されたメンバーのアクティブ化/非アクティブ化',
+      'Activate access restriction': 'アクセス制限を有効にする',
       'Attribute mapping configuration': '属性マッピングの設定',
+      info_authorizedmembers_workspace: 'ダッシュボードと調査は常にアクセス制限に送信されます。デフォルトでは、作成者のみがそれらにアクセスできます。ユーザー、グループ、組織に特定のアクセス権を追加して共有できます。注: ダッシュボードと調査は、アクセス コントロール レイヤーを共有するマーキング定義と組織には送信されません。',
+      info_authorizedmembers_knowledge_on: 'アクセス制限をアクティブ化すると、グローバル機能やマーキング定義に関係なく、プラットフォーム内のすべてのユーザーに対してこのエンティティへのすべてのアクセスが拒否されます。その後、ユーザー、グループ、または組織のエンティティに特定のアクセス権を追加できるようになります。これらの特定のアクセスは、アクセス制御の追加レイヤーです。したがって、ユーザーがエンティティにアクセスするには、依然として適切な機能とマーキングが必要です。',
+      info_authorizedmembers_knowledge_off: 'アクセス制限を非アクティブ化すると、作成した特定のアクセスが削除され、このエンティティのアクセス制限が解除されます。ただし、エンティティは引き続きマーキング定義と組織共有の対象となります。',
       'I would like to use a EE feature ...':
         'EE 機能 ({feature}) を使用したいのですが、EE がアクティブ化されていません。\nEEの有効化について相談したいと思います。',
       'Organization sharing': '組織の共有',
@@ -7463,11 +7470,11 @@ const i18n = {
       'potential duplicate entities': '潜在重复实体',
       'have been found.': '已发现。',
       'Potential duplicate entities': '潜在重复实体',
-      'Manage access': '管理訪問',
-      'Add new access': '添加新訪問權限',
+      'Manage access restriction': '管理访问限制',
+      'Add new specific access': '添加新的特定访问权限',
       'Access already granted': '已授予訪問權限',
       'Access right': '訪問權',
-      'Current members access': '當前成員訪問',
+      'Current specific accesses': '当前特定访问权限\n',
       'Deleted or restricted member': '已删除或受限制的成员',
       // Menu
       Dashboard: '仪表盘',
@@ -8152,7 +8159,7 @@ const i18n = {
       'Confidence level': '置信级别',
       Confidence: '置信度',
       confidence: '置信度',
-      Authorized_members: '授权',
+      Authorized_members: '访问限制',
       'The min value cannot be greater than max value': '最小值不能大于最大值',
       'Each tick value must be between min and max value':
         '每个刻度值必须介于最小值和最大值之间',
@@ -8969,10 +8976,12 @@ const i18n = {
       'Create a CSV Mapper configuration': '创建CSV映射配置',
       'There are not any configurations set yet': '目前尚未设置任何配置',
       'Do you want to delete this CSV mapper ?': '您要删除此CSV映射吗？',
-      'No default value for authorized members': '授权成员无默认值',
       'Default values are applied only during entity creation. So only for entities created after default values have been set': '默认值仅在实体创建期间应用。因此仅适用于设置默认值后创建的实体',
-      'Activate/Deactivate authorized members': '激活/停用授权会员',
+      'Activate access restriction': '激活访问限制',
       'Attribute mapping configuration': '属性映射配置',
+      info_authorizedmembers_workspace: '仪表板和调查始终提交给访问限制。默认情况下，只有其创建者才能访问它们。您可以为用户、组和组织添加特定访问权限以共享它们。注意：仪表板和调查不会提交给共享访问控制层的标记定义和组织。',
+      info_authorizedmembers_knowledge_on: '通过激活访问限制，平台中的每个用户对此实体的所有访问都将被拒绝，无论其全局功能和标记定义如何。然后，您将能够为用户、组或组织添加对实体的特定访问权限。这些特定访问是访问控制的附加层。因此，用户仍然需要足够的能力和标记来访问实体。',
+      info_authorizedmembers_knowledge_off: '通过停用访问限制，您创建的特定访问将被删除，并且该实体的访问限制将被解除。但该实体仍将受到标记定义和组织共享的覆盖。',
       'I would like to use a EE feature ...':
         '我想使用 EE 功能 ({feature})，但我沒有啟動 EE。\n我想和您討論一下啟動EE的問題。',
       'Organization sharing': '組織共享',
@@ -9410,7 +9419,10 @@ const i18n = {
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
-      Authorized_members: 'Authorization',
+      Authorized_members: 'Access restriction',
+      info_authorizedmembers_workspace: 'Dashboard and Investigations are always submitted to Access Restriction. Only their creator has access to them by default. You can add specific accesses for users, groups and organizations to share them. To note : Dashboards and Investigations are not submitted to Marking Definitions and Organization sharing access control layers.',
+      info_authorizedmembers_knowledge_on: 'By activating Access Restriction, all access to this Entity will be denied for every user in the platform, regardless of their global capabilities and marking definitions. Then, You will be able to add specific accesses to the entity for users, groups or organizations. Those specific accesses are an additional layer of access control. Thus, users will still need adequate capabilities and marking to access the Entity.',
+      info_authorizedmembers_knowledge_off: 'By deactivating Access Restriction, specific accesses you created will be removed and Access Restriction will be lift off for this Entity. But the Entity will still be covered by Marking Definition and Organization sharing.',
       'I would like to use a EE feature ...':
         "I would like to use a EE feature ({feature}) but I don't have EE activated.\nI would like to discuss with you about activating EE.",
     },

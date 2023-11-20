@@ -56,7 +56,13 @@ const AuthorizedMembersFieldListItem = ({
     <ListItem
       dense={true}
       divider={false}
-      sx={{ p: 0 }}
+      sx={{
+        p: 0,
+        height: '40px',
+        '.MuiInputBase-root': {
+          mt: '8px',
+        },
+      }}
     >
       <ListItemIcon>
         <ItemIcon type={authorizedMember.type} />
@@ -91,7 +97,7 @@ const AuthorizedMembersFieldListItem = ({
         name={name}
         sx={{ m: 1, minWidth: 120 }}
         inputProps={{ 'aria-label': 'Without label' }}
-        disabled={authorizedMember.value === me.id}
+        disabled={authorizedMember.value === me.id || !authorizedMember.label}
         size="small"
         disableUnderline
         onChange={(_: string, val: AccessRight) => onChange?.(val)}
