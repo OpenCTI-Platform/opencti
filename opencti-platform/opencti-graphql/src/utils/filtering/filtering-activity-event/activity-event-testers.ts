@@ -50,6 +50,7 @@ export const testMembersOrganization = (event: any, filter: Filter) => {
  */
 export const testActivityStatuses = (event: any, filter: Filter) => {
   const value = event.status;
+  console.log('value', value);
   return testStringFilter(filter, [value]);
 };
 
