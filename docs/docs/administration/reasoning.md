@@ -1,5 +1,6 @@
 # Rules engine
 
+
 ## Inference rules
 
 The rules engine comprises a set of predefined rules (named inference rules) that govern how new relationships are inferred based on existing data. These rules are carefully crafted to ensure logical and accurate relationship creation. Here is the list of existing inference rules:
@@ -41,6 +42,7 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 | Conditions                                 | Creations                                                  |
 |:-------------------------------------------|:-----------------------------------------------------------|
 | An observable is _related to_ two Entities | Create a _related to_ relationship between the two Entities |
+
 
 ![Observable_related_to_entities](assets/observable_related_to_entities.png)
 

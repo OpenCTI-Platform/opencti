@@ -84,13 +84,14 @@ networks:
     name: opencti-docker_default
 ```
 
+<a id="connector-token-section"></a>
 ## Connector token
 
 ### Create the user
 
-As mentionned previously, it is strongly recommended to run each connector with its own user. **The `Internal Export File` connectors should be launched with a user that belongs to a group which has an “Administrator” role (with bypass all capabilities enabled).**
+As mentioned previously, it is strongly recommended to run each connector with its own user. **The `Internal Export File` connectors should be launched with a user that belongs to a group which has an “Administrator” role (with bypass all capabilities enabled).**
 
-By default in platform, a group named "Connectors" already exists. So just create a new user with the name `[C] Name of the connector` in Settings > Security > Users.
+By default, in platform, a group named "Connectors" already exists. So just create a new user with the name `[C] Name of the connector` in Settings > Security > Users.
 
 ![Create user](assets/create-user.png)
 
@@ -161,7 +162,7 @@ If you want to manually launch connector, you just have to install Python 3 and 
 $ apt install python3 python3-pip
 ```
 
-Download the [release](https://github.com/OpenCTI-Platform/connectors/archive/%7BRELEASE_VERSION%7D.zip) of the connectors:
+Download the release of the connectors:
 
 ```
 $ wget <https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip>

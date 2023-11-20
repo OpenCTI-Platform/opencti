@@ -6,7 +6,7 @@ One of the core concept of the OpenCTI knowledge graph is all underlying mechani
 
 When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, [in some cases](), update it as well.
 
-Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between `name` and `aliases` leading to not have entities with overlaping aliases or an alias already used in the name of another entity.
+Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between `name` and `aliases` leading to not have entities with overlapping aliases or an alias already used in the name of another entity.
 
 ### Entities
 
@@ -65,10 +65,11 @@ For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the
 
 ## Update behavior
 
-If an entity already exists in the platform, the `attributes` may be updated by the incoming creation with the following rule:
+In cases where an entity already exists in the platform, incoming creations can trigger updates to the existing entity's attributes.
 
-!!! note ""
+!!! note "Policy for handling entity updates"
     
-    If `confidence_level` of the created entity is >= (greater or equal) then the `confidence_level` of the existing entity, attributes will be updated. Obviously, the `confidence_level` will also be increased with the new one.
+    If `confidence_level` of the created entity is >= (greater than or equal) to the `confidence_level` of the existing entity, the attributes will be updated. Notably, the `confidence_level` will also be increased with the new one.
 
-This logic has been implemented so the platform can converge to the highest confidence and quality levels for the entities and the relationships.
+This logic has been implemented to converge the knowledge base towards the highest confidence and quality levels for both entities and relationships.
+

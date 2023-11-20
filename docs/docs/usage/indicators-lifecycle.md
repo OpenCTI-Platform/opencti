@@ -1,5 +1,6 @@
 # Indicators Lifecycle Management
 
+
 ## Introduction
 
 OpenCTI enforces strict rules to determine the period during which an indicator is effective for detection. This period is defined by the `valid_from` and `valid_until` dates. In the future, all along this life, the indicator `score` will decrease according to a customizable algorithm.
@@ -27,7 +28,7 @@ If a data source does not provide validity dates, OpenCTI applies specific rules
 | URL                                   | Others                           |      180       |
 | Others (e.g. Domain-Name, File, YARA) | All                              |      365       |
 
-### Understanding time-to-Live (TTL)
+### Understanding Time-To-Live (TTL)
 
 The TTL represents the duration for which an indicator is considered valid - i.e. here, the number of days between `valid_from` and `valid_until`. After this period, the indicator is marked as revoked.
 

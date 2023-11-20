@@ -15,27 +15,27 @@ You need the "Manage credentials" [capability](../administration/users.md) to us
 
 You will then be able to:
 
-* add labels depending on enrichment results to be used in threat intelligence driven detection feeds ;
-* create reports and cases based on various criteria ;
-* trigger enrichments or webhooks in given conditions ;
-* modify attributes such as first_seen and last_seen based on other pieces of knowledge ;
+* add labels depending on enrichment results to be used in threat intelligence-driven detection feeds;
+* create reports and cases based on various criteria;
+* trigger enrichments or webhooks in given conditions;
+* modify attributes such as first_seen and last_seen based on other pieces of knowledge;
 * etc.
 
-### playbook philosophy
+## Playbook philosophy
 
 Consider Playbook as STIX 2.1 bundle pipeline. 
 
-A playbook begins with a component listening to a data stream.
+Initiating with a component listening to a data stream, each subsequent component in the playbook processes a received STIX bundle. These components have the ability to modify the bundle and subsequently transmit the altered result to connected components.
 
-Then each component of the playbook will receive a STIX bundle and then:
-* modify it and pass the result to connected components
+In this paradigm, components can send out the STIX 2.1 bundle to multiple components, enabling the development of multiple branches within your playbook.
 
-Components can send out the STIX 2.1 bundle to multiple components, allowing to develop multiple branches in your playbook.
+A well-designed playbook end with a component executing an action based on the processed information. For instance, this may involve writing the STIX 2.1 bundle in a data stream.
 
-The playbook should end with a component making an action based on this, for example writing the STIX 2.1 bundle in a data stream.
+!!! note "Validate ingestion"
 
+    The STIX bundle processed by the playbook won't be written in the platform without specifying it using the appropriate component, i.e. "Send for ingestion".
 
-### Create a Playbook
+## Create a Playbook
 
 It is possible to create as many playbooks as needed which are running independently. You can give a name and description to each playbook.
 
@@ -56,12 +56,12 @@ Do not forget to start your Playbook when ready, with the Start option of the bu
 
 By clicking the burger button of a component, you can replace it by another one.
 
-By clicking on the arrow icon on the bottom right corner of a component, you can develop a new branch at the same level.
+By clicking on the arrow icon in the bottom right corner of a component, you can develop a new branch at the same level.
 
 By clicking the "+" button on a link between components, you can insert a component between the two.
 
 
-### Components of playbooks
+## Components of playbooks
 
 ![List of current components](assets/playbook_components.png)
 
@@ -111,7 +111,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 Will elagate the received STIX 2.1 bundle based on the configured filter.
 
 
-### Monitor playbook activity
+## Monitor playbook activity
 
 At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.
 

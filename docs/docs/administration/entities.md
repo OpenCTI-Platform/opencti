@@ -34,6 +34,7 @@ Then, a workflow can be defined by ordering a sequence of status template.
 
 ![Workflow status](./assets/workflow.png)
 
+<a id="attributes-section"></a>
 ## Attributes
 
 In an Entity, each attribute offers some customization options :
