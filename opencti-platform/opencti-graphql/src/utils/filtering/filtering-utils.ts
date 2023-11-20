@@ -112,6 +112,12 @@ const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string
   };
 };
 
+/**
+ * Parse recursively a filterg group and replace all occurrences of a filter key with a new key
+ * @param filterGroup
+ * @param oldKey
+ * @param newKey
+ */
 export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string) : FilterGroup => {
   return {
     ...filterGroup,

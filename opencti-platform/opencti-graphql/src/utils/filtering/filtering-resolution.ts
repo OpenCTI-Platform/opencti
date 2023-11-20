@@ -48,6 +48,7 @@ const RESOLUTION_MAP_PATHS: Record<string, string> = {
   [PARTICIPANT_FILTER]: 'id', // participant --> resolve with the standard id (which is the stix.id)
   [RELATION_FROM_FILTER]: 'id',
   [RELATION_TO_FILTER]: 'id',
+  [CONNECTED_TO_INSTANCE_FILTER]: 'id',
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -90,9 +91,9 @@ export const resolveFilterGroup = (filterGroup: FilterGroup, resolutionMap: Filt
 
 /**
  * Build a resolution map thanks to the cache
- * Note this is not a pure function (the argument mutableMap is modified)
  */
-const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, mutableMap: FilterResolutionMap, filter: Filter, cache: Map<string, StixObject>) => {
+const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>) : Promise<FilterResolutionMap> => {
+  const map: Map<string, string> = new Map();
   if (Object.keys(RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
     for (let index = 0; index < filter.values.length; index += 1) {
       const v = filter.values[index];
@@ -104,17 +105,19 @@ const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser,
         // some entities in cache might be restricted for this user or deleted
         if (!(await isUserCanAccessStixElement(context, user, cachedObject))) {
           // invalidate the filter value; it won't match ever, but we keep track of this invalidation for debug purposes
-          mutableMap.set(v, '<restricted-or-deleted>');
+          map.set(v, '<restricted-or-deleted>');
         } else {
           // resolve according to path
           const cachedValue = cachedObject[path];
           if (typeof cachedValue === 'string') {
-            mutableMap.set(v, cachedValue);
+            map.set(v, cachedValue);
           }
         }
       }
     }
   }
+
+  return map;
 };
 
 /**
@@ -123,12 +126,13 @@ const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser,
 export const buildResolutionMapForFilterGroup = async (
   context: AuthContext,
   user: AuthUser,
-  mutableMap: FilterResolutionMap,
   filterGroup: FilterGroup,
   cache: Map<string, StixObject>
-) => {
-  filterGroup.filters.forEach((f) => buildResolutionMapForFilter(context, user, mutableMap, f, cache));
-  filterGroup.filterGroups.forEach((fg) => buildResolutionMapForFilterGroup(context, user, mutableMap, fg, cache));
+): Promise<FilterResolutionMap> => {
+  const filtersMaps = await Promise.all(filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)));
+  const filterGroupsMaps = await Promise.all(filterGroup.filterGroups.map((fg) => buildResolutionMapForFilterGroup(context, user, fg, cache)));
+  // merge all maps into one; for a given unique key the last value wins
+  return new Map([...new Map(...filtersMaps), ...new Map(...filterGroupsMaps)]);
 };
 
 /**
@@ -136,15 +140,13 @@ export const buildResolutionMapForFilterGroup = async (
  * TODO: Not unit-testable for now because of the cache that exists only at runtime (getEntitiesMapFromCache)
  */
 export const resolveFilterGroupValuesWithCache = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
-  const resolutionMap = new Map<string, string>();
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  await buildResolutionMapForFilterGroup(context, user, resolutionMap, filterGroup, cache);
+  const resolutionMap = await buildResolutionMapForFilterGroup(context, user, filterGroup, cache);
 
   return resolveFilterGroup(filterGroup, resolutionMap);
 };
 
 //----------------------------------------------------------------------------------------------------------------------
-// TODO: legacy code to refactor (instance triggers?)
 
 /**
  * Extract all filter values (ids) that might require a resolution from cache "Resolved-Filters"

@@ -637,8 +637,8 @@ describe('Stix filter testers', () => {
     });
   });
 
-  describe('by "Connected to" (key=connectedToId)', () => {
-    const stixRelationship = stixRelationships[0];
+  describe('by "Connected to / Direct" (key=connectedToId)', () => {
+    const stixReport = stixReports[0];
     const stixSighting = stixSightings[0];
 
     it('should test positive for a stix object with matching filter', () => {
@@ -646,17 +646,10 @@ describe('Stix filter testers', () => {
         key: ['connectedToId'],
         mode: 'or',
         operator: 'eq',
-        values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
+        values: ['<some-id>', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32']
       } as Filter;
-      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(true);
-
-      filter = {
-        key: ['connectedToId'],
-        mode: 'or',
-        operator: 'eq',
-        values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
-      } as Filter;
-      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(true);
+      expect(testers.testConnectedTo(stixReport, filter)).toEqual(true);
+      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
 
       filter = {
         key: ['connectedToId'],
@@ -664,8 +657,40 @@ describe('Stix filter testers', () => {
         operator: 'eq',
         values: ['<some-id>']
       } as Filter;
-      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(false);
+      expect(testers.testConnectedTo(stixReport, filter)).toEqual(false);
       expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
+    });
+  });
+
+  describe('by "Connected to / Side Events" (key=connectedToId_sideEvents)', () => {
+    const stixRelationship = stixRelationships[0];
+    const stixSighting = stixSightings[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixRelationship, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixSighting, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['<some-id>']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixRelationship, filter)).toEqual(false);
+      expect(testers.testConnectedToSideEvents(stixSighting, filter)).toEqual(false);
     });
   });
 });
