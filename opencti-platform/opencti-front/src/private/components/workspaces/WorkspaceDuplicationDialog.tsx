@@ -140,7 +140,7 @@ WorkspaceDuplicationDialogProps
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDuplicate} disabled={duplicating || !newName}>
+        <Button onClick={handleCloseDuplicate}>
           {t('Cancel')}
         </Button>
         <Button
