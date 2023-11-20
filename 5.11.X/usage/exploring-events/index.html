@@ -2075,32 +2075,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2352,6 +2326,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -4226,7 +4226,7 @@
 </ul>
 <h2 id="incidents">Incidents</h2>
 <h3 id="general-presentation">General presentation</h3>
-<p>Incidents usually represents negative events impacting ressources you want to protect, but local definitions can vary a lot, from a simple security events send by a SIEM to a massive scale supply chain attack impacting a whole activity sector.</p>
+<p>Incidents usually represents negative events impacting resources you want to protect, but local definitions can vary a lot, from a simple security events send by a SIEM to a massive scale supply chain attack impacting a whole activity sector.</p>
 <p>In the MITRE STIX 2.1, the <code>Incident</code> SDO has not yet been finalize and is the object of important work as part of a forthcoming STIX Extension.</p>
 <p>When clicking on the Incidents tab at the top left, you see the list of all the Incidents you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>.</p>
 <p><a class="glightbox" href="../assets/incidents_list_view.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incidents list" src="../assets/incidents_list_view.png" /></a></p>
@@ -4234,18 +4234,18 @@
 <p>When clicking on an <code>Incident</code> in the list, you land on its Overview tab. For an Incident, the following tabs are accessible:</p>
 <ul>
 <li>Overview: as described <a href="../overview/#overview-section">here</a>, with the particularity to display two distribution graphs of its related Entities (STIX SDO) and Observable (STIX SCO).</li>
-<li>Knowledge: a complex tab that regroups all the structured Knowledge linked to the Incident. Different thematic views are proposed to easily see the victimology, arsenal and techniques and so on used in the context of the Incident. As described <a href="../overview/#knowledge-section">here</a>.</li>
+<li>Knowledge: a complex tab that regroups all the structured Knowledge linked to the Incident. Different thematic views are proposed to easily see the victimology, arsenal, techniques and so on used in the context of the Incident. As described <a href="../overview/#knowledge-section">here</a>.</li>
 <li>Content: This specific tab allows to previzualize, manage and write deliverable associated with the Incident. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described <a href="../overview/#content-section">here</a>.</li>
 <li>Analyses: as described <a href="../overview/#analyses-section">here</a>.</li>
 <li>Data: as described <a href="../overview/#data-section">here</a>.</li>
 <li>History: as described <a href="../overview/#history-section">here</a>.</li>
 </ul>
-<p><a class="glightbox" href="../assets/Incident_overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Overview" src="../assets/Incident_overview.png" /></a></p>
+<p><a class="glightbox" href="../assets/incident_overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Overview" src="../assets/incident_overview.png" /></a></p>
 <h2 id="sightings">Sightings</h2>
 <h3 id="general-presentation_1">General presentation</h3>
-<p><code>Sightings</code> correspond to the event in which an <code>Observable</code> (IP, domain name, certificate, etc.) is detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR. </p>
+<p>The <code>Sightings</code> correspond to events in which an <code>Observable</code> (IP, domain name, url, etc.) is detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR. </p>
 <p>In OpenCTI, as we are in a cybersecurity context, <code>Sightings</code> are associated with <code>Indicators</code> of Compromise (IoC) and the notion of "True positive" and "False positive". </p>
-<p>It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between an Observable and an Individual/Organization/Sector/System.</p>
+<p>It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between an Observable and an Entities or Locations.</p>
 <p>When clicking on the Sightings tab at the top left, you see the list of all the Sightings you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>.</p>
 <p><a class="glightbox" href="../assets/sightings_list.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Sightings list" src="../assets/sightings_list.png" /></a></p>
 <h3 id="visualizing-knowledge-associated-with-a-sighting">Visualizing Knowledge associated with a Sighting</h3>
@@ -4258,7 +4258,7 @@
 <p><code>Observed Data</code> correspond to an extract from a log that contains Observables. </p>
 <p>In the MITRE STIX 2.1, the <code>Observed Data</code> SDO is defined as such:</p>
 <blockquote>
-<p>Observed Data conveys information about cyber security related entities such as files, systems, and networks using the STIX Cyber-observable Objects (SCOs). For example, Observed Data can capture information about an IP address, a network connection, a file, or a registry key. Observed Data is not an intelligence assertion, it is simply the raw information without any context for what it means.</p>
+<p>Observed Data conveys information about cybersecurity related entities such as files, systems, and networks using the STIX Cyber-observable Objects (SCOs). For example, Observed Data can capture information about an IP address, a network connection, a file, or a registry key. Observed Data is not an intelligence assertion, it is simply the raw information without any context for what it means.</p>
 </blockquote>
 <p>When clicking on the <code>Observed Data</code> tab at the top left, you see the list of all the <code>Observed Data</code> you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>.</p>
 <h3 id="visualizing-knowledge-associated-with-an-observed-data">Visualizing Knowledge associated with an Observed Data</h3>
@@ -4285,7 +4285,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T13:01:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-16T13:32:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-16</span>
       </span>
     
     

@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#merging-and-de-duplication" class="md-skip">
+        <a href="#merging" class="md-skip">
           Skip to content
         </a>
       
@@ -1912,32 +1912,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2189,6 +2163,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -2534,6 +2534,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Merging and de-duplication
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -2549,6 +2566,69 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#data-merging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data merging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-preservation-and-relationship-continuity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data preservation and relationship continuity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -3828,6 +3908,58 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#data-merging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data merging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-preservation-and-relationship-continuity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data preservation and relationship continuity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3921,13 +4053,25 @@
   
 
 
-<h1 id="merging-and-de-duplication">Merging and de-duplication</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<h1 id="merging">Merging</h1>
+<h2 id="data-merging">Data merging</h2>
+<p>Within the OpenCTI platform, the merge capability is present into the "Data &gt; Entities" tab, and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon. NB: it is not possible to merge entities of different types, nor is it possible to merge more than 4 entities at a time (it will have to be done in several stages).</p>
+<p><a class="glightbox" href="../assets/merge_panel.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Merge_panel" src="../assets/merge_panel.png" /></a></p>
+<p>Central to the merging process is the selection of a main entity. This primary entity becomes the anchor, retaining crucial attributes such as name and description. Other entities, while losing specific fields like descriptions, are aliased under the primary entity. This strategic decision preserves vital data while eliminating redundancy.</p>
+<p><a class="glightbox" href="../assets/main_entity_selection.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Main_entity_selection" src="../assets/main_entity_selection.png" /></a></p>
+<p>Once the choice has been made, simply validate to run the task in the background. Depending on the number of entity relationships, and the current workload on the platform, the merge may take more or less time. In the case of a healthy platform and around a hundred relationships per entity, merge is almost instantaneous.</p>
+<h2 id="data-preservation-and-relationship-continuity">Data preservation and relationship continuity</h2>
+<p>A common concern when merging entities lies in the potential loss of information. In the context of OpenCTI, this worry is alleviated. Even if the merged entities were initially created by distinct sources, the platform ensures that data is not lost. Upon merging, the platform automatically generates relationships directly on the merged entity. This strategic approach ensures that all connections, regardless of their origin, are anchored to the consolidated entity. Post-merge, OpenCTI treats these once-separate entities as a singular, unified entity. Subsequent information from varied sources is channeled directly into the entity resulting from the merger. This unified entity becomes the focal point for all future relationships, ensuring the continuity of data and relationships without any loss or fragmentation.</p>
+<h2 id="important-considerations">Important considerations</h2>
+<ul>
+<li><strong>Irreversible process:</strong> It's essential to know that a merge operation is irreversible. Once completed, the merged entities cannot be reverted to their original state. Consequently, careful consideration and validation are crucial before initiating the merge process.</li>
+<li><strong>Loss of fields in aliased entities:</strong> Fields, such as descriptions, in aliased entities - entities that have not been chosen as the main - will be lost during the merge. Ensuring that essential information is captured in the primary entity is crucial to prevent data loss.</li>
+</ul>
+<h2 id="additional-resources">Additional resources</h2>
+<ul>
+<li><strong>Usefulness:</strong> To understand the benefits of entity merger, refer to the <a href="../../usage/merging/">Merge objects</a> page in the User Guide section of the documentation.</li>
+<li><strong>Deduplication mechanism:</strong> the platform is equipped with <a href="../../usage/deduplication/">deduplication processes</a> that automatically merge data at creation (either manually or by importing data from different sources) if it meets certain conditions.</li>
+</ul>
 
   
     
@@ -3943,7 +4087,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-16T13:32:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-16</span>
       </span>
     
     
@@ -3966,6 +4110,11 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
             <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
               
               <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
           

@@ -1769,6 +1769,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyst workbench
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1784,6 +1801,75 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#location-of-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location of use
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Location of use">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-import-and-analyst-workbenches-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data import and analyst workbenches window
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-tabs-of-all-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data tabs of all entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1909,32 +1995,6 @@
     
   
     Merge objects
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
   
 
     
@@ -2199,6 +2259,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -3828,6 +3914,64 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#location-of-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location of use
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Location of use">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-import-and-analyst-workbenches-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data import and analyst workbenches window
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-tabs-of-all-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data tabs of all entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3922,12 +4066,27 @@
 
 
 <h1 id="analyst-workbench">Analyst workbench</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
+<p>Workbenches serve as dedicated workspaces for manipulating data before it is officially imported into the platform. </p>
+<h2 id="location-of-use">Location of use</h2>
+<p>The workbenches are located at various places within the platform:</p>
+<h4 id="data-import-and-analyst-workbenches-window">Data import and analyst workbenches window</h4>
+<p>This window encompasses all the necessary tools for importing a file. Files imported through this interface will subsequently be processed by the import connectors, resulting in the creation of workbenches. Additionally, analysts can manually create a workbench by clicking on the "+" icon at the bottom right of the window.</p>
+<p><a class="glightbox" href="../assets/data-import-and-workbenches.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Data import and workbenches panel" src="../assets/data-import-and-workbenches.png" /></a></p>
+<h4 id="data-tabs-of-all-entities">Data tabs of all entities</h4>
+<p>Workbenches are also accessible through the "Data" tabs of entities, providing convenient access to import data associated with the entity.</p>
+<p><a class="glightbox" href="../assets/workbench-in-data-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Workbench in &quot;Data&quot; tab" src="../assets/workbench-in-data-tab.png" /></a></p>
+<h2 id="operation">Operation</h2>
+<p>Workbenches are automatically generated upon the import of a file through an import connector. When an import connector is initiated, it scans files for recognizable entities and subsequently creates a workbench. All identified entities are placed within this workbench for analyst reviews.
+Alternatively, analysts have the option to manually create a workbench by clicking on the "+" icon at the bottom right of the "Data import and analyst workbenches" window.</p>
+<p><a class="glightbox" href="../assets/overview-of-workbench.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Overview of workbench" src="../assets/overview-of-workbench.png" /></a></p>
+<p>The workbench being a draft space, the analysts use it to review connector proposals before finalizing them for import. Within the workbench, analysts have the flexibility to add, delete, or modify entities to meet specific requirements.</p>
+<p><a class="glightbox" href="../assets/workbench-data-manipulation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Workbench data manipulation" src="../assets/workbench-data-manipulation.png" /></a></p>
+<p>Once the content within the workbench is deemed acceptable, the analyst must initiate the ingestion process by clicking on <code>Validate this workbench</code>. This action signifies writing the data in the knowledge base.</p>
+<div class="admonition note">
+<p class="admonition-title">Workbenches are drafting spaces</p>
+<p>Until the workbench is validated, the contained data remains in draft form and is not recorded in the knowledge base. This ensures that only reviewed and approved data is officially integrated into the platform.</p>
 </div>
+<p>For more information on importing files, refer to the <a href="../import-files/">Import from files</a> documentation page.</p>
 
   
     
@@ -3943,7 +4102,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-20T11:54:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-20</span>
       </span>
     
     
@@ -3962,6 +4121,11 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         </span>
         <span>GitHub</span>
         <nav>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+            </a>
           
             <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
               

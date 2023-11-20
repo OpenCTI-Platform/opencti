@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#reasoning-engine" class="md-skip">
+        <a href="#rules-engine" class="md-skip">
           Skip to content
         </a>
       
@@ -1912,32 +1912,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2189,6 +2163,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -2870,6 +2870,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules engine
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -2885,6 +2902,301 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inference-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#raise-incident-based-on-sighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raise incident based on sighting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-of-observables-via-observed-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings of observables via observed data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-propagation-from-indicator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings propagation from indicator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-propagation-from-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings propagation from observable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relation-propagation-via-an-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relation propagation via an observable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attribution-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attribution propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#belonging-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Belonging propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-propagation-via-participation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Organization propagation via participation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identities-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identities propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locations-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locations propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observables-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observables propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-propagation-via-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage propagation via attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference-of-targeting-via-a-sighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference of targeting via a sighting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-belonging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via belonging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-when-located" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation when located
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rule-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rule execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-activation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule activation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-deactivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule deactivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-restrictions-and-data-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access restrictions and data impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -3828,6 +4140,290 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inference-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#raise-incident-based-on-sighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raise incident based on sighting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-of-observables-via-observed-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings of observables via observed data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-propagation-from-indicator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings propagation from indicator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sightings-propagation-from-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sightings propagation from observable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relation-propagation-via-an-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relation propagation via an observable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attribution-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attribution propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#belonging-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Belonging propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-propagation-via-participation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Organization propagation via participation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identities-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identities propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locations-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locations propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observables-propagation-in-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observables propagation in reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-propagation-via-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage propagation via attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference-of-targeting-via-a-sighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference of targeting via a sighting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-belonging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via belonging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-via-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation via location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targeting-propagation-when-located" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Targeting propagation when located
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rule-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rule execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-activation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule activation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-deactivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule deactivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-restrictions-and-data-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access restrictions and data impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3938,13 +4534,310 @@
   
 
 
-<h1 id="reasoning-engine">Reasoning engine</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<h1 id="rules-engine">Rules engine</h1>
+<h2 id="inference-rules">Inference rules</h2>
+<p>The rules engine comprises a set of predefined rules (named inference rules) that govern how new relationships are inferred based on existing data. These rules are carefully crafted to ensure logical and accurate relationship creation. Here is the list of existing inference rules:</p>
+<h4 id="raise-incident-based-on-sighting">Raise incident based on sighting</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A non-revoked Indicator is sighted in an Entity</td>
+<td style="text-align: left;">Creation of an Incident linked to the sighted Indicator and the targeted Entity</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/incident_on_sighting.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident_based_on_sighting" src="../assets/incident_on_sighting.png" /></a></p>
+<h4 id="sightings-of-observables-via-observed-data">Sightings of observables via observed data</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Indicator is based on an Observable contained in an Observed Data</td>
+<td style="text-align: left;">Creation of a sighting between the Indicator and the creating Identity of the Observed Data</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/sighting_via_obs_data.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Sighting_via_observed_data" src="../assets/sighting_via_obs_data.png" /></a></p>
+<h4 id="sightings-propagation-from-indicator">Sightings propagation from indicator</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Indicator based on an Observable is sighted in an Entity</td>
+<td style="text-align: left;">The Observable is sighted in the Entity</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/sighting_from_indicator.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Sighting_prop_from_indicator" src="../assets/sighting_from_indicator.png" /></a></p>
+<h4 id="sightings-propagation-from-observable">Sightings propagation from observable</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Indicator is based on an Observable sighted in an Entity</td>
+<td style="text-align: left;">The Indicator is sighted in the Entity</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/sighting_from_observable.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Sighting_prop_from_observable" src="../assets/sighting_from_observable.png" /></a></p>
+<h4 id="relation-propagation-via-an-observable">Relation propagation via an observable</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An observable is <em>related to</em> two Entities</td>
+<td style="text-align: left;">Create a <em>related to</em> relationship between the two Entities</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/observable_related_to_entities.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Observable_related_to_entities" src="../assets/observable_related_to_entities.png" /></a></p>
+<h4 id="attribution-propagation">Attribution propagation</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A is attributed to an Entity B and this Entity B is itself attributed to an Entity C</td>
+<td style="text-align: left;">The Entity A is attributed to Entity C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/attribution_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Attribution_propagation" src="../assets/attribution_propagation.png" /></a></p>
+<h4 id="belonging-propagation">Belonging propagation</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A is part of an Entity B and this Entity B is itself part of an Entity C</td>
+<td style="text-align: left;">The Entity A is part of Entity C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/belonging_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Belonging_propagation" src="../assets/belonging_propagation.png" /></a></p>
+<h4 id="location-propagation">Location propagation</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A Location A is located at a Location B and this Location B is itself located at a Location C</td>
+<td style="text-align: left;">The Location A is located at Location C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/location_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Location_propagation" src="../assets/location_propagation.png" /></a></p>
+<h4 id="organization-propagation-via-participation">Organization propagation via participation</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A User is affiliated with an Organization B, which is part of an Organization C</td>
+<td style="text-align: left;">The User is affiliated to the Organization C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/organisation_via_participation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Organisation_via_participation" src="../assets/organisation_via_participation.png" /></a></p>
+<h4 id="identities-propagation-in-reports">Identities propagation in reports</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A Report contains an Identity B and this Identity B is part of an Identity C</td>
+<td style="text-align: left;">The Report contains Identity C, as well as the Relationship between Identity B and Identity C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/identities_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Identities_propagation" src="../assets/identities_propagation.png" /></a></p>
+<h4 id="locations-propagation-in-reports">Locations propagation in reports</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A Report contains a Location B and this Location B is located at a Location C</td>
+<td style="text-align: left;">The Report contains Location B, as well as the Relationship between Location B and Location C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/locations_propagation_report.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Locations_propagation_report" src="../assets/locations_propagation_report.png" /></a></p>
+<h4 id="observables-propagation-in-reports">Observables propagation in reports</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A Report contains an Indicator and this Indicator is based on an Observable</td>
+<td style="text-align: left;">The Report contains the Observable, as well as the Relationship between the Indicator and the Observable</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/observables_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Observables_propagation" src="../assets/observables_propagation.png" /></a></p>
+<h4 id="usage-propagation-via-attribution">Usage propagation via attribution</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A, attributed to an Entity C, uses an Entity B</td>
+<td style="text-align: left;">The Entity C uses the Entity B</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/usage_propagation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Usage_propagation" src="../assets/usage_propagation.png" /></a></p>
+<h4 id="inference-of-targeting-via-a-sighting">Inference of targeting via a sighting</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Indicator, sighted at an Entity C, indicates an Entity B</td>
+<td style="text-align: left;">The Entity B targets the Entity C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/targeting_via_sighting.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Targeting_via_sighting" src="../assets/targeting_via_sighting.png" /></a></p>
+<h4 id="targeting-propagation-via-attribution">Targeting propagation via attribution</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A, attributed to an Entity C, targets an Entity B</td>
+<td style="text-align: left;">The Entity C targets the Entity B</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/targeting_via_attribution.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Targeting_via_attribution" src="../assets/targeting_via_attribution.png" /></a></p>
+<h4 id="targeting-propagation-via-belonging">Targeting propagation via belonging</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A targets an Identity B, part of an Identity C</td>
+<td style="text-align: left;">The Entity A targets the Identity C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/targeting_via_belonging.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Targeting_via_belonging" src="../assets/targeting_via_belonging.png" /></a></p>
+<h4 id="targeting-propagation-via-location">Targeting propagation via location</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity targets a Location B and this Location B is located at a Location C</td>
+<td style="text-align: left;">The Entity targets the Location C</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/targeting_via_location.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Targeting_via_location" src="../assets/targeting_via_location.png" /></a></p>
+<h4 id="targeting-propagation-when-located">Targeting propagation when located</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Conditions</th>
+<th style="text-align: left;">Creations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">An Entity A targets an Entity B and this target is located at Location D.</td>
+<td style="text-align: left;">The Entity A targets the Location D</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/targeting_when_located.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Targeting_when_located" src="../assets/targeting_when_located.png" /></a></p>
+<h2 id="rule-execution">Rule execution</h2>
+<h3 id="rule-activation">Rule activation</h3>
+<p>When a rule is activated, a background task is initiated. This task scans all platform data, identifying existing relationships that meet the conditions defined by the rule. Subsequently, it creates new objects (entities and/or relationships), expanding the network of insights within your threat intelligence environment. Then, activated rules operate continuously. Whenever a relationship is created or modified, and this change aligns with the conditions specified in an active rule, the reasoning mechanism is triggered. This ensures real-time relationship inference.</p>
+<h3 id="rule-deactivation">Rule deactivation</h3>
+<p>Deactivating a rule leads to the deletion of all objects and relationships created by it. This cleanup process maintains the accuracy and reliability of your threat intelligence database.</p>
+<h2 id="access-restrictions-and-data-impact">Access restrictions and data impact</h2>
+<p>Access to the rule engine panel is <strong>restricted to administrators</strong> only. Regular users do not have visibility into this section of the platform. Administrators possess the authority to activate or deactivate rules.</p>
+<p>The rules engine empowers OpenCTI with the capability to automatically establish intricate relationships within your data. However, these rules can lead to a very large number of objects created. Even if the operation is reversible, an administrator should consider the impact of activating a rule.</p>
+<h2 id="additional-resources">Additional resources</h2>
+<ul>
+<li><strong>Usefulness:</strong> To understand the benefits and results of these rules, refer to the <a href="../../usage/inferences/">Inferences and reasoning</a> page in the User Guide section of the documentation.</li>
+<li><strong>New inference rule:</strong> Given the potential impact of a rule on your data, users are not allowed to add new rules. However, users can submit rule suggestions via a GitHub issue for evaluation. These suggestions are carefully evaluated by our team, ensuring continuous improvement and innovation.</li>
+</ul>
 
   
     
@@ -3960,7 +4853,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-20T11:54:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-20</span>
       </span>
     
     
@@ -3979,6 +4872,11 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         </span>
         <span>GitHub</span>
         <nav>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+            </a>
           
             <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
               

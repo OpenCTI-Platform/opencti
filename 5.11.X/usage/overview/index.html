@@ -1503,6 +1503,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#less-frequent-tabs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Less frequent tabs
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2147,32 +2158,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2424,6 +2409,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -4243,6 +4254,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#less-frequent-tabs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Less frequent tabs
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4379,7 +4401,7 @@
 <p>In the <code>Settings &gt; Parameters</code>, it is possible for the platform administrator to hide categories in the platform for all users.</p>
 <p><a class="glightbox" href="../assets/hide-global.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Hide categories globally" src="../assets/hide-global.png" /></a></p>
 <h3 id="hide-categories-in-roles">Hide categories in roles</h3>
-<p>In OpencTI, the different roles are highly customizable. It is possible to defined default dashboards, triggers, etc. but also be able to hide categories in the roles:</p>
+<p>In OpenCTI, the different roles are highly customizable. It is possible to defined default dashboards, triggers, etc. but also be able to hide categories in the roles:</p>
 <p><a class="glightbox" href="../assets/hide-roles.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Hide categories in roles" src="../assets/hide-roles.png" /></a></p>
 <h2 id="presentation-of-a-typical-page-in-opencti">Presentation of a typical page in OpenCTI</h2>
 <p>Although there are many different entities in OpenCTI and many different tabs, most of them are quite similar and only have minor differences from the other, mostly due to some of their characteristics, which requires specific fields or do not require some fields which are necessary for the other. </p>
@@ -4392,14 +4414,14 @@
 <p>In the <code>Overview</code> tab on the entity, you will find all properties of the entity as well as the recent activities.</p>
 <p>First, you will find the <code>Details</code> section, where are displayed all properties specific to the type of entity you are looking at, an example below with a piece of malware:</p>
 <p><a class="glightbox" href="../assets/details.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Details" src="../assets/details.png" /></a></p>
-<p>Thus, in the <code>Basic information</code> section, are displayed all common properties to all objects in OpenCTI, such as the marking definition, the author, the labels (ie. tags), etc.</p>
+<p>Thus, in the <code>Basic information</code> section, are displayed all common properties to all objects in OpenCTI, such as the marking definition, the author, the labels (i.e. tags), etc.</p>
 <p><a class="glightbox" href="../assets/basic.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Basic information" src="../assets/basic.png" /></a></p>
 <p>Below these two sections, you will find latest modifications in the Knowledge base related to the Entity:</p>
 <ul>
 <li><code>Latest created relationships</code>: display the latest relationships that have been created <u>from</u> or <u>to</u> this Entity. For example, latest Indicators of Compromise and associated Threat Actor of a Malware.</li>
 <li><code>latest containers about the object</code>: display all the Cases and Analyses that contains this Entity. For example, the latest Reports about a Malware.</li>
-<li><code>External references</code>: display all the the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.</li>
-<li><code>History</code>: display the latest chronological modifications of the Entity and its relationships that occured in the platform, in order to traceback any alteration.</li>
+<li><code>External references</code>: display all the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.</li>
+<li><code>History</code>: display the latest chronological modifications of the Entity and its relationships that occurred in the platform, in order to traceback any alteration.</li>
 </ul>
 <p><a class="glightbox" href="../assets/latest_additions.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Latest relations and containers" src="../assets/latest_additions.png" /></a>
 <a class="glightbox" href="../assets/ref_and_history.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="References and History" src="../assets/ref_and_history.png" /></a></p>
@@ -4409,7 +4431,7 @@
 <p>In the <code>Knowledge</code> tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The <code>Knowledge</code> tab is different for Analyses (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) entities than for all the other entity types.</p>
 <ul>
 <li>The <code>Knowledge</code> tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part <a href="../manual-creation/">Manual creation</a>.</li>
-<li><code>Knowledge</code> tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at (for instance, as shown in the following capture, the <code>Knowledge</code> tab of Intrusion set APT29) gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malwares etc. For entities to appear in theses tabs under <code>Knowledge</code>, they need to have been linked to the entity directly or have been computed with the inference engine (to come).</li>
+<li>The <code>Knowledge</code> tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at. For instance, as shown in the following capture, the <code>Knowledge</code> tab of Intrusion set APT29, gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malware etc. For entities to appear in these tabs under <code>Knowledge</code>, they need to have been linked to the entity directly or have been computed with the inference engine.</li>
 </ul>
 <p><a class="glightbox" href="../assets/apt41_knowledge_view.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Intrusion Set's Knowledge tab" src="../assets/apt41_knowledge_view.png" /></a></p>
 <h4 id="focus-on-indicators-and-observables">Focus on Indicators and Observables</h4>
@@ -4431,25 +4453,31 @@
 <p><a class="glightbox" href="../assets/analyses-graphview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Graph view of all the Knowledge contained in the listed analyses" src="../assets/analyses-graphview.png" /></a></p>
 <p><a id="data-section"></a></p>
 <h3 id="data">Data</h3>
-<p>The Data tab contains documents that are associated to the object and were either :</p>
+<p>The <code>Data</code> tab contains documents that are associated to the object and were either:</p>
 <ul>
 <li>Uploaded to the platform : for instance the PDF document containing the text of the report</li>
 <li>Generated from the platform to be downloaded : a JSON or CSV file containing information on the object and generated by the user.</li>
 <li>associated to an external reference</li>
 </ul>
-<p><a href="../workbench/">Analyst Workbench</a> can also be created from here. They will contain the entity by default.
-<a class="glightbox" href="../assets/entity-data-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Data tab of a Threat Actor" src="../assets/entity-data-tab.png" /></a></p>
+<p><a href="../workbench/">Analyst Workbench</a> can also be created from here. They will contain the entity by default.</p>
+<p><a class="glightbox" href="../assets/entity-data-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Data tab of a Threat Actor" src="../assets/entity-data-tab.png" /></a></p>
+<p>In addition, the <code>Data</code> tab of <code>Threat actors (group)</code>, <code>Threat actors (individual)</code>, <code>Intrusions sets</code>, <code>Organizations</code>, <code>Individuals</code> have an extra panel:</p>
+<ul>
+<li>Pictures Management: allows to manage the profile pictures attached to the entity.</li>
+</ul>
+<p><a class="glightbox" href="../assets/profile_pictures_panel.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Profile pictures panel" src="../assets/profile_pictures_panel.png" /></a>
+<a class="glightbox" href="../assets/profile_pictures_of_TA.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Profile pictures of a Threat Actor" src="../assets/profile_pictures_of_TA.png" /></a></p>
 <p><a id="history-section"></a></p>
 <h3 id="history">History</h3>
 <p>The <code>History</code> tab display the history of change of the Entity, update of attributes, creation of relations, ...</p>
 <p>Because of the volumes of information the history is written in a specific index that consume the redis stream to rebuild the history for the UI.
 <a class="glightbox" href="../assets/history.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="History tab of a Malware" src="../assets/history.png" /></a></p>
-<p>Less frequent tabs are the following:</p>
+<h3 id="less-frequent-tabs">Less frequent tabs</h3>
 <ul>
-<li>The <code>Indicators</code> tab (for all the threats and the entities in arsenal - except the courses of action -)</li>
-<li>The <code>Observables</code> tab (for reports, observed data)</li>
-<li>the <code>Entities</code> tab (for reports and observed data)</li>
-<li>the <code>Sightings</code> tab (for Indicators and observables)</li>
+<li>The <code>Observables</code> tab (for Reports and Observed data): A table containing all SCO (Stix Cyber Observable) contained in the Report or the Observed data, with search and filters available. It also displays if the SCO has been added directly or through <a href="../inferences/">inferences with the reasoning engine</a></li>
+<li>the <code>Entities</code> tab (for Reports and Observed data): A table containing all SDO (Stix Domain Objects) contained in the Report or the Observed data, with search and filters available. It also displays if the SDO has been added directly or through <a href="../inferences/">inferences with the reasoning engine</a></li>
+<li>Observables:</li>
+<li>the <code>Sightings</code> tab (for Indicators and Observables): A table containing all <code>Sightings</code> relationships corresponding to events in which <code>Indicators</code> (IP, domain name, url, etc.) are detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR.</li>
 </ul>
 
   
@@ -4466,7 +4494,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-16T13:32:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-16</span>
       </span>
     
     
@@ -4496,14 +4524,14 @@
               <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
             </a>
           
-            <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
-              
-              <img src="https://avatars.githubusercontent.com/u/73853856?size=72" alt="marieflorescontact">
-            </a>
-          
             <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
               
               <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+            </a>
+          
+            <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
+              
+              <img src="https://avatars.githubusercontent.com/u/73853856?size=72" alt="marieflorescontact">
             </a>
           
           

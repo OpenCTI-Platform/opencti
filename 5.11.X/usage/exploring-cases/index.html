@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#exploring-cases" class="md-skip">
+        <a href="#cases" class="md-skip">
           Skip to content
         </a>
       
@@ -2069,32 +2069,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2346,6 +2320,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -4204,43 +4204,43 @@
   
 
 
-<h1 id="exploring-cases">Exploring "Cases"</h1>
+<h1 id="cases">Cases</h1>
 <p>When you click on "Cases" in the left-side bar, you access all the "Cases" tabs, visible on the top bar on the left. By default, the user directly access the "Incident Responses" tab, but can navigate to the other tabs as well.</p>
-<p>As Analyses, <code>Cases</code> can contains other objects. This way, by adding context and results of your investigations in the case, you will be able to get an up to date overview of the ongoing situation, and later produce more easily an incident report. </p>
+<p>As Analyses, <code>Cases</code> can contain other objects. This way, by adding context and results of your investigations in the case, you will be able to get an up-to-date overview of the ongoing situation, and later produce more easily an incident report. </p>
 <p>From the <code>Cases</code> section, users can access the following tabs:</p>
 <ul>
-<li><code>Incident Responses</code>: This type of Cases is dedicated to the management of incidents. An Incident Reponse case does not represent an incident, but all the context and actions that will encompass the response to a specific incident.</li>
+<li><code>Incident Responses</code>: This type of Cases is dedicated to the management of incidents. An Incident Response case does not represent an incident, but all the context and actions that will encompass the response to a specific incident.</li>
 <li><code>Request for Information</code>: CTI teams are often asked to provide extensive information and analysis on a specific subject, be it related to an ongoing incident or a particular trending threat. Request for Information cases allow you to store context and actions relative to this type of request and its response.</li>
-<li><code>Request for Takedown</code>: When an orgnization is targeted by an attack campaign, a typical response action can be to request the Takedown of elements of the attack infrastructure, for example a domain name impersonating the organization to phish its employees, or an email address used to deliver phishing content. As Takedown needs in most case to reach out to external providers and be effective quickly, it often needs specific workflows. Request for Takedown cases give you a dedicated space to manage these specific actions.</li>
+<li><code>Request for Takedown</code>: When an organization is targeted by an attack campaign, a typical response action can be to request the Takedown of elements of the attack infrastructure, for example a domain name impersonating the organization to phish its employees, or an email address used to deliver phishing content. As Takedown needs in most case to reach out to external providers and be effective quickly, it often needs specific workflows. Request for Takedown cases give you a dedicated space to manage these specific actions.</li>
 <li><code>Tasks</code>: In every case, you need tasks to be performed in order to solve it. The Tasks tab allows you to review all created tasks to quickly see past due date, or quickly see every task assigned to a specific user.</li>
-<li><code>Feedbacks</code>: If you use your platform to interact with other teams and provide them CTI Knowledge, some users may want to give you feedback about it. Those feedbacks can easily be considered as an other type of case to solve, as it will often reffer to Knowledge inconsistency or gaps.</li>
+<li><code>Feedbacks</code>: If you use your platform to interact with other teams and provide them CTI Knowledge, some users may want to give you feedback about it. Those feedbacks can easily be considered as another type of case to solve, as it will often refer to Knowledge inconsistency or gaps.</li>
 </ul>
 <p><a class="glightbox" href="../assets/cases-default-landing-page.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Cases Default page is Incident Response" src="../assets/cases-default-landing-page.png" /></a></p>
 <h2 id="incident-response-request-for-information-request-for-takedown">Incident Response, Request for Information &amp; Request for Takedown</h2>
 <h3 id="general-presentation">General presentation</h3>
 <p>Incident responses, Request for Information &amp; Request for Takedown cases are an important part of the case management system in OpenCTI. Here, you can organize the work of your team to respond to cybersecurity situations. You can also give context to the team and other users on the platform about the situation and actions (to be) taken.</p>
-<p>To manage the situation, you can issue <code>Tasks</code> and assign them to users in the platform, by directly creating a Task or by applying a Case template that will append a list of predifined tasks.</p>
+<p>To manage the situation, you can issue <code>Tasks</code> and assign them to users in the platform, by directly creating a Task or by applying a Case template that will append a list of predefined tasks.</p>
 <p>To bring context, you can use your Case as a container (like Reports or Groupings), allowing you to add any Knowledge from your platform in it. You can also use this possibility to trace your investigation, your Case playing the role of an Incident report. You will find more information about case management <a href="../case-management/">here</a>.</p>
 <p>Incident Response, Request for Information &amp; Request for Takedown are not STIX 2.1 Objects.</p>
 <p>When clicking on the Incident Response, Request for Information &amp; Request for Takedown tabs at the top, you see the list of all the Cases you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes.</p>
 <h3 id="visualizing-knowledge-within-an-incident-response-request-for-information-request-for-takedown">Visualizing Knowledge within an Incident Response, Request for Information &amp; Request for Takedown</h3>
 <p>When clicking on an Incident Response, Request for Information or Request for Takedown, you land on the Overview tab. The following tabs are accessible:</p>
 <ul>
-<li>Overview: Overview of Cases are slightly different than the usual (described <a href="../overview/#overview-section">here</a>). Cases' Overview displays also the list of the tasks associated with the case. It also let you hightlight Incident, Report or Sighting at the origin of the case. If other cases contains some Observables with your Case, they will be displayed as Related Cases in the Overview.</li>
+<li>Overview: Overview of Cases are slightly different from the usual (described <a href="../overview/#overview-section">here</a>). Cases' Overview displays also the list of the tasks associated with the case. It also let you highlight Incident, Report or Sighting at the origin of the case. If other cases contains some Observables with your Case, they will be displayed as Related Cases in the Overview.</li>
 <li>Knowledge: a complex tab that regroups all the structured Knowledge contained in the Case, accessible through different views (See below for a dive-in). As described <a href="../overview/#knowledge-section">here</a>.</li>
 <li>Content: a tab to upload or creates outcomes document displaying the content of the Case (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described <a href="../overview/#content-section">here</a>.</li>
-<li>Entities: A table containing all SDO (Stix Domain Objects) contained in the Case, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a></li>
-<li>Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a></li>
+<li>Entities: A table containing all SDO (Stix Domain Objects) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through <a href="../inferences/">inferences with the reasoning engine</a></li>
+<li>Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through <a href="../inferences/">inferences with the reasoning engine</a></li>
 <li>Data: as described <a href="../overview/#data-section">here</a>.</li>
 </ul>
 <p>Exploring and modifying the structured Knowledge contained in a Case can be done through different lenses.</p>
 <h4 id="graph-view">Graph View</h4>
 <p><a class="glightbox" href="../assets/case-graph.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Graph View of a Case" src="../assets/case-graph.png" /></a></p>
-<p>In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending of their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
-At the top right, you will find a serie of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Case. Let's highlight 2 of them:</p>
+<p>In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
+At the top right, you will find a series of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Case. Let's highlight 2 of them:</p>
 <ul>
 <li>Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.</li>
-<li>Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Case and its content with users of an other Organization.
+<li>Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Case and its content with users of another Organization.
 At the bottom, you have many option to manipulate the graph:</li>
 <li>Multiple option for shaping the graph and applying forces to the nodes and links</li>
 <li>Multiple selection options</li>
@@ -4249,16 +4249,16 @@ At the bottom, you have many option to manipulate the graph:</li>
 </ul>
 <h4 id="content-mapping-view">Content mapping view</h4>
 <p><a class="glightbox" href="../assets/case-content-mapping.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Content mapping view of a Case" src="../assets/case-content-mapping.png" /></a></p>
-<p>Through this view, you can map exsisting or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details. 
+<p>Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details. 
 This view is a great place to see the continuum between unstructured and structured Knowledge.</p>
 <h4 id="timeline-view">Timeline view</h4>
 <p><a class="glightbox" href="../assets/case-timeline.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Timeline view of a Case" src="../assets/case-timeline.png" /></a></p>
-<p>This view allows you to see the structured Knowledge chronologically. This view is particularily useful in the context of a Case, allowing you to see the chain of events, either from the attack perspectives, the defense perspectives or both.
+<p>This view allows you to see the structured Knowledge chronologically. This view is particularly useful in the context of a Case, allowing you to see the chain of events, either from the attack perspectives, the defense perspectives or both.
 The view can be filtered and displayed relationships too.</p>
 <h4 id="matrix-view">Matrix view</h4>
 <p>If your Case contains attack patterns, you will be able to visualize them in a Matrix view.</p>
 <h2 id="tasks">Tasks</h2>
-<p>Tasks are actions to be performed in the context of a Case (Incident Response, Request for Information, Request for Takedown). Usually, a task is assigned to a user, but important tasks may involved more participants.</p>
+<p>Tasks are actions to be performed in the context of a Case (Incident Response, Request for Information, Request for Takedown). Usually, a task is assigned to a user, but important tasks may involve more participants.</p>
 <p>When clicking on the Tasks tab at the top of the interface, you see the list of all the Tasks you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the tasks.</p>
 <p>Clicking on a Task, you land on its Overview tab. For a Tasks, the following tabs are accessible:
 - Overview: as described <a href="../overview/#overview-section">here</a>.
@@ -4288,7 +4288,7 @@ The view can be filtered and displayed relationships too.</p>
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-14T12:55:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-14</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-16T13:32:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-16</span>
       </span>
     
     
@@ -4308,14 +4308,14 @@ The view can be filtered and displayed relationships too.</p>
         <span>GitHub</span>
         <nav>
           
-            <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
-              
-              <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
-            </a>
-          
             <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
               
               <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+            </a>
+          
+            <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
+              
+              <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
             </a>
           
             <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">

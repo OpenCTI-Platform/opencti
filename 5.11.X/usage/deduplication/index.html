@@ -2019,32 +2019,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2296,6 +2270,32 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
   
 
     
@@ -4091,7 +4091,7 @@
 <p>One of the core concept of the OpenCTI knowledge graph is all underlying mechanisms implemented to accurately de-duplicate and consolidate (aka. <code>upserting</code>) information about entities and relationships.</p>
 <h2 id="creation-behavior">Creation behavior</h2>
 <p>When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, <a href="">in some cases</a>, update it as well.</p>
-<p>Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between <code>name</code> and <code>aliases</code> leading to not have entities with overlaping aliases or an alias already used in the name of another entity.</p>
+<p>Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between <code>name</code> and <code>aliases</code> leading to not have entities with overlapping aliases or an alias already used in the name of another entity.</p>
 <h3 id="entities">Entities</h3>
 <table>
 <thead>
@@ -4215,7 +4215,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">Report</td>
-<td style="text-align: left;"><code>name</code> AND <code>publised</code> (date)</td>
+<td style="text-align: left;"><code>name</code> AND <code>published</code> (date)</td>
 </tr>
 <tr>
 <td style="text-align: left;">RFI Case</td>
@@ -4259,11 +4259,12 @@
 <h3 id="observables">Observables</h3>
 <p>For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the <a href="https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607">STIX specification</a> using the "ID Contributing Properties" defined for each type of observable.</p>
 <h2 id="update-behavior">Update behavior</h2>
-<p>If an entity already exists in the platform, the <code>attributes</code> may be updated by the incoming creation with the following rule:</p>
+<p>In cases where an entity already exists in the platform, incoming creations can trigger updates to the existing entity's attributes.</p>
 <div class="admonition note">
-<p>If <code>confidence_level</code> of the created entity is &gt;= (greater or equal) then the <code>confidence_level</code> of the existing entity, attributes will be updated. Obviously, the <code>confidence_level</code> will also be increased with the new one.</p>
+<p class="admonition-title">Policy for handling entity updates</p>
+<p>If <code>confidence_level</code> of the created entity is &gt;= (greater than or equal) to the <code>confidence_level</code> of the existing entity, the attributes will be updated. Notably, the <code>confidence_level</code> will also be increased with the new one.</p>
 </div>
-<p>This logic has been implemented so the platform can converge to the highest confidence and quality levels for the entities and the relationships.</p>
+<p>This logic has been implemented to converge the knowledge base towards the highest confidence and quality levels for both entities and relationships.</p>
 
   
     
@@ -4279,7 +4280,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-30T09:54:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-20T11:54:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-20</span>
       </span>
     
     
@@ -4302,6 +4303,11 @@
             <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
               
               <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
             <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">

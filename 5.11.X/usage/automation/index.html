@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://docs.opencti.io/latest/usage/automation/">
       
       
-        <link rel="prev" href="../workflows/">
+        <link rel="prev" href="../indicators-lifecycle/">
       
       
         <link rel="next" href="../feeds/">
@@ -1912,32 +1912,6 @@
 
               
             
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Indicators lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2206,6 +2180,32 @@
                 
   
   
+  
+    <li class="md-nav__item">
+      <a href="../indicators-lifecycle/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -2269,7 +2269,7 @@
   <a href="#playbook-philosophy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        playbook philosophy
+        Playbook philosophy
       
     </span>
   </a>
@@ -4056,7 +4056,7 @@
   <a href="#playbook-philosophy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        playbook philosophy
+        Playbook philosophy
       
     </span>
   </a>
@@ -4340,20 +4340,22 @@
 <p>You need the "Manage credentials" <a href="../../administration/users/">capability</a> to use the Playbooks automation, because you will be able to manipulate data simple users cannot access.</p>
 <p>You will then be able to:</p>
 <ul>
-<li>add labels depending on enrichment results to be used in threat intelligence driven detection feeds ;</li>
-<li>create reports and cases based on various criteria ;</li>
-<li>trigger enrichments or webhooks in given conditions ;</li>
-<li>modify attributes such as first_seen and last_seen based on other pieces of knowledge ;</li>
+<li>add labels depending on enrichment results to be used in threat intelligence-driven detection feeds;</li>
+<li>create reports and cases based on various criteria;</li>
+<li>trigger enrichments or webhooks in given conditions;</li>
+<li>modify attributes such as first_seen and last_seen based on other pieces of knowledge;</li>
 <li>etc.</li>
 </ul>
-<h3 id="playbook-philosophy">playbook philosophy</h3>
+<h2 id="playbook-philosophy">Playbook philosophy</h2>
 <p>Consider Playbook as STIX 2.1 bundle pipeline. </p>
-<p>A playbook begins with a component listening to a data stream.</p>
-<p>Then each component of the playbook will receive a STIX bundle and then:
-* modify it and pass the result to connected components</p>
-<p>Components can send out the STIX 2.1 bundle to multiple components, allowing to develop multiple branches in your playbook.</p>
-<p>The playbook should end with a component making an action based on this, for example writing the STIX 2.1 bundle in a data stream.</p>
-<h3 id="create-a-playbook">Create a Playbook</h3>
+<p>Initiating with a component listening to a data stream, each subsequent component in the playbook processes a received STIX bundle. These components have the ability to modify the bundle and subsequently transmit the altered result to connected components.</p>
+<p>In this paradigm, components can send out the STIX 2.1 bundle to multiple components, enabling the development of multiple branches within your playbook.</p>
+<p>A well-designed playbook end with a component executing an action based on the processed information. For instance, this may involve writing the STIX 2.1 bundle in a data stream.</p>
+<div class="admonition note">
+<p class="admonition-title">Validate ingestion</p>
+<p>The STIX bundle processed by the playbook won't be written in the platform without specifying it using the appropriate component, i.e. "Send for ingestion".</p>
+</div>
+<h2 id="create-a-playbook">Create a Playbook</h2>
 <p>It is possible to create as many playbooks as needed which are running independently. You can give a name and description to each playbook.</p>
 <p><a class="glightbox" href="../assets/playbook_create.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create a new playbook" src="../assets/playbook_create.png" /></a></p>
 <p>The first step to define in the playbook is the “triggering event”, which can be any knowledge event (create, update or delete) with customizable filters. To do so, click on the grey rectangle in the center of the workspace and choose the component to "listen knowledge events". Configure it with adequate filters. You can use same filters as in other part of the platform.</p>
@@ -4367,9 +4369,9 @@
 </ul>
 <p>Do not forget to start your Playbook when ready, with the Start option of the burger button placed near the name of your Playbook.</p>
 <p>By clicking the burger button of a component, you can replace it by another one.</p>
-<p>By clicking on the arrow icon on the bottom right corner of a component, you can develop a new branch at the same level.</p>
+<p>By clicking on the arrow icon in the bottom right corner of a component, you can develop a new branch at the same level.</p>
 <p>By clicking the "+" button on a link between components, you can insert a component between the two.</p>
-<h3 id="components-of-playbooks">Components of playbooks</h3>
+<h2 id="components-of-playbooks">Components of playbooks</h2>
 <p><a class="glightbox" href="../assets/playbook_components.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="List of current components" src="../assets/playbook_components.png" /></a></p>
 <h4 id="log-data-in-standard-output">Log data in standard output</h4>
 <p>Will write the received STIX 2.1 bundle in platform logs with configurable log level and then send out the STIX 2.1 bundle unmodified.</p>
@@ -4404,7 +4406,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 By default, it is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all indicators in the bundle (indicators that might result from enrichment for example).</p>
 <h4 id="reduce-knowledge">Reduce Knowledge</h4>
 <p>Will elagate the received STIX 2.1 bundle based on the configured filter.</p>
-<h3 id="monitor-playbook-activity">Monitor playbook activity</h3>
+<h2 id="monitor-playbook-activity">Monitor playbook activity</h2>
 <p>At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.</p>
 <p><a class="glightbox" href="../assets/playbook_traces.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Steps monitoring" src="../assets/playbook_traces.png" /></a></p>
 
@@ -4422,7 +4424,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-14T13:10:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-14</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-20T11:54:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-20</span>
       </span>
     
     
@@ -4450,6 +4452,11 @@ By default, it is applied to entities having triggered the playbook. You can tog
             <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
               
               <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
           
@@ -4482,7 +4489,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../workflows/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Workflows and assignation" rel="prev">
+          <a href="../indicators-lifecycle/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Indicators lifecycle" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -4491,7 +4498,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
                 Previous
               </span>
               <div class="md-ellipsis">
-                Workflows and assignation
+                Indicators lifecycle
               </div>
             </div>
           </a>
