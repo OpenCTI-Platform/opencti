@@ -188,13 +188,6 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
             ))}
             </List>
             <Field
-                component={TextField}
-                fullWidth
-                type="number"
-                name="max_file_size"
-                label={t('Max file size to index')}
-            />
-            <Field
               component={SwitchField}
               type="checkbox"
               name="include_global_files"

@@ -26,6 +26,7 @@ import {
   FileIndexingMonitoringQuery,
 } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { interval } from 'rxjs';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
@@ -59,6 +60,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  progress: {
+    borderRadius: 5,
+    height: 10,
+    width: '100%',
   },
 }));
 
@@ -139,6 +145,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
     updateManagerRunning(false);
   };
   const handleReset = () => {
+    handlePause();
     resetManager();
   };
 
@@ -206,6 +213,29 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             </div>
           </Grid>
         </Grid>
+        { isStarted && (
+          <div style={{ paddingTop: 30 }}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Progress')}
+            </Typography>
+            <LinearProgress
+              classes={{ root: classes.progress }}
+              variant="determinate"
+              value={
+                // eslint-disable-next-line no-nested-ternary
+                indexedFiles
+                  ? indexedFiles === 0
+                    ? 0
+                    : Math.round(
+                      (indexedFiles
+                        / totalFiles)
+                        * 100,
+                    )
+                  : 0
+              }
+            />
+          </div>
+        )}
       </Paper>
     </div>
   );
