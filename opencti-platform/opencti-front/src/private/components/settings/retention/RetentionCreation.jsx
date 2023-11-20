@@ -18,7 +18,8 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
@@ -123,7 +124,7 @@ const RetentionCreation = (props) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters));
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
       variables: {

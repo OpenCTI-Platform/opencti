@@ -27,7 +27,8 @@ import {
   Filter,
   FilterGroup,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
@@ -112,7 +113,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(newBaseFilters)) },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
       },
     });
   };
@@ -121,7 +122,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: newBaseFilters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(newBaseFilters)) : null },
+        input: { key: 'filters', value: newBaseFilters ? serializeFilterGroupForBackend(newBaseFilters) : null },
       },
     });
   };

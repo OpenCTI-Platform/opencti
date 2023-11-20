@@ -33,7 +33,7 @@ import {
   FilterGroup,
   filtersAfterSwitchLocalMode,
   initialFilterGroup,
-  sanitizeFilterGroupKeysForSerialization,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
@@ -192,7 +192,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : undefined;
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),

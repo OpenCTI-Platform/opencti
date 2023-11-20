@@ -17,7 +17,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode, sanitizeFilterGroupKeysForSerialization,
+  filtersAfterSwitchLocalMode,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
@@ -88,7 +89,7 @@ const RetentionEditionContainer = (props) => {
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = R.pipe(
-      R.assoc('filters', JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters))),
+      R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -133,7 +134,7 @@ const RetentionEditionContainer = (props) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters));
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
       variables: {

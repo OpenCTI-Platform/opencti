@@ -48,7 +48,8 @@ const RESOLUTION_MAP_PATHS: Record<string, string> = {
   [PARTICIPANT_FILTER]: 'id', // participant --> resolve with the standard id (which is the stix.id)
   [RELATION_FROM_FILTER]: 'id',
   [RELATION_TO_FILTER]: 'id',
-  [CONNECTED_TO_INSTANCE_FILTER]: 'id',
+  [CONNECTED_TO_INSTANCE_FILTER]: 'id', // instance trigger --> resolve with the standard id (which is the stix.id)
+  [CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER]: 'id', // instance trigger --> resolve with the standard id (which is the stix.id)
 };
 
 //----------------------------------------------------------------------------------------------------------------------

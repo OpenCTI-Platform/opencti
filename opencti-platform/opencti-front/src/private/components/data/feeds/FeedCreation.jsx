@@ -37,7 +37,8 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -213,7 +214,7 @@ const FeedCreation = (props) => {
     const finalValues = R.pipe(
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
-      R.assoc('filters', JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters))),
+      R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.assoc(
         'authorized_members',
         values.authorized_members.map(({ value }) => ({
