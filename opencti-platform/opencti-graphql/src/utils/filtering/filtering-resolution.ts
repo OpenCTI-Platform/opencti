@@ -2,7 +2,7 @@ import type { Filter, FilterGroup } from '../../generated/graphql';
 import { FilterOperator } from '../../generated/graphql';
 import {
   ASSIGNEE_FILTER,
-  CONNECTED_TO_INSTANCE_FILTER,
+  CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER,
   INDICATOR_FILTER,
   INSTANCE_FILTER,
@@ -32,6 +32,7 @@ export const RESOLUTION_FILTERS = [
   RELATION_TO_FILTER,
   INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
+  CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
 ];
 
 export type FilterResolutionMap = Map<string, string>;
