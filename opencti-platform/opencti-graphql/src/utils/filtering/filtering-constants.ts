@@ -40,6 +40,7 @@ export const CONNECTIONS_FILTER = 'connections';
 export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
+export const RULE_FILTER = 'rule';
 
 // list of the special filtering keys (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
 export const specialFilterKeys = [
@@ -57,4 +58,5 @@ export const specialFilterKeys = [
   MEMBERS_USER_FILTER, // for activity trigger
   MEMBERS_GROUP_FILTER, // for activity trigger
   MEMBERS_ORGANIZATION_FILTER, // for activity trigger
+  RULE_FILTER, // for inference engine rules
 ];
