@@ -70,7 +70,7 @@ import {
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter, extractFilterIds } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterGroupValues } from '../utils/filtering/filtering-utils';
 import { specialFilterKeys } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
@@ -597,8 +597,8 @@ export const findFiltersRepresentatives = async (context, user, inputFilters) =>
   const filtersRepresentatives = [];
   // extract the ids to resolve from inputFilters
   const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(specialFilterKeys);
-  const idsToResolve = extractFilterIds(inputFilters, refsInputNames);
-  const otherIds = extractFilterIds(inputFilters, refsInputNames, true);
+  const idsToResolve = extractFilterGroupValues(inputFilters, refsInputNames);
+  const otherIds = extractFilterGroupValues(inputFilters, refsInputNames, true);
   // resolve the ids
   const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
   // resolve status ids differently

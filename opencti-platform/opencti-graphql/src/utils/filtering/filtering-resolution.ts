@@ -18,7 +18,7 @@ import type { StixObject } from '../../types/stix-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
-import { checkAndConvertFilters, extractFilterIds } from './filtering-utils';
+import { checkAndConvertFilters, extractFilterGroupValues } from './filtering-utils';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -145,8 +145,12 @@ export const resolveFilterGroupValuesWithCache = async (context: AuthContext, us
 //----------------------------------------------------------------------------------------------------------------------
 // TODO: legacy code to refactor (instance triggers?)
 
-export const extractFilterIdsToResolveForCache = (filterGroup: FilterGroup) => {
-  return extractFilterIds(filterGroup, RESOLUTION_FILTERS);
+/**
+ * Extract all filter values (ids) that might require a resolution from cache "Resolved-Filters"
+ * @param filterGroup
+ */
+export const extractFilterGroupValuesToResolveForCache = (filterGroup: FilterGroup) => {
+  return extractFilterGroupValues(filterGroup, RESOLUTION_FILTERS);
 };
 
 // build a map ([id]: StixObject) with the resolved filters accessible for a user
@@ -182,4 +186,69 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
     finalFilters.filters.push({ key: field, values: [before], operator: FilterOperator.Lte });
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+// TODO: Legacy Filter adaptation, to remove ?
+
+/**
+ * Recursively adapt a filter group with a given cache.
+ * Cache is fetched once in adaptFiltersIds.
+ */
+const adaptFiltersValuesRecursively = async (
+  context: AuthContext,
+  user: AuthUser,
+  mainFilterGroup: FilterGroup | undefined,
+  resolvedMap: Map<string, StixObject>
+) : Promise<FilterGroup | undefined> => {
+  if (!mainFilterGroup) {
+    return undefined;
+  }
+  const adaptedFilters: Filter[] = [];
+  const adaptedFilterGroups: FilterGroup[] = [];
+  const { filters = [] } = mainFilterGroup;
+  const { filterGroups = [] } = mainFilterGroup;
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
+    const adaptedGroup = await adaptFiltersValuesRecursively(context, user, group, resolvedMap);
+    if (adaptedGroup) {
+      adaptedFilterGroups.push(adaptedGroup);
+    }
+  }
+  for (let index = 0; index < filters.length; index += 1) {
+    const filter = filters[index];
+    // Remap the format of specific keys
+    const rawValues = filter.values;
+    const values = [];
+    for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
+      const id = rawValues[vIndex];
+      if (resolvedMap.has(id)) {
+        const stixInstance = resolvedMap.get(id);
+        const isUserHasAccessToElement = !!stixInstance && await isUserCanAccessStixElement(context, user, stixInstance);
+        // add id if user has access to the element
+        values.push(isUserHasAccessToElement ? id : '<invalid access>');
+        // add standard id if user has access to the element
+        values.push(isUserHasAccessToElement ? stixInstance.id : '<invalid access>');
+      } else {
+        values.push(id);
+      }
+    }
+    adaptedFilters.push({ ...filter, values });
+  }
+  return {
+    mode: mainFilterGroup.mode,
+    filters: adaptedFilters,
+    filterGroups: adaptedFilterGroups,
+  };
+};
+
+/**
+ * take a filter group and adapt all values as follow:
+ * If the value (an id) is in the cache for Resolved-Filters, we add to the values the standard id stored in cache.
+ * If user has not access to the object in cache, we invalidate the ids so matching won't ever return true
+ */
+export const adaptFilterGroupValues = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
+  // Grab once the cache that stores all stix objects to resolve for our filters
+  const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  return adaptFiltersValuesRecursively(context, user, filterGroup, resolvedMap);
 };

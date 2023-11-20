@@ -61,6 +61,30 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
 };
 
 /**
+ * extract all the values (ids) from a filter group
+ * if key is specified: extract all the values corresponding to the specified keys
+ * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
+ */
+export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): string[] => {
+  const keysToKeep = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
+  let filteredFilters = [];
+  if (key) {
+    filteredFilters = reverse
+      // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
+  } else {
+    filteredFilters = filters;
+  }
+  let ids = filteredFilters.map((f) => f.values).flat() ?? [];
+  if (filterGroups.length > 0) {
+    ids = ids.concat(filterGroups.map((group) => extractFilterGroupValues(group, key)).flat());
+  }
+  return uniq(ids);
+};
+
+/**
  * Insert a Filter inside a FilterGroup
  * If the input filterGroup is not defined, it will return a new filterGroup with only the added filter (and / or).
  * Note that this function does input coercion, accepting string[] and string alike
@@ -92,7 +116,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
 // map of the special filtering keys that should be converted
 // the first element of the map is the frontend key
 // the second element is the converted key used in backend
-export const specialFilterKeysConvertor = new Map([
+const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
   [INSTANCE_FILTER, buildRefRelationKey('*')],
 ]);
@@ -169,91 +193,4 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
 
   // nothing to convert
   return filterGroup;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-// TODO: Legacy Filter adaptation
-
-/**
- * Recursively adapt a filter group with a given cache.
- * Cache is fetched once in adaptFiltersIds.
- */
-const adaptFiltersIdsRecursively = async (
-  context: AuthContext,
-  user: AuthUser,
-  mainFilterGroup: FilterGroup | undefined,
-  resolvedMap: Map<string, StixObject>
-) : Promise<FilterGroup | undefined> => {
-  if (!mainFilterGroup) {
-    return undefined;
-  }
-  const adaptedFilters: Filter[] = [];
-  const adaptedFilterGroups: FilterGroup[] = [];
-  const { filters = [] } = mainFilterGroup;
-  const { filterGroups = [] } = mainFilterGroup;
-  for (let index = 0; index < filterGroups.length; index += 1) {
-    const group = filterGroups[index];
-    const adaptedGroup = await adaptFiltersIdsRecursively(context, user, group, resolvedMap);
-    if (adaptedGroup) {
-      adaptedFilterGroups.push(adaptedGroup);
-    }
-  }
-  for (let index = 0; index < filters.length; index += 1) {
-    const filter = filters[index];
-    // Remap the format of specific keys
-    const rawValues = filter.values;
-    const values = [];
-    for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
-      const id = rawValues[vIndex];
-      if (resolvedMap.has(id)) {
-        const stixInstance = resolvedMap.get(id);
-        const isUserHasAccessToElement = !!stixInstance && await isUserCanAccessStixElement(context, user, stixInstance);
-        // add id if user has access to the element
-        values.push(isUserHasAccessToElement ? id : '<invalid access>');
-        // add standard id if user has access to the element
-        values.push(isUserHasAccessToElement ? stixInstance.id : '<invalid access>');
-      } else {
-        values.push(id);
-      }
-    }
-    adaptedFilters.push({ ...filter, values });
-  }
-  return {
-    mode: mainFilterGroup.mode,
-    filters: adaptedFilters,
-    filterGroups: adaptedFilterGroups,
-  };
-};
-
-/**
- * take a filter group and adapt it as follow:
- * If the value (id) is in the cache for Resolved-Filters, we add to the values the standard id stored in cache.
- * If user has not access to the object in cache, we invalidate the ids so matching won't ever return true
- */
-export const adaptFiltersIds = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
-  // Grab once the cache that stores all stix objects to resolve for our filters
-  const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  return adaptFiltersIdsRecursively(context, user, filterGroup, resolvedMap);
-};
-
-// extract all the ids from a filter group
-// if key is specified: extract all the ids corresponding to the specified keys
-// if key is specified and reverse=true: extract all the ids NOT corresponding to any key
-export const extractFilterIds = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): string[] => {
-  const keysToKeep = Array.isArray(key) ? key : [key];
-  const { filters = [], filterGroups = [] } = inputFilters;
-  let filteredFilters = [];
-  if (key) {
-    filteredFilters = reverse
-      // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
-      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
-      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
-  } else {
-    filteredFilters = filters;
-  }
-  let ids = filteredFilters.map((f) => f.values).flat() ?? [];
-  if (filterGroups.length > 0) {
-    ids = ids.concat(filterGroups.map((group) => extractFilterIds(group, key)).flat());
-  }
-  return uniq(ids);
 };
