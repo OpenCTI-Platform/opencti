@@ -261,7 +261,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           }
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
           const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
-          const jsonFilters = JSON.parse(filters ?? '{}');
+          const jsonFilters = filters ? JSON.parse(filters) : null;
           let validEventType = false;
           if (type === 'create' && create === true) validEventType = true;
           if (type === 'update' && update === true) validEventType = true;

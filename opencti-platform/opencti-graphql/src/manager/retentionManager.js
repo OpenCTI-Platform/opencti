@@ -23,7 +23,7 @@ let running = false;
 const executeProcessing = async (context, retentionRule) => {
   const { id, name, max_retention: maxDays, filters } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
-  const jsonFilters = JSON.parse(filters || '{}');
+  const jsonFilters = filters ? JSON.parse(filters) : null;
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = await convertFiltersToQueryOptions(context, RETENTION_MANAGER_USER, jsonFilters, { before });
   const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };

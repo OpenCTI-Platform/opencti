@@ -265,7 +265,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
 
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
-    const filterGroup = JSON.parse(filters ?? '') as FilterGroup || undefined;
+    const filterGroup = (filters ? JSON.parse(filters) : null) as FilterGroup || null;
     const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'connectedToId')?.values?.filter((id) => id !== instanceId) ?? [];
     const newInstanceFilters = newInstanceValues.length > 0
       ? {
