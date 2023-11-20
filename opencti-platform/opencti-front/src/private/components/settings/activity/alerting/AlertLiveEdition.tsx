@@ -171,7 +171,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
       commitFieldPatch({
         variables: {
           id: trigger?.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+          input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
         },
       });
     }

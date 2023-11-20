@@ -45,7 +45,7 @@ import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import { FilterGroup, findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
   query StixCoreObjectQuickSubscriptionContentPaginationQuery(
@@ -190,10 +190,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       event_types: ['update', 'delete'],
       notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d', '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'],
       instance_trigger: true,
-      filters: JSON.stringify({
+      filters: serializeFilterGroupForBackend({
         mode: 'and',
         filters: [{
-          key: ['connectedToId'],
+          key: 'connectedToId',
           values: [instanceId],
           operator: 'eq',
           mode: 'or',
@@ -291,7 +291,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         input: [
           {
             key: 'filters',
-            value: JSON.stringify(newInstanceFilters),
+            value: serializeFilterGroupForBackend(newInstanceFilters),
           },
         ],
       },

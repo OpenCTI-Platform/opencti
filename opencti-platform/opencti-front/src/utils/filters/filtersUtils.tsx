@@ -383,7 +383,7 @@ export const constructHandleRemoveFilter = (filters: FilterGroup | undefined, k:
 };
 
 // switch the mode inside a specific filter
-export const filtersAfterSwitchLocalMode = (filters: FilterGroup, localFilter: Filter) => {
+export const filtersAfterSwitchLocalMode = (filters: FilterGroup | null, localFilter: Filter) => {
   if (filters) {
     const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
     if (filterIndex !== null) {

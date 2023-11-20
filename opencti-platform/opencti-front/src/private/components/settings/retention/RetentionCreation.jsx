@@ -98,7 +98,7 @@ const RetentionCreation = (props) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCreationMutation,
       variables: {
