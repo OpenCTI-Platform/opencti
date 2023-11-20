@@ -13,6 +13,9 @@ export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);
   const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
   await elUpdateMapping({
+    uploaded_at: {
+      type: 'date',
+    },
     manager_setting: {
       type: flattenedType,
     },

@@ -186,7 +186,8 @@ const initFileIndexManager = () => {
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
         if (managerConfiguration?.manager_running) {
           const startDate = new Date();
-          const indexFromDate = await getIndexFromDate(context);
+          // get index from date only if manager has been running
+          const indexFromDate = managerConfiguration.last_run_start_date ? await getIndexFromDate(context) : null;
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
           const indexOpts = {
             includeGlobalFiles: managerConfiguration.manager_setting?.include_global_files || false,
