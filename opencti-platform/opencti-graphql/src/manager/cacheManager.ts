@@ -6,7 +6,7 @@ import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { OrderingMode } from '../generated/graphql';
-import { extractFilterIdsToResolveForCache } from '../utils/filtering/filtering-resolution';
+import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';
@@ -70,10 +70,10 @@ const platformResolvedFilters = (context: AuthContext) => {
     });
     // Stream filters
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterIdsToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
+    filteringIds.push(...streams.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Trigger filters
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
+    filteringIds.push(...triggers.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Playbook filters
     const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
     const playbookFilterIds = playbooks
@@ -81,7 +81,7 @@ const platformResolvedFilters = (context: AuthContext) => {
       .map((c) => c.nodes.map((n) => JSON.parse(n.configuration))).flat()
       .map((config) => config.filters)
       .filter((f) => isNotEmptyField(f))
-      .map((f) => extractFilterIdsToResolveForCache(JSON.parse(f)))
+      .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
     filteringIds.push(...playbookFilterIds);
     // Resolve filteringIds
