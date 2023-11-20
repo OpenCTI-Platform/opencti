@@ -62,9 +62,9 @@ const StixCoreObjectsMultiAreaChart = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let finalFilters = selection.filters;
-      const dataSelectionTypes = findFilterFromKey(finalFilters, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
-      const dataSelectionObjectId = findFilterFromKey(finalFilters, 'elementId', 'eq')?.values ?? null;
-      const dataSelectionRelationshipType = findFilterFromKey(finalFilters, 'relationship_type', 'eq')?.values ?? null;
+      const dataSelectionTypes = findFilterFromKey(finalFilters?.filters ?? [], 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
+      const dataSelectionObjectId = findFilterFromKey(finalFilters?.filters ?? [], 'elementId', 'eq')?.values ?? null;
+      const dataSelectionRelationshipType = findFilterFromKey(finalFilters?.filters ?? [], 'relationship_type', 'eq')?.values ?? null;
       finalFilters = finalFilters.filter(
         (n) => ![
           'entity_type',

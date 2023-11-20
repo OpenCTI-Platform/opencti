@@ -54,7 +54,7 @@ export const AuditCSVQuery = graphql`
     $first: Int!
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [LogsFiltering!]
+    $filters: FilterGroup
   ) {
     audits(
       search: $search
@@ -243,9 +243,9 @@ const Audit = () => {
           'elementType',
           'elementId',
           'createdBy',
-          'markedBy',
-          'labelledBy',
-          'creator',
+          'objectMarking',
+          'objectLabel',
+          'creator_id',
         ]}
       >
         {queryRef && (
