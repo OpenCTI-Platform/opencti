@@ -542,6 +542,26 @@ const useSearchEntities = ({
             unionSetEntities('elementId', elementIdEntities);
           });
         break;
+      case 'connectedToId':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope.connectedToId) || ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+        })
+          .toPromise()
+          .then((data) => {
+            const connectedToIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
+            unionSetEntities('connectedToId', connectedToIdEntities);
+          });
+        break;
       case 'fromId':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
           types: (searchScope && searchScope.fromId) || ['Stix-Core-Object'],
