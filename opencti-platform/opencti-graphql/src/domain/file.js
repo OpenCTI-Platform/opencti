@@ -29,16 +29,17 @@ export const filesMetrics = async (context, user, args) => {
   };
   const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
   const metricsByMimeType = [];
-  /* const filesByMimetype = R.groupBy((f) => f.metaData.mimetype, files);
+  const filesWithMimeType = files.filter((f) => f.mimeType !== null);
+  const filesByMimetype = R.groupBy((f) => f.mimeType, filesWithMimeType);
   const mimeTypesGroups = Object.keys(filesByMimetype);
   for (let index = 0; index < mimeTypesGroups.length; index += 1) {
     const mimeType = mimeTypesGroups[index];
     metricsByMimeType.push({
       mimeType,
       count: filesByMimetype[mimeType].length,
-      size: R.sum(filesByMimetype[mimeType].map((file) => file.size)),
+      size: R.sum(filesByMimetype[mimeType].map((file) => file.Size)),
     });
-  } */
+  }
   return {
     globalCount: files.length,
     globalSize: R.sum(files.map((file) => file.Size)),

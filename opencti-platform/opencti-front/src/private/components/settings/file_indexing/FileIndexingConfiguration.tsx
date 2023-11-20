@@ -144,14 +144,14 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               {t('Storage size')}
             </div>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 0 }}>
             <List>
               { metricsByMimeType.map((metrics) => (
-                <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32 }}>
-                  <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType}/>
-                  <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount}/>
-                  <ListItemText primary={'files for'}/>
-                  <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount}/>
+                <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32, padding: 0 }}>
+                  <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType} style={{ width: '18%' }} />
+                  <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount} style={{ width: '25%' }}/>
+                  <ListItemText primary={'files for'} style={{ width: '27%' }}/>
+                  <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount} style={{ width: '30%' }}/>
                 </ListItem>
               ))}
             </List>

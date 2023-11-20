@@ -199,8 +199,9 @@ export const isFileObjectExcluded = (id) => {
 };
 
 const simpleFilesListing = async (directory, opts = {}) => {
-  const { recursive = false, modifiedSince, maxFileSize, excludedExtensions = [], excludedPaths = [], includedPaths = [] } = opts;
-  const storageObjects = [];
+  const { recursive = false } = opts;
+  const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [], excludedExtensions = [] } = opts;
+  const objects = [];
   const requestParams = {
     Bucket: bucketName,
     Prefix: directory || undefined,
@@ -210,7 +211,7 @@ const simpleFilesListing = async (directory, opts = {}) => {
   while (truncated) {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-      storageObjects.push(...(response.Contents ?? []));
+      objects.push(...(response.Contents ?? []));
       truncated = response.IsTruncated;
       if (truncated) {
         requestParams.ContinuationToken = response.NextContinuationToken;
@@ -220,9 +221,16 @@ const simpleFilesListing = async (directory, opts = {}) => {
       truncated = false;
     }
   }
+  const storageObjects = objects.map((obj) => {
+    return {
+      ...obj,
+      mimeType: mime.lookup(obj.Key) || null,
+    };
+  });
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
       && (!excludedExtensions?.length || !excludedExtensions.some((ext) => obj.Key.endsWith(ext)))
+      && (!mimeTypes?.length || !obj.mimeType || mimeTypes.includes(obj.mimeType))
       && (!modifiedSince || obj.LastModified > modifiedSince)
       && (!maxFileSize || maxFileSize >= obj.Size)
       && (!includedPaths?.length || includedPaths.some((includedPath) => obj.Key.startsWith(includedPath)))
