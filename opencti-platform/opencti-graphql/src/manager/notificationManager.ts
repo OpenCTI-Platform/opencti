@@ -48,6 +48,7 @@ import {
   CONNECTED_TO_INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER
 } from '../utils/filtering/filtering-constants';
+import type { FilterGroup } from '../generated/graphql';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -381,7 +382,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
   context: AuthContext,
   user: AuthUser,
   data: StixCoreObject | StixRelationshipObject,
-  frontendFilters: Record<string, { id: string, value: string }[]>,
+  frontendFilters: FilterGroup,
   translatedType: string,
   updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
   previousData?: StixCoreObject | StixRelationshipObject,
