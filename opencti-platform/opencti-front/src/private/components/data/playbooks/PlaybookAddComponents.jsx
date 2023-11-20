@@ -26,8 +26,8 @@ import { useFormatter } from '../../../../components/i18n';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -98,9 +98,7 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
-  const [filters, setFilters] = useState(
-    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : initialFilterGroup,
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(currentConfig?.filters));
 
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],

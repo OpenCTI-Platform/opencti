@@ -15,6 +15,7 @@ import Filters from '../../common/lists/Filters';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
   initialFilterGroup,
   serializeFilterGroupForBackend,
@@ -55,9 +56,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
-  const [filters, setFilters] = useState(
-    JSON.parse(streamCollection.filters),
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(streamCollection.filters));
   const handleSubmitField = (name, value) => {
     streamCollectionValidation(t)
       .validateAt(name, { [name]: value })

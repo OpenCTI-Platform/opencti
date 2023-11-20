@@ -28,6 +28,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import TaskScope from '../../../../components/TaskScope';
+import { deserializeFilterGroupForFrontend } from "../../../../utils/filters/filtersUtils";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -213,7 +214,7 @@ const TasksList = ({ data }) => {
           let filters = null;
           let listIds = '';
           if (task.task_filters) {
-            filters = JSON.parse(task.task_filters);
+            filters = deserializeFilterGroupForFrontend(task.task_filters);
           } else if (task.task_ids) {
             listIds = truncate(R.join(', ', task.task_ids), 60);
           }
