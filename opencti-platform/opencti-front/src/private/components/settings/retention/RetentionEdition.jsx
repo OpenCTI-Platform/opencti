@@ -16,7 +16,7 @@ import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
 import {
   constructHandleAddFilter,
-  constructHandleRemoveFilter,
+  constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
@@ -83,9 +83,7 @@ const retentionValidation = (t) => Yup.object().shape({
 const RetentionEditionContainer = (props) => {
   const { t, classes, open, handleClose, retentionRule } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
-  const [filters, setFilters] = useState(
-    JSON.parse(props.retentionRule.filters),
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(props.retentionRule.filters));
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = R.pipe(

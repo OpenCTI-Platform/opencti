@@ -326,7 +326,7 @@ export const cleanFilters = (filters: FilterGroup | undefined, availableFilterKe
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
-export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: string, id: string | null, op = 'eq') => {
+export const constructHandleAddFilter = (filters: FilterGroup | undefined | null, k: string, id: string | null, op = 'eq') => {
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
@@ -370,7 +370,7 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined, k: st
 
 // remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
-export const constructHandleRemoveFilter = (filters: FilterGroup | undefined, k: string, op = 'eq') => {
+export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | null, k: string, op = 'eq') => {
   if (filters) {
     const newBaseFilters = {
       ...filters,

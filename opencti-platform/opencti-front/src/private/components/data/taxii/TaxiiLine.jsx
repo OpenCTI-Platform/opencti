@@ -15,6 +15,7 @@ import TaxiiPopover from './TaxiiPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -68,7 +69,7 @@ const styles = (theme) => ({
 class TaxiiLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions } = this.props;
-    const filters = JSON.parse(node.filters);
+    const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
         classes={{ root: classes.item }}

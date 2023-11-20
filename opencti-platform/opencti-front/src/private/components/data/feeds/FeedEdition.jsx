@@ -34,8 +34,8 @@ import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes'
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -150,7 +150,7 @@ const feedValidation = (t) => Yup.object().shape({
 const FeedEditionContainer = (props) => {
   const { t, classes, feed, handleClose, open } = props;
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
-  const [filters, setFilters] = useState(JSON.parse(feed.filters || `${initialFilterGroup}`));
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(feed.filters));
   const [feedAttributes, setFeedAttributes] = useState({
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });

@@ -45,7 +45,11 @@ import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import { FilterGroup, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  findFilterFromKey,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
   query StixCoreObjectQuickSubscriptionContentPaginationQuery(
@@ -265,9 +269,9 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
 
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
-    const filterGroup = (filters ? JSON.parse(filters) : null) as FilterGroup || null;
+    const filterGroup = deserializeFilterGroupForFrontend(filters);
     const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'connectedToId')?.values?.filter((id) => id !== instanceId) ?? [];
-    const newInstanceFilters = newInstanceValues.length > 0
+    const newInstanceFilters = filterGroup && newInstanceValues.length > 0
       ? {
         ...filterGroup,
         filters: [
@@ -307,6 +311,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   };
 
   const updateInstanceTriggerContent = (instanceTrigger: InstanceTriggerEditionFormValues, firstTrigger: boolean, multipleInstanceTrigger: boolean) => {
+    const instanceTriggerFilters = deserializeFilterGroupForFrontend(instanceTrigger.filters);
     return (
       <div key={instanceTrigger.id} className={firstTrigger ? classes.container : classes.subcontainer}>
         <Formik
@@ -353,10 +358,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   </MenuItem>
                 )}
               />
-              {multipleInstanceTrigger && instanceTrigger.filters
+              {multipleInstanceTrigger && instanceTriggerFilters
                 && <div style={{ ...fieldSpacingContainerStyle }}>
                   <FilterIconButton
-                    filters={JSON.parse(instanceTrigger.filters)}
+                    filters={instanceTriggerFilters}
                     classNameNumber={3}
                     styleNumber={3}
                     redirection
@@ -390,8 +395,9 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   };
 
   const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
-    if (triggerValue.filters) {
-      const connectedToIdFilter = findFilterFromKey(JSON.parse(triggerValue.filters)?.filters ?? [], 'connectedToId');
+    const filters = deserializeFilterGroupForFrontend(triggerValue.filters);
+    if (filters) {
+      const connectedToIdFilter = findFilterFromKey(filters.filters, 'connectedToId');
       return connectedToIdFilter?.values && connectedToIdFilter.values.length > 1;
     }
     return false;

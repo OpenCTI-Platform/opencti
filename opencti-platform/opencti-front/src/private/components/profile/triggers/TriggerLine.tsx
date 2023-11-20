@@ -2,11 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  BackupTableOutlined,
-  CampaignOutlined,
-  MoreVert,
-} from '@mui/icons-material';
+import { BackupTableOutlined, CampaignOutlined, MoreVert, } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -21,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
 import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -111,7 +108,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const classes = useStyles();
   const { t, nt } = useFormatter();
   const data = useFragment(triggerLineFragment, node);
-  const filters = data.filters ? JSON.parse(data.filters) : null;
+  const filters = deserializeFilterGroupForFrontend(data.filters);
   const currentTime = data.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];

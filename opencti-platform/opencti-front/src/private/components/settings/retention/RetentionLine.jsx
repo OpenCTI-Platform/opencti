@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -53,7 +54,7 @@ const styles = (theme) => ({
 class RetentionLineComponent extends Component {
   render() {
     const { t, classes, node, dataColumns, paginationOptions, nsdt, n } = this.props;
-    const filters = JSON.parse(node.filters);
+    const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>

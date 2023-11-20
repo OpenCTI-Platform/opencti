@@ -17,6 +17,7 @@ import Filters from '../../common/lists/Filters';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
   initialFilterGroup,
   serializeFilterGroupForBackend,
@@ -90,9 +91,7 @@ const TaxiiCollectionEditionContainer = (props) => {
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
   };
-  const [filters, setFilters] = useState(
-    JSON.parse(props.taxiiCollection.filters),
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(props.taxiiCollection.filters));
   const handleSubmitField = (name, value) => {
     taxiiCollectionValidation(props.t)
       .validateAt(name, { [name]: value })

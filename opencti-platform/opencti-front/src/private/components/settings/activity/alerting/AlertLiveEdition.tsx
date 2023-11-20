@@ -15,7 +15,7 @@ import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {
   constructHandleAddFilter,
-  constructHandleRemoveFilter,
+  constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
   Filter,
   filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
@@ -98,7 +98,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertLiveEdition_trigger$key>(alertLiveEditionFragment, data.triggerKnowledge);
-  const filters = JSON.parse(trigger?.filters ?? '');
+  const filters = deserializeFilterGroupForFrontend(trigger?.filters ?? null);
   const [commitFieldPatch] = useMutation(alertLiveEditionFieldPatch);
   const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     commitFieldPatch({
