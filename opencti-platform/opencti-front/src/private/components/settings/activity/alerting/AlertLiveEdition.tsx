@@ -17,7 +17,8 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   Filter,
-  filtersAfterSwitchLocalMode, sanitizeFilterGroupKeysForSerialization,
+  filtersAfterSwitchLocalMode,
+  serializeFilterGroupForBackend,
 } from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
@@ -137,7 +138,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: JSON.stringify(sanitizeFilterGroupKeysForSerialization(updatedFilters)) },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
       },
     });
   };
@@ -146,7 +147,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: updatedFilters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(updatedFilters)) : null },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
       },
     });
   };
@@ -156,7 +157,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: updatedFilters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(updatedFilters)) : null },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
       },
     });
   };

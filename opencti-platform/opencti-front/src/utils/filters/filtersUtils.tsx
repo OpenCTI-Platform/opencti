@@ -1,7 +1,9 @@
 import * as R from 'ramda';
 import { useFormatter } from '../../components/i18n';
 
-import type { FilterGroup as GqlFilterGroup, Filter as GqlFilter } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import type {
+  FilterGroup as GqlFilterGroup,
+} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -13,7 +15,7 @@ export type FilterGroup = {
 
 // TODO: import from graphql generated types
 export type Filter = {
-  key: string; // this is actually an array
+  key: string; // key is a string in front
   values: string[];
   operator: string;
   mode: string;
@@ -146,21 +148,39 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
 // GQL input coercion allows to use non-array value of same type as inside the array
 // but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
 // --> saved filters MUST be properly sanitized
-export const sanitizeFilterKeysForSerialization = (filter: Filter): GqlFilter => {
-  return {
-    ...filter,
-    key: Array.isArray(filter.key) ? filter.key : [filter.key],
-  } as GqlFilter;
-};
-export const sanitizeFilterGroupKeysForSerialization = (filterGroup: FilterGroup): GqlFilterGroup => {
+const sanitizeFilterGroupKeys = (filterGroup?: FilterGroup | null): GqlFilterGroup | null => {
   if (!filterGroup) {
-    return filterGroup;
+    return null;
   }
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => sanitizeFilterKeysForSerialization(f)),
-    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForSerialization(fg)),
+    filters: filterGroup.filters.map((f) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+    })),
+    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeys(fg)),
   } as GqlFilterGroup;
+};
+
+export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
+  return JSON.stringify(sanitizeFilterGroupKeys(filterGroup));
+};
+
+export const deserializeFilterGroupForFrontend = (filterGroup: GqlFilterGroup | string | null): FilterGroup | null => {
+  if (!filterGroup) {
+    return null;
+  }
+  let filters: GqlFilterGroup;
+  if (typeof filterGroup === 'string') {
+    filters = JSON.parse(filterGroup) as GqlFilterGroup;
+  } else {
+    filters = filterGroup;
+  }
+  return {
+    ...filters,
+    filters: filters.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key[0] : f.key })),
+    filterGroups: filters.filterGroups.map((fg) => deserializeFilterGroupForFrontend(fg)),
+  } as FilterGroup;
 };
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);

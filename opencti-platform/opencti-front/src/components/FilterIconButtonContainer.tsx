@@ -80,7 +80,6 @@ interface FilterIconButtonContainerProps {
   redirection?: boolean;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
   chipColor?: string;
-  filterGroups?: FilterGroup[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProps> = ({
@@ -93,7 +92,6 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
   redirection,
   filtersRepresentativesQueryRef,
   chipColor,
-  filterGroups,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -197,7 +195,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
           );
         })
       }
-      {filterGroups && filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+      {filters.filterGroups && filters.filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
         && (
         <Chip
           classes={{ root: classFilter, label: classes.chipLabel }}
@@ -207,7 +205,7 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
             {t('Filters are not fully displayed')}
             <Tooltip title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
             They might have been created via the API or a migration from a previous filter format.
-            For your information, here is the content of the filter object: ${JSON.stringify(filterGroups)}`}>
+            For your information, here is the content of the filter object: ${JSON.stringify(filters.filterGroups)}`}>
               <InformationOutline
                 fontSize="small"
                 color="secondary"

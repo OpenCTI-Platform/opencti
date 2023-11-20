@@ -19,7 +19,8 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -109,7 +110,7 @@ const StreamCollectionCreation = (props) => {
   const { t, classes } = props;
   const [filters, setFilters] = useState(initialFilterGroup);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters));
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
       access_right: 'view',

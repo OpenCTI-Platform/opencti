@@ -2,11 +2,11 @@ import { uniq } from 'ramda';
 import { buildRefRelationKey } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { availableStixCoreRelationships } from '../../database/stix';
 import type { Filter, FilterGroup } from '../../generated/graphql';
 import { FilterOperator } from '../../generated/graphql';
 import { INSTANCE_FILTER, SIGHTED_BY_FILTER, specialFilterKeys } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -187,8 +187,7 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
       let incorrectKeys = keys;
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableStixCoreRelations = availableStixCoreRelationships();
-      const extendedAvailableStixCoreRelations = availableStixCoreRelations.concat(availableStixCoreRelations.map((relationName) => `rel_${relationName}`)); // for relations entity ids contained in an entity
+      const extendedAvailableStixCoreRelations = STIX_CORE_RELATIONSHIPS.concat(STIX_CORE_RELATIONSHIPS.map((relationName) => `rel_${relationName}`)); // for relations entity ids contained in an entity
       const availableKeys = availableAttributes
         .concat(availableRelations)
         .concat(extendedAvailableStixCoreRelations)

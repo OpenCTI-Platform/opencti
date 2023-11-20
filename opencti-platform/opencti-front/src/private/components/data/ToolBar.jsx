@@ -75,7 +75,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, sanitizeFilterGroupKeysForSerialization } from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
@@ -595,7 +595,7 @@ class ToolBar extends Component {
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = filters ? JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters)) : '{}';
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalActions = R.map(
       (n) => ({
         type: n.type,

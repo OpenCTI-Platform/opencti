@@ -14,6 +14,7 @@ import Skeleton from '@mui/material/Skeleton';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -54,7 +55,7 @@ const styles = (theme) => ({
 class FeedLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions } = this.props;
-    const filters = JSON.parse(node.filters || '{}');
+    const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
         classes={{ root: classes.item }}

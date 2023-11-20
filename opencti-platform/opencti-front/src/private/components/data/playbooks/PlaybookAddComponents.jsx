@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -26,7 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode, initialFilterGroup, sanitizeFilterGroupKeysForSerialization,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
@@ -331,7 +333,7 @@ const PlaybookAddComponentsContent = ({
     const { name, ...config } = values;
     let finalConfig = config;
     if (configurationSchema?.properties?.filters) {
-      const jsonFilters = JSON.stringify(sanitizeFilterGroupKeysForSerialization(filters));
+      const jsonFilters = serializeFilterGroupForBackend(filters);
       finalConfig = { ...config, filters: jsonFilters };
     }
     if (configurationSchema?.properties?.actions) {
