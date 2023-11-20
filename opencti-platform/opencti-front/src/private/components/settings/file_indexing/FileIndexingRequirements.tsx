@@ -11,7 +11,7 @@ const useStyles = makeStyles(() => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: 20,
+    padding: '20px 20px 0',
     borderRadius: 6,
   },
   gridContainer: {

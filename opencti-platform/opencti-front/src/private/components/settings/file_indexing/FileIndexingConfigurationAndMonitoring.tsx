@@ -62,13 +62,13 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 
   return (
     <Grid container={true} spacing={3}>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item={true} xs={6} >
         <FileIndexingConfiguration
           filesMetrics={filesMetrics}
           managerConfiguration={managerConfiguration}
         />
       </Grid>
-      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+      <Grid item={true} xs={6}>
         <FileIndexingMonitoring
           totalFiles={totalFiles}
           isStarted={isStarted}

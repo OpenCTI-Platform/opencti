@@ -43,12 +43,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: 20,
     borderRadius: 6,
   },
-  button: {
-    marginLeft: theme.spacing(2),
+  resetButton: {
     marginTop: theme.spacing(2),
   },
   count: {
-    marginTop: 10,
     fontSize: 30,
     color: theme.palette.primary.main,
     textAlign: 'center',
@@ -60,6 +58,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  countContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   progress: {
     borderRadius: 5,
@@ -165,7 +170,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 size="large"
                 color="warning"
                 variant="contained"
-                classes={{ root: classes.button }}
               >
                 {t('Pause')}
               </Button>
@@ -177,7 +181,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 size="large"
                 color="success"
                 variant="contained"
-                classes={{ root: classes.button }}
               >
                 {t('Start')}
               </Button>
@@ -190,26 +193,30 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 size="large"
                 color="error"
                 variant="contained"
-                classes={{ root: classes.button }}
+                classes={{ root: classes.resetButton }}
               >
                 {t('Reset')}
               </Button>
             )}
           </Grid>
           <Grid item={true} xs={4}>
-            <div className={classes.count}>
-              {indexedFiles} / {totalFiles}
-            </div>
-            <div className={classes.countText}>
-              {t('Files indexed')}
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {indexedFiles} / {totalFiles}
+              </div>
+              <div className={classes.countText}>
+                {t('Files indexed')}
+              </div>
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <div className={classes.count}>
-              {indexedFiles ? n(volumeIndexed) : 0}
-            </div>
-            <div className={classes.countText}>
-              {t('Volume indexed')}
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {indexedFiles ? n(volumeIndexed) : 0}
+              </div>
+              <div className={classes.countText}>
+                {t('Volume indexed')}
+              </div>
             </div>
           </Grid>
         </Grid>

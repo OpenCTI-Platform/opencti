@@ -51,7 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 6,
   },
   count: {
-    marginTop: 10,
     fontSize: 30,
     color: theme.palette.primary.main,
     textAlign: 'center',
@@ -63,6 +62,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  countContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mimeType: {
     fontWeight: 500,
@@ -129,19 +135,23 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={2}>
           <Grid item={true} xs={4}>
-            <div className={classes.count}>
-              {n(totalFiles)}
-            </div>
-            <div className={classes.countText}>
-              {t('Files will be indexed')}
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {n(totalFiles)}
+              </div>
+              <div className={classes.countText}>
+                {t('Files will be indexed')}
+              </div>
             </div>
           </Grid>
           <Grid item={true} xs={4}>
-            <div className={classes.count}>
-              {b(dataToIndex)}
-            </div>
-            <div className={classes.countText}>
-              {t('Storage size')}
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {b(dataToIndex)}
+              </div>
+              <div className={classes.countText}>
+                {t('Storage size')}
+              </div>
             </div>
           </Grid>
           <Grid item={true} xs={4} style={{ paddingTop: 0 }}>
