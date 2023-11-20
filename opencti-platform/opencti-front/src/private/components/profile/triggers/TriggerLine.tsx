@@ -111,7 +111,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const classes = useStyles();
   const { t, nt } = useFormatter();
   const data = useFragment(triggerLineFragment, node);
-  const filters = JSON.parse(data.filters ?? '{}');
+  const filters = data.filters ? JSON.parse(data.filters) : null;
   const currentTime = data.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
@@ -190,7 +190,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 ))}
             </div>
-            {data.trigger_type === 'live' && (
+            {data.trigger_type === 'live' && filters && (
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}

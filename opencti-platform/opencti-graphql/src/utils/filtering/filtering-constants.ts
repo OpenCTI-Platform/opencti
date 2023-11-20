@@ -17,6 +17,7 @@ export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_TO_FILTER = 'toId';
 export const INSTANCE_FILTER = 'elementId';
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
+export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
 // Values that do not need resolution when matching against stix object
 export const TYPE_FILTER = 'entity_type';

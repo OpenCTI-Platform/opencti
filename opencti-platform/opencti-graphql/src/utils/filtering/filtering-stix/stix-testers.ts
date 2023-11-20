@@ -9,7 +9,7 @@ import type { TesterFunction } from '../boolean-logic-engine';
 import {
   ASSIGNEE_FILTER,
   // ASSIGNEE_FILTER,
-  CONFIDENCE_FILTER, CONNECTED_TO_INSTANCE_FILTER,
+  CONFIDENCE_FILTER, CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER, CREATOR_FILTER,
   // CREATOR_FILTER,
   DETECTION_FILTER,
@@ -273,16 +273,26 @@ export const testRefs = (stix: any, filter: Filter) => {
 
 /**
  * CONNECTED TO for DIRECT EVENTS ONLY
- * test if the stix is directly related to the instance id (for side events, see the function call in case useSideEventMatching = true)
+ * test if the stix is directly related to the instance id
  - depending on stix type (relation or sighting), we might search in different paths, aggregated
  */
-export const testConnectedTo = (stix: any, filter: Filter, useSideEventMatching = false) => {
+export const testConnectedTo = (stix: any, filter: Filter) => {
   // only applies with "eq" operator
   if (filter.operator !== 'eq') {
     return false;
   }
-  if (!useSideEventMatching) {
-    return testStringFilter(filter, [stix.id]);
+  return testStringFilter(filter, [stix.id]);
+};
+
+/**
+ * CONNECTED TO for SIDE EVENTS ONLY
+ * test if the stix is indirectly related to the instance id (= relationship, refs)
+ - depending on stix type (relation or sighting), we might search in different paths, aggregated
+ */
+export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
+  // only applies with "eq" operator
+  if (filter.operator !== 'eq') {
+    return false;
   }
 
   // advanced test between filter ids and the entity relations and refs
@@ -326,7 +336,8 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [WORKFLOW_FILTER]: testWorkflow,
 
   // special keys (more complex behavior)
-  [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo,
+  [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
+  [CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER]: testConnectedToSideEvents, // instance trigger, side events
   [RELATION_FROM_FILTER]: testRelationFrom,
   [RELATION_FROM_TYPES_FILTER]: testRelationFromTypes,
   [RELATION_TO_FILTER]: testRelationTo,
