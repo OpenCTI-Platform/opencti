@@ -158,16 +158,18 @@ export const extractFilterGroupValuesToResolveForCache = (filterGroup: FilterGro
 };
 
 // build a map ([id]: StixObject) with the resolved filters accessible for a user
-export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthUser, filters: Record<string, { id: string, value: string }[]>) => {
+// used for instance trigger side events message display only !!!
+export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthUser, inputFilters?: FilterGroup) => {
   const resolveUserMap = new Map();
+  if (!inputFilters) return resolveUserMap;
   const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const filterEntries = Object.entries(filters);
-  for (let index = 0; index < filterEntries.length; index += 1) {
-    const [, rawValues] = filterEntries[index];
-    for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
-      const v = rawValues[vIndex];
-      if (resolvedMap.has(v.id)) {
-        const stixInstance = resolvedMap.get(v.id);
+  const { filters } = inputFilters; // instance triggers don't handle imbricated filterGroups, we only handle filters at the first level
+  for (let index = 0; index < filters.length; index += 1) {
+    const { values = [] } = filters[index];
+    for (let vIndex = 0; vIndex < values.length; vIndex += 1) {
+      const v = values[vIndex];
+      if (resolvedMap.has(v)) {
+        const stixInstance = resolvedMap.get(v);
         const isUserHasAccessToElement = !!stixInstance && await isUserCanAccessStixElement(context, user, stixInstance);
         if (isUserHasAccessToElement) {
           resolveUserMap.set(stixInstance.id, stixInstance);
