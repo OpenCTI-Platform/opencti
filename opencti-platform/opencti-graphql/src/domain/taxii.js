@@ -2,14 +2,10 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elIndex, elPaginate } from '../database/engine';
-import {
-  INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_INTERNAL_OBJECTS,
-  READ_STIX_INDICES
-} from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
+import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -18,18 +14,12 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 
 const MAX_PAGINATION_ELEMENTS = 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context, user, input) => {
-  // our stix matching is currently limited, we need to validate the input filters
-  if (input.filters) {
-    validateFilterGroupForStixMatch(JSON.parse(input.filters));
-  }
-
   const collectionId = generateInternalId();
   const data = {
     id: collectionId,
@@ -71,12 +61,6 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     }
     return item;
   });
-
-  const filtersItem = finalInput.find((item) => item.key === 'filters');
-  if (filtersItem?.value) {
-    // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value));
-  }
 
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
   await publishUserAction({

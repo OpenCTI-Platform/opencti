@@ -81,7 +81,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
       input: {
         name: 'Taxii',
         description: 'Taxii description',
-        filters: JSON.stringify({}),
+        filters: undefined,
       },
     };
     const taxii = await queryAsAdmin({
