@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import gql from 'graphql-tag';
-import fs from 'node:fs';
-import path from 'node:path';
-import Upload from 'graphql-upload/Upload.mjs';
+import { describe, expect, it } from "vitest";
+import gql from "graphql-tag";
+import fs from "node:fs";
+import path from "node:path";
+import Upload from "graphql-upload/Upload.mjs";
 import {
   ADMIN_USER,
   editorQuery,
@@ -10,9 +10,9 @@ import {
   queryAsAdmin,
   testContext,
   USER_EDITOR,
-} from '../../utils/testQuery';
-import { elLoadById } from '../../../src/database/engine';
-import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
+} from "../../utils/testQuery";
+import { elLoadById } from "../../../src/database/engine";
+import { MEMBER_ACCESS_ALL } from "../../../src/utils/access";
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -101,14 +101,14 @@ const UPDATE_MEMBERS_QUERY = gql`
   }
 `;
 
-describe('Workspace resolver standard behavior', () => {
+describe("Workspace resolver standard behavior", () => {
   let workspaceInternalId;
-  const workspaceName = 'an investigation';
-  it('should workspace created', async () => {
+  const workspaceName = "an investigation";
+  it("should workspace created", async () => {
     // Create the workspace
     const WORKSPACE_TO_CREATE = {
       input: {
-        type: 'investigation',
+        type: "investigation",
         name: workspaceName,
       },
     };
@@ -121,7 +121,7 @@ describe('Workspace resolver standard behavior', () => {
     expect(workspace.data.workspaceAdd.name).toEqual(workspaceName);
     workspaceInternalId = workspace.data.workspaceAdd.id;
   });
-  it('should workspace loaded by internal id', async () => {
+  it("should workspace loaded by internal id", async () => {
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: workspaceInternalId },
@@ -130,25 +130,25 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspace).not.toBeNull();
     expect(queryResult.data.workspace.id).toEqual(workspaceInternalId);
   });
-  it('should list workspaces', async () => {
+  it("should list workspaces", async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10 },
     });
     expect(queryResult.data.workspaces.edges.length).toEqual(1);
   });
-  it('should update workspace', async () => {
+  it("should update workspace", async () => {
     const updatedName = `${workspaceName} - updated`;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: {
         id: workspaceInternalId,
-        input: { key: 'name', value: updatedName },
+        input: { key: "name", value: updatedName },
       },
     });
     expect(queryResult.data.workspaceFieldPatch.name).toEqual(updatedName);
   });
-  it('should context patch workspace', async () => {
+  it("should context patch workspace", async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation WorkspaceEdit($id: ID!, $input: EditContext!) {
         workspaceContextPatch(id: $id, input: $input) {
@@ -158,13 +158,13 @@ describe('Workspace resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: workspaceInternalId, input: { focusOn: 'name' } },
+      variables: { id: workspaceInternalId, input: { focusOn: "name" } },
     });
     expect(queryResult.data.workspaceContextPatch.id).toEqual(
       workspaceInternalId,
     );
   });
-  it('should context clean workspace', async () => {
+  it("should context clean workspace", async () => {
     const CONTEXT_CLEAN_QUERY = gql`
       mutation WorkspaceEdit($id: ID!) {
         workspaceContextClean(id: $id) {
@@ -181,8 +181,8 @@ describe('Workspace resolver standard behavior', () => {
     );
   });
 
-  it('can not investigate on an entity that does not exists', async () => {
-    const nonExistingEntityId = 'non-existing-entity-id';
+  it("can not investigate on an entity that does not exists", async () => {
+    const nonExistingEntityId = "non-existing-entity-id";
 
     const queryResult = await queryAsAdmin({
       query: gql`
@@ -195,26 +195,33 @@ describe('Workspace resolver standard behavior', () => {
       variables: {
         id: workspaceInternalId,
         input: {
-          key: 'investigated_entities_ids',
-          operation: 'add',
+          key: "investigated_entities_ids",
+          operation: "add",
           value: nonExistingEntityId,
         },
       },
     });
 
-    expect(queryResult.errors[0].message).toEqual('Invalid ids specified');
+    expect(queryResult.errors[0].message).toEqual("Invalid ids specified");
   });
 
-  it('can not import workspace configuration, given invalid entity type JSON import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_type.json'));
+  it("can not import workspace configuration, given invalid entity type JSON import", async () => {
+    const file = fs.createReadStream(
+      path.resolve(
+        __dirname,
+        "../../data/20233010_octi_dashboard_Custom Dash_invalid_type.json",
+      ),
+    );
     const upload = new Upload();
     const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-type.json',
-      mimetype: 'application/json',
+      fieldName: "fieldName",
+      filename: "invalid-type.json",
+      mimetype: "application/json",
       createReadStream: () => file,
     };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
     upload.file = fileUpload;
 
     const queryResult = await queryAsAdmin({
@@ -229,20 +236,27 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid type. Please import OpenCTI dashboard-type only',
+      "Invalid type. Please import OpenCTI dashboard-type only",
     );
   });
 
-  it('can not import workspace configuration, given invalid dashboard version import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_invalid_5.11.0_version.json'));
+  it("can not import workspace configuration, given invalid dashboard version import", async () => {
+    const file = fs.createReadStream(
+      path.resolve(
+        __dirname,
+        "../../data/20233010_octi_dashboard_Custom Dash_invalid_5.11.0_version.json",
+      ),
+    );
     const upload = new Upload();
     const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-version.json',
-      mimetype: 'application/json',
+      fieldName: "fieldName",
+      filename: "invalid-version.json",
+      mimetype: "application/json",
       createReadStream: () => file,
     };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
     upload.file = fileUpload;
 
     const queryResult = await queryAsAdmin({
@@ -257,20 +271,27 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0',
+      "Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0",
     );
   });
 
-  it('can import workspace configuration, given valid entity type JSON import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20233010_octi_dashboard_Custom Dash_valid.json'));
+  it("can import workspace configuration, given valid entity type JSON import", async () => {
+    const file = fs.createReadStream(
+      path.resolve(
+        __dirname,
+        "../../data/20233010_octi_dashboard_Custom Dash_valid.json",
+      ),
+    );
     const upload = new Upload();
     const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'valid.json',
-      mimetype: 'application/json',
+      fieldName: "fieldName",
+      filename: "valid.json",
+      mimetype: "application/json",
       createReadStream: () => file,
     };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
     upload.file = fileUpload;
 
     const queryResult = await queryAsAdmin({
@@ -291,11 +312,11 @@ describe('Workspace resolver standard behavior', () => {
     });
   });
 
-  it('can duplicate workspace', async () => {
+  it("can duplicate workspace", async () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
-          workspaceDuplicate(input: $input){
+          workspaceDuplicate(input: $input) {
             id
             entity_type
             name
@@ -307,24 +328,30 @@ describe('Workspace resolver standard behavior', () => {
       `,
       variables: {
         input: {
-          type: 'dashboard',
-          name: 'Dashboard to duplicate',
+          type: "dashboard",
+          name: "Dashboard to duplicate",
         },
       },
     });
 
     expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-    expect(queryResult.data.workspaceDuplicate.name).toBe('Dashboard to duplicate');
-    expect(queryResult.data.workspaceDuplicate.entity_type).toBe('Workspace');
-    expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
-    expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+    expect(queryResult.data.workspaceDuplicate.name).toBe(
+      "Dashboard to duplicate",
+    );
+    expect(queryResult.data.workspaceDuplicate.entity_type).toBe("Workspace");
+    expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(
+      1,
+    );
+    expect(
+      queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right,
+    ).toBe("admin");
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },
     });
   });
 
-  it('can not investigate on an internal object', async () => {
+  it("can not investigate on an internal object", async () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation investigateOnCity($id: ID!, $input: [EditInput!]!) {
@@ -336,21 +363,21 @@ describe('Workspace resolver standard behavior', () => {
       variables: {
         id: workspaceInternalId,
         input: {
-          key: 'investigated_entities_ids',
-          operation: 'add',
+          key: "investigated_entities_ids",
+          operation: "add",
           value: workspaceInternalId,
         },
       },
     });
 
-    expect(queryResult.errors[0].message).toEqual('Invalid ids specified');
+    expect(queryResult.errors[0].message).toEqual("Invalid ids specified");
   });
 
-  it('can investigate on an entity', async () => {
+  it("can investigate on an entity", async () => {
     const anEntity = await elLoadById(
       testContext,
       ADMIN_USER,
-      'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      "malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85",
     );
     const anEntityId = anEntity.internal_id;
 
@@ -366,8 +393,8 @@ describe('Workspace resolver standard behavior', () => {
       variables: {
         id: workspaceInternalId,
         input: {
-          key: 'investigated_entities_ids',
-          operation: 'add',
+          key: "investigated_entities_ids",
+          operation: "add",
           value: anEntityId,
         },
       },
@@ -378,11 +405,11 @@ describe('Workspace resolver standard behavior', () => {
     ).toEqual(anEntityId);
   });
 
-  it('can not investigate twice on the same entity', async () => {
+  it("can not investigate twice on the same entity", async () => {
     const anEntity = await elLoadById(
       testContext,
       ADMIN_USER,
-      'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      "malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85",
     );
     const anEntityId = anEntity.internal_id;
 
@@ -398,8 +425,8 @@ describe('Workspace resolver standard behavior', () => {
       variables: {
         id: workspaceInternalId,
         input: {
-          key: 'investigated_entities_ids',
-          operation: 'add',
+          key: "investigated_entities_ids",
+          operation: "add",
           value: anEntityId,
         },
       },
@@ -410,11 +437,11 @@ describe('Workspace resolver standard behavior', () => {
     ).toHaveLength(1);
   });
 
-  it('can retrieve the investigated entity object', async () => {
+  it("can retrieve the investigated entity object", async () => {
     const anEntity = await elLoadById(
       testContext,
       ADMIN_USER,
-      'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      "malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85",
     );
     const anEntityId = anEntity.internal_id;
 
@@ -444,7 +471,7 @@ describe('Workspace resolver standard behavior', () => {
     );
   });
 
-  it('exports the investigation as a report along with the investigated entity', async () => {
+  it("exports the investigation as a report along with the investigated entity", async () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         query exportInvestigation($id: String!) {
@@ -465,11 +492,11 @@ describe('Workspace resolver standard behavior', () => {
     );
 
     expect(exportedInvestigationObjectsTypes).toHaveLength(2);
-    expect(exportedInvestigationObjectsTypes).toContain('report');
-    expect(exportedInvestigationObjectsTypes).toContain('malware');
+    expect(exportedInvestigationObjectsTypes).toContain("report");
+    expect(exportedInvestigationObjectsTypes).toContain("malware");
   });
 
-  it('should workspace stix objects or stix relationships accurate', async () => {
+  it("should workspace stix objects or stix relationships accurate", async () => {
     const WORKSPACE_STIX_DOMAIN_ENTITIES = gql`
       query workspace($id: String!) {
         workspace(id: $id) {
@@ -499,7 +526,69 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspace).not.toBeNull();
     expect(queryResult.data.workspace.objects.edges.length).toEqual(1);
   });
-  it('should add knowledge from investigation to container', async () => {
+  it("should add knowledge from investigation to container", async () => {
+    const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+
+    // Create wanted entities
+    const SECTOR_TO_CREATE = {
+      input: {
+        name: "Video games",
+      },
+    };
+    const CREATE_SECTOR_QUERY = gql`
+      mutation SectorAdd($input: SectorAddInput!) {
+        sectorAdd(input: $input) {
+          id
+          name
+        }
+      }
+    `;
+    const sector = await editorQuery({
+      query: CREATE_SECTOR_QUERY,
+      variables: SECTOR_TO_CREATE,
+    });
+    const sectorId = sector.data.sectorAdd.id
+
+    const INDIVIDUAL_TO_CREATE = {
+      input: {
+        name: "tester",
+      },
+    };
+    const CREATE_INDIVIDUAL_QUERY = gql`
+      mutation IndividualAdd($input: IndividualAddInput!) {
+        individualAdd(input: $input) {
+          id
+          name
+        }
+      }
+    `;
+    const individual = await editorQuery({
+      query: CREATE_INDIVIDUAL_QUERY,
+      variables: INDIVIDUAL_TO_CREATE,
+    });
+
+    const individualId = individual.data.individualAdd.id
+
+    // Create the workspace
+    const WORKSPACE_WITH_WANTED_ENTITIES_TO_CREATE = {
+      input: {
+        type: "dashboard",
+        name: "workspace",
+        investigated_entities_ids: [sectorId, individualId],
+        authorized_members: [
+          {
+            id: userEditorId,
+            access_right: "admin",
+          },
+        ],
+      },
+    };
+
+    const workspace = await editorQuery({
+      query: CREATE_QUERY,
+      variables: WORKSPACE_WITH_WANTED_ENTITIES_TO_CREATE,
+    });
+
     const CREATE_REPORT_QUERY = gql`
       mutation ReportAdd($input: ReportAddInput!) {
         reportAdd(input: $input) {
@@ -514,8 +603,8 @@ describe('Workspace resolver standard behavior', () => {
     // Create the report
     const REPORT_TO_CREATE = {
       input: {
-        name: 'Report for investigation transformation',
-        published: '2020-02-26T00:51:35.000Z',
+        name: "Report for investigation transformation",
+        published: "2020-02-26T00:51:35.000Z",
       },
     };
     const report = await queryAsAdmin({
@@ -524,26 +613,51 @@ describe('Workspace resolver standard behavior', () => {
     });
     const reportId = report.data.reportAdd.id;
 
+    const workspaceId = workspace.data.workspaceAdd.id;
     const graphQLResponse = await queryAsAdmin({
       query: gql`
         mutation KnowledgeAddFromInvestigation($id: ID!, $workspaceId: ID!) {
           containerEdit(id: $id) {
             knowledgeAddFromInvestigation(workspaceId: $workspaceId) {
               id
+              numberOfConnectedElement
             }
           }
         }
       `,
       variables: {
         id: reportId,
-        workspaceId: workspaceInternalId,
+        workspaceId: workspaceId,
       },
     });
-    expect(graphQLResponse).toBe('');
-    expect(graphQLResponse.data.containerEdit.knowledgeAddFromInvestigation.id).toBeDefined();
     expect(
-      graphQLResponse.data.containerEdit.knowledgeAddFromInvestigation.entity_type,
+      graphQLResponse.data.containerEdit.knowledgeAddFromInvestigation.id,
     ).toBeDefined();
+    expect(
+      graphQLResponse.data.containerEdit.knowledgeAddFromInvestigation.numberOfConnectedElement,
+    ).toBe(2);
+
+    // Delete entities
+      await queryAsAdmin({
+          query: gql`
+              mutation sectorDelete($id: ID!) {
+                  sectorEdit(id: $id) {
+                      delete
+                  }
+              }
+          `,
+          variables: { id: sectorId },
+      });
+      await queryAsAdmin({
+          query: gql`
+              mutation individualDelete($id: ID!) {
+                  individualEdit(id: $id) {
+                      delete
+                  }
+              }
+          `,
+          variables: { id: individualId },
+      });
 
     // Delete the report
     await queryAsAdmin({
@@ -556,9 +670,14 @@ describe('Workspace resolver standard behavior', () => {
       `,
       variables: { id: reportId },
     });
+    // Delete the workspace
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: workspaceId },
+    });
   });
 
-  it('should workspace deleted', async () => {
+  it("should workspace deleted", async () => {
     // Delete the workspace
     await queryAsAdmin({
       query: DELETE_QUERY,
@@ -574,59 +693,59 @@ describe('Workspace resolver standard behavior', () => {
   });
 });
 
-describe('Workspace member access behavior', () => {
+describe("Workspace member access behavior", () => {
   let workspace1InternalId;
   let workspace2InternalId;
   let workspace3InternalId;
   let workspace4InternalId;
   let userEditorId;
-  it('should 4 workspaces created', async () => {
+  it("should 4 workspaces created", async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     // Create the workspace
     const WORKSPACE1_TO_CREATE = {
       input: {
-        type: 'dashboard',
-        name: 'workspace1',
+        type: "dashboard",
+        name: "workspace1",
         authorized_members: [
           {
             id: userEditorId,
-            access_right: 'admin',
+            access_right: "admin",
           },
         ],
       },
     };
     const WORKSPACE2_TO_CREATE = {
       input: {
-        type: 'dashboard',
-        name: 'workspace2',
+        type: "dashboard",
+        name: "workspace2",
         authorized_members: [
           {
             id: userEditorId,
-            access_right: 'edit',
+            access_right: "edit",
           },
         ],
       },
     };
     const WORKSPACE3_TO_CREATE = {
       input: {
-        type: 'dashboard',
-        name: 'workspace3',
+        type: "dashboard",
+        name: "workspace3",
         authorized_members: [
           {
             id: userEditorId,
-            access_right: 'view',
+            access_right: "view",
           },
         ],
       },
     };
     const WORKSPACE4_TO_CREATE = {
       input: {
-        type: 'dashboard',
-        name: 'workspace4',
+        type: "dashboard",
+        name: "workspace4",
         authorized_members: [
           {
             id: ADMIN_USER.id, // or any other user_id
-            access_right: 'admin',
+            access_right: "admin",
           },
         ],
       },
@@ -636,7 +755,7 @@ describe('Workspace member access behavior', () => {
       variables: WORKSPACE1_TO_CREATE,
     });
     expect(workspace1.data.workspaceAdd).not.toBeNull();
-    expect(workspace1.data.workspaceAdd.name).toEqual('workspace1');
+    expect(workspace1.data.workspaceAdd.name).toEqual("workspace1");
     workspace1InternalId = workspace1.data.workspaceAdd.id;
 
     const workspace2 = await queryAsAdmin({
@@ -644,7 +763,7 @@ describe('Workspace member access behavior', () => {
       variables: WORKSPACE2_TO_CREATE,
     });
     expect(workspace2.data.workspaceAdd).not.toBeNull();
-    expect(workspace2.data.workspaceAdd.name).toEqual('workspace2');
+    expect(workspace2.data.workspaceAdd.name).toEqual("workspace2");
     workspace2InternalId = workspace2.data.workspaceAdd.id;
 
     const workspace3 = await queryAsAdmin({
@@ -652,7 +771,7 @@ describe('Workspace member access behavior', () => {
       variables: WORKSPACE3_TO_CREATE,
     });
     expect(workspace3.data.workspaceAdd).not.toBeNull();
-    expect(workspace3.data.workspaceAdd.name).toEqual('workspace3');
+    expect(workspace3.data.workspaceAdd.name).toEqual("workspace3");
     workspace3InternalId = workspace3.data.workspaceAdd.id;
 
     const workspace4 = await queryAsAdmin({
@@ -660,11 +779,11 @@ describe('Workspace member access behavior', () => {
       variables: WORKSPACE4_TO_CREATE,
     });
     expect(workspace4.data.workspaceAdd).not.toBeNull();
-    expect(workspace4.data.workspaceAdd.name).toEqual('workspace4');
+    expect(workspace4.data.workspaceAdd.name).toEqual("workspace4");
     workspace4InternalId = workspace4.data.workspaceAdd.id;
   });
 
-  it('Admin gets only his 3 created workspaces', async () => {
+  it("Admin gets only his 3 created workspaces", async () => {
     const queryResultDefault = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10 },
@@ -677,7 +796,7 @@ describe('Workspace member access behavior', () => {
     expect(queryResult.data.workspaces.edges.length).toEqual(3);
   });
 
-  it('Admin gets all 4 workspaces when bypass', async () => {
+  it("Admin gets all 4 workspaces when bypass", async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10, includeAuthorities: true },
@@ -685,7 +804,7 @@ describe('Workspace member access behavior', () => {
     expect(queryResult.data.workspaces.edges.length).toEqual(4);
   });
 
-  it('User gets only the 3 shared workspaces', async () => {
+  it("User gets only the 3 shared workspaces", async () => {
     const queryResult = await editorQuery({
       query: LIST_QUERY,
       variables: { first: 10 },
@@ -693,45 +812,45 @@ describe('Workspace member access behavior', () => {
     expect(queryResult.data.workspaces.edges.length).toEqual(3);
   });
 
-  it('User with view access right cannot update workspace3', async () => {
+  it("User with view access right cannot update workspace3", async () => {
     const queryResult = await editorQuery({
       query: UPDATE_QUERY,
       variables: {
         id: workspace3InternalId,
-        input: { key: 'name', value: ['custom dashboard3'] },
+        input: { key: "name", value: ["custom dashboard3"] },
       },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).name).toEqual("ForbiddenAccess");
   });
 
-  it('User with edit access right updates workspace2', async () => {
+  it("User with edit access right updates workspace2", async () => {
     const queryResult = await editorQuery({
       query: UPDATE_QUERY,
       variables: {
         id: workspace2InternalId,
-        input: { key: 'name', value: ['custom dashboard2'] },
+        input: { key: "name", value: ["custom dashboard2"] },
       },
     });
     expect(queryResult.data.workspaceFieldPatch.name).toEqual(
-      'custom dashboard2',
+      "custom dashboard2",
     );
   });
 
-  it('User with admin access right should update workspace members', async () => {
+  it("User with admin access right should update workspace members", async () => {
     const authorizedMembersUpdate = [
       {
         id: userEditorId,
-        access_right: 'admin',
+        access_right: "admin",
       },
       {
         id: ADMIN_USER.id,
-        access_right: 'admin',
+        access_right: "admin",
       },
       {
         id: MEMBER_ACCESS_ALL,
-        access_right: 'view',
+        access_right: "view",
       },
     ];
     const queryResult = await editorQuery({
@@ -746,12 +865,12 @@ describe('Workspace member access behavior', () => {
   it("A user can't modifiy authorized_members if the update leads to a workspace with no valid admin", async () => {
     const authorizedMembersUpdate = [
       {
-        id: 'not_existing_id',
-        access_right: 'admin',
+        id: "not_existing_id",
+        access_right: "admin",
       },
       {
         id: ADMIN_USER.id,
-        access_right: 'edit',
+        access_right: "edit",
       },
     ];
     const queryResult = await editorQuery({
@@ -760,21 +879,21 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FunctionalError');
+    expect(queryResult.errors.at(0).name).toEqual("FunctionalError");
     expect(queryResult.errors.at(0).data.reason).toEqual(
-      'Workspace should have at least one admin',
+      "Workspace should have at least one admin",
     );
   });
 
-  it('User with edit access right should not update workspace members', async () => {
+  it("User with edit access right should not update workspace members", async () => {
     const authorizedMembersUpdate = [
       {
         id: userEditorId,
-        access_right: 'admin',
+        access_right: "admin",
       },
       {
         id: ADMIN_USER.id,
-        access_right: 'admin',
+        access_right: "admin",
       },
     ];
     const queryResult = await editorQuery({
@@ -783,10 +902,10 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).name).toEqual("ForbiddenAccess");
   });
 
-  it('User with admin access right deletes workspace1', async () => {
+  it("User with admin access right deletes workspace1", async () => {
     // Delete the workspace
     const editorDeleteResult = await editorQuery({
       query: DELETE_QUERY,
@@ -805,7 +924,7 @@ describe('Workspace member access behavior', () => {
     expect(queryResult.data.workspace).toBeNull();
   });
 
-  it('Admin delete workspaces', async () => {
+  it("Admin delete workspaces", async () => {
     // Delete the workspace
     await queryAsAdmin({
       query: DELETE_QUERY,
