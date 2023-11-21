@@ -445,7 +445,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective: selectedPerspective,
-      filters: selectedPerspective === n.perspective ? n.filters : {},
+      filters: selectedPerspective === n.perspective ? n.filters : initialFilterGroup,
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
@@ -887,32 +887,38 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   />
                 </div>
                 <div className="clearfix" />
-                <FilterIconButton
-                  filters={dataSelection[i].filters}
-                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
-                  handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
-                  handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
-                  classNameNumber={7}
-                  styleNumber={2}
-                ></FilterIconButton>
-                <FilterIconButton
-                  filters={dataSelection[i].dynamicFrom}
-                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)}
-                  handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)}
-                  handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')}
-                  classNameNumber={7}
-                  styleNumber={2}
-                  chipColor={'warning'}
-                ></FilterIconButton>
-                <FilterIconButton
-                  filters={dataSelection[i].dynamicTo}
-                  handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)}
-                  handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)}
-                  handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')}
-                  classNameNumber={7}
-                  styleNumber={2}
-                  chipColor={'success'}
-                ></FilterIconButton>
+                { dataSelection[i].filters && (
+                  <FilterIconButton
+                    filters={dataSelection[i].filters}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
+                    classNameNumber={7}
+                    styleNumber={2}
+                  />
+                )}
+                { dataSelection[i].dynamicFrom && (
+                  <FilterIconButton
+                    filters={dataSelection[i].dynamicFrom}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)}
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)}
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')}
+                    classNameNumber={7}
+                    styleNumber={2}
+                    chipColor={'warning'}
+                  />
+                )}
+                { dataSelection[i].dynamicTo && (
+                  <FilterIconButton
+                    filters={dataSelection[i].dynamicTo}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)}
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)}
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')}
+                    classNameNumber={7}
+                    styleNumber={2}
+                    chipColor={'success'}
+                  />
+                )}
               </div>
             );
           })}
@@ -1503,7 +1509,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         className="noDrag"
       >
         <DialogTitle>
-          <Stepper linear={false} activeStep={stepIndex}>
+          <Stepper nonLinear activeStep={stepIndex}>
             <Step>
               <StepButton
                 onClick={() => setStepIndex(0)}

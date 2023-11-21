@@ -7,6 +7,11 @@ import type {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+export type {
+  FilterGroup as GqlFilterGroup,
+  Filter as GqlFilter,
+} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+
 export type FilterGroup = {
   mode: string;
   filters: Filter[];
@@ -144,45 +149,6 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
   return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
 };
 
-// when a filter group is serialized, we need to make sure the keys are all arrays as per graphql TS typing emission
-// GQL input coercion allows to use non-array value of same type as inside the array
-// but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
-// --> saved filters MUST be properly sanitized
-const sanitizeFilterGroupKeys = (filterGroup?: FilterGroup | null): GqlFilterGroup | null => {
-  if (!filterGroup) {
-    return null;
-  }
-  return {
-    ...filterGroup,
-    filters: filterGroup.filters.map((f) => ({
-      ...f,
-      key: Array.isArray(f.key) ? f.key : [f.key],
-    })),
-    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeys(fg)),
-  } as GqlFilterGroup;
-};
-
-export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
-  return JSON.stringify(sanitizeFilterGroupKeys(filterGroup));
-};
-
-export const deserializeFilterGroupForFrontend = (filterGroup: GqlFilterGroup | string | null): FilterGroup | null => {
-  if (!filterGroup) {
-    return null;
-  }
-  let filters: GqlFilterGroup;
-  if (typeof filterGroup === 'string') {
-    filters = JSON.parse(filterGroup) as GqlFilterGroup;
-  } else {
-    filters = filterGroup;
-  }
-  return {
-    ...filters,
-    filters: filters.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key[0] : f.key })),
-    filterGroups: filters.filterGroups.map((fg) => deserializeFilterGroupForFrontend(fg)),
-  } as FilterGroup;
-};
-
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
 export const findFilterFromKey = (filters: Filter[], key: string, operator?: string) => {
@@ -273,6 +239,117 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     return nsd(value);
   }
   return value;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+// Serialization
+// TODO:
+//  these functions are used to sanitize the keys inside filters before serialization and saving into backend
+//  This is due to format inconsistencies between back and front formats and will be unnecessary once fixed.
+
+// when a filter group is serialized, we need to make sure the keys are all arrays as per graphql TS typing emission
+// GQL input coercion allows to use non-array value of same type as inside the array
+// but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
+// --> saved filters MUST be properly sanitized
+const sanitizeFilterGroupKeysForBackend = (filterGroup: FilterGroup): GqlFilterGroup => {
+  return {
+    ...filterGroup,
+    filters: filterGroup.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key : [f.key] })),
+    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
+  } as GqlFilterGroup;
+};
+
+// reverse operation of sanitizeFilterGroupKeysForBackend
+const sanitizeFilterGroupKeysForFrontend = (filterGroup: GqlFilterGroup) : FilterGroup => {
+  return {
+    ...filterGroup,
+    filters: filterGroup.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key[0] : f.key })),
+    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
+  } as FilterGroup;
+};
+
+/**
+ * Turns a FilterGroup (frontend format, i.e. with single keys) into the backend format (key is an array)
+ * and stringify it, ready to be saved in backend.
+ * @param filterGroup
+ */
+export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
+  if (!filterGroup) {
+    return 'null';
+  }
+  return JSON.stringify(sanitizeFilterGroupKeysForBackend(filterGroup));
+};
+
+/**
+ * Parse a filterGroup as given by the backend (backend format, i.e. with array keys),
+ * And turns it into the frontend format (single key).²
+ * @param filterGroup
+ */
+export const deserializeFilterGroupForFrontend = (filterGroup: GqlFilterGroup | string | null): FilterGroup | null => {
+  if (!filterGroup) {
+    return null;
+  }
+  let filters: GqlFilterGroup;
+  if (typeof filterGroup === 'string') {
+    filters = JSON.parse(filterGroup) as GqlFilterGroup;
+  } else {
+    filters = filterGroup;
+  }
+  return sanitizeFilterGroupKeysForFrontend(filters);
+};
+
+// Dashboard manifests are complex objects with filters deeply nested in widgets configurations
+// (de)serialization is a bit more complex
+type DashboardManifest = any;
+
+/**
+ * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
+ * @param manifest
+ */
+export const serializeDashboardManifestForBackend = (manifest: DashboardManifest) : string => {
+  const newWidgets: Record<string, any> = {};
+  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
+  widgetIds.forEach((id) => {
+    const widget = manifest.widgets[id];
+    newWidgets[id] = {
+      ...widget,
+      dataSelection: widget.dataSelection.map((selection: any) => ({
+        ...selection,
+        filters: sanitizeFilterGroupKeysForBackend(selection.filters),
+        dynamicFrom: sanitizeFilterGroupKeysForBackend(selection.dynamicFrom),
+        dynamicTo: sanitizeFilterGroupKeysForBackend(selection.dynamicTo),
+      })),
+    };
+  });
+
+  return JSON.stringify({
+    ...manifest,
+    widgets: newWidgets,
+  });
+};
+
+export const deserializeDashboardManifestForFrontend = (manifestStr: string) : DashboardManifest => {
+  const manifest = JSON.parse(manifestStr);
+
+  const newWidgets: Record<string, any> = {};
+  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
+  widgetIds.forEach((id) => {
+    const widget = manifest.widgets[id];
+    newWidgets[id] = {
+      ...widget,
+      dataSelection: widget.dataSelection.map((selection: any) => ({
+        ...selection,
+        filters: sanitizeFilterGroupKeysForFrontend(selection.filters),
+        dynamicFrom: sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom),
+        dynamicTo: sanitizeFilterGroupKeysForFrontend(selection.dynamicTo),
+      })),
+    };
+  });
+
+  return {
+    ...manifest,
+    widgets: newWidgets,
+  };
 };
 
 //----------------------------------------------------------------------------------------------------------------------

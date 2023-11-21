@@ -62,6 +62,10 @@ import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
+import {
+  deserializeDashboardManifestForFrontend,
+  serializeDashboardManifestForBackend,
+} from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -91,10 +95,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     };
   }, []);
   const manifest = workspace.manifest && workspace.manifest.length > 0
-    ? JSON.parse(fromB64(workspace.manifest))
+    ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
     : { widgets: {}, config: {} };
   const saveManifest = (newManifest) => {
-    const newManifestEncoded = toB64(JSON.stringify(newManifest));
+    const strManifest = serializeDashboardManifestForBackend(newManifest);
+    const newManifestEncoded = toB64(strManifest);
     if (workspace.manifest !== newManifestEncoded) {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
