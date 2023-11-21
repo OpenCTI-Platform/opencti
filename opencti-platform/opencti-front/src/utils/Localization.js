@@ -2650,7 +2650,7 @@ const i18n = {
       'Add an action': 'Ajouter une action',
       Export: 'Exporter',
       Duplicate: 'Dupliquer',
-      'The dashboard has been duplicated. You can manage it': `The dashboard has been duplicated. You can manage it': 'Le tableau de bord a été dupliqué. Vous pouvez l'administrer`,
+      'The dashboard has been duplicated. You can manage it': 'The dashboard has been duplicated. You can manage it\': \'Le tableau de bord a été dupliqué. Vous pouvez l\'administrer',
       here: 'ici',
       Delete: 'Supprimer',
       Remove: 'Retirer',
