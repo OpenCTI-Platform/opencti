@@ -91,19 +91,19 @@ const WorkspacesLines: FunctionComponent<WorkspacesLinesProps> = ({
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-          initialLoading={!data}
-          loadMore={loadMore}
-          hasMore={hasMore}
-          isLoading={isLoadingMore}
-          dataList={data?.workspaces?.edges ?? []}
-          globalCount={data?.workspaces?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-          LineComponent={WorkspaceLine}
-          DummyLineComponent={WorkspaceLineDummy}
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-          paginationOptions={paginationOptions}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.workspaces?.edges ?? []}
+      globalCount={data?.workspaces?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={WorkspaceLine}
+      DummyLineComponent={WorkspaceLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
   );
 };
 
