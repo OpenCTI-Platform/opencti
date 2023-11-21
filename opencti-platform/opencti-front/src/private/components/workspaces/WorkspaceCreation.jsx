@@ -129,9 +129,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
               <SpeedDialAction
-                title={t('Create a dashboard')}
+                title={t('Create dashboard')}
                 icon={<InsertChartOutlined />}
-                tooltipTitle={t('Create a dashboard')}
+                tooltipTitle={t('Create dashboard')}
                 onClick={onOpen}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
