@@ -80,33 +80,33 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     };
     return (
       <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          keyword={searchTerm}
-          secondaryAction={true}
-          paginationOptions={workspacePaginationOptions}
-          numberOfElements={numberOfElements}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={storageHelpers.handleSort}
+        handleSearch={storageHelpers.handleSearch}
+        keyword={searchTerm}
+        secondaryAction={true}
+        paginationOptions={workspacePaginationOptions}
+        numberOfElements={numberOfElements}
       >
         {queryRef && (
           <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((idx) => (
-                          <WorkspaceLineDummy key={idx} dataColumns={dataColumns}/>
-                    ))}
-                </>
-              }
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <WorkspaceLineDummy key={idx} dataColumns={dataColumns}/>
+                  ))}
+              </>
+            }
           >
             <WorkspacesLines
-                queryRef={queryRef}
-                paginationOptions={workspacePaginationOptions}
-                dataColumns={dataColumns}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              queryRef={queryRef}
+              paginationOptions={workspacePaginationOptions}
+              dataColumns={dataColumns}
+              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
             />
           </React.Suspense>
         )}
@@ -115,15 +115,15 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   };
 
   return (
-      <>
-        {renderLines()}
-        <Security needs={[EXPLORE_EXUPDATE]}>
-          <WorkspaceCreation
-              paginationOptions={workspacePaginationOptions}
-              type={type}
-          />
-        </Security>
-      </>
+    <>
+      {renderLines()}
+      <Security needs={[EXPLORE_EXUPDATE]}>
+        <WorkspaceCreation
+          paginationOptions={workspacePaginationOptions}
+          type={type}
+        />
+      </Security>
+    </>
   );
 };
 
