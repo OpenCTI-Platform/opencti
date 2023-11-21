@@ -26777,7 +26777,6 @@ export type WorkspaceConnection = {
 };
 
 export type WorkspaceDuplicateInput = {
-  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
