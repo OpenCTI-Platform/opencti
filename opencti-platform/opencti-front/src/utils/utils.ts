@@ -38,3 +38,21 @@ export const getFileUri = (id: string) => {
   const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
   return imageView;
 };
+
+export const readFileContent = (file: File): Promise<unknown> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const jsonContent = JSON.parse(event.target?.result as string);
+        resolve(jsonContent);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = (error) => reject(error);
+    reader.readAsText(file);
+  });
+};

@@ -81,6 +81,17 @@ input WorkspaceDuplicateInput {
     tags: [String]
 }
 
+input ImportConfigurationInput {
+    importType: String!
+    file: Upload!
+    dashboardManifest: String
+}
+
+input ImportWidgetInput {
+    file: Upload!
+    dashboardManifest: String!
+}
+
 type Mutation {
     workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
@@ -90,6 +101,7 @@ type Mutation {
     workspaceContextPatch(id: ID!, input: EditContext!): Workspace
     workspaceContextClean(id: ID!): Workspace
     workspaceConfigurationImport(file: Upload!): String!
+    workspaceImportWidget(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 
 # Subscriptions

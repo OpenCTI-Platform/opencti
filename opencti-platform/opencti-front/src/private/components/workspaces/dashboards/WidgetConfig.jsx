@@ -56,6 +56,7 @@ import ReactMde from 'react-mde';
 import SpeedDial from '@mui/material/SpeedDial';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { graphql, useMutation } from 'react-relay';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
@@ -366,7 +367,19 @@ const visualizationTypes = [
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
 
-const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
+const workspaceImportWidgetMutation = graphql`
+  mutation WidgetConfigImportMutation(
+    $id: ID!
+    $input: ImportConfigurationInput!
+  ) {
+    workspaceImportWidget(id: $id, input: $input) {
+      manifest
+      ...Dashboard_workspace
+    }
+  }
+`;
+
+const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   let initialStep = 0;
   if (widget?.type === 'text') {
     initialStep = 3;
@@ -395,10 +408,23 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
+  const [commitWidgetImportMutation] = useMutation(workspaceImportWidgetMutation);
 
-  const handleWidgetImport = (event) => {
-    const importedWidget = event.target.files[0];
-    console.log('importedWidget', importedWidget);
+  const handleWidgetImport = async (event) => {
+    const importedWidgetConfiguration = event.target.files[0];
+    const emptyDashboardManifest = toB64(JSON.stringify({ widgets: {}, config: {} }));
+    const dashboardManifest = workspace.manifest ?? emptyDashboardManifest;
+    commitWidgetImportMutation({
+      variables: {
+        id: workspace.id,
+        input: {
+          importType: 'widget',
+          file: importedWidgetConfiguration,
+          dashboardManifest,
+        },
+      },
+      onError: (error) => handleError(error),
+    });
   };
   const handleClose = () => {
     if (!widget) {
@@ -1523,28 +1549,32 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   };
   return (
     <div>
-      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
-      <SpeedDial
-          className={classes.createButton}
-          ariaLabel="Create"
-          icon={<SpeedDialIcon />}
-          FabProps={{ color: 'secondary' }}
-      >
-        <SpeedDialAction
-            title={t('Import a widget')}
-            icon={<CloudUploadOutlined />}
-            tooltipTitle={t('Import a widget')}
-            onClick={() => inputRef.current?.click()}
-            FabProps={{ classes: { root: classes.speedDialButton } }}
-        />
-        <SpeedDialAction
-            title={t('Create a widget')}
-            icon={<WidgetsOutlined />}
-            tooltipTitle={t('Create a widget')}
-            onClick={() => setOpen(true)}
-            FabProps={{ classes: { root: classes.speedDialButton } }}
-        />
-      </SpeedDial>
+      {!widget && (
+        <>
+          <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
+          <SpeedDial
+              className={classes.createButton}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon />}
+              FabProps={{ color: 'secondary' }}
+          >
+            <SpeedDialAction
+                title={t('Import a widget')}
+                icon={<CloudUploadOutlined />}
+                tooltipTitle={t('Import a widget')}
+                onClick={() => inputRef.current?.click()}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+                title={t('Create a widget')}
+                icon={<WidgetsOutlined />}
+                tooltipTitle={t('Create a widget')}
+                onClick={() => setOpen(true)}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+          </SpeedDial>
+        </>
+      )}
       {widget && (
         <MenuItem
           onClick={() => {
