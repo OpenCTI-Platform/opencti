@@ -112,7 +112,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       <>
         <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
         <Drawer
-          title={t('Create a workspace')}
+          title={t(`Create  ${type === 'dashboard' ? 'a dashboard' : 'an investigation'}`)}
           variant={type === 'dashboard' ? undefined : DrawerVariant.create}
           controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
             <SpeedDial
@@ -129,9 +129,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
               <SpeedDialAction
-                title={t('Create a workspace')}
+                title={t('Create a dashboard')}
                 icon={<InsertChartOutlined />}
-                tooltipTitle={t('Create a workspace')}
+                tooltipTitle={t('Create a dashboard')}
                 onClick={onOpen}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
