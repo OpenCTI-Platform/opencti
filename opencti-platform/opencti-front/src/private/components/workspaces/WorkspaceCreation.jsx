@@ -3,7 +3,6 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -17,6 +16,7 @@ import { handleError } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import MarkdownField from '../../../components/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
+import { insertNode } from '../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -61,16 +61,6 @@ const workspaceValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_workspaces',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -103,14 +93,11 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         },
       },
       updater: (store) => {
-        const payload = store.getRootField('workspaceAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
+        insertNode(
           store,
-          container.getDataID(),
+          'Pagination_workspaces',
           paginationOptions,
-          newEdge,
+          'workspaceAdd',
         );
       },
       setSubmitting,
@@ -125,7 +112,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       <>
         <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
         <Drawer
-          title={t('Create a workspace')}
+          title={t(`Create ${type}`)}
           variant={type === 'dashboard' ? undefined : DrawerVariant.create}
           controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
             <SpeedDial
@@ -142,9 +129,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
               <SpeedDialAction
-                title={t('Create a workspace')}
+                title={t('Create dashboard')}
                 icon={<InsertChartOutlined />}
-                tooltipTitle={t('Create a workspace')}
+                tooltipTitle={t('Create dashboard')}
                 onClick={onOpen}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />

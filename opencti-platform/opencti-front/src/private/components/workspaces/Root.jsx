@@ -1,7 +1,6 @@
 import React from 'react';
 import { Switch } from 'react-router-dom';
-import Dashboards from './Dashboards';
-import Investigations from './Investigations';
+import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
 import { BoundaryRoute } from '../Error';
@@ -11,7 +10,7 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/workspaces/dashboards"
-      component={Dashboards}
+      render={() => <Workspaces type={'dashboard'} />}
     />
     <BoundaryRoute
       path="/dashboard/workspaces/dashboards/:workspaceId"
@@ -20,7 +19,7 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/workspaces/investigations"
-      component={Investigations}
+      render={() => <Workspaces type={'investigation'} />}
     />
     <BoundaryRoute
       path="/dashboard/workspaces/investigations/:workspaceId"

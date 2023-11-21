@@ -8,11 +8,11 @@ import Drawer from '../common/drawer/Drawer';
 
 class WorkspaceEditionContainer extends Component {
   render() {
-    const { t, handleClose, workspace, open } = this.props;
+    const { t, handleClose, workspace, open, type } = this.props;
     const { editContext } = workspace;
     return (
       <Drawer
-        title={t('Update a workspace')}
+        title={t(`Update ${type}`)}
         open={open}
         onClose={handleClose}
         context={editContext}
@@ -31,6 +31,7 @@ WorkspaceEditionContainer.propTypes = {
   workspace: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  type: PropTypes.oneOf(['dashboard', 'investigation']),
 };
 
 const WorkspaceEditionFragment = createFragmentContainer(
