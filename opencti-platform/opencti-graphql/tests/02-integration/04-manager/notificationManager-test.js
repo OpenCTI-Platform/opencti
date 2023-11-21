@@ -1100,16 +1100,18 @@ describe('Notification manager behaviors test', async () => {
       name: 'triggerReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
-      notifiers: ['UI'],
+      notifiers: [],
       filters: createInstanceFilters(reportId),
     };
     const triggerReportDelete = { // instance trigger on a report, deletion only
+      name: 'triggerReportDelete',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
-      notifiers: ['UI'],
+      notifiers: [],
       filters: createInstanceFilters(reportId),
     };
     const triggerRedReportUpdate = { // instance trigger on a red report update
+      name: 'triggerRedReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
@@ -1200,7 +1202,7 @@ describe('Notification manager behaviors test', async () => {
       filters: createInstanceFilters([malwareId, redOrganizationId, redAttackPatternId]),
     };
     // -- create the triggers
-    const triggersToCreate = [triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
+    const triggersToCreate = [triggerReportUpdate, triggerReportDelete, triggerReportUpdate, triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
       triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
       triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents
     ];
@@ -1440,7 +1442,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[report] report_name');
-    expect(result[0].user.notifiers).toEqual(['UI']);
+    expect(result[0].user.notifiers).toEqual([]);
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingToReportContainingMalware, triggerReportUpdate, true); // side events
