@@ -21,6 +21,7 @@ import type {
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
+  WorkspaceDuplicateInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
 import {
@@ -191,4 +192,19 @@ export const workspaceConfigurationImport = async (context: AuthContext, user: A
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, importWorkspaceCreation, user);
   return workspaceId;
+};
+
+export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
+  const authorizedMembers = initializeAuthorizedMembers([], user);
+  const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
+  const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };

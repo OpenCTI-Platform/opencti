@@ -21,11 +21,13 @@ import {
   CloseOutlined,
   MoveToInboxOutlined,
   LockPersonOutlined,
+  ContentCopyOutlined,
 } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
+import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import {
@@ -56,6 +58,10 @@ const useStyles = makeStyles(() => ({
   turnToReportOrCase: {
     margin: '-8px 4px 0 0',
     float: 'right',
+  },
+  duplicate: {
+    float: 'right',
+    margin: '-8px 4px 0 0',
   },
   export: {
     float: 'right',
@@ -104,6 +110,9 @@ const WorkspaceHeader = ({
   const [openTags, setOpenTags] = useState(false);
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+  const handleCloseDuplicate = () => setDisplayDuplicate(false);
+  const [duplicating, setDuplicating] = useState(false);
   const getCurrentTags = () => workspace.tags;
   const onSubmitCreateTag = (data, { resetForm }) => {
     const currentTags = getCurrentTags();
@@ -164,6 +173,10 @@ const WorkspaceHeader = ({
 
   const handleExportDashboard = () => {
     handleExportJson(workspace);
+  };
+
+  const handleDashboardDuplication = () => {
+    setDisplayDuplicate(true);
   };
 
   const [
@@ -320,6 +333,30 @@ const WorkspaceHeader = ({
           </div>
         </Security>
       )}
+      <div className={classes.duplicate}>
+        <Tooltip title={t('Duplicate dashboard')}>
+          <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+            <ToggleButton sx={{ padding: '2px' }} size="small" value={'duplicate-dashboard'}>
+              <IconButton
+                  aria-label="copy"
+                  disabled={!workspace}
+                  onClick={() => handleDashboardDuplication()}
+                  color="primary"
+                  size="small"
+              >
+                <ContentCopyOutlined fontSize="small" />
+              </IconButton>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Tooltip>
+      </div>
+      <WorkspaceDuplicationDialog
+          workspace={workspace}
+          displayDuplicate={displayDuplicate}
+          handleCloseDuplicate={handleCloseDuplicate}
+          duplicating={duplicating}
+          setDuplicating={setDuplicating}
+      />
       <div className={classes.export}>
         <ExportButtons
           domElementId="container"

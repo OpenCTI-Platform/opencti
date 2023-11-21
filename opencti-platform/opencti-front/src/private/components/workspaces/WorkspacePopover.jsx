@@ -18,8 +18,9 @@ import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
-import { deleteNode } from '../../../utils/store';
+import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
+import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -49,7 +50,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -57,7 +60,15 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
+  const handleCloseDuplicate = () => {
+    setDisplayDuplicate(false);
+  };
   const [commit] = useMutation(WorkspacePopoverDeletionMutation);
+  const updater = (store) => {
+    if (paginationOptions) {
+      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
+    }
+  };
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -78,10 +89,16 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       },
     });
   };
+
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
+  const handleDashboardDuplication = () => {
+    setDisplayDuplicate(true);
+    handleClose();
+  };
+
   const handleCloseEdit = () => setDisplayEdit(false);
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
@@ -100,11 +117,21 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleDashboardDuplication}>{t('Duplicate')}</MenuItem>
         <MenuItem onClick={() => handleExportJson(workspace)}>{t('Export')}</MenuItem>
         <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
+      <WorkspaceDuplicationDialog
+          workspace={workspace}
+          displayDuplicate={displayDuplicate}
+          handleCloseDuplicate={handleCloseDuplicate}
+          duplicating={duplicating}
+          setDuplicating={setDuplicating}
+          updater={updater}
+          paginationOptions={paginationOptions}
+      />
       <Dialog
         open={displayDelete}
         PaperProps={{ elevation: 1 }}
@@ -130,16 +157,14 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         query={workspaceEditionQuery}
         variables={{ id }}
         render={({ props: editionProps }) => {
-          if (editionProps) {
-            return (
-              <WorkspaceEditionContainer
-                workspace={editionProps.workspace}
-                handleClose={handleCloseEdit}
-                open={displayEdit}
-              />
-            );
+          if (!editionProps) {
+            return <div />;
           }
-          return <div />;
+          return (<WorkspaceEditionContainer
+              workspace={editionProps.workspace}
+              handleClose={handleCloseEdit}
+              open={displayEdit}
+          />);
         }}
       />
     </div>

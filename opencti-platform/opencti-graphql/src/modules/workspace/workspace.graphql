@@ -88,8 +88,17 @@ input WorkspaceAddInput {
     investigated_entities_ids: [String]
 }
 
+input WorkspaceDuplicateInput {
+    type: String!
+    name: String!
+    description: String
+    manifest: String
+    tags: [String]
+}
+
 type Mutation {
     workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
     workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])

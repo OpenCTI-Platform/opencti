@@ -13164,6 +13164,7 @@ export type Mutation = {
   workspaceContextClean?: Maybe<Workspace>;
   workspaceContextPatch?: Maybe<Workspace>;
   workspaceDelete?: Maybe<Scalars['ID']['output']>;
+  workspaceDuplicate?: Maybe<Workspace>;
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
 };
@@ -14847,6 +14848,11 @@ export type MutationWorkspaceContextPatchArgs = {
 
 export type MutationWorkspaceDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationWorkspaceDuplicateArgs = {
+  input: WorkspaceDuplicateInput;
 };
 
 
@@ -28795,6 +28801,15 @@ export type WorkspaceConnection = {
   pageInfo: PageInfo;
 };
 
+export type WorkspaceDuplicateInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  manifest?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  type: Scalars['String']['input'];
+};
+
 export type WorkspaceEdge = {
   __typename?: 'WorkspaceEdge';
   cursor: Scalars['String']['output'];
@@ -30037,6 +30052,7 @@ export type ResolversTypes = ResolversObject<{
   Workspace: ResolverTypeWrapper<BasicStoreEntityWorkspace>;
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: ResolverTypeWrapper<Omit<WorkspaceConnection, 'edges'> & { edges: Array<ResolversTypes['WorkspaceEdge']> }>;
+  WorkspaceDuplicateInput: WorkspaceDuplicateInput;
   WorkspaceEdge: ResolverTypeWrapper<Omit<WorkspaceEdge, 'node'> & { node: ResolversTypes['Workspace'] }>;
   WorkspacesFilter: WorkspacesFilter;
   WorkspacesFiltering: WorkspacesFiltering;
@@ -30743,6 +30759,7 @@ export type ResolversParentTypes = ResolversObject<{
   Workspace: BasicStoreEntityWorkspace;
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: Omit<WorkspaceConnection, 'edges'> & { edges: Array<ResolversParentTypes['WorkspaceEdge']> };
+  WorkspaceDuplicateInput: WorkspaceDuplicateInput;
   WorkspaceEdge: Omit<WorkspaceEdge, 'node'> & { node: ResolversParentTypes['Workspace'] };
   WorkspacesFiltering: WorkspacesFiltering;
   X509Certificate: Omit<X509Certificate, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
@@ -34991,6 +35008,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
   workspaceContextPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextPatchArgs, 'id' | 'input'>>;
   workspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationWorkspaceDeleteArgs, 'id'>>;
+  workspaceDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceDuplicateArgs, 'input'>>;
   workspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
   workspaceFieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceFieldPatchArgs, 'id' | 'input'>>;
 }>;
