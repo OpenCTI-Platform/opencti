@@ -1,6 +1,7 @@
 import * as R from "ramda";
-import type { FileHandle } from "fs/promises";
+import type {FileHandle} from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from 'uuid';
 import {
   createEntity,
   deleteElementById,
@@ -9,18 +10,14 @@ import {
   patchAttribute,
   updateAttribute,
 } from "../../database/middleware";
-import {
-  listEntitiesPaginated,
-  storeLoadById,
+import {listEntitiesPaginated, storeLoadById,
 } from "../../database/middleware-loader";
-import { BUS_TOPICS } from "../../config/conf";
-import { delEditContext, notify, setEditContext } from "../../database/redis";
-import {
-  type BasicStoreEntityWorkspace,
-  ENTITY_TYPE_WORKSPACE,
+import {BUS_TOPICS} from "../../config/conf";
+import {delEditContext, notify, setEditContext} from "../../database/redis";
+import {type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE,
 } from "./workspace-types";
-import { FunctionalError } from "../../config/errors";
-import type { AuthContext, AuthUser } from "../../types/user";
+import {FunctionalError} from "../../config/errors";
+import type {AuthContext, AuthUser} from "../../types/user";
 import type {
   EditContext,
   EditInput,
@@ -298,6 +295,23 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
   }
 
   const MINIMAL_COMPATIBLE_VERSION = "5.12.0";
+  const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
+    const [major, minor, patch] = openCtiVersion.split('.').map((number) => parseInt(number, 10));
+    const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10));
+    return major >= openCtiMajor && minor >= openCtiMinor && patch >= openCtiPatch;
+  };
+
+  if (!isCompatibleOpenCtiVersion(parsedData.openCTI_version)) {
+    throw FunctionalError(`Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`, { reason: parsedData.openCTI_version });
+  }
+};
+
+export const checkWidgetConfigurationImport = (parsedData: any) => {
+  if (parsedData.type !== 'widget') {
+    throw FunctionalError('Invalid type. Please import OpenCTI widget-type only', { reason: parsedData.type });
+  }
+
+  const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
   const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
     const [major, minor, patch] = openCtiVersion
       .split(".")
