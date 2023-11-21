@@ -86,7 +86,8 @@ WorkspaceDuplicationDialogProps
       },
       onCompleted: (data) => {
         handleCloseDuplicate();
-        if (!paginationOptions) {
+        const isDashboardView = !paginationOptions;
+        if (isDashboardView) {
           MESSAGING$.notifySuccess(
             <span>
             {t('The dashboard has been duplicated. You can manage it')}{' '}
