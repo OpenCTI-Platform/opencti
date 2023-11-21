@@ -161,10 +161,12 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             return <div />;
           }
           return (<WorkspaceEditionContainer
-              workspace={editionProps.workspace}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-          />);
+                workspace={editionProps.workspace}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+                type={type}
+              />
+            );
         }}
       />
     </div>

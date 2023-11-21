@@ -112,7 +112,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       <>
         <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
         <Drawer
-          title={t(`Create  ${type === 'dashboard' ? 'a dashboard' : 'an investigation'}`)}
+          title={t(`Create ${type}`)}
           variant={type === 'dashboard' ? undefined : DrawerVariant.create}
           controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
             <SpeedDial
