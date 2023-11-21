@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { adaptFiltersIds } from '../../../src/utils/filtering/filtering-utils';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import { isEmptyField } from '../../../src/database/utils';
@@ -12,8 +11,7 @@ const applyFilters = async (filters, user = ADMIN_USER) => {
   const filteredObjects = [];
   for (let i = 0; i < data.objects.length; i += 1) {
     const stix = data.objects[i];
-    const adaptedFilters = await adaptFiltersIds(testContext, user, filters);
-    const isCurrentlyVisible = await isStixMatchFilterGroup(testContext, user, stix, adaptedFilters);
+    const isCurrentlyVisible = await isStixMatchFilterGroup(testContext, user, stix, filters);
     if (isCurrentlyVisible) {
       filteredObjects.push(stix);
     }
@@ -30,8 +28,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'objectMarking',
+        key: ['objectMarking'],
         values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -45,9 +45,10 @@ describe('Filters testing', () => {
     const filtersNot = {
       mode: 'and',
       filters: [{
-        key: 'objectMarking',
+        key: ['objectMarking'],
         values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
         operator: 'not_eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -61,8 +62,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'createdBy',
+        key: ['createdBy'],
         values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -79,8 +82,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'entity_type',
+        key: ['entity_type'],
         values: [ENTITY_TYPE_INTRUSION_SET],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -99,8 +104,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'createdBy',
+        key: ['createdBy'],
         values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -110,9 +117,10 @@ describe('Filters testing', () => {
     const filtersNot = {
       mode: 'and',
       filters: [{
-        key: 'createdBy',
+        key: ['createdBy'],
         values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
         operator: 'not_eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -127,8 +135,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'objectLabel',
+        key: ['objectLabel'],
         values: ['attack-pattern'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -138,9 +148,10 @@ describe('Filters testing', () => {
     const filtersNot = {
       mode: 'and',
       filters: [{
-        key: 'objectLabel',
+        key: ['objectLabel'],
         values: ['attack-pattern'],
         operator: 'not_eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -155,9 +166,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'confidence',
+        key: ['confidence'],
         values: ['30'],
         operator: 'gte',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -167,9 +179,10 @@ describe('Filters testing', () => {
     const filtersNot = {
       mode: 'and',
       filters: [{
-        key: 'confidence',
+        key: ['confidence'],
         values: ['30'],
         operator: 'lt',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -186,8 +199,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'pattern_type',
+        key: ['pattern_type'],
         values: ['stix'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -200,8 +215,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'objects',
+        key: ['objects'],
         values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -211,9 +228,10 @@ describe('Filters testing', () => {
     const filtersNot = {
       mode: 'and',
       filters: [{
-        key: 'objects',
+        key: ['objects'],
         values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
         operator: 'not_eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -226,8 +244,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'fromId',
+        key: ['fromId'],
         values: ['indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -240,8 +260,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'toId',
+        key: ['toId'],
         values: ['location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -254,8 +276,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'severity',
+        key: ['severity'],
         values: ['low'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -264,7 +288,7 @@ describe('Filters testing', () => {
 
     const filtersNo = {
       mode: 'and',
-      filters: [{ key: 'severity', values: [], operator: 'nil' }],
+      filters: [{ key: ['severity'], values: [], operator: 'nil', mode: 'or' }],
       filterGroups: [],
     };
     const filteredObjectsNo = await applyFilters(filtersNo);
@@ -276,8 +300,10 @@ describe('Filters testing', () => {
     const filters = {
       mode: 'and',
       filters: [{
-        key: 'priority',
+        key: ['priority'],
         values: ['p2'],
+        operator: 'eq',
+        mode: 'or',
       }],
       filterGroups: [],
     };
@@ -286,7 +312,7 @@ describe('Filters testing', () => {
 
     const filtersNo = {
       mode: 'and',
-      filters: [{ key: 'priority', values: [], operator: 'nil' }],
+      filters: [{ key: ['priority'], values: [], operator: 'nil', mode: 'or' }],
       filterGroups: [],
     };
     const filteredObjectsNo = await applyFilters(filtersNo);
