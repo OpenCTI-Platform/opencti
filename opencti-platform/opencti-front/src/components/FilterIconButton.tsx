@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, GqlFilterGroup } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from './Loader';
@@ -93,13 +93,11 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
 
   const displayedFilters = {
     ...filters,
-    filters: filters.filters
-      .filter((currentFilter) => !availableFilterKeys
-        || availableFilterKeys?.some((k) => currentFilter.key === k)),
+    filters: filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)) || [],
   };
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
-    { filters: displayedFilters },
+    { filters: displayedFilters as unknown as GqlFilterGroup },
   );
 
   return (
