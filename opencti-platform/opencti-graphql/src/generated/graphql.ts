@@ -17645,6 +17645,7 @@ export type QueryFileArgs = {
 
 export type QueryFilesMetricsArgs = {
   excludedPaths?: InputMaybe<Array<Scalars['String']['input']>>;
+  includedPaths?: InputMaybe<Array<Scalars['String']['input']>>;
   maxFileSize?: InputMaybe<Scalars['Float']['input']>;
   mimeTypes?: InputMaybe<Array<Scalars['String']['input']>>;
 };

@@ -24,8 +24,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationAndMonitoringQuery } from './__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 
 const fileIndexingConfigurationAndMonitoringQuery = graphql`
-  query FileIndexingConfigurationAndMonitoringQuery($mimeTypes: [String!], $maxFileSize: Float, $excludedPaths: [String!]) {
-    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths) {
+  query FileIndexingConfigurationAndMonitoringQuery($mimeTypes: [String!], $maxFileSize: Float, $excludedPaths: [String!], $includedPaths: [String!]) {
+    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths, includedPaths: $includedPaths) {
       globalCount
       globalSize
       metricsByMimeType {
