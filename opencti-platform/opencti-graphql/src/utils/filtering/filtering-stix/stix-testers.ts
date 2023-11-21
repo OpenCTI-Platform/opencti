@@ -277,7 +277,7 @@ export const testRefs = (stix: any, filter: Filter) => {
  */
 export const testConnectedTo = (stix: any, filter: Filter) => {
   // only applies with "eq" operator
-  if (filter.operator !== 'eq') {
+  if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
   return testStringFilter(filter, [stix.id]);
@@ -290,7 +290,7 @@ export const testConnectedTo = (stix: any, filter: Filter) => {
  */
 export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
   // only applies with "eq" operator
-  if (filter.operator !== 'eq') {
+  if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
 
