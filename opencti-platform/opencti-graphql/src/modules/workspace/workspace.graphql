@@ -94,7 +94,6 @@ input WorkspaceDuplicateInput {
     description: String
     manifest: String
     tags: [String]
-    authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {
