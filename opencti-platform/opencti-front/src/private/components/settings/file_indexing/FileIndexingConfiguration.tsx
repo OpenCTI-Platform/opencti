@@ -41,6 +41,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import ItemIcon from '../../../../components/ItemIcon';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -70,6 +73,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  icon: {
+    paddingTop: 4,
+    paddingRight: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
   mimeType: {
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
@@ -88,6 +97,7 @@ interface FileIndexingConfigurationFormValues {
   accept_mime_types: string[];
   include_global_files: boolean;
   max_file_size: number;
+  entity_types: string[];
 }
 
 const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProps> = ({
@@ -95,6 +105,8 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
   managerConfiguration,
 }) => {
   const { n, t, b } = useFormatter();
+  const { schema } = useAuth();
+  const { sdos, scos } = schema;
   const classes = useStyles();
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
@@ -105,7 +117,10 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
     accept_mime_types: manager_setting?.accept_mime_types ?? defaultMimeTypes,
     include_global_files: manager_setting?.include_global_files || false,
     max_file_size: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
+    entity_types: manager_setting?.entity_types ?? [],
   };
+  const availableEntityTypes = sdos.map((sdo) => sdo.id)
+    .concat(scos.map((sco) => sco.id));
   const [commitManagerSetting] = useMutation(fileIndexingConfigurationFieldPatch);
   const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (
     values,
@@ -156,7 +171,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
           </Grid>
           <Grid item={true} xs={4} style={{ paddingTop: 0 }}>
             <List>
-              { metricsByMimeType.map((metrics) => (
+              {metricsByMimeType.map((metrics) => (
                 <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32, padding: 0 }}>
                   <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType} style={{ width: '18%' }} />
                   <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount} style={{ width: '25%' }}/>
@@ -177,8 +192,8 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
             <Typography variant="h4" gutterBottom={true}>
                 {t('Mime-Types to index')}
             </Typography>
-            <List style={{ marginLeft: 25 }}>
-            { defaultMimeTypes.map((mimeType) => (
+            <List>
+            {defaultMimeTypes.map((mimeType) => (
               <ListItem key={mimeType} divider={true} dense={true} style={{ height: 36 }}>
                 <ListItemText primary={t(mimeType)} className={classes.mimeType}/>
                 <Checkbox
@@ -204,6 +219,29 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               label={t('Indexing global files')}
               containerstyle={{ marginTop: 20 }}
               onChange={submitForm}
+            />
+            <Field
+              component={AutocompleteField}
+              name="entity_types"
+              multiple={true}
+              textfieldprops={{
+                variant: 'standard',
+                label: t('Restrict to specific entity types'),
+              }}
+              options={availableEntityTypes}
+              isOptionEqualToValue={(option: string, value: string) => option === value}
+              onChange={submitForm}
+              renderOption={(
+                props: React.HTMLAttributes<HTMLLIElement>,
+                option: string,
+              ) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={option} />
+                  </div>
+                  <ListItemText primary={t(`entity_${option}`)} />
+                </li>
+              )}
             />
           </Form>
         )}

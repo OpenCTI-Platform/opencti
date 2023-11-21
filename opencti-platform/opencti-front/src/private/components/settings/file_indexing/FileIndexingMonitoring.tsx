@@ -185,7 +185,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 {t('Start')}
               </Button>
             )}
-            { indexedFiles > 0 && (
+            {indexedFiles > 0 && (
               <Button
                 startIcon={<ClearOutlined />}
                 aria-label="Reset"
@@ -220,7 +220,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             </div>
           </Grid>
         </Grid>
-        { isStarted && (
+        {isStarted && (
           <div style={{ paddingTop: 30 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Progress')}
@@ -228,18 +228,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             <LinearProgress
               classes={{ root: classes.progress }}
               variant="determinate"
-              value={
-                // eslint-disable-next-line no-nested-ternary
-                indexedFiles
-                  ? indexedFiles === 0
-                    ? 0
-                    : Math.round(
-                      (indexedFiles
-                        / totalFiles)
-                        * 100,
-                    )
-                  : 0
-              }
+              value={indexedFiles > 0 ? Math.round((indexedFiles / totalFiles) * 100) : 0}
             />
           </div>
         )}

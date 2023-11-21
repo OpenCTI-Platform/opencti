@@ -88,10 +88,16 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
 }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
   const manager_setting = managerConfiguration?.manager_setting;
+  const entityTypes: string[] = manager_setting?.entity_types ?? [];
+  const includedPaths = entityTypes.map((entityType) => `import/${entityType}/`);
+  if (manager_setting?.include_global_files && includedPaths.length > 0) {
+    includedPaths.push('import/global/'); // add global to included paths
+  }
   const queryArgs = {
     mimeTypes: manager_setting?.accept_mime_types ?? fileIndexingDefaultMimeTypes,
     maxFileSize: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
     excludedPaths: manager_setting?.include_global_files ? [] : ['import/global'],
+    includedPaths,
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
