@@ -37,6 +37,7 @@ import {
   fileIndexingDefaultMaxFileSize,
   fileIndexingDefaultMimeTypes,
 } from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -44,6 +45,7 @@ import SwitchField from '../../../../components/SwitchField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
+import TextField from '../../../../components/TextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -113,10 +115,11 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
   const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
   const manager_setting = managerConfiguration?.manager_setting;
   const defaultMimeTypes = [...fileIndexingDefaultMimeTypes];
+  const initialMaxFileSizeInBytes = manager_setting?.max_file_size ? parseInt(manager_setting.max_file_size, 10) : fileIndexingDefaultMaxFileSize;
   const initialValues = {
     accept_mime_types: manager_setting?.accept_mime_types ?? defaultMimeTypes,
     include_global_files: manager_setting?.include_global_files || false,
-    max_file_size: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
+    max_file_size: Math.floor(initialMaxFileSizeInBytes / (1024 * 1024)),
     entity_types: manager_setting?.entity_types ?? [],
   };
   const availableEntityTypes = sdos.map((sdo) => sdo.id)
@@ -127,10 +130,16 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
     { setSubmitting, setErrors },
   ) => {
     setSubmitting(true);
+    const managerSettingValues = {
+      accept_mime_types: values.accept_mime_types,
+      include_global_files: values.include_global_files,
+      max_file_size: parseInt(String(values.max_file_size), 10) * 1024 * 1024, // in bytes
+      entity_types: values.entity_types,
+    };
     commitManagerSetting({
       variables: {
         id: managerConfiguration?.id,
-        input: { key: 'manager_setting', value: values },
+        input: { key: 'manager_setting', value: managerSettingValues },
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -141,6 +150,10 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
       },
     });
   };
+
+  const formValidation = () => Yup.object().shape({
+    max_file_size: Yup.number().min(1).max(100).required(t('This field is required')),
+  });
 
   return (
     <div>
@@ -185,14 +198,25 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
         <Divider style={{ marginBottom: 30, marginTop: 30 }} />
         <Formik
           initialValues={initialValues}
+          validationSchema={formValidation()}
           onSubmit={onSubmitForm}
         >
         {({ submitForm, setFieldValue, values }) => (
           <Form>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="max_file_size"
+              label={t('Max file size (in Mb)')}
+              fullWidth={false}
+              type="number"
+              style={{ marginBottom: 20 }}
+              onChange={submitForm}
+            />
             <Typography variant="h4" gutterBottom={true}>
                 {t('Mime-Types to index')}
             </Typography>
-            <List>
+            <List style={{ marginBottom: 12 }}>
             {defaultMimeTypes.map((mimeType) => (
               <ListItem key={mimeType} divider={true} dense={true} style={{ height: 36 }}>
                 <ListItemText primary={t(mimeType)} className={classes.mimeType}/>
@@ -217,7 +241,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               type="checkbox"
               name="include_global_files"
               label={t('Indexing global files')}
-              containerstyle={{ marginTop: 20 }}
+              containerstyle={{ marginBottom: 20 }}
               onChange={submitForm}
             />
             <Field
@@ -230,6 +254,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               }}
               options={availableEntityTypes}
               isOptionEqualToValue={(option: string, value: string) => option === value}
+              style={{ marginBottom: 12 }}
               onChange={submitForm}
               renderOption={(
                 props: React.HTMLAttributes<HTMLLIElement>,

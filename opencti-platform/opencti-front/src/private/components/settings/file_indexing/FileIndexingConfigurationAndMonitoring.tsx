@@ -94,7 +94,7 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
     includedPaths.push('import/global/'); // add global to included paths
   }
   const queryArgs = {
-    mimeTypes: manager_setting?.accept_mime_types ?? fileIndexingDefaultMimeTypes,
+    mimeTypes: manager_setting?.accept_mime_types?.length > 0 ? manager_setting.accept_mime_types : fileIndexingDefaultMimeTypes,
     maxFileSize: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
     excludedPaths: manager_setting?.include_global_files ? [] : ['import/global'],
     includedPaths,
