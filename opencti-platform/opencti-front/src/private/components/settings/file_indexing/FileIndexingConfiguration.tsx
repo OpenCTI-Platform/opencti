@@ -240,7 +240,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               component={SwitchField}
               type="checkbox"
               name="include_global_files"
-              label={t('Include files not related to any knowledge (data import and analyst workbench)')}
+              label={t('Include files not related to any knowledge (data import)')}
               containerstyle={{ marginBottom: 20 }}
               onChange={submitForm}
             />
