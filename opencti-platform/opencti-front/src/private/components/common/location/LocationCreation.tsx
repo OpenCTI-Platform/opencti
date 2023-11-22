@@ -76,7 +76,7 @@ interface LocationCreationFormProps {
 }
 
 const locations = [
-  'Administrative Area',
+  'Administrative-Area',
   'Region',
   'Country',
   'City',
