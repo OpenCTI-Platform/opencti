@@ -71,15 +71,17 @@ const StixRelationshipsMultiLineChart = ({
       const dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
       const dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
       const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      const finalFilters = filtersContent.filter(
-        (n) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(n.key),
-      );
+      const finalFilters = selection.filters ? {
+        ...selection.filters,
+        filters: filtersContent.filter(
+          (n) => ![
+            'entity_type',
+            'elementId',
+            'relationship_type',
+            'toTypes',
+          ].includes(n.key),
+        ),
+      } : undefined;
       return {
         fromId: dataSelectionFromId,
         toId: dataSelectionToId,
