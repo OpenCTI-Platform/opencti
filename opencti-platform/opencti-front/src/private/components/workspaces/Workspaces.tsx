@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import {
-  WorkspacesFilter,
   WorkspacesLinesPaginationQuery,
   WorkspacesLinesPaginationQuery$variables,
 } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
@@ -12,6 +11,7 @@ import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface WorkspacesProps {
   type: string;
@@ -43,7 +43,17 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     orderAsc,
   } = viewStorage;
 
-  const workspacePaginationOptions = { ...paginationOptions, filters: [{ key: ['type' as WorkspacesFilter], values: [type] }] };
+  const filters = {
+    mode: 'and',
+    filters: [{
+      key: ['type'],
+      values: [type],
+      mode: 'or',
+      operator: 'eq',
+    }],
+    filterGroups: [],
+  } as GqlFilterGroup;
+  const workspacePaginationOptions = { ...paginationOptions, filters };
 
   const queryRef = useQueryLoading<WorkspacesLinesPaginationQuery>(
     workspacesLinesQuery,
