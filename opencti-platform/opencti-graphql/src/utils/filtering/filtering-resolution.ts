@@ -1,8 +1,9 @@
 import type { Filter, FilterGroup } from '../../generated/graphql';
-import { FilterOperator } from '../../generated/graphql';
+import { FilterMode, FilterOperator } from '../../generated/graphql';
 import {
   ASSIGNEE_FILTER,
-  CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
+  CONNECTED_TO_INSTANCE_FILTER,
+  CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER,
   INDICATOR_FILTER,
   INSTANCE_FILTER,
@@ -180,10 +181,16 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
   return resolveUserMap;
 };
 
-export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup, opts: any = {}) => {
+export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  const adaptedFilters = await resolveFilterGroupValuesWithCache(context, user, filters);
+  const adaptedFilters = filters
+    ? await resolveFilterGroupValuesWithCache(context, user, filters)
+    : {
+      mode: FilterMode.And,
+      filters: [],
+      filterGroups: [],
+    };
   const finalFilters = checkAndConvertFilters(adaptedFilters);
   if (finalFilters && after) {
     finalFilters.filters.push({ key: field, values: [after], operator: FilterOperator.Gte });
