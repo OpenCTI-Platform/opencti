@@ -29,7 +29,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import {
   ContainerStixCyberObservableLine_node$data,
 } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { GqlFilterGroup, initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -155,12 +155,12 @@ ContainerStixCyberObservablesComponentProps
   const paginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters,
+    filters: filters as unknown as GqlFilterGroup,
   };
   const exportPaginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: toolbarFilters,
+    filters: toolbarFilters as unknown as GqlFilterGroup,
   };
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {

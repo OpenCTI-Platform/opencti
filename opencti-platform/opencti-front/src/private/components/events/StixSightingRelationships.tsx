@@ -15,7 +15,12 @@ import {
 } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { filtersWithEntityType, findFilterFromKey, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  filtersWithEntityType,
+  findFilterFromKey,
+  GqlFilterGroup,
+  initialFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -192,7 +197,7 @@ const StixSightingRelationships = () => {
   const enrichedPaginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables = {
     ...rawPaginationOptions,
     toId: toSightingId,
-    filters: newFilters,
+    filters: newFilters as unknown as GqlFilterGroup,
   };
   return (
     <ExportContextProvider>

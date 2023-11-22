@@ -8,7 +8,7 @@ import {
   FiltersVariant,
   initialFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
-import FiltersElement from './FiltersElement';
+import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
@@ -55,7 +55,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
-  const [inputValues, setInputValues] = useState([]);
+  const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>([]);
   const [keyword, setKeyword] = useState('');
 
   const handleOpenFilters = (event: React.SyntheticEvent) => {

@@ -4,6 +4,7 @@ import type { Option } from './ReferenceField';
 import ReferenceField from './ReferenceField';
 import { ArtifactFieldGetQuery } from './__generated__/ArtifactFieldGetQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface ArtifactFieldProps {
   attributeName: string;
@@ -78,7 +79,7 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
     filterGroups: [],
   };
   const queryRef = useQueryLoading<ArtifactFieldGetQuery>(artifactQuery, {
-    filters,
+    filters: filters as unknown as GqlFilterGroup,
   });
   return (
     <>

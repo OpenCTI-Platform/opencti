@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, GqlFilterGroup, initialFilterGroup } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from './Loader';
@@ -47,13 +48,13 @@ const useStyles = makeStyles(() => ({
 
 interface FilterIconButtonProps {
   availableFilterKeys?: string[];
-  filters: FilterGroup;
+  filters?: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
   classNameNumber?: number;
   styleNumber?: number;
-  chipColor?: string;
+  chipColor?: ChipOwnProps['color'];
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
@@ -61,7 +62,7 @@ interface FilterIconButtonProps {
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableFilterKeys,
-  filters,
+  filters = initialFilterGroup,
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,

@@ -260,7 +260,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   const finalFilters = addFilter(
     removeFilter(cleanedFilters, ['entity_type', 'containers']),
     'objects',
-    handleFilterOnContainers(containers, cleanedFilters.filters),
+    handleFilterOnContainers(containers, cleanedFilters?.filters ?? []),
   );
 
   const paginationOptions = {
