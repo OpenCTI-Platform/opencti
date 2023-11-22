@@ -34,7 +34,7 @@ import {
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 
@@ -161,16 +161,19 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   title,
 }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    NOTE_TYPE,
+  );
   const classes = useStyles();
   const basicShape = {
-    content: Yup.string().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().min(2),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number(),
     note_types: Yup.array(),
     likelihood: Yup.number().min(0).max(100),
   };
   // created & createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useSchemaCreationValidation('Note', basicShape, [
+  const noteValidator = useSchemaCreationValidation(NOTE_TYPE, basicShape, [
     'created',
     'createdBy',
   ]);
@@ -302,12 +305,14 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                     component={MarkdownField}
                     name="content"
                     label={t_i18n('Content')}
+                    required={(mandatoryAttributes.includes('content'))}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
                   />
                   <ObjectMarkingField
                     name="objectMarking"
+                    required={(mandatoryAttributes.includes('objectMarking'))}
                     style={fieldSpacingContainerStyle}
                   />
                   {more && (
@@ -316,6 +321,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                         component={TextField}
                         name="attribute_abstract"
                         label={t_i18n('Abstract')}
+                        required={(mandatoryAttributes.includes('attribute_abstract'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -323,6 +329,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                         label={t_i18n('Note types')}
                         type="note_types_ov"
                         name="note_types"
+                        required={(mandatoryAttributes.includes('note_types'))}
                         onChange={(name, value) => setFieldValue(name, value)}
                         containerStyle={fieldSpacingContainerStyle}
                         multiple={true}
@@ -340,6 +347,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       />
                       <ObjectLabelField
                         name="objectLabel"
+                        required={(mandatoryAttributes.includes('objectLabel'))}
                         style={{ marginTop: 10, width: '100%' }}
                         setFieldValue={setFieldValue}
                         values={values.objectLabel}

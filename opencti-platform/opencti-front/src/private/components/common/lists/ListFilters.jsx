@@ -30,6 +30,7 @@ const ListFilters = ({
   variant,
   type,
   helpers,
+  required,
   entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
@@ -122,6 +123,7 @@ const ListFilters = ({
                 variant="outlined"
                 size="small"
                 label={placeholder}
+                required={required}
               />
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}

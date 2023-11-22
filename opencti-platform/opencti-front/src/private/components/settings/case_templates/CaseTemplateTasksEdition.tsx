@@ -22,7 +22,7 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
   const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);

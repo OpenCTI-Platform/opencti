@@ -59,6 +59,7 @@ interface OptionParticipant extends Option {
 }
 interface ObjectParticipantFieldProps {
   name: string;
+  required?: boolean;
   onChange?: (name: string, values: OptionParticipant[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
@@ -72,6 +73,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   onChange,
   helpertext,
   disabled,
+  required,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -100,11 +102,13 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       component={AutocompleteField}
       style={style}
       name={name}
+      required={required}
       disabled={disabled}
       multiple={true}
       textfieldprops={{
         variant: 'standard',
         label: label ?? t_i18n('Participant(s)'),
+        required,
         helperText: helpertext,
         onFocus: searchParticipants,
       }}

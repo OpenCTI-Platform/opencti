@@ -16,6 +16,7 @@ const AutocompleteField = (props) => {
     onFocus,
     noOptionsText,
     renderOption,
+    required,
     isOptionEqualToValue,
     textfieldprops,
     openCreate,
@@ -57,6 +58,7 @@ const AutocompleteField = (props) => {
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
         size="small"
+        required={required}
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
@@ -78,6 +80,7 @@ const AutocompleteField = (props) => {
             }}
             value={value}
             name={name}
+            required={required}
             fullWidth={true}
             error={!isNil(meta.error) && meta.touched}
             helperText={meta.error || textfieldprops.helperText}

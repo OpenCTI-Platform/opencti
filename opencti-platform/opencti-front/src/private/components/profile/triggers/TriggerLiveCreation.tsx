@@ -32,6 +32,7 @@ import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   dialogActions: {
@@ -58,14 +59,7 @@ export const triggerLiveKnowledgeCreationMutation = graphql`
   }
 `;
 
-const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  event_types: Yup.array()
-    .min(1, t('Minimum one event type'))
-    .required(t('This field is required')),
-  notifiers: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'Trigger';
 
 export const instanceTriggerDescription = 'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
 
@@ -97,6 +91,20 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   recipientId,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    event_types: Yup.array()
+      .min(1, t_i18n('Minimum one event type')),
+    notifiers: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
@@ -207,6 +215,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             variant: 'standard',
             label: t_i18n('Triggering on'),
           }}
+          required={(mandatoryAttributes.includes('event_types'))}
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
           }
@@ -224,12 +233,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             </MenuItem>
           )}
         />
-        <NotifierField name="notifiers" onChange={setFieldValue} />
+        <NotifierField name="notifiers" onChange={setFieldValue}
+          required={(mandatoryAttributes.includes('notifiers'))}
+        />
         <Field
           component={SwitchField}
           type="checkbox"
           name="instance_trigger"
           label={t_i18n('Subscription to specific object(s)')}
+          required={(mandatoryAttributes.includes('instance_trigger'))}
           tooltip={instanceTriggerDescription}
           containerstyle={{ marginTop: 20 }}
           onChange={() => onChangeInstanceTrigger(setFieldValue)}
@@ -289,12 +301,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         variant="standard"
         name="name"
         label={t_i18n('Name')}
+        required={(mandatoryAttributes.includes('name'))}
         fullWidth={true}
       />
       <Field
         component={MarkdownField}
         name="description"
         label={t_i18n('Description')}
+        required={(mandatoryAttributes.includes('description'))}
         fullWidth={true}
         multiline={true}
         rows="4"
@@ -332,7 +346,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       {({ onClose }) => (
         <Formik<TriggerLiveAddInput>
           initialValues={liveInitialValues}
-          validationSchema={liveTriggerValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onLiveSubmit}
           onReset={onClose}
         >
@@ -380,7 +394,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     >
       <Formik
         initialValues={liveInitialValues}
-        validationSchema={liveTriggerValidation(t_i18n)}
+        validationSchema={validator}
         onSubmit={onLiveSubmit}
         onReset={onReset}
       >

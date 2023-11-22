@@ -22,7 +22,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
@@ -101,11 +101,13 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const history = useHistory();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    REPORT_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2),
     published: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -190,9 +192,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             detectDuplicate={['Report']}
-            fullWidth
-            askAi
+            fullWidth={true}
+            askAi={true}
           />
           <Field
             component={DateTimePickerField}
@@ -208,6 +211,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             label={t_i18n('Report types')}
             type="report_types_ov"
             name="report_types"
+            required={(mandatoryAttributes.includes('report_types'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
@@ -216,6 +220,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -228,6 +233,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -238,6 +244,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -247,29 +254,35 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

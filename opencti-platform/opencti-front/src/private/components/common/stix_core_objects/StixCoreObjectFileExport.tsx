@@ -28,6 +28,7 @@ import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -41,9 +42,8 @@ const stixCoreObjectFileExportQuery = graphql`
   }
 `;
 
-const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
-});
+const OBJECT_TYPE = 'Connector';
+
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
   id: string;
@@ -65,6 +65,16 @@ const StixCoreObjectFileExportComponent = ({
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    format: Yup.string(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+
   const data = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     queryRef,
@@ -154,7 +164,7 @@ const StixCoreObjectFileExportComponent = ({
           type: 'full',
           maxMarkingDefinition: 'none',
         }}
-        validationSchema={exportValidation(t_i18n)}
+        validationSchema={validator}
         onSubmit={onSubmitExport}
         onReset={() => setOpen(false)}
       >
@@ -184,6 +194,7 @@ const StixCoreObjectFileExportComponent = ({
                           variant="standard"
                           name="format"
                           label={t_i18n('Export format')}
+                          required={(mandatoryAttributes.includes('connector_scope'))}
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         >

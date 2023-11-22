@@ -14,6 +14,7 @@ import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const caseTemplateAddTask = graphql`
   mutation CaseTemplateEditionAddTaskMutation(
@@ -55,18 +56,13 @@ export const caseTemplateFieldPatch = graphql`
   }
 `;
 
+const OBJECT_TYPE = 'Case-Template';
 interface CaseTemplateEditionProps {
   caseTemplate: CaseTemplateLine_node$data;
   paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
   openPanel: boolean;
   setOpenPanel: (status: boolean) => void;
 }
-
-const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  tasks: Yup.array(),
-});
 
 const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   caseTemplate,
@@ -75,6 +71,18 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   setOpenPanel,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    tasks: Yup.array(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const handleClose = () => setOpenPanel(false);
 
   const [commitAddTask] = useMutation(caseTemplateAddTask);
@@ -145,7 +153,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
         }}
         onSubmit={() => {
         }}
-        validationSchema={caseTemplateValidation(t_i18n)}
+        validationSchema={validator}
       >
         {({ values: currentValues, setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -154,6 +162,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth
               onSubmit={handleSubmitField}
             />
@@ -161,6 +170,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth
               multiline
               rows="4"

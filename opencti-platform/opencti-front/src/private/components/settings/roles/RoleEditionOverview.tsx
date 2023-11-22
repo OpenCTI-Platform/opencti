@@ -8,6 +8,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -32,10 +33,7 @@ const roleEditionOverviewFocus = graphql`
   }
 `;
 
-const roleValidation = (t: (n: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const OBJECT_TYPE = 'Role';
 
 interface RoleEditionOverviewComponentProps {
   role: RoleEditionOverview_role$data,
@@ -47,6 +45,16 @@ interface RoleEditionOverviewComponentProps {
 
 const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {
   const { t_i18n } = useFormatter();
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const initialValues = R.pick(
     ['name', 'description'],
     role,
@@ -64,7 +72,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
     });
   };
   const handleSubmitField = (name: string, value: string | boolean) => {
-    roleValidation(t_i18n)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -78,7 +86,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={roleValidation(t_i18n)}
+        validationSchema={validator}
         onSubmit={() => {}}
       >
         {() => (
@@ -88,6 +96,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
@@ -99,6 +108,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}

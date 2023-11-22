@@ -18,7 +18,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { PositionCreationMutation, PositionCreationMutation$variables } from './__generated__/PositionCreationMutation.graphql';
@@ -86,8 +86,11 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    POSITION_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -174,6 +177,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Position']}
           />
@@ -181,6 +185,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -195,6 +200,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             variant="standard"
             name="latitude"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -203,6 +209,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             variant="standard"
             name="longitude"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -211,6 +218,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             variant="standard"
             name="street_address"
             label={t_i18n('Street address')}
+            required={(mandatoryAttributes.includes('street_address'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -219,26 +227,31 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             variant="standard"
             name="postal_code"
             label={t_i18n('Postal code')}
+            required={(mandatoryAttributes.includes('postal_code'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

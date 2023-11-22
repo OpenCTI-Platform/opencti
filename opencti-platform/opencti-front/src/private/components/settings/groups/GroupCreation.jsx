@@ -13,6 +13,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -32,15 +33,6 @@ const groupMutation = graphql`
   }
 `;
 
-const groupValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  group_confidence_level: Yup.number()
-    .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100'))
-    .required(t('This field is required')),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -51,9 +43,25 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
+const OBJECT_TYPE = 'Group';
+
 const GroupCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    group_confidence_level: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -101,7 +109,7 @@ const GroupCreation = ({ paginationOptions }) => {
             description: '',
             group_confidence_level: 100,
           }}
-          validationSchema={groupValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -111,12 +119,14 @@ const GroupCreation = ({ paginationOptions }) => {
                 component={TextField}
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -125,6 +135,7 @@ const GroupCreation = ({ paginationOptions }) => {
               {hasSetAccess && (
                 <ConfidenceField
                   name="group_confidence_level"
+                  required={(mandatoryAttributes.includes('group_confidence_level'))}
                   label={t_i18n('Max Confidence Level')}
                   entityType="Group"
                   containerStyle={fieldSpacingContainerStyle}

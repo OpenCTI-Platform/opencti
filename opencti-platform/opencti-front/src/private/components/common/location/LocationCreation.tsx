@@ -18,6 +18,7 @@ import {
   LocationCreationMutation$variables,
 } from '@components/common/location/__generated__/LocationCreationMutation.graphql';
 import { FormikConfig } from 'formik/dist/types';
+import { useMandatorySchemaAttributes, useSchemaCreationValidation } from 'src/utils/hooks/useSchemaAttributes';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -84,12 +85,6 @@ const locations = [
   'Position',
 ];
 
-const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  type: Yup.string().required(t('This field is required')),
-});
-
 const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   inputValue,
   onlyAuthors,
@@ -101,6 +96,18 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const LOCATION_TYPE = 'Location';
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    type: Yup.string(),
+  };
+  const validator = useSchemaCreationValidation(
+    LOCATION_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(LOCATION_TYPE);
 
   const [commit] = useMutation<LocationCreationMutation>(locationMutation);
 
@@ -147,7 +154,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
         description: '',
         type: '',
       }}
-      validationSchema={locationValidation(t_i18n)}
+      validationSchema={validator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -162,6 +169,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Organization', 'Individual']}
           />
@@ -169,6 +177,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -179,6 +188,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             variant="standard"
             name="type"
             label={t_i18n('Entity type')}
+            required={(mandatoryAttributes.includes('entity_type'))}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >

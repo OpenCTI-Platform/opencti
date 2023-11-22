@@ -8,6 +8,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { StatusTemplateEdition_statusTemplate$key } from './__generated__/StatusTemplateEdition_statusTemplate.graphql';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const StatusTemplateEditionFragment = graphql`
   fragment StatusTemplateEdition_statusTemplate on StatusTemplate {
@@ -38,10 +39,7 @@ const statusTemplateEditionFocus = graphql`
   }
 `;
 
-const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-});
+const OBJECT_TYPE = 'StatusTemplate';
 
 interface StatusTemplateEditionProps {
   handleClose: () => void;
@@ -54,6 +52,17 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   const data = useFragment(StatusTemplateEditionFragment, statusTemplate);
 
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    color: Yup.string(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const initialValues = pick(['name', 'color'], data);
 
   const handleChangeFocus = (name: string) => {
@@ -75,7 +84,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   };
 
   const handleSubmitField = (name: string, value: string) => {
-    statusTemplateValidation(t_i18n)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -99,7 +108,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={statusTemplateValidation(t_i18n)}
+      validationSchema={validator}
       onSubmit={() => {
       }}
     >
@@ -110,6 +119,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -118,6 +128,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
             component={ColorPickerField}
             name="color"
             label={t_i18n('Color')}
+            required={(mandatoryAttributes.includes('color'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}

@@ -20,6 +20,7 @@ import { Option } from '../../form/ReferenceField';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
@@ -55,9 +56,7 @@ const workbenchFileCreatorMutation = graphql`
   }
 `;
 
-const fileValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-});
+const OBJECT_TYPE = 'Workspace';
 
 interface WorkbenchFileCreatorFormValues {
   name: string;
@@ -88,6 +87,16 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const [commitWorkbench] = useMutation<WorkbenchFileCreatorMutation>(
     workbenchFileCreatorMutation,
   );
@@ -157,7 +166,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={fileValidation(t_i18n)}
+      validationSchema={validator}
       onSubmit={onSubmitCreate}
       onReset={handleCloseCreate}
     >
@@ -176,6 +185,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth
               />
               <Field

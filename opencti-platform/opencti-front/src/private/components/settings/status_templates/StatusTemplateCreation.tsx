@@ -19,6 +19,7 @@ import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
 import { StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -52,10 +53,7 @@ const statusTemplateContextualMutation = graphql`
   }
 `;
 
-const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-});
+const OBJECT_TYPE = 'StatusTemplate';
 
 interface StatusTemplateCreationProps {
   contextual: boolean;
@@ -78,6 +76,16 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    color: Yup.string(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
 
   const onSubmit: FormikConfig<{ name: string; color: string }>['onSubmit'] = (
     values,
@@ -131,7 +139,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
               name: '',
               color: '',
             }}
-            validationSchema={statusTemplateValidation(t_i18n)}
+            validationSchema={validator}
             onSubmit={(values, formikHelpers) => {
               onSubmit(values, formikHelpers);
               onClose();
@@ -145,12 +153,14 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                   variant="standard"
                   name="name"
                   label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
                   fullWidth={true}
                 />
                 <Field
                   component={ColorPickerField}
                   name="color"
                   label={t_i18n('Color')}
+                  required={(mandatoryAttributes.includes('color'))}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -190,7 +200,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
             name: inputValueContextual,
             color: '',
           }}
-          validationSchema={statusTemplateValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onResetContextual}
         >
@@ -209,12 +219,14 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                     variant="standard"
                     name="name"
                     label={t_i18n('Name')}
+                    required={(mandatoryAttributes.includes('name'))}
                     fullWidth={true}
                   />
                   <Field
                     component={ColorPickerField}
                     name="color"
                     label={t_i18n('Color')}
+                    required={(mandatoryAttributes.includes('color'))}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />

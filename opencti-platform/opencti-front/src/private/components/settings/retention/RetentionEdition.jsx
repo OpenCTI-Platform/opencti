@@ -19,6 +19,7 @@ import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } fro
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const styles = (theme) => ({
   header: {
@@ -72,13 +73,22 @@ const RetentionCheckMutation = graphql`
     }
 `;
 
-const retentionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  max_retention: Yup.number().min(1, t('This field must be >= 1')),
-});
+const OBJECT_TYPE = 'RetentionRule';
 
 const RetentionEditionContainer = (props) => {
   const { t, classes, open, handleClose, retentionRule } = props;
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+    max_retention: Yup.number().min(1, t('This field must be >= 1')),
+    filters: Yup.string(),
+  };
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
@@ -135,7 +145,7 @@ const RetentionEditionContainer = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={retentionValidation(t)}
+        validationSchema={validator}
         onSubmit={onSubmit}
       >
         {({ isSubmitting, submitForm, values }) => (
@@ -145,6 +155,7 @@ const RetentionEditionContainer = (props) => {
               variant="standard"
               name="name"
               label={t('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
             />
             <Field
@@ -152,6 +163,7 @@ const RetentionEditionContainer = (props) => {
               variant="standard"
               name="max_retention"
               label={t('Maximum retention days')}
+              required={(mandatoryAttributes.includes('max_retention'))}
               onChange={() => setVerified(false)}
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -178,6 +190,7 @@ const RetentionEditionContainer = (props) => {
               gap: 1 }}
             >
               <Filters
+                required={(mandatoryAttributes.includes('filters'))}
                 availableFilterKeys={[
                   'entity_type',
                   'workflow_id',

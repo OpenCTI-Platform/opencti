@@ -52,6 +52,7 @@ interface ObjectMembersFieldProps {
   style?: Record<string, string | number>;
   helpertext?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -61,6 +62,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   onChange,
   helpertext,
   disabled = false,
+  required,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -102,6 +104,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           helperText: helpertext,
           onFocus: searchMembers,
         }}
+        required={required}
         onChange={(n: string, v: Option[]) => onChange?.(n, v)}
         style={style}
         noOptionsText={t_i18n('No available options')}

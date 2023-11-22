@@ -21,7 +21,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { Option } from '../../common/form/ReferenceField';
@@ -63,6 +63,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
 }));
+
+const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
 
 const StixSightingRelationshipEditionOverviewFragment = graphql`
   fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
@@ -205,6 +207,9 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   const stixSightingRelationshipType = 'stix-sighting-relationship';
 
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    STIX_SIGHTING_TYPE,
+  );
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixSightingRelationshipType);
 
@@ -213,23 +218,19 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   const basicShape = {
     attribute_count: Yup.number()
       .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number'))
-      .required(t_i18n('This field is required')),
+      .integer(t_i18n('The value must be a number')),
     confidence: Yup.number()
       .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number'))
-      .required(t_i18n('This field is required')),
+      .integer(t_i18n('The value must be a number')),
     first_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const stixSightingRelationshipValidator = useSchemaEditionValidation('stix-sighting-relationship', basicShape);
+  const stixSightingRelationshipValidator = useSchemaEditionValidation(STIX_SIGHTING_TYPE, basicShape);
 
   const queries = {
     fieldPatch: stixSightingRelationshipMutationFieldPatch,
@@ -313,6 +314,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 variant="standard"
                 name="attribute_count"
                 label={t_i18n('Count')}
+                required={(mandatoryAttributes.includes('attribute_count'))}
                 fullWidth={true}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
@@ -337,6 +339,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onChange={editor.changeField}
                 textFieldProps={{
                   label: t_i18n('First seen'),
+                  required: (mandatoryAttributes.includes('first_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -353,6 +356,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onChange={editor.changeField}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
+                  required: (mandatoryAttributes.includes('last_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -366,6 +370,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -392,6 +397,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               )}
               <CreatedByField
                 name="createdBy"
+                required={(mandatoryAttributes.includes('createdBy'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
@@ -402,6 +408,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               />
               <ObjectMarkingField
                 name="objectMarking"
+                required={(mandatoryAttributes.includes('objectMarking'))}
                 style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldname="objectMarking" />

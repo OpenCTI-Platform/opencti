@@ -12,6 +12,7 @@ const MarkdownField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
+    required,
     onFocus,
     onSubmit,
     onSelect,
@@ -56,7 +57,9 @@ const MarkdownField = (props) => {
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel shrink={true}>
+      <InputLabel
+        required={required}
+      >
         {label}
       </InputLabel>
       <ReactMde

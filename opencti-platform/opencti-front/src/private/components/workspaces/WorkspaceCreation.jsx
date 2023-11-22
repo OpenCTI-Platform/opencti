@@ -17,6 +17,7 @@ import TextField from '../../../components/TextField';
 import MarkdownField from '../../../components/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -56,14 +57,21 @@ export const importMutation = graphql`
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const OBJECT_TYPE = 'Workspace';
 
 const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
   const inputRef = useRef();
   const [commitImportMutation] = useMutation(importMutation);
   const [commitCreationMutation] = useMutation(workspaceMutation);
@@ -146,7 +154,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
               name: '',
               description: '',
             }}
-            validationSchema={workspaceValidation(t_i18n)}
+            validationSchema={validator}
             onSubmit={onSubmit}
             onReset={onClose}
           >
@@ -156,12 +164,14 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   component={TextField}
                   name="name"
                   label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
                   fullWidth={true}
                 />
                 <Field
                   component={MarkdownField}
                   name="description"
                   label={t_i18n('Description')}
+                  required={(mandatoryAttributes.includes('description'))}
                   fullWidth={true}
                   multiline={true}
                   rows="4"

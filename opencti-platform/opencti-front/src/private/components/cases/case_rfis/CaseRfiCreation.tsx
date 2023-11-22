@@ -14,7 +14,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -100,8 +100,11 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const { t_i18n } = useFormatter();
   const history = useHistory();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CASE_RFI_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2),
     description: Yup.string().nullable(),
   };
   const caseRfiValidator = useSchemaCreationValidation(
@@ -188,6 +191,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Case-Rfi']}
             askAi={true}
@@ -197,6 +201,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             name="created"
             textFieldProps={{
               label: t_i18n('Request For Information Date'),
+              required: (mandatoryAttributes.includes('created')),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -206,6 +211,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             label={t_i18n('Request for information type')}
             type="request_for_information_types_ov"
             name="information_types"
+            required={(mandatoryAttributes.includes('information_types'))}
             multiple
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -214,6 +220,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             label={t_i18n('Severity')}
             type="case_severity_ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
@@ -221,6 +228,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             label={t_i18n('Priority')}
             type="case_priority_ov"
             name="priority"
+            required={(mandatoryAttributes.includes('priority'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
@@ -236,6 +244,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -246,6 +255,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             askAi={true}
             style={{
@@ -256,29 +266,35 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

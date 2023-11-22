@@ -16,7 +16,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -81,16 +81,20 @@ const observedDataMutationRelationDelete = graphql`
   }
 `;
 
+const OBSERVED_DATA_TYPE = 'Observed-Data';
+
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    OBSERVED_DATA_TYPE,
+  );
   const basicShape = {
     first_observed: Yup.date()
-      .required(t_i18n('This field is required'))
+
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
-      .required(t_i18n('This field is required'))
+
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     number_observed: Yup.number(),
     confidence: Yup.number(),
@@ -98,7 +102,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     x_opencti_workflow_id: Yup.object(),
   };
   const observedDataValidator = useSchemaEditionValidation(
-    'Observed-Data',
+    OBSERVED_DATA_TYPE,
     basicShape,
     ['objects'],
   );
@@ -212,6 +216,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onSubmit={handleSubmitField}
               textFieldProps={{
                 label: t_i18n('First observed'),
+                required: (mandatoryAttributes.includes('first_observed')),
                 variant: 'standard',
                 fullWidth: true,
                 helperText: (
@@ -229,6 +234,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onSubmit={handleSubmitField}
               textFieldProps={{
                 label: t_i18n('Last observed'),
+                required: (mandatoryAttributes.includes('last_observed')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -245,6 +251,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               variant="standard"
               name="number_observed"
               label={t_i18n('Number observed')}
+              required={(mandatoryAttributes.includes('number_observed'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
@@ -282,6 +289,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
@@ -291,6 +299,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus
