@@ -73,6 +73,7 @@ const rootPrivateQuery = graphql`
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_theme
+      platform_whitemark
       platform_session_idle_timeout
       platform_session_timeout
       platform_feature_flags {

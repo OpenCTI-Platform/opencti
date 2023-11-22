@@ -13,12 +13,11 @@ const ColorPickerField = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const id = open ? 'color-popover' : undefined;
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -52,16 +51,17 @@ const ColorPickerField = (props) => {
     },
     [setTouched, onSubmit, name],
   );
-  const handleChange = (color) => {
+  const handleChange = () => {
     setTouched(true);
-    setFieldValue(name, color && color.hex ? color.hex : '');
+    setAnchorEl(null);
     if (typeof onChange === 'function') {
-      onChange(name, color && color.hex ? color.hex : '');
+      onChange(name, meta.value || '');
     }
     if (typeof onSubmit === 'function') {
-      onSubmit(name, color && color.hex ? color.hex : '');
+      onSubmit(name, meta.value || '');
     }
   };
+
   return (
     <>
       <MuiTextField
@@ -86,7 +86,7 @@ const ColorPickerField = (props) => {
         id={id}
         open={open}
         anchorEl={anchorEl}
-        onClose={handleClose}
+        onClose={handleChange}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'left',
@@ -94,7 +94,7 @@ const ColorPickerField = (props) => {
       >
         <SketchPicker
           color={meta.value || ''}
-          onChangeComplete={(color) => handleChange(color)}
+          onChangeComplete={(color) => setFieldValue(name, color.hex)}
         />
       </Popover>
     </>

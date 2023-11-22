@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent, useEffect } from 'react';
-import EnterpriseEdition from '@components/common/EnterpriseEdition';
 import Grid from '@mui/material/Grid';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import FileIndexingRequirements
@@ -25,6 +24,7 @@ import FileIndexingMonitoring
 import {
   FileIndexingConfigurationQuery,
 } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
@@ -79,7 +79,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   return (
     <div>
       {!isEnterpriseEdition && (
-        <EnterpriseEdition />
+        <EnterpriseEdition feature={'File indexing'} />
       )}
       <FileIndexingRequirements
         isModuleWarning={isModuleWarning}

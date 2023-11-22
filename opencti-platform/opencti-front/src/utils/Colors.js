@@ -1,6 +1,8 @@
 /* eslint-disable no-bitwise */
 import invert from 'invert-color';
 
+export const EE_COLOR = '#9931FB';
+
 export const stringToColour = (str, reversed = false) => {
   if (!str) {
     return '#5d4037';
@@ -388,6 +390,11 @@ export const generateGreenToRedColors = (size) => {
   const fact = 100 / size;
   const ns = Array.from(Array(size).keys()).map((idx) => idx * fact);
   return ns.map((n) => generateGreenToRedColor(n));
+};
+
+export const parseRGBtoHex = (rgb) => {
+  const [r, g, b] = rgb.replace(/[^\d,]/g, '').split(',');
+  return rgbToHex(parseInt(r, 10), parseInt(g, 10), parseInt(b, 10));
 };
 
 const adjustColor = (color, amount = 1) => {

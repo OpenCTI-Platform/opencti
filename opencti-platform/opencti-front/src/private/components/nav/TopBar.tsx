@@ -113,7 +113,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     paddingTop: theme.spacing(0.2),
   },
   logoContainer: {
-    margin: '2px 0 0 -10px',
+    margin: '2px 0 0 -8px',
   },
   logo: {
     cursor: 'pointer',

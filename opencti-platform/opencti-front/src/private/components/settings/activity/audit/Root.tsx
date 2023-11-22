@@ -15,13 +15,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import Audit from './Audit';
-import EnterpriseEdition from '../../../common/EnterpriseEdition';
+import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../../../components/i18n';
 
 const Root = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { t } = useFormatter();
+
   if (!isEnterpriseEdition) {
-    return <EnterpriseEdition />;
+    return <EnterpriseEdition feature={t('Activity')} />;
   }
   return <Audit />;
 };

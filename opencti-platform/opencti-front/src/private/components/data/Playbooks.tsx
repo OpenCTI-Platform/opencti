@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import makeStyles from '@mui/styles/makeStyles';
-import EnterpriseEdition from '@components/common/EnterpriseEdition';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
@@ -33,6 +33,7 @@ import {
 import { PlaybookLineDummy } from './playbooks/PlaybookLine';
 import { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'view-playbooks';
 
@@ -45,7 +46,10 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
+
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { t } = useFormatter();
+
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
     {
@@ -126,7 +130,7 @@ const Playbooks: FunctionComponent = () => {
           </Security>
         </>
       ) : (
-        <EnterpriseEdition />
+        <EnterpriseEdition feature={t('Playbook')} />
       )}
     </div>
   );

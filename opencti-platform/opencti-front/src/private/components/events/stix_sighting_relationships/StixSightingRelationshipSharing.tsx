@@ -7,21 +7,19 @@ import Chip from '@mui/material/Chip';
 import { AccountBalanceOutlined, ShareOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import type { FormikHelpers } from 'formik/dist/types';
-import ToggleButton from '@mui/material/ToggleButton';
 import { Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { StixSightingRelationshipSharingQuery$data } from './__generated__/StixSightingRelationshipSharingQuery.graphql';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // region types
@@ -34,16 +32,10 @@ interface ContainerHeaderSharedProps {
 interface OrganizationForm {
   objectOrganization: { value: string; label: string };
 }
+
 // endregion
 
 const useStyles = makeStyles(() => ({
-  organizationInHeader: {
-    margin: '4px 7px 0 0',
-    float: 'left',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-  },
   organization: {
     margin: '0 7px 0 0',
     float: 'left',
@@ -110,18 +102,13 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipSharing: FunctionComponent<
-ContainerHeaderSharedProps
-> = ({ elementId, variant, disabled }) => {
+const StixSightingRelationshipSharing: FunctionComponent<ContainerHeaderSharedProps> = ({ elementId, disabled }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   // If user not an organization organizer, return empty div
-  if (!userIsOrganizationEditor && variant === 'header') {
-    return <div style={{ display: 'inline-block' }} />;
-  }
   if (!userIsOrganizationEditor) {
     return <div style={{ marginTop: -20 }} />;
   }
@@ -165,88 +152,23 @@ ContainerHeaderSharedProps
     stixSightingRelationship,
   }: StixSightingRelationshipSharingQuery$data) => {
     const edges = stixSightingRelationship?.objectOrganization?.edges ?? [];
-    if (variant === 'header') {
-      return (
-        <React.Fragment>
-          {edges.map((edge) => (
-            <Tooltip key={edge.node.id} title={edge.node.name}>
-              <Chip
-                icon={<AccountBalanceOutlined />}
-                classes={{ root: classes.organizationInHeader }}
-                color="warning"
-                variant="outlined"
-                label={truncate(edge.node.name, 15)}
-                onDelete={() => removeOrganization(edge.node.id)}
-              />
-            </Tooltip>
-          ))}
-          { isEnterpriseEdition ? <Tooltip title={t('Share with an organization')}>
-            <ToggleButton onClick={handleOpenSharing} value="shared" size="small">
-              <ShareOutlined fontSize="small" color="warning" />
-            </ToggleButton>
-          </Tooltip> : <Tooltip title={t('You need to activate OpenCTI enterprise edition to use organization sharing.')}>
-            <ToggleButton value="shared" size="small">
-              <ShareOutlined fontSize="small" color="warning" />
-            </ToggleButton>
-          </Tooltip>}
-          <Formik
-            initialValues={{ objectOrganization: { value: '', label: '' } }}
-            onSubmit={onSubmitOrganizations}
-            onReset={handleCloseSharing}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={displaySharing}
-                onClose={() => handleReset()}
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Share with an organization')}</DialogTitle>
-                <DialogContent style={{ overflowY: 'hidden' }}>
-                  <Form>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ width: '100%' }}
-                      label={t('Organization')}
-                      multiple={false}
-                    />
-                  </Form>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Close')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    color="secondary"
-                  >
-                    {t('Share')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            )}
-          </Formik>
-        </React.Fragment>
-      );
-    }
     return (
       <React.Fragment>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Organizations sharing')}
         </Typography>
-        <Tooltip title={t('Share with an organization')}>
+        <EETooltip title='Share with an organization'>
           <IconButton
-            color="warning"
+            color={isEnterpriseEdition ? 'warning' : 'ee'}
             aria-label="Label"
-            onClick={handleOpenSharing}
+            onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             size="large"
             disabled={disabled}
           >
             <ShareOutlined fontSize="small" />
           </IconButton>
-        </Tooltip>
+        </EETooltip>
         <div className="clearfix" />
         {edges.map((edge) => (
           <Tooltip key={edge.node.id} title={edge.node.name}>

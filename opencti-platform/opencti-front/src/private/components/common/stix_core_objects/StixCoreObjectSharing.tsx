@@ -14,6 +14,7 @@ import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,6 +24,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { Theme } from '../../../../components/Theme';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -33,9 +35,10 @@ interface ContainerHeaderSharedProps {
 interface OrganizationForm {
   objectOrganization: { value: string; label: string };
 }
+
 // endregion
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   organizationInHeader: {
     margin: '4px 7px 0 0',
     float: 'left',
@@ -49,6 +52,9 @@ const useStyles = makeStyles(() => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 28,
+  },
+  sharedButtonEE: {
+    borderColor: theme.palette.ee.main,
   },
 }));
 
@@ -179,15 +185,17 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          { isEnterpriseEdition ? <Tooltip title={t('Share with an organization')}>
-            <ToggleButton onClick={handleOpenSharing} value="shared" size="small" style={{ marginRight: 3 }}>
-              <ShareOutlined fontSize="small" color="warning" />
+          <EETooltip title={t('Share with an organization')}>
+            <ToggleButton
+              value="shared"
+              onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
+              size="small"
+              style={{ marginRight: 3 }}
+              classes={{ root: isEnterpriseEdition ? undefined : classes.sharedButtonEE }}
+            >
+              <ShareOutlined fontSize="small" color={isEnterpriseEdition ? 'warning' : 'ee'} />
             </ToggleButton>
-          </Tooltip> : <Tooltip title={t('You need to activate OpenCTI enterprise edition to use organization sharing.')}>
-            <ToggleButton value="shared" size="small" style={{ marginRight: 3 }}>
-              <ShareOutlined fontSize="small" color="warning" />
-            </ToggleButton>
-          </Tooltip>}
+          </EETooltip>
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}
@@ -234,17 +242,17 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Organizations sharing')}
         </Typography>
-        <Tooltip title={t('Share with an organization')}>
+        <EETooltip title={t('Share with an organization')}>
           <IconButton
-            color="secondary"
+            color={isEnterpriseEdition ? 'warning' : 'ee'}
             aria-label="Label"
-            onClick={handleOpenSharing}
+            onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             size="large"
           >
-            <ShareOutlined fontSize="small" color="warning" />
+            <ShareOutlined fontSize="small" color={isEnterpriseEdition ? 'warning' : 'ee'} />
           </IconButton>
-        </Tooltip>
+        </EETooltip>
         <div className="clearfix" />
         {edges.map((edge) => (
           <Tooltip key={edge.node.id} title={edge.node.name}>

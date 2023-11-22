@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { makeStyles, styled, useTheme } from '@mui/styles';
+import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,39 +9,19 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
-import {
-  AssignmentOutlined,
-  CasesOutlined,
-  ChevronLeft,
-  ChevronRight,
-  ConstructionOutlined,
-  DashboardOutlined,
-  LayersOutlined,
-} from '@mui/icons-material';
-import {
-  Binoculars,
-  CogOutline,
-  Database,
-  FlaskOutline,
-  FolderTableOutline,
-  Timetable,
-  GlobeModel,
-} from 'mdi-material-ui';
+import { AssignmentOutlined, CasesOutlined, ChevronLeft, ChevronRight, ConstructionOutlined, DashboardOutlined, LayersOutlined } from '@mui/icons-material';
+import { Binoculars, CogOutline, Database, FlaskOutline, FolderTableOutline, GlobeModel, Timetable } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import useGranted, {
-  VIRTUAL_ORGANIZATION_ADMIN,
-  KNOWLEDGE,
-  MODULES,
-  SETTINGS,
-  TAXIIAPI_SETCOLLECTIONS,
-} from '../../../utils/hooks/useGranted';
-import { MESSAGING$ } from '../../../relay/environment';
+import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import logo_filigran from '../../../static/images/logo_filigran.png';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
     width: 55,
     minHeight: '100vh',
@@ -84,6 +64,27 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     bottom: 10,
   },
+  menuLogoOpen: {
+    width: 180,
+    height: 35,
+    fontWeight: 500,
+    fontSize: 14,
+    position: 'fixed',
+    left: 0,
+    bottom: 45,
+  },
+  menuLogo: {
+    width: 55,
+    height: 35,
+    fontWeight: 500,
+    fontSize: 14,
+    position: 'fixed',
+    left: 0,
+    bottom: 45,
+  },
+  menuItemSmallText: {
+    padding: '1px 0 0 20px',
+  },
 }));
 
 const StyledTooltip = styled(({ className, ...props }) => (
@@ -100,15 +101,21 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const LeftBar = () => {
   const theme = useTheme();
   const location = useLocation();
-  const classes = useStyles();
   const { t } = useFormatter();
+
+  const { settings: { platform_whitemark } } = useAuth();
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToModules = useGranted([MODULES]);
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
+
+  const classes = useStyles({ navOpen });
   const handleToggle = () => {
     localStorage.setItem('navOpen', String(!navOpen));
     setNavOpen(!navOpen);
@@ -502,6 +509,32 @@ const LeftBar = () => {
           </Security>
         </MenuList>
       </Security>
+      {(!platform_whitemark || !isEnterpriseEdition) && (
+        <MenuItem
+          dense={true}
+          style={{ marginBottom: bannerHeightNumber }}
+          classes={{
+            root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
+          }}
+          onClick={() => window.open('https://filigran.io/', '_blank')}
+        >
+          <Tooltip title={'By Filigran'}>
+            <ListItemIcon style={{ minWidth: 20 }}>
+              <img
+                src={fileUri(logo_filigran)}
+                alt="logo"
+                width={20}
+              />
+            </ListItemIcon>
+          </Tooltip>
+          {navOpen && (
+            <ListItemText
+              classes={{ primary: classes.menuItemSmallText }}
+              primary={'by Filigran'}
+            />
+          )}
+        </MenuItem>
+      )}
       <MenuItem
         dense={true}
         style={{ marginBottom: bannerHeightNumber }}

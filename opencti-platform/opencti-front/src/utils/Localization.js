@@ -2290,6 +2290,8 @@ const i18n = {
       'Do you want to delete this CSV mapper ?':
         '¿Desea eliminar este mapeador CSV?',
       'Attribute mapping configuration': 'Configuración de mapeo de atributos',
+      'I would like to use a EE feature ...': 'Me gustaría utilizar una función EE ({feature}) pero no tengo EE activado.\nMe gustaría hablar con usted sobre la activación de EE.',
+      'Organization sharing': 'Compartir organización',
     },
     'fr-fr': {
       // Titles
@@ -4584,6 +4586,8 @@ const i18n = {
       'Do you want to delete this CSV mapper ?':
         'Voulez-vous supprimer ce mappage CSV ?',
       'Attribute mapping configuration': "Configuration de mappage d'attributs",
+      'I would like to use a EE feature ...': "J'aimerais utiliser une fonctionnalité ({feature}) sous Enterprise Edition qui n'est pas activée.\nJ'aimerais savoir si il est possible d'activer EE.",
+      'Organization sharing': 'Partage dans les organisations',
     },
     'ja-jp': {
       // Titles
@@ -6792,6 +6796,8 @@ const i18n = {
       'Do you want to delete this CSV mapper ?':
         'このCSVマッパーを削除しますか？',
       'Attribute mapping configuration': '属性マッピングの設定',
+      'I would like to use a EE feature ...': 'EE 機能 ({feature}) を使用したいのですが、EE がアクティブ化されていません。\nEEの有効化について相談したいと思います。',
+      'Organization sharing': '組織の共有',
     },
     'zh-cn': {
       // Titles
@@ -8891,6 +8897,8 @@ const i18n = {
       'There are not any configurations set yet': '目前尚未设置任何配置',
       'Do you want to delete this CSV mapper ?': '您要删除此CSV映射吗？',
       'Attribute mapping configuration': '属性映射配置',
+      'I would like to use a EE feature ...': '我想使用 EE 功能 ({feature})，但我沒有啟動 EE。\n我想和您討論一下啟動EE的問題。',
+      'Organization sharing': '組織共享',
     },
     'en-us': {
       gt: 'Greater than',
@@ -9331,6 +9339,7 @@ const i18n = {
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
+      'I would like to use a EE feature ...': "I would like to use a EE feature ({feature}) but I don't have EE activated.\nI would like to discuss with you about activating EE.",
     },
   },
 };

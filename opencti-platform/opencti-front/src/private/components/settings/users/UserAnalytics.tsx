@@ -17,7 +17,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import EnterpriseEdition from '@components/common/EnterpriseEdition';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { UserAnalytics_user$key } from '@components/settings/users/__generated__/UserAnalytics_user.graphql';
 import AuditsMultiVerticalBars from '@components/common/audits/AuditsMultiVerticalBars';
 import AuditsMultiLineChart from '@components/common/audits/AuditsMultiLineChart';
@@ -52,7 +52,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
-    return <EnterpriseEdition />;
+    return <EnterpriseEdition feature={'User activity'} />;
   }
   return (
     <>

@@ -4,6 +4,7 @@ import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/styles';
 import inject18n from './i18n';
 
 const styles = () => ({
@@ -27,7 +28,7 @@ const styles = () => ({
   },
 });
 
-const inlineStyles = {
+const computeInlineStyles = (theme) => ({
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
@@ -40,11 +41,17 @@ const inlineStyles = {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
     color: '#5c7bf5',
   },
-};
+  ee: {
+    backgroundColor: theme.palette.ee.background,
+    color: theme.palette.ee.main,
+  },
+});
 
 const ItemBoolean = (props) => {
   const { classes, label, neutralLabel, status, variant, t, reverse } = props;
+  const theme = useTheme();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  const inlineStyles = computeInlineStyles(theme);
   if (status === true) {
     return (
       <Chip
@@ -60,6 +67,15 @@ const ItemBoolean = (props) => {
         classes={{ root: style }}
         style={inlineStyles.blue}
         label={neutralLabel || t('Not applicable')}
+      />
+    );
+  }
+  if (status === 'ee') {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.ee}
+        label={neutralLabel || t('EE')}
       />
     );
   }
@@ -83,7 +99,7 @@ const ItemBoolean = (props) => {
 
 ItemBoolean.propTypes = {
   classes: PropTypes.object.isRequired,
-  status: PropTypes.bool,
+  status: PropTypes.oneOf([PropTypes.bool, PropTypes.string]),
   label: PropTypes.string,
   neutralLabel: PropTypes.string,
   variant: PropTypes.string,

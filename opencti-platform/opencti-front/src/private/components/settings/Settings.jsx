@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -11,17 +11,10 @@ import * as Yup from 'yup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { RocketLaunchOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import { makeStyles } from '@mui/styles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Alert from '@mui/material/Alert';
+import Switch from '@mui/material/Switch';
+import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
@@ -29,7 +22,6 @@ import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import ColorPickerField from '../../../components/ColorPickerField';
-import { now } from '../../../utils/Time';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -37,7 +29,7 @@ import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: '0 0 60px 0',
   },
@@ -52,7 +44,13 @@ const useStyles = makeStyles({
     float: 'right',
     marginTop: -30,
   },
-});
+  listItemTextEE: {
+    color: theme.palette.ee.main,
+  },
+  dividerEE: {
+    borderColor: theme.palette.ee.main,
+  },
+}));
 
 const settingsQuery = graphql`
   query SettingsQuery {
@@ -63,6 +61,7 @@ const settingsQuery = graphql`
       platform_email
       platform_theme
       platform_language
+      platform_whitemark
       platform_login_message
       platform_banner_text
       platform_banner_level
@@ -143,6 +142,7 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_collapsed
         platform_theme_light_logo_login
         platform_language
+        platform_whitemark
         enterprise_edition
         platform_login_message
         platform_banner_text
@@ -189,6 +189,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_collapsed: Yup.string().nullable(),
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
+  platform_whitemark: Yup.string().nullable(),
   enterprise_edition: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
@@ -199,8 +200,6 @@ const settingsValidation = (t) => Yup.object().shape({
 const Settings = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
-  const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -294,10 +293,6 @@ const Settings = () => {
             const isEnterpriseEdition = isNotEmptyField(
               settings.enterprise_edition,
             );
-            const enableEnterpriseEdition = () => {
-              handleSubmitField(id, 'enterprise_edition', now());
-              setOpenEnterpriseEditionConsent(false);
-            };
             return (
               <>
                 <Grid container={true} spacing={3}>
@@ -311,7 +306,8 @@ const Settings = () => {
                       style={{ marginTop: 15 }}
                     >
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -429,16 +425,7 @@ const Settings = () => {
                       {t('OpenCTI platform')}
                     </Typography>
                     {!isEnterpriseEdition ? (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => setOpenEnterpriseEditionConsent(true)}
-                        startIcon={<RocketLaunchOutlined />}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Enable Enterprise Edition')}
-                      </Button>
+                      <EnterpriseEditionButton inLine />
                     ) : (
                       <Button
                         size="small"
@@ -454,7 +441,8 @@ const Settings = () => {
                     <div className="clearfix" />
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -522,104 +510,25 @@ const Settings = () => {
                                   fullWidth={true}
                                 />
                               </ListItem>
+                              <ListItem divider={true} classes={{ divider: !isEnterpriseEdition ? classes.dividerEE : undefined }}>
+                                <ListItemText
+                                  primary={t('Enable whitemark platform')}
+                                  classes={{ root: !isEnterpriseEdition ? classes.listItemTextEE : undefined }}
+                                />
+                                <Field
+                                  component={Switch}
+                                  variant="standard"
+                                  name="platform_whitemark"
+                                  fullWidth={true}
+                                  disabled={!isEnterpriseEdition}
+                                  checked={settings.platform_whitemark && isEnterpriseEdition}
+                                  onChange={(event, value) => handleSubmitField(id, 'platform_whitemark', value)}
+                                />
+                              </ListItem>
                             </List>
                           </Form>
                         )}
                       </Formik>
-                      <Dialog
-                        PaperProps={{ elevation: 1 }}
-                        open={openEnterpriseEditionConsent}
-                        onClose={() => setOpenEnterpriseEditionConsent(false)}
-                        fullWidth={true}
-                        maxWidth="md"
-                      >
-                        <DialogTitle>
-                          {t(
-                            'OpenCTI Enterprise Edition (EE) license agreement',
-                          )}
-                        </DialogTitle>
-                        <DialogContent>
-                          <Alert severity="info" style={{ marginBottom: 15 }}>
-                            {t(
-                              'To learn more about OpenCTI Enterprise Edition, please read the',
-                            )}{' '}
-                            <a href="https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c">
-                              {t('associated blog post')}.
-                            </a>
-                          </Alert>
-                          <span>
-                            {t(
-                              'By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:',
-                            )}
-                          </span>
-                          <ul>
-                            <li>
-                              {t(
-                                'OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.',
-                              )}
-                            </li>
-                            <li>
-                              {t(
-                                'OpenCTI EE is included for all Filigran SaaS customers without additional fee.',
-                              )}
-                            </li>
-                            <li>
-                              {t(
-                                'For all other usages, you (and your organization) should have entered in a',
-                              )}{' '}
-                              <a
-                                href="https://filigran.io/offering/subscribe"
-                                target="_blank"
-                              >
-                                {t('Filigran Enterprise agreement')}
-                              </a>
-                              .
-                            </li>
-                          </ul>
-                          <FormGroup>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={enterpriseEditionConsent}
-                                  onChange={(event) => setEnterpriseEditionConsent(
-                                    event.target.checked,
-                                  )
-                                  }
-                                />
-                              }
-                              label={
-                                <>
-                                  <span>
-                                    {t('I have read and agree to the')}
-                                  </span>{' '}
-                                  <a
-                                    href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE"
-                                    target="_blank"
-                                  >
-                                    {t('OpenCTI EE license terms')}
-                                  </a>
-                                  .
-                                </>
-                              }
-                            />
-                          </FormGroup>
-                        </DialogContent>
-                        <DialogActions>
-                          <Button
-                            onClick={() => setOpenEnterpriseEditionConsent(false)
-                            }
-                          >
-                            {t('Cancel')}
-                          </Button>
-                          <Button
-                            color="secondary"
-                            onClick={enableEnterpriseEdition}
-                            disabled={!enterpriseEditionConsent}
-                          >
-                            {t('Enable')}
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
                     </Paper>
                   </Grid>
                   <Grid item={true} xs={8} style={{ marginTop: 30 }}>
@@ -639,7 +548,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -845,7 +755,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -1051,18 +962,25 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
-                        {modules.map((module) => (
-                          <ListItem key={module.id} divider={true}>
-                            <ListItemText primary={t(module.id)} />
-                            <ItemBoolean
-                              variant="inList"
-                              label={
-                                module.enable ? t('Enabled') : t('Disabled')
-                              }
-                              status={module.enable}
-                            />
-                          </ListItem>
-                        ))}
+                        {modules.map((module) => {
+                          const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER'].includes(module.id);
+                          let status = module.enable;
+                          if (!isEnterpriseEdition && isEeModule) {
+                            status = 'ee';
+                          }
+                          return (
+                            <ListItem key={module.id} divider={true}>
+                              <ListItemText primary={t(module.id)} />
+                              <ItemBoolean
+                                variant="inList"
+                                label={
+                                  module.enable ? t('Enabled') : t('Disabled')
+                                }
+                                status={status}
+                              />
+                            </ListItem>
+                          );
+                        })}
                         {dependencies.map((dep) => (
                           <ListItem key={dep.name} divider={true}>
                             <ListItemText primary={t(dep.name)} />

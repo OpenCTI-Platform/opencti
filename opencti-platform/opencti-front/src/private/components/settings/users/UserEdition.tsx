@@ -5,6 +5,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import UserEditionOrganizationsAdmin from '@components/settings/users/UserEditionOrganizationsAdmin';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
@@ -50,7 +51,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
             <Tab label={t('Overview')} />
             <Tab disabled={external} label={t('Password')} />
             <Tab label={t('Groups')} />
-            {hasSetAccess && <Tab label={t('Organizations admin')} />}
+            {hasSetAccess && <Tab label={<div>{t('Organizations admin')}<EEChip /></div>} />}
           </Tabs>
         </Box>
         {currentTab === 0 && (

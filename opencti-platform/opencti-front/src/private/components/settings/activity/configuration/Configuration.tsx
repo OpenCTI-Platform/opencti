@@ -46,7 +46,7 @@ import GroupField from '../../../common/form/GroupField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
 import { Option } from '../../../common/form/ReferenceField';
 import { isEmptyField } from '../../../../../utils/utils';
-import EnterpriseEdition from '../../../common/EnterpriseEdition';
+import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 
 const useStyles = makeStyles<Theme>(() => ({
   alert: {
@@ -124,7 +124,7 @@ ConfigurationComponentProps
     };
   };
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition />;
+    return <EnterpriseEdition feature={t('Activity')} />;
   }
   return (
     <div className={classes.container}>

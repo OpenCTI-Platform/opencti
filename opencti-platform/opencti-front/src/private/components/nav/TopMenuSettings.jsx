@@ -4,12 +4,9 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  VIRTUAL_ORGANIZATION_ADMIN, SETTINGS,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
+import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import EEChip from '../common/entreprise_edition/EEChip';
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -25,6 +22,14 @@ const TopMenuSettings = () => {
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
+  const isEnterpriseEdition = useEnterpriseEdition();
+
+  let buttonVariant = 'outlined';
+  let buttonColor = 'ee';
+  if (isEnterpriseEdition) {
+    buttonVariant = 'contained';
+    buttonColor = 'secondary';
+  }
 
   return (
     <div>
@@ -117,17 +122,20 @@ const TopMenuSettings = () => {
           to="/dashboard/settings/activity"
           variant={
             location.pathname.includes('/dashboard/settings/activity')
-              ? 'contained'
+              ? buttonVariant
               : 'text'
           }
           color={
             location.pathname.includes('/dashboard/settings/activity')
-              ? 'secondary'
+              ? buttonColor
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
-          {t('Activity')}
+          <>
+            {t('Activity')}
+            <EEChip feature={t('Activity')} clickable={false} />
+          </>
         </Button>
       </Security>
       <Security needs={[SETTINGS]}>
@@ -137,17 +145,18 @@ const TopMenuSettings = () => {
           to="/dashboard/settings/file_indexing"
           variant={
             location.pathname.includes('/dashboard/settings/file_indexing')
-              ? 'contained'
+              ? buttonVariant
               : 'text'
           }
           color={
             location.pathname.includes('/dashboard/settings/file_indexing')
-              ? 'secondary'
+              ? buttonColor
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
           {t('File indexing')}
+          <EEChip feature={t('File indexing')} clickable={false} />
         </Button>
       </Security>
     </div>
