@@ -195,7 +195,7 @@ export const findFilterIndexFromKey = (filters: Filter[], key: string, operator?
   return null;
 };
 
-export const filtersWithEntityType = (filters: FilterGroup | undefined, type: string | string[]) => {
+export const filtersWithEntityType = (filters: FilterGroup | undefined, type: string | string[]): FilterGroup => {
   const entityTypeFilter : Filter = {
     key: 'entity_type',
     values: Array.isArray(type) ? type : [type],
@@ -355,7 +355,10 @@ export const deserializeDashboardManifestForFrontend = (manifestStr: string) : D
 //----------------------------------------------------------------------------------------------------------------------
 
 // forcefully add a filter into a filterGroup, no check done
-export const addFilter = (filters: FilterGroup, key: string, value: string | string[], operator = 'eq', mode = 'or') => {
+export const addFilter = (filters: FilterGroup | undefined, key: string, value: string | string[], operator = 'eq', mode = 'or'): FilterGroup | undefined => {
+  if (!filters) {
+    return undefined;
+  }
   return {
     mode: filters?.mode ?? 'and',
     filters: (filters?.filters ?? []).concat([
@@ -371,7 +374,7 @@ export const addFilter = (filters: FilterGroup, key: string, value: string | str
 };
 
 // forcefully remove a filter into a filterGroup, no check done
-export const removeFilter = (filters: FilterGroup, key: string | string[]) => {
+export const removeFilter = (filters: FilterGroup | undefined, key: string | string[]) => {
   if (!filters) {
     return undefined;
   }
@@ -417,14 +420,13 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined | null
       operator: op,
       mode: 'or',
     };
-    const newBaseFilters = {
+    return {
       ...filters,
       filters: [
         ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
         newFilterElement, // add new filter
       ],
     };
-    return newBaseFilters;
   }
 
   // new filter key, add it ot the list
@@ -434,7 +436,7 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined | null
     operator: op ?? 'eq',
     mode: 'or',
   };
-  const newBaseFilters = filters ? {
+  return filters ? {
     ...filters,
     filters: [...filters.filters, newFilterElement], // add new filter
   } : {
@@ -442,7 +444,6 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined | null
     filterGroups: [],
     filters: [newFilterElement],
   };
-  return newBaseFilters;
 };
 
 // remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
@@ -460,7 +461,7 @@ export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | n
 };
 
 // switch the mode inside a specific filter
-export const filtersAfterSwitchLocalMode = (filters: FilterGroup | null, localFilter: Filter) => {
+export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | null, localFilter: Filter) => {
   if (filters) {
     const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
     if (filterIndex !== null) {

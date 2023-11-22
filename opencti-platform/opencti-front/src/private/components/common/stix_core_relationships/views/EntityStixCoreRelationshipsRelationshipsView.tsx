@@ -154,7 +154,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
   } as object;
 
-  let backgroundTaskFilters: FilterGroup = filtersWithEntityType(
+  let backgroundTaskFilters: FilterGroup | undefined = filtersWithEntityType(
     filters,
     selectedRelationshipTypes.length > 0
       ? selectedRelationshipTypes

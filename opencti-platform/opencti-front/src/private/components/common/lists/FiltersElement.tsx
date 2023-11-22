@@ -17,15 +17,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface FiltersElementProps {
+export type FilterElementsInputValue = { key: string, values: string[], operator?: string };
+
+export interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];
   searchContext: { entityTypes: string[], elementId?: string[] };
   handleChangeKeyword: (event: React.ChangeEvent) => void;
   noDirectFilters?: boolean;
-  setInputValues: (value: { key: string, values: (string | Date)[], operator?: string }[]) => void;
-  inputValues: { key: string, values: (string | Date)[], operator?: string }[];
+  setInputValues: (value: FilterElementsInputValue[]) => void;
+  inputValues: FilterElementsInputValue[];
   defaultHandleAddFilter: HandleAddFilter;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];

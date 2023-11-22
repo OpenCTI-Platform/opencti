@@ -8,6 +8,7 @@ import {
 import StixCoreObjectQuickSubscriptionContent, {
   stixCoreObjectQuickSubscriptionContentQuery,
 } from './StixCoreObjectQuickSubscriptionContent';
+import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreObjectQuickSubscriptionProps {
   instanceId: string;
@@ -35,7 +36,7 @@ StixCoreObjectQuickSubscriptionProps
           mode: 'or',
         },
       ],
-    },
+    } as GqlFilterGroup,
   };
   const queryRef = useQueryLoading<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
     stixCoreObjectQuickSubscriptionContentQuery,

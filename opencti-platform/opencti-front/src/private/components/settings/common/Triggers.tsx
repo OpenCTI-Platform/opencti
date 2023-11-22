@@ -21,7 +21,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { GqlFilterGroup, initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -75,9 +75,9 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     includeAuthorities: true,
     filters: {
       mode: 'and',
-      filters: [{ key: [filterKey], values: [recipientId] }],
+      filters: [{ key: [filterKey], values: [recipientId], operator: 'eq', mode: 'or' }],
       filterGroups: [],
-    },
+    } as GqlFilterGroup,
   };
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
     triggersLinesQuery,

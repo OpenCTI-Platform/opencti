@@ -5,6 +5,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { InformationOutline } from 'mdi-material-ui';
+import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
@@ -79,7 +80,7 @@ interface FilterIconButtonContainerProps {
   disabledPossible?: boolean;
   redirection?: boolean;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
-  chipColor?: string;
+  chipColor?: ChipOwnProps['color'];
 }
 
 const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProps> = ({
