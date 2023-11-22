@@ -333,23 +333,25 @@ const WorkspaceHeader = ({
           </div>
         </Security>
       )}
-      <div className={classes.duplicate}>
-        <Tooltip title={t('Duplicate dashboard')}>
-          <ToggleButtonGroup size="small" color="primary" exclusive={true}>
-            <ToggleButton sx={{ padding: '2px' }} size="small" value={'duplicate-dashboard'}>
-              <IconButton
-                  aria-label="copy"
-                  disabled={!workspace}
-                  onClick={() => handleDashboardDuplication()}
-                  color="primary"
-                  size="small"
-              >
-                <ContentCopyOutlined fontSize="small" />
-              </IconButton>
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Tooltip>
-      </div>
+      {workspace.type === 'dashboard' && (
+        <div className={classes.duplicate}>
+          <Tooltip title={t('Duplicate dashboard')}>
+            <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+              <ToggleButton sx={{ padding: '2px' }} size="small" value={'duplicate-dashboard'}>
+                <IconButton
+                    aria-label="copy"
+                    disabled={!workspace}
+                    onClick={() => handleDashboardDuplication()}
+                    color="primary"
+                    size="small"
+                >
+                  <ContentCopyOutlined fontSize="small" />
+                </IconButton>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Tooltip>
+        </div>
+      )}
       <WorkspaceDuplicationDialog
           workspace={workspace}
           displayDuplicate={displayDuplicate}
