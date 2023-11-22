@@ -31,6 +31,7 @@ interface CountryFieldProps {
   onChange?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
+  required: boolean;
 }
 
 const CountryFieldQuery = graphql`
@@ -53,6 +54,7 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   containerStyle,
   onChange,
   helpertext,
+  required,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -92,11 +94,13 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         id={id}
         component={AutocompleteField}
         name={name}
+        required={required}
         textfieldprops={{
           variant: 'standard',
           label: t(label),
           helperText: helpertext,
           onFocus: searchCountries,
+          required,
         }}
         onChange={onChange}
         style={containerStyle}

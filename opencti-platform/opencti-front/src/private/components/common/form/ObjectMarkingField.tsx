@@ -46,6 +46,7 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
 
 interface ObjectMarkingFieldProps {
   name: string;
+  required: boolean;
   style?: React.CSSProperties;
   onChange?: (
     name: string,
@@ -71,6 +72,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   disabled,
   label,
   setFieldValue,
+  required,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -156,6 +158,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         multiple={true}
         disabled={disabled}
         textfieldprops={{

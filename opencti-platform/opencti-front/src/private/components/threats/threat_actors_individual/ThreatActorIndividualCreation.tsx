@@ -24,7 +24,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -142,11 +142,15 @@ ThreatActorIndividualFormProps
   const { heightsConverterSave, weightsConverterSave } = useUserMetric();
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string(),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
+    objectMarking: Yup.array().nullable(),
     first_seen: Yup.date()
       .nullable()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -334,6 +338,7 @@ ThreatActorIndividualFormProps
                 style={{ marginTop: 20 }}
                 name="name"
                 label={t('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
                 detectDuplicate={[
                   'Threat-Actor',
@@ -346,6 +351,7 @@ ThreatActorIndividualFormProps
                 type="threat-actor-individual-type-ov"
                 name="threat_actor_types"
                 label={t('Threat actor types')}
+                required={(mandatoryAttributes.includes('threat_actor_types'))}
                 multiple={true}
                 containerStyle={{ width: '100%', marginTop: 20 }}
                 onChange={setFieldValue}
@@ -358,6 +364,7 @@ ThreatActorIndividualFormProps
                 component={MarkdownField}
                 name="description"
                 label={t('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -365,6 +372,7 @@ ThreatActorIndividualFormProps
               />
               <CreatedByField
                 name="createdBy"
+                required={(mandatoryAttributes.includes('createdBy'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
@@ -376,10 +384,14 @@ ThreatActorIndividualFormProps
               />
               <ObjectMarkingField
                 name="objectMarking"
+                label={t('Markings')}
+                required={(mandatoryAttributes.includes('objectMarking'))}
                 style={fieldSpacingContainerStyle}
               />
               <ExternalReferencesField
                 name="externalReferences"
+                label={t('External references')}
+                required={(mandatoryAttributes.includes('externalReferences'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 values={values?.externalReferences}
@@ -394,6 +406,7 @@ ThreatActorIndividualFormProps
                 name="first_seen"
                 TextFieldProps={{
                   label: t('First seen'),
+                  required: (mandatoryAttributes.includes('first_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -404,55 +417,62 @@ ThreatActorIndividualFormProps
                 name="last_seen"
                 TextFieldProps={{
                   label: t('Last seen'),
+                  required: (mandatoryAttributes.includes('last_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
               />
               <OpenVocabField
-                label={t('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
+                label={t('Sophistication')}
+                required={(mandatoryAttributes.includes('sophistication'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
+                label={t('Resource level')}
+                required={(mandatoryAttributes.includes('resource_level'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
+                label={t('Roles')}
+                required={(mandatoryAttributes.includes('roles'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={true}
               />
               <OpenVocabField
-                label={t('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
+                label={t('Primary motivation')}
+                required={(mandatoryAttributes.includes('primary_motivation'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
+                label={t('Secondary motivations')}
+                required={(mandatoryAttributes.includes('secondary_motivations'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={true}
               />
               <OpenVocabField
-                label={t('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
+                label={t('Personal motivations')}
+                required={(mandatoryAttributes.includes('personal_motivations'))}
                 containerStyle={fieldSpacingContainerStyle}
                 variant="edit"
                 multiple={true}
@@ -461,6 +481,7 @@ ThreatActorIndividualFormProps
                 component={TextField}
                 name="goals"
                 label={t('Goals (1 / line)')}
+                required={(mandatoryAttributes.includes('goals'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -473,7 +494,8 @@ ThreatActorIndividualFormProps
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
-                label={t('Place of Birth')}
+                label={t('Place of birth')}
+                required={(mandatoryAttributes.includes('bornIn'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
               />
@@ -481,6 +503,7 @@ ThreatActorIndividualFormProps
                 id="Ethnicity"
                 name="ethnicity"
                 label={t('Ethnicity')}
+                required={(mandatoryAttributes.includes('ethnicity'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
               />
@@ -490,7 +513,8 @@ ThreatActorIndividualFormProps
                 name="date_of_birth"
                 onSubmit={setFieldValue}
                 TextFieldProps={{
-                  label: t('Date of Birth'),
+                  label: t('Date of birth'),
+                  required: (mandatoryAttributes.includes('date_of_birth')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -498,7 +522,8 @@ ThreatActorIndividualFormProps
               />
               <OpenVocabField
                 name="marital_status"
-                label={t('Marital Status')}
+                label={t('Marital status')}
+                required={(mandatoryAttributes.includes('marital_status'))}
                 type="marital_status_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -509,6 +534,7 @@ ThreatActorIndividualFormProps
               <OpenVocabField
                 name="gender"
                 label={t('Gender')}
+                required={(mandatoryAttributes.includes('gender'))}
                 type="gender_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -519,8 +545,9 @@ ThreatActorIndividualFormProps
               <Field
                 component={MarkdownField}
                 name="job_title"
+                label={t('Job title')}
+                required={(mandatoryAttributes.includes('job_title'))}
                 id="job_title"
-                label={t('Job Title')}
                 fullWidth={true}
                 multiline={false}
                 rows="1"
@@ -533,7 +560,8 @@ ThreatActorIndividualFormProps
             <>
               <OpenVocabField
                 name="eye_color"
-                label={t('Eye Color')}
+                label={t('Eye color')}
+                required={(mandatoryAttributes.includes('eye_color'))}
                 type="eye_color_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -543,7 +571,8 @@ ThreatActorIndividualFormProps
               />
               <OpenVocabField
                 name="hair_color"
-                label={t('Hair Color')}
+                label={t('Hair color')}
+                required={(mandatoryAttributes.includes('hair_color'))}
                 type="hair_color_ov"
                 variant="edit"
                 onChange={setFieldValue}

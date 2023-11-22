@@ -15,6 +15,7 @@ interface OpenVocabProps {
   type: string;
   name: string;
   label: string;
+  required: boolean;
   variant?: string;
   onFocus?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
@@ -52,6 +53,7 @@ Omit<OpenVocabProps, 'type'>
 > = ({
   name,
   label,
+  required,
   variant,
   onChange,
   onSubmit,
@@ -105,6 +107,7 @@ Omit<OpenVocabProps, 'type'>
       <Field
         component={AutocompleteField}
         name={name}
+        required={required}
         onFocus={onFocus}
         onChange={(n: string, v: Option & Option[]) => {
           internalOnChange?.(n, v);
@@ -130,6 +133,7 @@ Omit<OpenVocabProps, 'type'>
     <Field
       component={AutocompleteField}
       name={name}
+      required={required}
       onChange={internalOnChange}
       fullWidth={true}
       multiple={multiple}
@@ -151,7 +155,7 @@ Omit<OpenVocabProps, 'type'>
 const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
   props,
 ) => {
-  const { name, label, multiple, containerStyle } = props;
+  const { name, label, multiple, containerStyle, required } = props;
   const { typeToCategory } = useVocabularyCategory();
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {
     category: typeToCategory(props.type),
@@ -162,6 +166,7 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
         <Field
           component={AutocompleteField}
           name={name}
+          required={required}
           disabled={true}
           fullWidth={true}
           multiple={multiple}
@@ -180,6 +185,7 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
     <Field
       component={AutocompleteField}
       name={name}
+      required={required}
       disabled={true}
       fullWidth={true}
       multiple={multiple}
