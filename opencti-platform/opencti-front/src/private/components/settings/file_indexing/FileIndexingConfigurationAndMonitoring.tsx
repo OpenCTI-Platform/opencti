@@ -47,7 +47,7 @@ export const fileIndexingDefaultMimeTypes = [
 export const fileIndexingDefaultMaxFileSize = 5242880;
 
 interface FileIndexingConfigurationAndMonitoringComponentProps {
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
   queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
 }
 
@@ -62,17 +62,17 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 
   return (
     <Grid container={true} spacing={3}>
-      <Grid item={true} xs={6} >
-        <FileIndexingConfiguration
-          filesMetrics={filesMetrics}
-          managerConfiguration={managerConfiguration}
-        />
-      </Grid>
-      <Grid item={true} xs={6}>
+      <Grid item={true} xs={12}>
         <FileIndexingMonitoring
           totalFiles={totalFiles}
           isStarted={isStarted}
           managerConfigurationId={managerConfigurationId}
+        />
+      </Grid>
+      <Grid item={true} xs={12} >
+        <FileIndexingConfiguration
+          filesMetrics={filesMetrics}
+          managerConfiguration={managerConfiguration}
         />
       </Grid>
     </Grid>
@@ -80,7 +80,7 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
 };
 
 interface FileIndexingConfigurationAndMonitoringProps {
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
 }
 
 const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConfigurationAndMonitoringProps> = ({

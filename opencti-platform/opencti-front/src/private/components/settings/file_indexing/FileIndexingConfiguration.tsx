@@ -91,8 +91,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FileIndexingConfigurationProps {
-  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics']
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
+  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics'];
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
 }
 
 interface FileIndexingConfigurationFormValues {
@@ -187,7 +187,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
               {metricsByMimeType.map((metrics) => (
                 <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32, padding: 0 }}>
                   <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType} style={{ width: '18%' }} />
-                  <ListItemText primary={`${metrics.count}`} className={classes.mimeTypeCount} style={{ width: '25%' }}/>
+                  <ListItemText primary={`~${metrics.count}`} className={classes.mimeTypeCount} style={{ width: '25%' }}/>
                   <ListItemText primary={'files for'} style={{ width: '27%' }}/>
                   <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount} style={{ width: '30%' }}/>
                 </ListItem>
@@ -203,18 +203,8 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
         >
         {({ submitForm, setFieldValue, values }) => (
           <Form>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="max_file_size"
-              label={t('Max file size (in Mb)')}
-              fullWidth={false}
-              type="number"
-              style={{ marginBottom: 20 }}
-              onChange={submitForm}
-            />
             <Typography variant="h4" gutterBottom={true}>
-                {t('Mime-Types to index')}
+              {t('File types to index')}
             </Typography>
             <List style={{ marginBottom: 12 }}>
             {defaultMimeTypes.map((mimeType) => (
@@ -237,10 +227,20 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
             ))}
             </List>
             <Field
+              component={TextField}
+              variant="standard"
+              name="max_file_size"
+              label={t('Max file size (in Mb)')}
+              fullWidth={false}
+              type="number"
+              style={{ marginBottom: 20 }}
+              onChange={submitForm}
+            />
+            <Field
               component={SwitchField}
               type="checkbox"
               name="include_global_files"
-              label={t('Indexing global files')}
+              label={t('Include files not related to any knowledge (data import and analyst workbench)')}
               containerstyle={{ marginBottom: 20 }}
               onChange={submitForm}
             />

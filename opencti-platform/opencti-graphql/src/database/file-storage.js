@@ -200,7 +200,7 @@ export const isFileObjectExcluded = (id) => {
 
 const simpleFilesListing = async (directory, opts = {}) => {
   const { recursive = false } = opts;
-  const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [], excludedExtensions = [] } = opts;
+  const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [] } = opts;
   const objects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -229,7 +229,6 @@ const simpleFilesListing = async (directory, opts = {}) => {
   });
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
-      && (!excludedExtensions?.length || !excludedExtensions.some((ext) => obj.Key.endsWith(ext)))
       && (!mimeTypes?.length || !obj.mimeType || mimeTypes.includes(obj.mimeType))
       && (!modifiedSince || obj.LastModified > modifiedSince)
       && (!maxFileSize || maxFileSize >= obj.Size)
@@ -368,8 +367,7 @@ export const filesListing = async (context, user, first, path, entity = null, pr
 
 export const fileListingForIndexing = async (context, user, path, opts = {}) => {
   const fileListingForIndexingFn = async () => {
-    const excludedExtensions = ['.exe', '.json'];
-    const files = await simpleFilesListing(path, { ...opts, excludedExtensions, recursive: true });
+    const files = await simpleFilesListing(path, { ...opts, recursive: true });
     return files.sort((a, b) => a.LastModified - b.LastModified);
   };
   return telemetry(context, user, `STORAGE ${path}`, {

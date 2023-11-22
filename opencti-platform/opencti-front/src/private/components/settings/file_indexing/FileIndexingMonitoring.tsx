@@ -43,9 +43,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: 20,
     borderRadius: 6,
   },
-  resetButton: {
-    marginTop: theme.spacing(2),
-  },
   count: {
     fontSize: 30,
     color: theme.palette.primary.main,
@@ -65,6 +62,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  buttonsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-around;',
   },
   progress: {
     borderRadius: 5,
@@ -162,6 +166,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
+            <div className={classes.buttonsContainer}>
             {isStarted ? (
               <Button
                 startIcon={<PauseOutlined />}
@@ -193,11 +198,11 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 size="large"
                 color="error"
                 variant="contained"
-                classes={{ root: classes.resetButton }}
               >
                 {t('Reset')}
               </Button>
             )}
+            </div>
           </Grid>
           <Grid item={true} xs={4}>
             <div className={classes.countContainer}>
