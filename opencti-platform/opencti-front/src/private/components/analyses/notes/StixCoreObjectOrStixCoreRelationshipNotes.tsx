@@ -10,6 +10,7 @@ import {
   OrderingMode,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
@@ -45,7 +46,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
         },
       ],
       filterGroups: [],
-    },
+    } as GqlFilterGroup,
   };
   let queryRef;
   let title;
