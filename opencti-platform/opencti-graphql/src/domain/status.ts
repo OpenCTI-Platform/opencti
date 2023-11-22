@@ -69,7 +69,7 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
-        mode: 'and',
+        mode: FilterMode.And,
         filters: [{ key: ['type'], values: types }],
         filterGroups: [],
       },
@@ -152,7 +152,7 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
 };
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   const filters = {
-    mode: 'and',
+    mode: FilterMode.And,
     filters: [{ key: ['template_id'], values: [statusTemplateId] }],
     filterGroups: [],
   };

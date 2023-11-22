@@ -14,6 +14,7 @@ import { RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../sche
 import { taskAdd } from '../task/task-domain';
 import { batchListThroughGetTo } from '../../database/middleware';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { FilterMode } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, caseId: string): BasicStoreEntityCase => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE) as unknown as BasicStoreEntityCase;
@@ -32,8 +33,8 @@ export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser
   // Get all tasks from template
   const opts = {
     filters: {
-      mode: 'and',
-      filters: [{ key: buildRefRelationKey(TEMPLATE_TASK_RELATION), values: [caseTemplateId] }],
+      mode: FilterMode.And,
+      filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
       filterGroups: [],
     }
   };

@@ -23,6 +23,7 @@ import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { generateUpdateMessage } from '../database/generate-message';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -145,8 +146,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedRefs) as Array<StoreObject>;
       const removedIds = removedRefIdentities.map((i) => i.internal_id);
       const filters = {
-        mode: 'and',
-        filters: [{ key: `${RULE_PREFIX}*.dependencies`, values: removedIds, operator: 'wildcard' }],
+        mode: FilterMode.And,
+        filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: removedIds, operator: FilterOperator.Wildcard }],
         filterGroups: [],
       };
       const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, indices: READ_DATA_INDICES };

@@ -35,7 +35,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import { OrderingMode } from '../generated/graphql';
+import { FilterMode, OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
 import type { ActivityStreamEvent } from './activityListener';
 import { BASE_TYPE_ENTITY } from '../schema/general';
@@ -195,7 +195,7 @@ const initActivityManager = () => {
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
         filters: {
-          mode: 'and',
+          mode: FilterMode.And,
           filters: [{ key: ['event_access'], values: ['EXISTS'] }],
           filterGroups: [],
         },

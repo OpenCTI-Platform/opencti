@@ -5,7 +5,7 @@ import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '.
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { OrderingMode } from '../generated/graphql';
+import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
@@ -127,8 +127,8 @@ const platformTriggers = (context: AuthContext) => {
 const platformRunningPlaybooks = (context: AuthContext) => {
   const reloadPlaybooks = () => {
     const filters = {
-      mode: 'and',
-      filters: [{ key: 'playbook_running', values: [true] }],
+      mode: FilterMode.And,
+      filters: [{ key: ['playbook_running'], values: ['true'] }],
       filterGroups: [],
     };
     const opts = { filters, connectionFormat: false };

@@ -19,6 +19,7 @@ import {
 } from './threatActorIndividual-types';
 import type { ThreatActorIndividualAddInput } from '../../generated/graphql';
 import { FROM_START, UNTIL_END } from '../../utils/format';
+import { FilterMode } from '../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityThreatActorIndividual> = (context: AuthContext, user: AuthUser, threatActorIndividualId: string) => {
   return storeLoadById<BasicStoreEntityThreatActorIndividual>(context, user, threatActorIndividualId, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
@@ -41,15 +42,15 @@ export const threatActorIndividualContainsStixObjectOrStixRelationship = async (
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filterGroups: [],
       filters: [
         {
-          key: 'internal_id',
+          key: ['internal_id'],
           values: [threatActorIndividualId],
         },
         {
-          key: buildRefRelationKey(RELATION_OBJECT),
+          key: [buildRefRelationKey(RELATION_OBJECT)],
           values: [resolvedThingId],
         }
       ],
