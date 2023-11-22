@@ -14,7 +14,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -53,6 +53,8 @@ const taskAddMutation = graphql`
   }
 `;
 
+const TASK_TYPE = 'Task';
+
 interface FormikTaskAddInput {
   name: string
   due_date?: Date | null
@@ -81,8 +83,11 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    TASK_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
@@ -90,7 +95,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     objectAssignee: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const taskValidator = useSchemaEditionValidation('Task', basicShape);
+  const taskValidator = useSchemaEditionValidation(TASK_TYPE, basicShape);
 
   const [commit] = useApiMutation<TaskCreationMutation>(
     taskAddMutation,
@@ -152,6 +157,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth
           />
           <Field
@@ -165,14 +171,17 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -180,6 +189,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth
             multiline
             rows="4"

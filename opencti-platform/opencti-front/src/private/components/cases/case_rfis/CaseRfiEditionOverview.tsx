@@ -11,7 +11,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -152,6 +152,8 @@ interface CaseRfiEditionOverviewProps {
   handleClose: () => void
 }
 
+const CASE_RFI_TYPE = 'Case-Rfi';
+
 interface CaseRfiEditionFormValues {
   message?: string
   createdBy?: Option
@@ -171,8 +173,11 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseRfiEditionOverviewFragment, caseRef);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CASE_RFI_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     information_types: Yup.array().nullable(),
     severity: Yup.string().nullable(),
@@ -181,7 +186,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const caseValidator = useSchemaEditionValidation('Case-Rfi', basicShape);
+  const caseValidator = useSchemaEditionValidation(CASE_RFI_TYPE, basicShape);
 
   const queries = {
     fieldPatch: caseRfiMutationFieldPatch,
@@ -273,6 +278,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -288,6 +294,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Request for Information date'),
+              required: (mandatoryAttributes.includes('created')),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -300,6 +307,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             label={t_i18n('Information type')}
             type="request_for_information_types_ov"
             name="information_types"
+            required={(mandatoryAttributes.includes('information_types'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             variant="edit"
@@ -311,6 +319,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             label={t_i18n('Case severity')}
             type="case_severity_ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             variant="edit"
@@ -322,6 +331,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             label={t_i18n('Case priority')}
             type="case_priority_ov"
             name="priority"
+            required={(mandatoryAttributes.includes('priority'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             variant="edit"
@@ -341,6 +351,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -354,6 +365,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -362,6 +374,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
@@ -380,6 +393,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -389,6 +403,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

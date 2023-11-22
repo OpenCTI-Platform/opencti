@@ -83,6 +83,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
           />
           <ObjectMarkingField
             name='max_markings'
+            required={true}
             label={t_i18n('Max level markings')}
             helpertext={t_i18n('To prevent people seeing all the data...')}
             style={fieldSpacingContainerStyle}

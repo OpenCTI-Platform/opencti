@@ -23,7 +23,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -91,10 +91,12 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    DATA_COMPONENT_TYPE,
+  );
   const basicShape = {
     name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+      .min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number()
@@ -232,6 +234,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Data-Component']}
             />
@@ -243,6 +246,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -250,6 +254,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -258,6 +263,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -267,6 +273,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -275,6 +282,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={{
                 marginTop: 20,
                 width: '100%',

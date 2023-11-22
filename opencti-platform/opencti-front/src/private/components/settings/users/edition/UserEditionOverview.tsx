@@ -23,6 +23,7 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../../utils/hooks/useSchemaAttributes';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -71,20 +72,7 @@ const userMutationOrganizationDelete = graphql`
   }
 `;
 
-const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmin: boolean) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  language: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  stateless_session: Yup.bool(),
-  account_status: Yup.string(),
-  account_lock_after_date: Yup.date().nullable(),
-  objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
-});
+const OBJECT_TYPE = 'User';
 
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
@@ -100,6 +88,21 @@ const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = (userIsOnlyOrganizationAdmin: boolean) => ({
+    name: Yup.string(),
+    user_email: Yup.string().email(t_i18n('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    language: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    stateless_session: Yup.bool(),
+    account_status: Yup.string(),
+    account_lock_after_date: Yup.date().nullable(),
+    objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t_i18n('Minimum one organization')) : Yup.array(),
+  });
+
   const { me, settings } = useAuth();
 
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
@@ -111,6 +114,10 @@ UserEditionOverviewComponentProps
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape(userIsOnlyOrganizationAdmin),
+  );
 
   const initialValues = {
     name: user.name,
@@ -138,7 +145,7 @@ UserEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string | null) => {
-    userValidation(t_i18n, userIsOnlyOrganizationAdmin)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -183,7 +190,7 @@ UserEditionOverviewComponentProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={userValidation(t_i18n, userIsOnlyOrganizationAdmin)}
+      validationSchema={validator}
       onSubmit={() => {}}
     >
       {() => (
@@ -193,6 +200,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             disabled={external}
             fullWidth={true}
             onFocus={handleChangeFocus}
@@ -207,6 +215,7 @@ UserEditionOverviewComponentProps
             name="user_email"
             disabled={external}
             label={t_i18n('Email address')}
+            required={(mandatoryAttributes.includes('user_email'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -220,6 +229,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="firstname"
             label={t_i18n('Firstname')}
+            required={(mandatoryAttributes.includes('firstname'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -233,6 +243,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="lastname"
             label={t_i18n('Lastname')}
+            required={(mandatoryAttributes.includes('lastname'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -245,6 +256,7 @@ UserEditionOverviewComponentProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -260,6 +272,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="language"
             label={t_i18n('Language')}
+            required={(mandatoryAttributes.includes('language'))}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -277,6 +290,7 @@ UserEditionOverviewComponentProps
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
+            required={(mandatoryAttributes.includes('objectOrganization'))}
             filters={userIsOnlyOrganizationAdmin ? [{ key: 'authorized_authorities', values: [me.id] }] : null}
             onChange={handleChangeObjectOrganization}
             style={fieldSpacingContainerStyle}
@@ -288,6 +302,7 @@ UserEditionOverviewComponentProps
             name="api_token"
             disabled={true}
             label={t_i18n('Token')}
+            required={(mandatoryAttributes.includes('api_token'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
@@ -301,6 +316,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="account_status"
             label={t_i18n('Account Status')}
+            required={(mandatoryAttributes.includes('account_status'))}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -318,6 +334,7 @@ UserEditionOverviewComponentProps
             name="account_lock_after_date"
             textFieldProps={{
               label: t_i18n('Account Expire Date'),
+              required: (mandatoryAttributes.includes('account_lock_after_date')),
               variant: 'standard',
               style: fieldSpacingContainerStyle,
               fullWidth: true,
@@ -339,6 +356,7 @@ UserEditionOverviewComponentProps
                   containerstyle={{ marginTop: 20 }}
                   type="checkbox"
                   name="stateless_session"
+                  required={(mandatoryAttributes.includes('stateless_session'))}
                   label={t_i18n('Use stateless mode')}
                   onChange={handleSubmitField}
                 />

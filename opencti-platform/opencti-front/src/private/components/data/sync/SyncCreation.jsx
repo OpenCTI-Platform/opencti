@@ -28,6 +28,7 @@ import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,20 +65,6 @@ export const syncCheckMutation = graphql`
   }
 `;
 
-const syncCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  uri: Yup.string().required(t('This field is required')),
-  token: Yup.string(),
-  stream_id: Yup.string().required(t('This field is required')),
-  current_state_date: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  listen_deletion: Yup.bool(),
-  no_dependencies: Yup.bool(),
-  ssl_verify: Yup.bool(),
-  synchronized: Yup.bool(),
-});
-
 export const syncStreamCollectionQuery = graphql`
   query SyncCreationStreamCollectionQuery(
     $uri: String!
@@ -95,8 +82,30 @@ export const syncStreamCollectionQuery = graphql`
   }
 `;
 
+const OBJECT_TYPE = 'Sync';
+
 const SyncCreation = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string(),
+    uri: Yup.string(),
+    token: Yup.string(),
+    stream_id: Yup.string(),
+    current_state_date: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    listen_deletion: Yup.bool(),
+    no_dependencies: Yup.bool(),
+    ssl_verify: Yup.bool(),
+    synchronized: Yup.bool(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const [verified, setVerified] = useState(false);
   const [streams, setStreams] = useState([]);
@@ -197,7 +206,7 @@ const SyncCreation = ({ paginationOptions }) => {
             ssl_verify: false,
             synchronized: false,
           }}
-          validationSchema={syncCreationValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -217,6 +226,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="name"
                   label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
                   fullWidth={true}
                 />
                 <Alert
@@ -243,6 +253,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     variant="standard"
                     name="uri"
                     label={t_i18n('Remote OpenCTI URL')}
+                    required={(mandatoryAttributes.includes('uri'))}
                     fullWidth={true}
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
@@ -252,6 +263,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     variant="standard"
                     name="token"
                     label={t_i18n('Remote OpenCTI token')}
+                    required={(mandatoryAttributes.includes('token'))}
                     fullWidth={true}
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
@@ -262,6 +274,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       variant="standard"
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
+                      required={(mandatoryAttributes.includes('stream_id'))}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
                       renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
@@ -340,12 +353,14 @@ const SyncCreation = ({ paginationOptions }) => {
                 <CreatorField
                   name="user_id"
                   label={t_i18n('User responsible for data creation (empty = System)')}
+                  required={(mandatoryAttributes.includes('user_id'))}
                   containerStyle={fieldSpacingContainerStyle}
                   showConfidence
                 />
                 <Field
                   component={DateTimePickerField}
                   name="current_state_date"
+                  required={(mandatoryAttributes.includes('current_state_date'))}
                   textFieldProps={{
                     label: t_i18n('Starting synchronization (empty = from start)'),
                     variant: 'standard',
@@ -359,6 +374,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   name="listen_deletion"
                   containerstyle={{ marginTop: 20 }}
                   label={t_i18n('Take deletions into account')}
+                  required={(mandatoryAttributes.includes('listen_deletion'))}
                 />
                 <Field
                   component={SwitchField}
@@ -366,6 +382,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   name="ssl_verify"
                   containerstyle={{ marginBottom: 20 }}
                   label={t_i18n('Verify SSL certificate')}
+                  required={(mandatoryAttributes.includes('ssl_verify'))}
                 />
                 <Accordion>
                   <AccordionSummary id="accordion-panel">
@@ -391,6 +408,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={{ marginTop: 20 }}
                       type="checkbox"
                       name="no_dependencies"
+                      required={(mandatoryAttributes.includes('no_dependencies'))}
                       label={t_i18n('Avoid dependencies resolution')}
                     />
                     <div>
@@ -405,6 +423,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={{ marginLeft: 2 }}
                       name="synchronized"
                       label={t_i18n('Use perfect synchronization')}
+                      required={(mandatoryAttributes.includes('synchronized'))}
                     />
                     <div>
                       {t_i18n(

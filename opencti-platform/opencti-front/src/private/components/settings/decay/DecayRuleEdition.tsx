@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import * as Yup from 'yup';
 import * as R from 'ramda';
 import { AddOutlined, Delete } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
@@ -11,7 +12,6 @@ import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import { FormikConfig } from 'formik/dist/types';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
-import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
@@ -20,6 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { handleError } from '../../../../relay/environment';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const decayRuleEditionMutation = graphql`
   mutation DecayRuleEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -28,6 +29,8 @@ export const decayRuleEditionMutation = graphql`
     }
   }
 `;
+
+const OBJECT_TYPE = 'DecayRule';
 
 interface DecayRuleEditionFormData {
   name: string
@@ -52,10 +55,28 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   onCompleted,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string().trim().min(2),
+    description: Yup.string().nullable(),
+    active: Yup.boolean(),
+    order: Yup.number().min(1),
+    decay_lifetime: Yup.number().min(1),
+    decay_pound: Yup.number().min(0),
+    decay_revoke_score: Yup.number().min(0),
+    decay_observable_types: Yup.array().of(Yup.string()),
+    decay_points: Yup.array().of(Yup.number().min(0)),
+  };
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
-    decayRuleValidator(t_i18n)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitUpdate({
@@ -88,7 +109,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
     <Formik<DecayRuleEditionFormData>
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={decayRuleValidator(t_i18n)}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({ values }) => (
@@ -97,6 +118,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -104,6 +126,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows={2}
@@ -112,6 +135,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           />
           <ObservableTypesField
             name="decay_observable_types"
+            required={(mandatoryAttributes.includes('decay_observable_types'))}
             label={t_i18n('Apply on indicator observable types (none = ALL)')}
             multiple={true}
             onChange={handleSubmitField}
@@ -122,6 +146,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             variant="standard"
             name="decay_lifetime"
             label={t_i18n('Lifetime (in days)')}
+            required={(mandatoryAttributes.includes('decay_lifetime'))}
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
@@ -132,6 +157,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             variant="standard"
             name="decay_pound"
             label={t_i18n('Decay factor')}
+            required={(mandatoryAttributes.includes('decay_pound'))}
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
@@ -166,6 +192,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                           component={TextField}
                           variant="standard"
                           name={`decay_points.${index}`}
+                          required={(mandatoryAttributes.includes('decay_points'))}
                           type="number"
                           fullWidth={true}
                           onSubmit={(name: string, value: number) => {
@@ -204,6 +231,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             variant="standard"
             name="decay_revoke_score"
             label={t_i18n('Revoke score')}
+            required={(mandatoryAttributes.includes('decay_revoke_score'))}
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
@@ -214,6 +242,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             variant="standard"
             name="order"
             label={t_i18n('Order')}
+            required={(mandatoryAttributes.includes('order'))}
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
@@ -224,6 +253,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             type="checkbox"
             name="active"
             label={t_i18n('Active')}
+            required={(mandatoryAttributes.includes('active'))}
             onChange={handleSubmitField}
             containerstyle={fieldSpacingContainerStyle}
           />

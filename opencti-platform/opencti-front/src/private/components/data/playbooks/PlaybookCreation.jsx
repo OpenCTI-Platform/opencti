@@ -24,6 +24,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,14 +46,22 @@ const PlaybookCreationMutation = graphql`
   }
 `;
 
-const playbookCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const OBJECT_TYPE = 'Playbook';
 
 const PlaybookCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -85,7 +94,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
             name: '',
             description: '',
           }}
-          validationSchema={playbookCreationValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -99,6 +108,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -106,6 +116,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
                 variant="standard"
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />

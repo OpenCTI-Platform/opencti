@@ -19,6 +19,7 @@ interface CreatorFieldProps {
   onChange?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   showConfidence?: boolean;
+  required?: boolean;
 }
 
 const CreatorFieldQuery = graphql`

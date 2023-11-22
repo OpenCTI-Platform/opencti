@@ -16,6 +16,7 @@ import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSo
 import { Option } from '../../common/form/ReferenceField';
 import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,11 +38,7 @@ const vocabularyMutationUpdate = graphql`
   }
 `;
 
-const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  order: Yup.number().nullable().integer(t('The value must be a number')),
-});
+const VOCABULARY_TYPE = 'Vocabulary';
 
 interface VocabularyEditionFormikValues {
   name: string;
@@ -59,6 +56,17 @@ const VocabularyEdition = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string(),
+    order: Yup.number().nullable().integer(t_i18n('The value must be a number')),
+  };
+  const vocabularyValidator = useSchemaEditionValidation(
+    VOCABULARY_TYPE,
+    basicShape,
+  );
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(VOCABULARY_TYPE);
 
   const [commitUpdateMutation] = useApiMutation(vocabularyMutationUpdate);
 
@@ -109,7 +117,7 @@ const VocabularyEdition = ({
         description: vocab.description ?? '',
         order: vocab.order,
       }}
-      validationSchema={attributeValidation(t_i18n)}
+      validationSchema={vocabularyValidator}
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting, isValid }) => (
@@ -119,6 +127,7 @@ const VocabularyEdition = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             disabled={vocab.builtIn}
           />
@@ -127,6 +136,7 @@ const VocabularyEdition = ({
             variant="standard"
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
@@ -157,6 +167,7 @@ const VocabularyEdition = ({
             variant="standard"
             name="order"
             label={t_i18n('Order')}
+            required={(mandatoryAttributes.includes('order'))}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}

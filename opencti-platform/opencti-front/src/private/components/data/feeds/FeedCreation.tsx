@@ -52,6 +52,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -144,19 +145,27 @@ interface FeedCreationFormProps {
   paginationOptions: PaginationOptions
 }
 
-const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t_i18n('This field is required')),
-  separator: Yup.string().required(t_i18n('This field is required')),
-  rolling_time: Yup.number().required(t_i18n('This field is required')),
-  feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
-  feed_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'Feed';
 
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { paginationOptions } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string(),
+    separator: Yup.string(),
+    rolling_time: Yup.number(),
+    feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')),
+    feed_public: Yup.bool().nullable(),
+    authorized_members: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
@@ -182,8 +191,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
     const updatedFeedAttributes = [];
-    for (let index = 0; index < attrValues.length; index += 1) {
-      const feedAttr = attrValues[index];
+    for (const feedAttr of attrValues) {
       const mappingEntries = isNotEmptyField(feedAttr)
         ? Object.entries(feedAttr.mappings)
         : [];
@@ -345,7 +353,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                     feed_date_attribute: 'created_at',
                     feed_public: false,
                   }}
-                  validationSchema={feedCreationValidation(t_i18n)}
+                  validationSchema={validator}
                   onSubmit={onSubmit}
                   onReset={onClose}
                 >
@@ -356,6 +364,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         variant="standard"
                         name="name"
                         label={t_i18n('Name')}
+                        required={(mandatoryAttributes.includes('name'))}
                         fullWidth={true}
                       />
                       <Field
@@ -363,6 +372,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         variant="standard"
                         name="description"
                         label={t_i18n('Description')}
+                        required={(mandatoryAttributes.includes('description'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -382,14 +392,16 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           name="feed_public"
                           onChange={(_, checked) => setFieldValue('feed_public', checked)}
                           label={t_i18n('Public feed')}
+                          required={(mandatoryAttributes.includes('feed_public'))}
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
                             label={'Accessible for'}
+                            required={(mandatoryAttributes.includes('authorized_members'))}
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
-                            helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                            helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                             name="authorized_members"
                           />
                         )}
@@ -399,6 +411,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         variant="standard"
                         name="separator"
                         label={t_i18n('Separator')}
+                        required={(mandatoryAttributes.includes('separator'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -408,6 +421,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         type="number"
                         name="rolling_time"
                         label={t_i18n('Rolling time (in minutes)')}
+                        required={(mandatoryAttributes.includes('rolling_time'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                         InputProps={{
@@ -433,6 +447,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         variant="standard"
                         name="feed_date_attribute"
                         label={t_i18n('Base attribute')}
+                        required={(mandatoryAttributes.includes('feed_date_attribute'))}
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
@@ -446,9 +461,13 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         name="feed_types"
                         onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
                         label={t_i18n('Entity types')}
+                        required={(mandatoryAttributes.includes('feed_types'))}
                         fullWidth={true}
                         multiple={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
+                        // FIXME: the popup obscures the main form,
+                        //    making it unclear what needs to be done
+                        //    width: 'fit-content' ... maybe
                       >
                         {entitiesTypes.map((type) => (
                           <MenuItem key={type.value} value={type.value}>
@@ -461,6 +480,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         type="checkbox"
                         name="include_header"
                         label={t_i18n('Include headers in the feed')}
+                        required={(mandatoryAttributes.includes('include_header'))}
                         containerstyle={{ marginTop: 20 }}
                       />
                       <Box sx={{ paddingTop: 4,
@@ -502,6 +522,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                     variant="standard"
                                     name="attribute"
                                     label={t_i18n('Column')}
+                                    required={true}
                                     fullWidth={true}
                                     value={feedAttributes[i].attribute || ''}
                                     onChange={(event) => handleChangeField(i, event.target.value)}
@@ -516,7 +537,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                     <FormControl
                                       className={classes.formControl}
                                     >
-                                      <InputLabel>
+                                      <InputLabel
+                                        required={true}
+                                      >
                                         {t_i18n(`entity_${selectedType}`)}
                                       </InputLabel>
                                       <QueryRenderer

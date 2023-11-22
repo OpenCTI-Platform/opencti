@@ -160,6 +160,7 @@ const stixBaseEntityContribution = {
   definition: {
     // Internal
     [I.ENTITY_TYPE_SETTINGS]: () => OPENCTI_PLATFORM_UUID,
+    [I.ENTITY_TYPE_SETTINGS_MESSAGES]: () => OPENCTI_PLATFORM_UUID,
     [I.ENTITY_TYPE_MIGRATION_STATUS]: () => uuidv4(),
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [{ src: 'title' }, { src: 'timestamp' }],
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],

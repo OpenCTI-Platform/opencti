@@ -21,9 +21,9 @@ import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } fr
 import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { isEmptyField } from '../../../../utils/utils';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
@@ -76,6 +76,8 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
   }
 `;
 
+const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
+
 interface ThreatActorIndividualEditionDemographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
   enableReferences: boolean;
@@ -88,9 +90,8 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   context,
 }: ThreatActorIndividualEditionDemographicsComponentProps) => {
   const { t_i18n } = useFormatter();
-  const threatActorIndividual = useFragment(
-    threatActorIndividualEditionDemographicsFragment,
-    threatActorIndividualRef,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
   );
   const basicShape = {
     date_of_birth: Yup.date()
@@ -105,8 +106,12 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     ethnicity: Yup.object().nullable(),
   };
   const threatActorIndividualValidator = useSchemaEditionValidation(
-    'Threat-Actor-Individual',
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
     basicShape,
+  );
+  const threatActorIndividual = useFragment(
+    threatActorIndividualEditionDemographicsFragment,
+    threatActorIndividualRef,
   );
 
   const queries = {
@@ -191,6 +196,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="PlaceOfBirth"
                 name="bornIn"
                 label={t_i18n('Place of Birth')}
+                required={(mandatoryAttributes.includes('bornIn'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -201,6 +207,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="Ethnicity"
                 name="ethnicity"
                 label={t_i18n('Ethnicity')}
+                required={(mandatoryAttributes.includes('ethnicity'))}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -230,6 +237,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 name="marital_status"
                 label={t_i18n('Marital Status')}
                 type="marital_status_ov"
+                required={(mandatoryAttributes.includes('marital_status'))}
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
                 onFocus={handleChangeFocus}
@@ -241,6 +249,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <OpenVocabField
                 name="gender"
                 label={t_i18n('Gender')}
+                required={(mandatoryAttributes.includes('gender'))}
                 type="gender_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -255,6 +264,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 name="job_title"
                 id="job_title"
                 label={t_i18n('Job Title')}
+                required={(mandatoryAttributes.includes('job_title'))}
                 fullWidth={true}
                 multiline={false}
                 rows="1"

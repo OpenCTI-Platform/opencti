@@ -15,6 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLines_DataQuery$variables;
@@ -46,10 +47,7 @@ const vocabularyAdd = graphql`
   }
 `;
 
-const labelValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  order: Yup.number().nullable(),
-});
+const OBJECT_TYPE = 'Vocabulary';
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   paginationOptions,
@@ -57,6 +55,16 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string(),
+    order: Yup.number().nullable(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
 
   const [addVocab] = useApiMutation<VocabularyCreationMutation>(vocabularyAdd);
 
@@ -65,6 +73,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     description: string;
     aliases: { value: string }[];
     order: number;
+    category: string;
   }
 
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
@@ -106,21 +115,23 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             description: '',
             aliases: [] as { value: string }[],
             order: 0,
+            category,
           }}
-          validationSchema={labelValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
           }}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, isValid, dirty }) => (
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -128,6 +139,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 variant="standard"
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -156,6 +168,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 variant="standard"
                 name="order"
                 label={t_i18n('Order')}
+                required={(mandatoryAttributes.includes('order'))}
                 fullWidth={true}
                 type="number"
                 style={{ marginTop: 20 }}
@@ -173,7 +186,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
+                  disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}

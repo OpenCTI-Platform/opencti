@@ -20,7 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -94,6 +94,8 @@ interface ThreatActorIndividualEditionDetailsFormValues {
   goals: string;
 }
 
+const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
+
 const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
@@ -104,6 +106,9 @@ ThreatActorIndividualEditionDetailsProps
   );
   const [commitEditionDetailsFocus] = useApiMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
     ThreatActorIndividualEditionDetailsFocus,
+  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
   );
   const basicShape = {
     first_seen: Yup.date()
@@ -122,7 +127,7 @@ ThreatActorIndividualEditionDetailsProps
     references: Yup.array(),
   };
   const individualThreatActorValidator = useSchemaEditionValidation(
-    'Threat-Actor-Individual',
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
     basicShape,
   );
 
@@ -255,6 +260,7 @@ ThreatActorIndividualEditionDetailsProps
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('First seen'),
+                  required: (mandatoryAttributes.includes('first_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   helperText: (
@@ -272,6 +278,7 @@ ThreatActorIndividualEditionDetailsProps
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
+                  required: (mandatoryAttributes.includes('last_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -287,6 +294,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
+                required={(mandatoryAttributes.includes('sophistication'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -299,6 +307,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
+                required={(mandatoryAttributes.includes('resource_level'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -311,6 +320,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
+                required={(mandatoryAttributes.includes('roles'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -323,6 +333,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
+                required={(mandatoryAttributes.includes('primary_motivation'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -335,6 +346,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
+                required={(mandatoryAttributes.includes('secondary_motivations'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -347,6 +359,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
+                required={(mandatoryAttributes.includes('personal_motivations'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -359,6 +372,7 @@ ThreatActorIndividualEditionDetailsProps
                 component={TextField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
+                required={(mandatoryAttributes.includes('goals'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"

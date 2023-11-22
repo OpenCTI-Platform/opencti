@@ -7460,6 +7460,8 @@ type Query {
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
+  schemaAttributes(entityType: String!): [TypeAttribute!]!
+  schemaAttributesAll(entityType: String!): [TypeAttribute!]!
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection
   taxiiCollection(id: String!): TaxiiCollection

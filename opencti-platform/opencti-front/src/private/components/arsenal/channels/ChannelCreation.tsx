@@ -16,7 +16,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
@@ -89,8 +89,11 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CHANNEL_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -216,6 +219,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               component={isFeatureEnable('BULK_ENTITIES') ? BulkTextField : TextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Channel', 'Malware']}
             />
@@ -223,6 +227,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               type="channel_types_ov"
               name="channel_types"
               label={t_i18n('Channel type')}
+              required={(mandatoryAttributes.includes('channel_types'))}
               multiple
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
@@ -231,6 +236,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -242,6 +248,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -250,6 +257,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -259,6 +267,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -267,6 +276,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={{
                 marginTop: 20,
                 width: '100%',

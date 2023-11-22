@@ -15,6 +15,7 @@ import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,6 +41,8 @@ const subTypeWorkflowStatusAddCreationMutation = graphql`
   }
 `;
 
+const OBJECT_TYPE = 'Status';
+
 interface SubTypeWorkflowStatusAddProps {
   display: boolean;
   subTypeId: string;
@@ -50,6 +53,7 @@ SubTypeWorkflowStatusAddProps
 > = ({ display, subTypeId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -104,6 +108,8 @@ SubTypeWorkflowStatusAddProps
               <DialogContent>
                 <StatusTemplateField
                   name="template"
+                  // required={(mandatoryAttributes.includes('template_id'))}
+                  required={true}
                   setFieldValue={setFieldValue}
                   helpertext={''}
                 />
@@ -112,6 +118,7 @@ SubTypeWorkflowStatusAddProps
                   variant="standard"
                   name="order"
                   label={t_i18n('Order')}
+                  required={(mandatoryAttributes.includes('order'))}
                   fullWidth={true}
                   type="number"
                   style={{ marginTop: 20 }}

@@ -16,6 +16,7 @@ import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutation.graphql';
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,11 +38,7 @@ const caseTemplateMutation = graphql`
   }
 `;
 
-const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  tasks: Yup.array(),
-});
+const OBJECT_TYPE = 'Case-Template';
 
 interface CaseTemplateCreationProps {
   paginationOptions?: CaseTemplateLinesPaginationQuery$variables;
@@ -52,6 +49,17 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    tasks: Yup.array(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
 
   const [commitMutation] = useApiMutation(caseTemplateMutation);
 
@@ -90,7 +98,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
             description: '',
             tasks: [],
           }}
-          validationSchema={caseTemplateValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -110,12 +118,14 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"

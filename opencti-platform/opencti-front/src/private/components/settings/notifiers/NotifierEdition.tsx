@@ -25,6 +25,9 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
+// FIXME:  Attempted to make required field changes to code, but FORMIK errors
+//  were not reported back to user.  Uncertain how to fix, changes rolled back.
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({

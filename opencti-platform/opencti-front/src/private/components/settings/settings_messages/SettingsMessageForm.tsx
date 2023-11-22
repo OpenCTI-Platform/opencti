@@ -16,6 +16,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,13 +45,7 @@ const settingsMessageEditionPatch = graphql`
   }
 `;
 
-const messageValidation = () => Yup.object().shape({
-  message: Yup.string().required(),
-  activated: Yup.boolean().required(),
-  dismissible: Yup.boolean().required(),
-  color: Yup.string().nullable(),
-  recipients: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'SettingsMessages';
 
 type SettingsMessageInput = Partial<
 Pick<
@@ -74,6 +69,19 @@ const SettingsMessageForm = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const basicShape = {
+    message: Yup.string().trim(),
+    activated: Yup.boolean(),
+    dismissible: Yup.boolean(),
+    color: Yup.string().nullable(),
+    recipients: Yup.array().nullable(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+
   const [commit] = useApiMutation(settingsMessageEditionPatch);
   const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
     values,
@@ -121,7 +129,7 @@ const SettingsMessageForm = ({
         <Formik<SettingsMessageInput>
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={messageValidation()}
+          validationSchema={validator}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -135,18 +143,21 @@ const SettingsMessageForm = ({
                 variant="standard"
                 name="message"
                 label={t_i18n('Message')}
+                required={(mandatoryAttributes.includes('message'))}
                 fullWidth={true}
               />
               <Field
                 component={ColorPickerField}
                 name="color"
                 label={t_i18n('Color')}
+                required={(mandatoryAttributes.includes('color'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
               <ObjectMembersField
                 name="recipients"
                 label={t_i18n('Recipients')}
+                required={(mandatoryAttributes.includes('recipients'))}
                 style={fieldSpacingContainerStyle}
                 multiple={true}
               />
@@ -155,6 +166,7 @@ const SettingsMessageForm = ({
                 type="checkbox"
                 name="activated"
                 label={t_i18n('Activated')}
+                required={(mandatoryAttributes.includes('activated'))}
                 containerstyle={{ marginTop: 20 }}
               />
               <Field
@@ -162,6 +174,7 @@ const SettingsMessageForm = ({
                 type="checkbox"
                 name="dismissible"
                 label={t_i18n('Dismissible')}
+                required={(mandatoryAttributes.includes('dismissible'))}
                 containerstyle={{ marginTop: 10 }}
               />
               <div className={classes.buttons}>

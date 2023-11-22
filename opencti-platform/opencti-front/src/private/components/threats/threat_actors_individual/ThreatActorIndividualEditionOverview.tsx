@@ -15,7 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertAssignees, convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
@@ -134,6 +134,8 @@ interface ThreatActorIndividualEditionFormValues {
   killChainPhases?: Option[];
 }
 
+const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
+
 const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
 ThreatActorIndividualEditionOverviewProps
 > = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
@@ -142,8 +144,11 @@ ThreatActorIndividualEditionOverviewProps
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
   );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -151,7 +156,7 @@ ThreatActorIndividualEditionOverviewProps
     x_opencti_workflow_id: Yup.object(),
   };
   const ThreatActorIndividualValidator = useSchemaEditionValidation(
-    'Threat-Actor-Individual',
+    THREAT_ACTOR_INDIVIDUAL_TYPE,
     basicShape,
   );
   const queries = {
@@ -254,6 +259,7 @@ ThreatActorIndividualEditionOverviewProps
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -266,6 +272,7 @@ ThreatActorIndividualEditionOverviewProps
             type="threat-actor-individual-type-ov"
             name="threat_actor_types"
             label={t_i18n('Threat actor types')}
+            required={(mandatoryAttributes.includes('threat_actor_types'))}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -285,6 +292,7 @@ ThreatActorIndividualEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -313,6 +321,7 @@ ThreatActorIndividualEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -322,6 +331,7 @@ ThreatActorIndividualEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

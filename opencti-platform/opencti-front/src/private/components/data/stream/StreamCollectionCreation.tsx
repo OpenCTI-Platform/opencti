@@ -24,6 +24,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -63,12 +64,7 @@ const StreamCollectionCreationMutation = graphql`
     }
 `;
 
-const streamCollectionCreationValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  stream_public: Yup.bool(),
-  authorized_members: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'StreamCollection';
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
   const userProxy = store.get(userId);
@@ -86,6 +82,19 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    stream_public: Yup.bool(),
+    authorized_members: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -133,7 +142,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
             stream_public: false,
             authorized_members: [] as Option[],
           }}
-          validationSchema={streamCollectionCreationValidation(t_i18n('This field is required'))}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -150,6 +159,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -157,6 +167,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 variant="standard"
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -181,7 +192,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
-                    helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                    helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}
                     name="authorized_members"
                   />

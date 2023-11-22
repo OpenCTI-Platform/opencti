@@ -34,6 +34,7 @@ import { FileLine_file$data } from '../../common/files/__generated__/FileLine_fi
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -97,6 +98,7 @@ ExternalReferenceFileImportViewerBaseProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const mandatoryAttributes = useMandatorySchemaAttributes('External-Reference');
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
@@ -307,6 +309,7 @@ ExternalReferenceFileImportViewerBaseProps
                       <>
                         <ObjectMarkingField
                           name="objectMarking"
+                          required={mandatoryAttributes.includes('objectMarking')}
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                         />

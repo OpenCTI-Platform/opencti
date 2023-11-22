@@ -19,7 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -55,6 +55,8 @@ export const reportEditionOverviewFocus = graphql`
   }
 `;
 
+const REPORT_TYPE = 'Report';
+
 const reportMutationRelationAdd = graphql`
   mutation ReportEditionOverviewRelationAddMutation(
     $id: ID!
@@ -88,11 +90,14 @@ const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    REPORT_TYPE,
+  );
+
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     published: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -100,7 +105,7 @@ const ReportEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const reportValidator = useSchemaEditionValidation('Report', basicShape);
+  const reportValidator = useSchemaEditionValidation(REPORT_TYPE, basicShape);
 
   const queries = {
     fieldPatch: reportMutationFieldPatch,
@@ -215,6 +220,7 @@ const ReportEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -242,6 +248,7 @@ const ReportEditionOverviewComponent = (props) => {
             label={t_i18n('Report types')}
             type="report_types_ov"
             name="report_types"
+            required={(mandatoryAttributes.includes('report_types'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -253,6 +260,7 @@ const ReportEditionOverviewComponent = (props) => {
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -273,6 +281,7 @@ const ReportEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -283,6 +292,7 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -291,6 +301,7 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectParticipant" />
@@ -315,6 +326,7 @@ const ReportEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -324,6 +336,7 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

@@ -21,6 +21,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,16 +53,24 @@ export const streamCollectionMutationFieldPatch = graphql`
     }
 `;
 
-const streamCollectionValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  stream_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'StreamCollection';
 
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    stream_public: Yup.bool(),
+    authorized_members: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const initialValues = { ...streamCollection,
     authorized_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
@@ -70,7 +79,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
-    streamCollectionValidation(t_i18n('This field is required'))
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -89,7 +98,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => streamCollectionValidation(t_i18n('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: Option[]) => validator
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
@@ -132,7 +141,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={streamCollectionValidation(t_i18n('This field is required'))}
+      validationSchema={validator}
     >
       {() => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -141,6 +150,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -149,6 +159,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             variant="standard"
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
@@ -175,7 +186,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                 name="authorized_members"
               />
             )}

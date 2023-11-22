@@ -24,7 +24,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
@@ -108,10 +108,12 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    COURSE_OF_ACTION_TYPE,
+  );
   const basicShape = {
     name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+      .min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),
@@ -201,6 +203,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Course-Of-Action']}
           />
@@ -208,6 +211,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -219,22 +223,26 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

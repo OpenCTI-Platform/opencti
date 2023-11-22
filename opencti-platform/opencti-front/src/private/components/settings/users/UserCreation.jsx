@@ -21,6 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -42,32 +43,38 @@ const userMutation = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-  user_confidence_level_enabled: Yup.boolean(),
-  user_confidence_level: Yup.number()
-    .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100'))
-    .when('user_confidence_level_enabled', {
-      is: true,
-      then: (schema) => schema.required(t('This field is required')).nullable(),
-      otherwise: (schema) => schema.nullable(),
-    }),
-});
+const OBJECT_TYPE = 'User';
 
 const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+    user_email: Yup.string()
+      .email(t_i18n('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    password: Yup.string(),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t_i18n('The values do not match')),
+    user_confidence_level_enabled: Yup.boolean(),
+    user_confidence_level: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .when('user_confidence_level_enabled', {
+        is: true,
+        then: (schema) => schema.nullable(),
+        otherwise: (schema) => schema.nullable(),
+      }),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
@@ -128,7 +135,7 @@ const UserCreation = ({ paginationOptions }) => {
               account_lock_after_date: null,
               user_confidence_level: null,
             }}
-            validationSchema={userValidation(t_i18n)}
+            validationSchema={validator}
             onSubmit={onSubmit}
             onReset={onClose}
           >
@@ -138,6 +145,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={TextField}
                   name="name"
                   label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
                   fullWidth={true}
                 />
                 <Field
@@ -145,6 +153,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="user_email"
                   label={t_i18n('Email address')}
+                  required={(mandatoryAttributes.includes('user_email'))}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -153,6 +162,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="firstname"
                   label={t_i18n('Firstname')}
+                  required={(mandatoryAttributes.includes('firstname'))}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -161,6 +171,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="lastname"
                   label={t_i18n('Lastname')}
+                  required={(mandatoryAttributes.includes('lastname'))}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -168,6 +179,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={MarkdownField}
                   name="description"
                   label={t_i18n('Description')}
+                  required={(mandatoryAttributes.includes('description'))}
                   fullWidth={true}
                   multiline={true}
                   rows={4}
@@ -179,6 +191,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="password"
                   label={t_i18n('Password')}
+                  required={(mandatoryAttributes.includes('password'))}
                   type="password"
                   style={{ marginTop: 20 }}
                   fullWidth={true}
@@ -188,6 +201,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="confirmation"
                   label={t_i18n('Confirmation')}
+                  required={(mandatoryAttributes.includes('password'))}
                   type="password"
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -196,11 +210,13 @@ const UserCreation = ({ paginationOptions }) => {
                   outlined={false}
                   name="objectOrganization"
                   label="Organizations"
+                  required={(mandatoryAttributes.includes('objectOrganization'))}
                   style={fieldSpacingContainerStyle}
                 />
                 <GroupField
                   name="groups"
                   label="Groups"
+                  required={(mandatoryAttributes.includes('groups'))}
                   style={fieldSpacingContainerStyle}
                   showConfidence={true}
                 />
@@ -209,6 +225,7 @@ const UserCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="account_status"
                   label={t_i18n('Account Status')}
+                  required={(mandatoryAttributes.includes('account_status'))}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
@@ -223,6 +240,7 @@ const UserCreation = ({ paginationOptions }) => {
                 <Field
                   component={DateTimePickerField}
                   name="account_lock_after_date"
+                  required={(mandatoryAttributes.includes('account_lock_after_date'))}
                   textFieldProps={{
                     label: t_i18n('Account Expire Date'),
                     style: fieldSpacingContainerStyle,
@@ -234,6 +252,7 @@ const UserCreation = ({ paginationOptions }) => {
                   <UserConfidenceLevelField
                     name="user_confidence_level"
                     label={t_i18n('Max Confidence Level')}
+                    required={(mandatoryAttributes.includes('user_confidence_level'))}
                   />
                 )}
                 <div className={classes.buttons}>

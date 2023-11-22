@@ -25,6 +25,11 @@ import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery
 import notifierValidator from './NotifierValidator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
+// import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
+// FIXME:  Attempted to make required field changes to code, but FORMIK errors
+//  were not reported back to user.  Uncertain how to fix, changes were
+//  commented out.
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -52,6 +57,8 @@ const notifierMutation = graphql`
     }
   }
 `;
+
+// const OBJECT_TYPE = 'Notifier';
 
 interface NotifierAddInput {
   name: string;
@@ -83,6 +90,19 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  // const basicShape: Yup.ObjectShape = {
+  //   name: Yup.string().trim(),
+  //   description: Yup.string().nullable(),
+  //   notifier_connector_id: Yup.object(),
+  //   authorized_members: Yup.array().nullable(),
+  // };
+  // const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  // const validator = useSchemaCreationValidation(
+  //   OBJECT_TYPE,
+  //   basicShape,
+  // );
+
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
   const [connector, setCurrentConnector] = useState<Option & { schema?: string; ui_schema?: string }>();
@@ -98,6 +118,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     { setErrors, setSubmitting, resetForm }: NotifierFormikHelpers,
   ) => {
     notifierValidation(t_i18n)
+    // validator
       .validate(values)
       .then(() => {
         if (current && current.validateForm()) {
@@ -140,6 +161,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     <Formik<NotifierAddInput>
       initialValues={initialValues}
       validationSchema={notifierValidation(t_i18n)}
+      // validationSchema={validator}
       onSubmit={() => {
       }}
       onReset={onClose}
@@ -158,12 +180,14 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            // required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
           />
           <Field
             component={TextField}
             name="description"
             label={t_i18n('Description')}
+            // required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -171,6 +195,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             name="notifier_connector_id"
             onChange={(name, data) => setCurrentConnector(data)}
             style={{ marginTop: 20 }}
+            // required={(mandatoryAttributes.includes('notifier_connector_id'))}
           />
           <ObjectMembersField
             label={'Accessible for'}

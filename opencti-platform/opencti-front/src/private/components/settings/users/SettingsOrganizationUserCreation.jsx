@@ -24,6 +24,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -61,23 +62,7 @@ const userMutation = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-  objectOrganization: Yup.array()
-    .min(1, t('Minimum one organization'))
-    .required(t('This field is required')),
-  groups: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'User';
 
 const SettingsOrganizationUserCreation = ({
   paginationOptions,
@@ -86,6 +71,27 @@ const SettingsOrganizationUserCreation = ({
 }) => {
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string(),
+    user_email: Yup.string()
+      .email(t_i18n('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    password: Yup.string(),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t_i18n('The values do not match')),
+    objectOrganization: Yup.array()
+      .min(1, t_i18n('Minimum one organization')),
+    groups: Yup.array().nullable(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
@@ -174,7 +180,7 @@ const SettingsOrganizationUserCreation = ({
             account_status: 'Active',
             account_lock_after_date: null,
           }}
-          validationSchema={userValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onReset}
         >
@@ -184,6 +190,7 @@ const SettingsOrganizationUserCreation = ({
                 component={TextField}
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -191,6 +198,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="user_email"
                 label={t_i18n('Email address')}
+                required={(mandatoryAttributes.includes('user_email'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -199,6 +207,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="firstname"
                 label={t_i18n('Firstname')}
+                required={(mandatoryAttributes.includes('firstname'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -207,6 +216,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="lastname"
                 label={t_i18n('Lastname')}
+                required={(mandatoryAttributes.includes('lastname'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -214,6 +224,7 @@ const SettingsOrganizationUserCreation = ({
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -225,6 +236,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="password"
                 label={t_i18n('Password')}
+                required={(mandatoryAttributes.includes('password'))}
                 type="password"
                 style={{ marginTop: 20 }}
                 fullWidth={true}
@@ -234,6 +246,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="confirmation"
                 label={t_i18n('Confirmation')}
+                required={(mandatoryAttributes.includes('password'))}
                 type="password"
                 fullWidth={true}
                 style={{ marginTop: 20 }}
@@ -243,11 +256,13 @@ const SettingsOrganizationUserCreation = ({
                 filters={[{ key: 'authorized_authorities', values: [me.id] }]}
                 name="objectOrganization"
                 label="Organizations"
+                required={(mandatoryAttributes.includes('objectOrganization'))}
                 style={fieldSpacingContainerStyle}
               />
               { organization && <GroupField
                 name="groups"
                 label={t_i18n('Add a group')}
+                required={(mandatoryAttributes.includes('groups'))}
                 multiple={true}
                 containerStyle={{ width: '100%' }}
                 predefinedGroups={convertGrantableGroups(organization)}
@@ -258,6 +273,7 @@ const SettingsOrganizationUserCreation = ({
                 variant="standard"
                 name="account_status"
                 label={t_i18n('Account Status')}
+                required={(mandatoryAttributes.includes('account_status'))}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
@@ -272,6 +288,7 @@ const SettingsOrganizationUserCreation = ({
               <Field
                 component={DateTimePickerField}
                 name="account_lock_after_date"
+                required={(mandatoryAttributes.includes('account_lock_after_date'))}
                 textFieldProps={{
                   label: t_i18n('Account Expire Date'),
                   style: fieldSpacingContainerStyle,

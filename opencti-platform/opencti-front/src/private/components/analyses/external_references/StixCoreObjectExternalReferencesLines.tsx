@@ -49,6 +49,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,6 +117,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
+  const mandatoryAttributes = useMandatorySchemaAttributes('External-Reference');
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
   );
@@ -581,6 +583,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                     && (
                       <ObjectMarkingField
                         name="objectMarking"
+                        required={mandatoryAttributes.includes('objectMarking')}
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />

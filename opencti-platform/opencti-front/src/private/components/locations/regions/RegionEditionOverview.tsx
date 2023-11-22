@@ -16,7 +16,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -132,19 +132,24 @@ interface RegionEditionFormValues {
   references?: Option[];
 }
 
+const REGION_TYPE = 'Region';
+
 const RegionEditionOverviewComponent: FunctionComponent<
 RegionEdititionOverviewProps
 > = ({ regionRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    REGION_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const regionValidator = useSchemaEditionValidation('Region', basicShape);
+  const regionValidator = useSchemaEditionValidation(REGION_TYPE, basicShape);
   const queries = {
     fieldPatch: regionMutationFieldPatch,
     relationAdd: regionMutationRelationAdd,
@@ -235,6 +240,7 @@ RegionEdititionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -246,6 +252,7 @@ RegionEdititionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -282,6 +289,7 @@ RegionEdititionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -291,6 +299,7 @@ RegionEdititionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

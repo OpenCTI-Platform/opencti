@@ -1,11 +1,13 @@
 import * as Yup from 'yup';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useSchemaAttributes';
 
-export const statusValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  template: Yup.object().required(t('This field is required')),
+const OBJECT_TYPE = 'Status';
+
+export const statusValidation = (t: (name: string | object) => string) => useSchemaCreationValidation(OBJECT_TYPE, {
+  template: Yup.object(),
   order: Yup.number()
     .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
+    .integer(t('The value must be a number')),
 });
 
 export interface StatusForm {

@@ -14,7 +14,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -78,19 +78,23 @@ const narrativeMutationRelationDelete = graphql`
   }
 `;
 
+const NARRATIVE_TYPE = 'Narrative';
+
 const NarrativeEditionOverviewComponent = (props) => {
   const { narrative, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    NARRATIVE_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     references: Yup.array(),
     confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const narrativeValidator = useSchemaEditionValidation(
-    'Narrative',
+    NARRATIVE_TYPE,
     basicShape,
   );
 
@@ -194,6 +198,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -205,6 +210,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -241,6 +247,7 @@ const NarrativeEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -250,6 +257,7 @@ const NarrativeEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

@@ -29,6 +29,7 @@ import AlertsField from './AlertsField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,6 +77,8 @@ const triggerDigestCreationMutation = graphql`
   }
 `;
 
+const OBJECT_TYPE = 'Trigger';
+
 interface TriggerDigestActivityAddInput {
   name: string;
   description: string;
@@ -86,17 +89,6 @@ interface TriggerDigestActivityAddInput {
   time: string;
   recipients: { value: string }[];
 }
-
-export const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  trigger_ids: Yup.array().min(1, t('Minimum one trigger')).required(t('This field is required')),
-  period: Yup.string().required(t('This field is required')),
-  notifiers: Yup.array().min(1, t('Minimum one notifier')).required(t('This field is required')),
-  recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
-  day: Yup.string().nullable(),
-  time: Yup.string().nullable(),
-});
 
 interface TriggerDigestCreationProps {
   contextual?: boolean;
@@ -115,6 +107,23 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    trigger_ids: Yup.array().min(1, t_i18n('Minimum one trigger')),
+    period: Yup.string(),
+    notifiers: Yup.array().min(1, t_i18n('Minimum one notifier')),
+    recipients: Yup.array().min(1, t_i18n('Minimum one recipient')),
+    day: Yup.string().nullable(),
+    time: Yup.string().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const onReset = () => handleClose && handleClose();
   const [commitDigest] = useApiMutation(triggerDigestCreationMutation);
@@ -185,12 +194,14 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         variant="standard"
         name="name"
         label={t_i18n('Name')}
+        required={(mandatoryAttributes.includes('name'))}
         fullWidth={true}
       />
       <Field
         component={MarkdownField}
         name="description"
         label={t_i18n('Description')}
+        required={(mandatoryAttributes.includes('description'))}
         fullWidth={true}
         multiline={true}
         rows="4"
@@ -202,12 +213,15 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         values={values.trigger_ids}
         style={fieldSpacingContainerStyle}
         paginationOptions={paginationOptions}
+        // required is true because of minimum one trigger_id
+        required={(mandatoryAttributes.includes('trigger_ids') || true)}
       />
       <Field
         component={SelectField}
         variant="standard"
         name="period"
         label={t_i18n('Period')}
+        required={(mandatoryAttributes.includes('period'))}
         fullWidth={true}
         containerstyle={fieldSpacingContainerStyle}
       >
@@ -263,13 +277,17 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           }}
         />
       )}
-      <NotifierField name="notifiers" onChange={setFieldValue} />
+      <NotifierField name="notifiers" onChange={setFieldValue}
+        required={(mandatoryAttributes.includes('notifiers'))}
+      />
       <ObjectMembersField
         label={'Recipients'}
         style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
         multiple={true}
         name={'recipients'}
+        // required is true because of minimum one recipients
+        required={(mandatoryAttributes.includes('recipients') || true)}
       />
     </React.Fragment>
   );
@@ -298,7 +316,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       <div className={classes.container}>
         <Formik<TriggerDigestActivityAddInput>
           initialValues={digestInitialValues}
-          validationSchema={digestTriggerValidation(t_i18n)}
+          validationSchema={validator}
           onSubmit={onDigestSubmit}
           onReset={onReset}
         >
@@ -345,7 +363,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     >
       <Formik
         initialValues={digestInitialValues}
-        validationSchema={digestTriggerValidation(t_i18n)}
+        validationSchema={validator}
         onSubmit={onDigestSubmit}
         onReset={onReset}
       >

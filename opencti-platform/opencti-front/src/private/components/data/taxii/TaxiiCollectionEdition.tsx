@@ -21,6 +21,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,17 +56,24 @@ const taxiiCollectionMutationFieldPatch = graphql`
   }
 `;
 
-const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  authorized_members: Yup.array().nullable(),
-  taxii_public: Yup.bool().nullable(),
-  include_inferences: Yup.bool().nullable(),
-});
+const OBJECT_TYPE = 'TaxiiCollection';
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
+    taxii_public: Yup.bool().nullable(),
+    include_inferences: Yup.bool().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
   const initialValues = {
     name: taxiiCollection.name ?? '',
     description: taxiiCollection.description ?? '',
@@ -75,7 +83,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
-    taxiiCollectionValidation(t_i18n('This field is required'))
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -95,7 +103,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => taxiiCollectionValidation(t_i18n('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: Option[]) => validator
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
@@ -139,7 +147,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
+      validationSchema={validator}
     >
       {() => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -148,6 +156,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -156,6 +165,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             variant="standard"
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
@@ -182,7 +192,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                 name="authorized_members"
               />
             )}

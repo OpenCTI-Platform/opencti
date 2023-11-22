@@ -55,6 +55,9 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
                 label={t_i18n('File marking definition levels')}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
+                required={false}
+                // FIXME: Required Fields - make dynamic
+                // required={(mandatoryAttributes.includes('fileMarkings'))}
               />
               {!entityId
                 && (

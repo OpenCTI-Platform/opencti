@@ -43,6 +43,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const styles = (theme) => ({
   header: {
@@ -137,19 +138,27 @@ const feedEditionMutation = graphql`
   }
 `;
 
-const feedValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  separator: Yup.string().required(t('This field is required')),
-  feed_date_attribute: Yup.string().required(t('This field is required')),
-  rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
-  feed_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'Feed';
 
 const FeedEditionContainer = (props) => {
   const { t, classes, feed, handleClose, open } = props;
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    separator: Yup.string().required(t('This field is required')),
+    feed_date_attribute: Yup.string().required(t('This field is required')),
+    rolling_time: Yup.number().required(t('This field is required')),
+    feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
+    feed_public: Yup.bool().nullable(),
+    authorized_members: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const { ignoredAttributesInFeeds } = useAttributes();
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
@@ -325,7 +334,7 @@ const FeedEditionContainer = (props) => {
               <Formik
                 initialValues={initialValues}
                 enableReinitialize={true}
-                validationSchema={feedValidation(t)}
+                validationSchema={validator}
                 onSubmit={onSubmit}
                 onReset={onReset}
               >
@@ -336,6 +345,7 @@ const FeedEditionContainer = (props) => {
                       variant="standard"
                       name="name"
                       label={t('Name')}
+                      required={(mandatoryAttributes.includes('name'))}
                       fullWidth={true}
                     />
                     <Field
@@ -343,6 +353,7 @@ const FeedEditionContainer = (props) => {
                       variant="standard"
                       name="description"
                       label={t('Description')}
+                      required={(mandatoryAttributes.includes('description'))}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
@@ -362,13 +373,15 @@ const FeedEditionContainer = (props) => {
                         name="feed_public"
                         containerstyle={{ marginLeft: 2, marginTop: 20 }}
                         label={t('Public feed')}
+                        required={(mandatoryAttributes.includes('feed_public'))}
                       />
                       {!values.feed_public && (
                         <ObjectMembersField
                           label={'Accessible for'}
+                          required={(mandatoryAttributes.includes('authorized_members'))}
                           style={fieldSpacingContainerStyle}
                           multiple={true}
-                          helpertext={t('Let the field empty to grant all authenticated users')}
+                          helpertext={t('Leave the field empty to grant all authenticated users')}
                           name="authorized_members"
                         />
                       )}
@@ -378,6 +391,7 @@ const FeedEditionContainer = (props) => {
                       variant="standard"
                       name="separator"
                       label={t('Separator')}
+                      required={(mandatoryAttributes.includes('separator'))}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
@@ -387,6 +401,7 @@ const FeedEditionContainer = (props) => {
                       type="number"
                       name="rolling_time"
                       label={t('Rolling time (in minutes)')}
+                      required={(mandatoryAttributes.includes('rolling_time'))}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                       InputProps={{
@@ -412,6 +427,7 @@ const FeedEditionContainer = (props) => {
                       variant="standard"
                       name="feed_date_attribute"
                       label={t('Base attribute')}
+                      required={(mandatoryAttributes.includes('feed_date_attribute'))}
                       fullWidth={true}
                       multiple={false}
                       containerstyle={{ width: '100%', marginTop: 20 }}
@@ -424,6 +440,7 @@ const FeedEditionContainer = (props) => {
                       name="feed_types"
                       onChange={(_, value) => handleSelectTypes(value)}
                       label={t('Entity types')}
+                      required={(mandatoryAttributes.includes('feed_types'))}
                       fullWidth={true}
                       multiple={true}
                       containerstyle={{ width: '100%', marginTop: 20 }}
@@ -439,6 +456,7 @@ const FeedEditionContainer = (props) => {
                       type="checkbox"
                       name="include_header"
                       label={t('Include headers in the feed')}
+                      required={(mandatoryAttributes.includes('include_header'))}
                       containerstyle={{ marginTop: 20 }}
                     />
                     <Box sx={{ paddingTop: 4,
@@ -477,6 +495,7 @@ const FeedEditionContainer = (props) => {
                                   variant="standard"
                                   name="attribute"
                                   label={t('Column')}
+                                  required={true}
                                   fullWidth={true}
                                   value={feedAttributes[i].attribute}
                                   onChange={(event) => handleChangeField(i, event.target.value)
@@ -492,7 +511,9 @@ const FeedEditionContainer = (props) => {
                                   <FormControl
                                     className={classes.formControl}
                                   >
-                                    <InputLabel>
+                                    <InputLabel
+                                      required={true}
+                                    >
                                       {t(`entity_${selectedType}`)}
                                     </InputLabel>
                                     <QueryRenderer

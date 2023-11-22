@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect } from 'react';
+import * as Yup from 'yup';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
@@ -23,9 +24,9 @@ import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
-import { liveActivityTriggerValidation } from './AlertLiveCreation';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../../utils/hooks/useSchemaAttributes';
 
 interface AlertLiveEditionProps {
   handleClose: () => void;
@@ -89,11 +90,26 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const OBJECT_TYPE = 'Trigger';
+
 const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
   queryRef,
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    notifiers: Yup.array().nullable(),
+    recipients: Yup.array().min(1, t_i18n('Minimum one recipient')),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(
     alertEditionQuery,
@@ -135,7 +151,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
     name: string,
     value: Option | string | string[],
   ) => {
-    return liveActivityTriggerValidation(t_i18n)
+    return validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -147,7 +163,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => liveActivityTriggerValidation(t_i18n)
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => validator
     .validateAt(name, { [name]: value })
     .then(() => {
       commitFieldPatch({
@@ -199,6 +215,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
@@ -206,6 +223,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -219,6 +237,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                   values.map(({ value }) => value),
                 )
                 }
+                required={(mandatoryAttributes.includes('notifiers'))}
               />
               <ObjectMembersField
                 label={'Recipients'}
@@ -226,6 +245,8 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
                 name={'recipients'}
+                // required is true because of minimum one recipients
+                required={(mandatoryAttributes.includes('recipients') || true)}
               />
               <Box
                 sx={{

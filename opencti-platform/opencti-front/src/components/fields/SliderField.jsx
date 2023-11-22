@@ -40,7 +40,7 @@ const SliderField = ({
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel id="input-slider" shrink={true}>
+      <InputLabel id="input-slider">
         {label}
       </InputLabel>
       <Slider

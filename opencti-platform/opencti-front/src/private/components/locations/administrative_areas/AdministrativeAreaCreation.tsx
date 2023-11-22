@@ -18,7 +18,7 @@ import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated
 import { AdministrativeAreaCreationMutation, AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -90,8 +90,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    ADMINISTRATIVE_AREA_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -227,6 +230,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Administrative-Area']}
             />
@@ -234,6 +238,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -248,6 +253,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="latitude"
               label={t_i18n('Latitude')}
+              required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
             />
@@ -256,16 +262,19 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="longitude"
               label={t_i18n('Longitude')}
+              required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
@@ -273,10 +282,12 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             <ObjectMarkingField
               name="objectMarking"
               setFieldValue={setFieldValue}
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}

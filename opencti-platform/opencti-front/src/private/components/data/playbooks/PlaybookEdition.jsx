@@ -22,6 +22,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Drawer from '../../common/drawer/Drawer';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const playbookMutationFieldPatch = graphql`
   mutation PlaybookEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -31,16 +32,24 @@ export const playbookMutationFieldPatch = graphql`
   }
 `;
 
-const playbookValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const OBJECT_TYPE = 'Playbook';
 
 const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const initialValues = R.pickAll(['name', 'description'], playbook);
   const handleSubmitField = (name, value) => {
-    playbookValidation(t_i18n)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -62,7 +71,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={playbookValidation(t_i18n)}
+        validationSchema={validator}
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -71,6 +80,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               onSubmit={handleSubmitField}
             />
@@ -79,6 +89,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               variant="standard"
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onSubmit={handleSubmitField}

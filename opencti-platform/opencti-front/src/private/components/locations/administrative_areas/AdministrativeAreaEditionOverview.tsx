@@ -16,7 +16,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -132,6 +132,8 @@ interface AdministrativeAreaEditionFormValues {
   objectMarking?: Option[];
 }
 
+const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
+
 // eslint-disable-next-line max-len
 const AdministrativeAreaEditionOverview: FunctionComponent<
 AdministrativeAreaEditionOverviewProps
@@ -142,25 +144,30 @@ AdministrativeAreaEditionOverviewProps
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    ADMINISTRATIVE_AREA_TYPE,
+  );
   const administrativeArea = useFragment(
     administrativeAreaEditionOverviewFragment,
     administrativeAreaRef,
   );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
+      .typeError(t_i18n('This field must be a number'))
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const administrativeAreaValidator = useSchemaEditionValidation(
-    'Administrative-Area',
+    ADMINISTRATIVE_AREA_TYPE,
     basicShape,
   );
   const queries = {
@@ -252,6 +259,7 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -263,6 +271,7 @@ AdministrativeAreaEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -287,6 +296,7 @@ AdministrativeAreaEditionOverviewProps
             style={{ marginTop: 20 }}
             name="latitude"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -300,6 +310,7 @@ AdministrativeAreaEditionOverviewProps
             style={{ marginTop: 20 }}
             name="longitude"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -325,6 +336,7 @@ AdministrativeAreaEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -334,6 +346,7 @@ AdministrativeAreaEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

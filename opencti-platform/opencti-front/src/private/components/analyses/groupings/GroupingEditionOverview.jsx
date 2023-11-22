@@ -16,7 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -64,6 +64,7 @@ const groupingMutationRelationAdd = graphql`
   }
 `;
 
+const GROUPING_TYPE = 'Grouping';
 const groupingMutationRelationDelete = graphql`
   mutation GroupingEditionOverviewRelationDeleteMutation(
     $id: ID!
@@ -84,15 +85,18 @@ const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    GROUPING_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
-    context: Yup.string().trim().required(t_i18n('This field is required')),
+    context: Yup.string(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const groupingValidator = useSchemaEditionValidation('Grouping', basicShape);
+  const groupingValidator = useSchemaEditionValidation(GROUPING_TYPE, basicShape);
 
   const queries = {
     fieldPatch: groupingMutationFieldPatch,
@@ -197,6 +201,7 @@ const GroupingEditionOverviewComponent = (props) => {
               component={TextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
@@ -217,6 +222,7 @@ const GroupingEditionOverviewComponent = (props) => {
               label={t_i18n('Context')}
               type="grouping-context-ov"
               name="context"
+              required={(mandatoryAttributes.includes('context'))}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
@@ -229,6 +235,7 @@ const GroupingEditionOverviewComponent = (props) => {
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -255,6 +262,7 @@ const GroupingEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
@@ -264,6 +272,7 @@ const GroupingEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus

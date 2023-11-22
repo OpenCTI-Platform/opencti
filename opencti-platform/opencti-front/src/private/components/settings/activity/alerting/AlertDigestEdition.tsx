@@ -7,6 +7,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
@@ -22,10 +23,10 @@ import { Option } from '../../../common/form/ReferenceField';
 import { AlertDigestEdition_trigger$key } from './__generated__/AlertDigestEdition_trigger.graphql';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
-import { digestTriggerValidation } from './AlertDigestCreation';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertsField from './AlertsField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../../utils/hooks/useSchemaAttributes';
 
 interface AlertDigestEditionProps {
   handleClose: () => void
@@ -98,9 +99,28 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const OBJECT_TYPE = 'Trigger';
+
 const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    trigger_ids: Yup.array().min(1, t_i18n('Minimum one trigger')),
+    period: Yup.string(),
+    notifiers: Yup.array().min(1, t_i18n('Minimum one notifier')),
+    recipients: Yup.array().min(1, t_i18n('Minimum one recipient')),
+    day: Yup.string().nullable(),
+    time: Yup.string().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
   const [commitFieldPatch] = useApiMutation(alertDigestEditionFieldPatch);
@@ -117,7 +137,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
     });
   };
   const handleSubmitField = (name: string, value: Option | string | string[]) => {
-    return digestTriggerValidation(t_i18n).validateAt(name, { [name]: value }).then(() => {
+    return validator.validateAt(name, { [name]: value }).then(() => {
       commitFieldPatch({
         variables: {
           id: trigger?.id,
@@ -126,7 +146,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
       });
     }).catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => digestTriggerValidation(t_i18n)
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => validator
     .validateAt(name, { [name]: value })
     .then(() => {
       commitFieldPatch({
@@ -208,6 +228,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
@@ -215,6 +236,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -225,6 +247,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 name="trigger_ids"
                 setFieldValue={setFieldValue}
                 values={values.trigger_ids}
+                // required is true because of minimum one trigger_id
+                required={(mandatoryAttributes.includes('trigger_ids') || true)}
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 paginationOptions={paginationOptions}
@@ -234,6 +258,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 variant="standard"
                 name="period"
                 label={t_i18n('Period')}
+                required={(mandatoryAttributes.includes('period'))}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
@@ -296,12 +321,15 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
               <NotifierField
                 name="notifiers"
                 onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
+                required={(mandatoryAttributes.includes('notifiers'))}
               />
               <ObjectMembersField
                 label={'Recipients'}
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true} name={'recipients'}
+                // required is true because of minimum one recipients
+                required={(mandatoryAttributes.includes('recipients') || true)}
               />
             </Form>
           )}

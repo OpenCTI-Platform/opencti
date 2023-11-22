@@ -140,7 +140,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
   return (
     <div className={classes.div}>
-      <InputLabel shrink={true} variant="standard">
+      <InputLabel variant="standard">
         {label ? t_i18n(label) : t_i18n('Associated file')}
       </InputLabel>
       <Box

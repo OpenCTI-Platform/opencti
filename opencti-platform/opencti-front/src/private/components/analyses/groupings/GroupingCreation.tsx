@@ -21,7 +21,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
@@ -97,10 +97,13 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    GROUPING_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
-    context: Yup.string().trim().required(t_i18n('This field is required')),
+    context: Yup.string(),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
@@ -183,9 +186,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             detectDuplicate={['Grouping']}
-            fullWidth
-            askAi
+            fullWidth={true}
+            askAi={true}
           />
           <ConfidenceField
             entityType="Grouping"
@@ -195,6 +199,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             label={t_i18n('Context')}
             type="grouping-context-ov"
             name="context"
+            required={(mandatoryAttributes.includes('context'))}
             multiple={false}
             containerStyle={fieldSpacingContainerStyle}
             onChange={setFieldValue}
@@ -203,6 +208,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -213,6 +219,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -223,22 +230,26 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

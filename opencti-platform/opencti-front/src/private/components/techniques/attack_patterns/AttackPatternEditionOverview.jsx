@@ -15,7 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -82,12 +82,16 @@ export const attackPatternMutationRelationDelete = graphql`
   }
 `;
 
+const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
+
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    ATTACK_PATTERN_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -95,7 +99,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
     x_opencti_workflow_id: Yup.object(),
   };
   const attackPatternValidator = useSchemaEditionValidation(
-    'Attack-Pattern',
+    ATTACK_PATTERN_TYPE,
     basicShape,
   );
 
@@ -199,6 +203,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -209,6 +214,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="x_mitre_id"
+            required={(mandatoryAttributes.includes('x_mitre_id'))}
             label={t_i18n('External ID')}
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -222,6 +228,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -242,6 +249,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           />
           <KillChainPhasesField
             name="killChainPhases"
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -270,6 +278,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -279,6 +288,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

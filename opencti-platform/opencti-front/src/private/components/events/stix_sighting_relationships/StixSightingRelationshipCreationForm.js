@@ -16,7 +16,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
@@ -101,9 +101,12 @@ const StixSightingRelationshipCreationForm = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    STIX_SIGHTING_TYPE,
+  );
   const classes = useStyles();
   const basicShape = {
-    attribute_count: Yup.number().required(t_i18n('This field is required')),
+    attribute_count: Yup.number(),
     confidence: Yup.number().nullable(),
     first_seen: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -253,6 +256,7 @@ const StixSightingRelationshipCreationForm = ({
               variant="standard"
               name="attribute_count"
               label={t_i18n('Count')}
+              required={(mandatoryAttributes.includes('attribute_count'))}
               fullWidth={true}
               type="number"
               style={{ marginTop: 20 }}
@@ -266,6 +270,7 @@ const StixSightingRelationshipCreationForm = ({
               name="first_seen"
               textFieldProps={{
                 label: t_i18n('First seen'),
+                required: (mandatoryAttributes.includes('first_seen')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -276,6 +281,7 @@ const StixSightingRelationshipCreationForm = ({
               name="last_seen"
               textFieldProps={{
                 label: t_i18n('Last seen'),
+                required: (mandatoryAttributes.includes('last_seen')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -285,6 +291,7 @@ const StixSightingRelationshipCreationForm = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -292,11 +299,13 @@ const StixSightingRelationshipCreationForm = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
@@ -309,6 +318,7 @@ const StixSightingRelationshipCreationForm = ({
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />

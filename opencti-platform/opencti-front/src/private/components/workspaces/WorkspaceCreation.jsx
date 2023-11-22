@@ -17,6 +17,7 @@ import MarkdownField from '../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,14 +59,21 @@ export const importMutation = graphql`
   }
 `;
 
-const workspaceValidation = (t_i18n) => Yup.object().shape({
-  name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
-  description: Yup.string().nullable(),
-});
+const OBJECT_TYPE = 'Workspace';
 
 const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+    description: Yup.string().nullable(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
   const inputRef = useRef();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
@@ -190,7 +198,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
               name: '',
               description: '',
             }}
-            validationSchema={workspaceValidation(t_i18n)}
+            validationSchema={validator}
             onSubmit={onSubmit}
             onReset={onClose}
           >
@@ -200,12 +208,14 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   component={TextField}
                   name="name"
                   label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
                   fullWidth={true}
                 />
                 <Field
                   component={MarkdownField}
                   name="description"
                   label={t_i18n('Description')}
+                  required={(mandatoryAttributes.includes('description'))}
                   fullWidth={true}
                   multiline={true}
                   rows="4"

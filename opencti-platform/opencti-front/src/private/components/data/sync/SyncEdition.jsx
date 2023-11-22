@@ -23,6 +23,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,23 +55,30 @@ const syncMutationFieldPatch = graphql`
   }
 `;
 
-const syncValidation = (t) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-  uri: Yup.string().trim().required(t('This field is required')),
-  token: Yup.string(),
-  stream_id: Yup.string().trim().required(t('This field is required')),
-  current_state_date: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  listen_deletion: Yup.bool(),
-  no_dependencies: Yup.bool(),
-  ssl_verify: Yup.bool(),
-  synchronized: Yup.bool(),
-  user_id: Yup.mixed().nullable(),
-});
-
+const OBJECT_TYPE = 'Sync';
 const SyncEditionContainer = ({ synchronizer }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    name: Yup.string().trim(),
+    uri: Yup.string().trim(),
+    token: Yup.string(),
+    stream_id: Yup.string().trim(),
+    current_state_date: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    listen_deletion: Yup.bool(),
+    no_dependencies: Yup.bool(),
+    ssl_verify: Yup.bool(),
+    synchronized: Yup.bool(),
+    user_id: Yup.mixed().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
@@ -113,7 +121,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
 
   const handleSubmitField = (name, value) => {
     const parsedValue = name === 'user_id' ? value.value : value;
-    syncValidation(t_i18n)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -156,7 +164,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={syncValidation(t_i18n)}
+      validationSchema={validator}
     >
       {({ values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -165,6 +173,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -203,6 +212,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               variant="standard"
               name="uri"
               label={t_i18n('Remote OpenCTI URL')}
+              required={(mandatoryAttributes.includes('uri'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
               disabled={true}
@@ -212,6 +222,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               variant="standard"
               name="token"
               label={t_i18n('Remote OpenCTI token')}
+              required={(mandatoryAttributes.includes('token'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
               disabled={true}
@@ -221,6 +232,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               variant="standard"
               name="dd"
               label={t_i18n('Remote OpenCTI stream ID')}
+              required={(mandatoryAttributes.includes('stream_id'))}
               fullWidth={true}
               style={{ marginTop: 20 }}
               value={
@@ -247,6 +259,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               fullWidth: true,
               style: { marginTop: 20 },
             }}
+            required={(mandatoryAttributes.includes('current_state_date'))}
           />
           <Field
             component={SwitchField}
@@ -254,6 +267,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             name="listen_deletion"
             containerstyle={{ marginTop: 20 }}
             label={t_i18n('Take deletions into account')}
+            required={(mandatoryAttributes.includes('listen_deletion'))}
             onChange={handleSubmitField}
           />
           <Field
@@ -261,6 +275,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             type="checkbox"
             name="ssl_verify"
             label={t_i18n('Verify SSL certificate')}
+            required={(mandatoryAttributes.includes('ssl_verify'))}
             containerstyle={{ marginBottom: 20 }}
             onChange={handleSubmitField}
           />
@@ -283,6 +298,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 type="checkbox"
                 name="no_dependencies"
                 label={t_i18n('Avoid dependencies resolution')}
+                required={(mandatoryAttributes.includes('no_dependencies'))}
                 onChange={handleSubmitField}
               />
               <div>{t_i18n('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
@@ -293,6 +309,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 containerstyle={{ marginLeft: 2 }}
                 name="synchronized"
                 label={t_i18n('Use perfect synchronization')}
+                required={(mandatoryAttributes.includes('synchronized'))}
                 onChange={handleSubmitField}
               />
               <div>{t_i18n('Use this option only in case of platform to platform replication')}</div>

@@ -18,12 +18,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -34,7 +35,7 @@ interface TaxiiCollectionCreationForm {
   description: string
   include_inferences?: boolean
   name: string
-  taxii_public?: boolean
+  taxii_public: boolean
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -58,20 +59,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TaxiiCollectionCreationMutation = graphql`
-    mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
-        taxiiCollectionAdd(input: $input) {
-            ...TaxiiLine_node
-        }
+  mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
+    taxiiCollectionAdd(input: $input) {
+        ...TaxiiLine_node
     }
+  }
 `;
 
-const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  authorized_members: Yup.array().nullable(),
-  taxii_public: Yup.bool().nullable(),
-  include_inferences: Yup.bool().nullable(),
-});
+const OBJECT_TYPE = 'TaxiiCollection';
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
   const userProxy = store.get(userId);
@@ -87,6 +82,20 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
+
+  const basicShape: Yup.ObjectShape = {
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
+    taxii_public: Yup.bool().nullable(),
+    include_inferences: Yup.bool().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
@@ -134,11 +143,11 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
           initialValues={{
             name: '',
             description: '',
-            authorized_members: [],
+            authorized_members: [] as Option[],
             taxii_public: false,
             include_inferences: true,
           }}
-          validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -149,6 +158,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -156,6 +166,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 variant="standard"
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -180,7 +191,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
-                    helpertext={t_i18n('Let the field empty to grant all authenticated users')}
+                    helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}
                     name="authorized_members"
                   />
@@ -226,7 +237,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
+                  disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}

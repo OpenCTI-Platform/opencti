@@ -32,6 +32,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -45,10 +46,8 @@ const stixCoreObjectFileExportQuery = graphql`
   }
 `;
 
-const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
-  format: Yup.string().trim().required(t('This field is required')),
-  type: Yup.string().required(t('This field is required')),
-});
+const OBJECT_TYPE = 'Connector';
+
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
   id: string;
@@ -71,6 +70,17 @@ const StixCoreObjectFileExportComponent = ({
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    format: Yup.string().trim(),
+    type: Yup.string().trim(),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+
   const data = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     queryRef,
@@ -171,7 +181,7 @@ const StixCoreObjectFileExportComponent = ({
           contentMaxMarkings: [],
           fileMarkings: [],
         }}
-        validationSchema={exportValidation(t_i18n)}
+        validationSchema={validator}
         onSubmit={onSubmitExport}
         onReset={() => setOpen(false)}
       >
@@ -207,6 +217,7 @@ const StixCoreObjectFileExportComponent = ({
                           variant="standard"
                           name="format"
                           label={t_i18n('Export format')}
+                          required={(mandatoryAttributes.includes('connector_scope'))}
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         >
@@ -243,6 +254,9 @@ const StixCoreObjectFileExportComponent = ({
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                           limitToMaxSharing
+                          required={false}
+                          // FIXME: Required Fields - make dynamic
+                          // required={(mandatoryAttributes.includes('contentMaxMarkings'))}
                         />
                         <ObjectMarkingField
                           name="fileMarkings"
@@ -250,6 +264,9 @@ const StixCoreObjectFileExportComponent = ({
                           filterTargetIds={selectedContentMaxMarkingsIds}
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
+                          required={false}
+                          // FIXME: Required Fields - make dynamic
+                          // required={(mandatoryAttributes.includes('fileMarkings'))}
                         />
                       </DialogContent>
                     );

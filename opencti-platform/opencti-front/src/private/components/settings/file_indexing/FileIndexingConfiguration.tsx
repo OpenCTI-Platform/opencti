@@ -163,6 +163,7 @@ FileIndexingConfigurationProps
                 variant="standard"
                 name="max_file_size"
                 label={t_i18n('Max file size (in MB)')}
+                required={true}
                 fullWidth={true}
                 type="number"
                 style={{ marginBottom: 20 }}

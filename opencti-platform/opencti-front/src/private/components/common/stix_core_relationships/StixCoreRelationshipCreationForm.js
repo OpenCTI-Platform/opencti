@@ -19,7 +19,7 @@ import { isNone, useFormatter } from '../../../../components/i18n';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const stixCoreRelationshipBasicShape = (t) => ({
-  relationship_type: Yup.string().required(t('This field is required')),
+  relationship_type: Yup.string(),
   confidence: Yup.number().nullable(),
   start_time: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -123,6 +123,9 @@ const StixCoreRelationshipCreationForm = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    STIX_CORE_RELATIONSHIP_TYPE,
+  );
   const classes = useStyles();
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n));
 
@@ -254,6 +257,7 @@ const StixCoreRelationshipCreationForm = ({
               variant="standard"
               name="relationship_type"
               label={t_i18n('Relationship type')}
+              required={(mandatoryAttributes.includes('relationship_type'))}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
@@ -272,6 +276,7 @@ const StixCoreRelationshipCreationForm = ({
             <Field
               component={DateTimePickerField}
               name="start_time"
+              required={(mandatoryAttributes.includes('start_time'))}
               textFieldProps={{
                 label: t_i18n('Start time'),
                 variant: 'standard',
@@ -282,6 +287,7 @@ const StixCoreRelationshipCreationForm = ({
             <Field
               component={DateTimePickerField}
               name="stop_time"
+              required={(mandatoryAttributes.includes('stop_time'))}
               textFieldProps={{
                 label: t_i18n('Stop time'),
                 variant: 'standard',
@@ -293,6 +299,7 @@ const StixCoreRelationshipCreationForm = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -301,6 +308,7 @@ const StixCoreRelationshipCreationForm = ({
             {hasKillChainPhase(values.relationship_type) ? (
               <KillChainPhasesField
                 name="killChainPhases"
+                required={(mandatoryAttributes.includes('killChainPhases'))}
                 style={fieldSpacingContainerStyle}
               />
             ) : (
@@ -308,16 +316,19 @@ const StixCoreRelationshipCreationForm = ({
             )}
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />

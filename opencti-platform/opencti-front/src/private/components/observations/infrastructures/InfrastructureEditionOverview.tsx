@@ -19,7 +19,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { Option } from '../../common/form/ReferenceField';
@@ -150,6 +150,8 @@ interface InfrastructureEditionFormValues {
   confidence: number | null | undefined;
 }
 
+const INFRASTRUCTURE_TYPE = 'Infrastructure';
+
 const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEditionOverviewProps> = ({
   infrastructureData,
   context,
@@ -157,10 +159,13 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    INFRASTRUCTURE_TYPE,
+  );
   const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
 
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
@@ -174,7 +179,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     x_opencti_workflow_id: Yup.object(),
   };
   const infrastructureValidator = useSchemaEditionValidation(
-    'Infrastructure',
+    INFRASTRUCTURE_TYPE,
     basicShape,
   );
 
@@ -276,6 +281,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -287,6 +293,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             label={t_i18n('Infrastructure types')}
             type="infrastructure_type_ov"
             name="infrastructure_types"
+            required={(mandatoryAttributes.includes('infrastructure_types'))}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -305,6 +312,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           <Field
             component={DateTimePickerField}
             name="first_seen"
+            required={(mandatoryAttributes.includes('first_seen'))}
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
             textFieldProps={{
@@ -320,6 +328,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           <Field
             component={DateTimePickerField}
             name="last_seen"
+            required={(mandatoryAttributes.includes('last_seen'))}
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
             textFieldProps={{
@@ -334,6 +343,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           />
           <KillChainPhasesField
             name="killChainPhases"
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -348,6 +358,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -376,6 +387,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -385,6 +397,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

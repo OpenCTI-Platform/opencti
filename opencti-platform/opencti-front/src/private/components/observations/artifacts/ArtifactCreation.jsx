@@ -25,6 +25,10 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
+//
+// FIXME: Attempted to make required field changes to code, but FORMIK errors
+// were not reported back to user. Uncertain how to fix, changes rolled back.
+
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

@@ -18,7 +18,7 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -143,14 +143,19 @@ interface DataSourceEditionFormValues {
   references?: Option[];
 }
 
+const DATA_SOURCE_TYPE = 'Data-Source';
+
 const DataSourceEditionOverview: FunctionComponent<
 DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    DATA_SOURCE_TYPE,
+  );
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     x_mitre_platforms: Yup.array().nullable(),
@@ -159,7 +164,7 @@ DataSourceEditionOverviewProps
     x_opencti_workflow_id: Yup.object(),
   };
   const dataSourceValidator = useSchemaEditionValidation(
-    'Data-Source',
+    DATA_SOURCE_TYPE,
     basicShape,
   );
 
@@ -262,6 +267,7 @@ DataSourceEditionOverviewProps
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -281,6 +287,7 @@ DataSourceEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -309,6 +316,7 @@ DataSourceEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -318,6 +326,7 @@ DataSourceEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -329,6 +338,7 @@ DataSourceEditionOverviewProps
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
+            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             variant={'edit'}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
@@ -340,6 +350,7 @@ DataSourceEditionOverviewProps
             label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
+            required={(mandatoryAttributes.includes('collection_layers'))}
             variant={'edit'}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
