@@ -157,9 +157,8 @@ const StixCoreRelationshipCreationForm = ({
       initialValues={initialValues}
       validationSchema={stixCoreRelationshipValidator}
       onSubmit={onSubmit}
-      onReset={handleClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values }) => (
         <Form style={{ paddingBottom: 50 }}>
           <div className={classes.containerRelation}>
             <div className={classes.relationCreate}>
@@ -333,7 +332,7 @@ const StixCoreRelationshipCreationForm = ({
             <div className={classes.buttons}>
               <Button
                 variant="contained"
-                onClick={handleReset}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
