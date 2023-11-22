@@ -5,6 +5,7 @@ import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -39,8 +40,8 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
   const findByTypeFn = async () => {
     const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: {
-        mode: 'and',
-        filters: [{ key: 'target_type', values: targetTypes }],
+        mode: FilterMode.And,
+        filters: [{ key: ['target_type'], values: targetTypes }],
         filterGroups: [],
       },
       connectionFormat: false

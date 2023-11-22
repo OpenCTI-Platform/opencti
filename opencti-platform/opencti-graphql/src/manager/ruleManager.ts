@@ -47,6 +47,7 @@ import type {
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -183,8 +184,8 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
   const filters = {
-    mode: 'and',
-    filters: [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }],
+    mode: FilterMode.And,
+    filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: deletionIds, operator: FilterOperator.Wildcard }],
     filterGroups: [],
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {

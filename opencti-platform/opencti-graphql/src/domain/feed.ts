@@ -13,6 +13,7 @@ import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
 import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { FilterMode } from '../generated/graphql';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -81,10 +82,10 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsAr
   }
   // No user specify, listing only public csv feeds
   const filters = {
-    mode: 'and',
+    mode: FilterMode.And,
     filterGroups: [],
     filters: [{
-      key: 'feed_public',
+      key: ['feed_public'],
       values: ['true'],
     }],
   };

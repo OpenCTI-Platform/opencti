@@ -10,6 +10,7 @@ import type {
   QueryGroupingsNumberArgs,
   QueryGroupingsTimeSeriesArgs,
 } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import {
   type EntityOptions,
   internalLoadById,
@@ -46,7 +47,7 @@ export const groupingContainsStixObjectOrStixRelationship = async (context: Auth
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const opts: EntityOptions<BasicStoreEntityGrouping> = {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
         { key: ['internal_id'], values: [groupingId] },
         { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },

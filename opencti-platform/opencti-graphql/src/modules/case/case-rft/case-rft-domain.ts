@@ -15,6 +15,7 @@ import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import type { CaseRftAddInput } from '../../../generated/graphql';
+import { FilterMode } from '../../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFT);
@@ -45,10 +46,10 @@ export const caseRftContainsStixObjectOrStixRelationship = async (context: AuthC
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
-        { key: 'internal_id', values: [caseRftId] },
-        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+        { key: ['internal_id'], values: [caseRftId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
       ],
       filterGroups: [],
     },

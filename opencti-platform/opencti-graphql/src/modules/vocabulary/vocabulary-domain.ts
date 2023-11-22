@@ -1,6 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { countAllThings, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
@@ -54,9 +55,9 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   }
   return countAllThings(context, user, {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
-        { key: 'entity_type', values: categoryDefinition.entity_types },
+        { key: ['entity_type'], values: categoryDefinition.entity_types },
         { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] }
       ],
       filterGroups: [],

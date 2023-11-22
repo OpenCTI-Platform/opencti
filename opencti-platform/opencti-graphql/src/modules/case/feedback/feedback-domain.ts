@@ -14,6 +14,7 @@ import type { DomainFindById } from '../../../domain/domainTypes';
 import type { FeedbackAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
+import { FilterMode } from '../../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);
@@ -41,10 +42,10 @@ export const feedbackContainsStixObjectOrStixRelationship = async (context: Auth
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
-        { key: 'internal_id', values: [feedbackId] },
-        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+        { key: ['internal_id'], values: [feedbackId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
       ],
       filterGroups: [],
     },
