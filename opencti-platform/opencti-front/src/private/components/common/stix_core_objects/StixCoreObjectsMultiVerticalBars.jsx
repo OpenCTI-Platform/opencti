@@ -61,18 +61,21 @@ const StixCoreObjectsMultiVerticalBars = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let finalFilters = selection.filters;
-      const dataSelectionTypes = findFilterFromKey(finalFilters?.filters ?? [], 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
-      const dataSelectionObjectId = findFilterFromKey(finalFilters?.filters ?? [], 'elementId', 'eq')?.values ?? null;
-      const dataSelectionRelationshipType = findFilterFromKey(finalFilters?.filters ?? [], 'relationship_type', 'eq')?.values ?? null;
-      finalFilters = finalFilters.filter(
-        (n) => ![
-          'entity_type',
-          'elementId',
-          'relationship_type',
-          'toTypes',
-        ].includes(n.key),
-      );
+      const filtersContent = selection.filters?.filters ?? [];
+      const dataSelectionTypes = findFilterFromKey(filtersContent, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
+      const dataSelectionObjectId = findFilterFromKey(filtersContent, 'elementId', 'eq')?.values ?? null;
+      const dataSelectionRelationshipType = findFilterFromKey(filtersContent, 'relationship_type', 'eq')?.values ?? null;
+      const finalFilters = selection.filters ? {
+        ...selection.filters,
+        filters: filtersContent.filter(
+          (n) => ![
+            'entity_type',
+            'elementId',
+            'relationship_type',
+            'toTypes',
+          ].includes(n.key),
+        ),
+      } : undefined;
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
