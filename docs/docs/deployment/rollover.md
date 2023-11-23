@@ -141,7 +141,7 @@ curl -X POST "localhost:9200/_reindex?pretty" -H 'Content-Type: application/json
     "index": "opencti_history-000001"
   },
   "dest": {
-    "index": "octi_history-000001"
+    "index": "octi_history"
   }
 }
 '
