@@ -20,7 +20,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['marking-definition'].length).toBe(15);
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes.label.length).toBe(15);
-      expect(createEventsByTypes.identity.length).toBe(28);
+      expect(createEventsByTypes.identity.length).toBe(30);
       expect(createEventsByTypes.relationship.length).toBe(126);
       expect(createEventsByTypes.indicator.length).toBe(30);
       expect(createEventsByTypes['attack-pattern'].length).toBe(7);
@@ -36,9 +36,9 @@ describe('Raw streams tests', () => {
       }
       // 02 - CHECK UPDATE EVENTS
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(129);
+      expect(updateEvents.length).toBe(131);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
-      expect(updateEventsByTypes.report.length).toBe(3);
+      expect(updateEventsByTypes.report.length).toBe(5);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;
