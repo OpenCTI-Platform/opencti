@@ -207,8 +207,11 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results1.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(1);
-    expect(edgeIds[0]).toEqual(reportInternalId);
+    const edgeNames = results1.map((e) => e.node.name);
+    expect(edgeIds.length).toEqual(2); // the report created + the report in DATA-TEST-STIX2_v2
+    expect(edgeIds).includes(reportInternalId).toBeTruthy();
+    expect(edgeNames).includes('Report').toBeTruthy();
+    expect(edgeNames).includes('A demo report for testing purposes').toBeTruthy();
     // --- 02. Simple filter with no result --- //
     // entity_type = Position
     await changeTaxiiFilters({
@@ -242,7 +245,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results3_1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results3_1.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(2);
+    expect(edgeIds.length).toEqual(3); // the report + city2 + the report in DATA-TEST-STIX2_v2
     // global mode = 'and'
     await changeTaxiiFilters({
       mode: 'and',
@@ -291,9 +294,9 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results4 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results4.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(2);
-    expect(edgeIds).includes(city1InternalId).toBeTruthy();
-    expect(edgeIds).includes(reportInternalId).toBeTruthy();
+    expect(edgeIds.length).toEqual(3); // report + city1 + report in DATA-TEST-STIX2_v2
+    expect(edgeIds).includes(city2InternalId).toBeFalsy();
+    expect(edgeIds).includes(city3InternalId).toBeFalsy();
     // --- 05. filters and filter groups in 3 imbrication levels --- //
     // (entity_type = CITY OR REPORT)
     // AND
