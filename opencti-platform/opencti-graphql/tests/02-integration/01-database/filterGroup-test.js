@@ -376,7 +376,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
-    //  (published before 30/12/2021) AND (report_types = threat-report OR objects malwareXX)
+    //  (published before 20/09/2023) AND (report_types = threat-report OR objects malwareXX)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
         first: 10,
@@ -413,7 +413,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
         },
       } });
     expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report1').toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 20/09/2023)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
