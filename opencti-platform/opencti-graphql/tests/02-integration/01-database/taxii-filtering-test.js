@@ -266,26 +266,27 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     edgeIds = results3_2.map((e) => e.node.internal_id);
     expect(edgeIds.length).toEqual(0);
     // --- 04. filters and filter groups with different operators --- //
-    // (confidence < 15) OR (confidence > 15 AND entity_type != City)
+    // (confidence >= 90) OR (confidence = 20 AND entity_type != City AND entity_type != Position)
     await changeTaxiiFilters({
       mode: 'or',
       filters: [{
         key: 'confidence',
-        values: ['15'],
-        operator: 'lt',
+        values: ['90'],
+        operator: 'gte',
       }],
       filterGroups: [{
         mode: 'and',
         filters: [
           {
             key: 'confidence',
-            values: ['15'],
-            operator: 'gt',
+            values: ['20'],
+            operator: 'eq',
           },
           {
             key: 'entity_type',
-            values: ['City'],
+            values: ['City', 'Position'],
             operator: 'not_eq',
+            mode: 'and',
           },
         ],
         filterGroups: [],
@@ -294,9 +295,8 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results4 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results4.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(3); // report + city1 + report in DATA-TEST-STIX2_v2
-    expect(edgeIds).includes(city2InternalId).toBeFalsy();
-    expect(edgeIds).includes(city3InternalId).toBeFalsy();
+    expect(edgeIds.length).toEqual(3); // report1 + the 2 relationship with confidence = 20 in DATA-TEXT-STIX2_v2
+    expect(edgeIds).includes(reportInternalId).toBeTruthy();
     // --- 05. filters and filter groups in 3 imbrication levels --- //
     // (entity_type = CITY OR REPORT)
     // AND

@@ -137,5 +137,11 @@ export const schemaRelationsRefDefinition = {
 
   getDatabaseName(inputName: string): string | undefined {
     return this.inputNameToDatabaseName.get(inputName);
+  },
+
+  getAllDatabaseName(): string[] {
+    return this.getAllInputNames()
+      .map((name) => this.getDatabaseName(name))
+      .filter((n) => n !== undefined) as string[];
   }
 };
