@@ -29,7 +29,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
   );
   return (
     <List>
-      {capabilities?.edges?.map((edge) => {
+      {capabilities?.edges?.map((edge, i) => {
         const capability = edge?.node;
         if (capability) {
           const paddingLeft = (capability.name.split('_').length ?? -20) * 20 - 20;
@@ -59,7 +59,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
             );
           }
         }
-        return <div key="none" />;
+        return <div key={i} />;
       })}
     </List>
   );

@@ -132,11 +132,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <GroupPopover groupId={group.id} />
       </div>
       <div className="clearfix" />
-      <Grid
+       <Grid
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
-      >
+       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Basic information')}
@@ -312,8 +312,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Triggers recipientId={group.id} filterKey="authorized_members.id" />
           <GroupUsers groupId={group.id} />
         </Grid>
-      </Grid>
-      <GroupEdition groupId={group.id}/>
+       </Grid>
+       <GroupEdition groupId={group.id}/>
     </div>
   );
 };

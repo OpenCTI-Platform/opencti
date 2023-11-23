@@ -197,39 +197,34 @@ export const SubTypeLineDummy = ({
       <ListItemIcon style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
-      <ListItem style={{ paddingLeft: 0 }}>
-        <ListItemIcon>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              {Object.values(dataColumns).map((value) => (
-                <div
-                  key={value.label}
-                  className={classes.bodyItem}
-                  style={{ width: value.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height={20}
-                  />
-                </div>
-              ))}
-            </div>
-          }
+      <ListItemIcon>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-        <ListItemIcon>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItem>
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
+          </div>
+        }
+      />
     </ListItem>
   );
 };
