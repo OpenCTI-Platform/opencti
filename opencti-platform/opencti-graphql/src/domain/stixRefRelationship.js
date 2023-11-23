@@ -51,7 +51,7 @@ export const isDatable = (entityType, relationshipType) => {
 
 export const addStixRefRelationship = async (context, user, stixRefRelationship) => {
   if (!isStixRefRelationship(stixRefRelationship.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${stixRefRelationship.relationship_type}.`);
   }
   return createRelation(context, user, stixRefRelationship).then((relationData) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relationData, user);

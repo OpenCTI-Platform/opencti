@@ -78,7 +78,7 @@ export const externalReferenceAddRelation = async (context, user, externalRefere
     throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
   }
   if (!isStixRefRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${input.relationship_type}`);
   }
   const finalInput = { ...input, toId: externalReferenceId };
   return createRelation(context, user, finalInput).then((relationData) => {

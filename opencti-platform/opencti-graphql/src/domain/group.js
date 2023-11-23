@@ -136,7 +136,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     throw FunctionalError('Cannot add the relation, Group cannot be found.');
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   let finalInput;
   if (input.fromId) {

@@ -526,7 +526,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   const finalInput = R.assoc('fromId', roleId, input);
   const relationData = await createRelation(context, user, finalInput);
@@ -710,7 +710,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   // Check in case organization admins adds non-grantable goup a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
