@@ -10,6 +10,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddLocationsLines, { addLocationsLinesQuery } from './AddLocationsLines';
 import LocationCreation from '../../common/location/LocationCreation';
+import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   createButton: {
@@ -45,6 +46,12 @@ class AddLocations extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
+    const updater = (store) => insertNode(
+      store,
+      'Pagination_locations',
+      paginationOptions,
+      'locationAdd',
+    );
     return (
       <>
         <IconButton
@@ -92,6 +99,7 @@ class AddLocations extends Component {
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
+          updater={updater}
         />
       </>
     );

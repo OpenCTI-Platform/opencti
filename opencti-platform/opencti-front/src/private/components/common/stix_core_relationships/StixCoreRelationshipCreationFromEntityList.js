@@ -55,6 +55,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                parent_types
                 x_opencti_aliases
                 description
               }
@@ -69,6 +70,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                parent_types
                 x_opencti_aliases
                 description
               }
@@ -83,6 +85,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                parent_types
                 x_opencti_aliases
                 description
               }

@@ -12,6 +12,7 @@ import LocationCreation from '../../common/location/LocationCreation';
 import AddLocationsThreatActorGroupLines, {
   addLocationsThreatActorGroupLinesQuery,
 } from './AddLocationsThreatActorGroupLines';
+import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   createButton: {
@@ -19,7 +20,8 @@ const styles = () => ({
     marginTop: -15,
   },
   search: {
-    float: 'right',
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
 });
 
@@ -46,6 +48,12 @@ class AddLocationsThreatActorGroup extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
+    const updater = (store) => insertNode(
+      store,
+      'Pagination_threatActorGroup_locations',
+      paginationOptions,
+      'locationAdd',
+    );
     return (
       <>
         <IconButton
@@ -92,6 +100,7 @@ class AddLocationsThreatActorGroup extends Component {
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
+          updater={updater}
         />
       </>
     );

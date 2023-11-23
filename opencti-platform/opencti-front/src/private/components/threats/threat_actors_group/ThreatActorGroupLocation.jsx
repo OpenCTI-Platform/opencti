@@ -55,7 +55,7 @@ class ThreatActorGroupLocationsComponent extends Component {
         >
           <AddLocationsThreatActorGroup
             threatActorGroup={threatActorGroup}
-            threatActorGrouplLocations={threatActorGroup.locations.edges}
+            threatActorGroupLocations={threatActorGroup.locations.edges}
           />
         </Security>
         <div className="clearfix" />
