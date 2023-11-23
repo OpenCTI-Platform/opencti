@@ -211,9 +211,9 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(4);
+    expect(queryResult.data.reports.edges.length).toEqual(5); // the 4 reports created + the report in DATA-TEST-STIX2_v2.json
     queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data.reports.edges.length).toEqual(4);
+    expect(queryResult.data.reports.edges.length).toEqual(5);
     // --- 03. one filter --- //
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -231,7 +231,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports created + the report in DATA-TEST-STIX2_v2.json
     // --- 04. filters with different operators --- //
     // (report_types = threat-report) AND (report_types != internal-report)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
@@ -256,8 +256,9 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report1');
+    expect(queryResult.data.reports.edges.length).toEqual(2); // report1 and the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report1').toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 05. filters with different modes for the main filter group --- //
     // (published after 20/09/2023) OR (published before 30/12/2021)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
@@ -282,9 +283,10 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(2); // report1 and report3
+    expect(queryResult.data.reports.edges.length).toEqual(2); // report1 and report3 and report in DATA-TEST-STIX2_v2.json
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // (published after 20/09/2023) AND (published before 30/12/2021)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -327,7 +329,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the reports created + the report in DATA-TEST-STIX2_v2.json
     // (report_types = internal-report AND threat-report)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -447,9 +449,10 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           ],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 08. complex filter combination with groups and filters imbrication --- //
     // (confidence > 50)
     // OR
@@ -522,9 +525,10 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           ],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(2); // Report2 and Report4
+    expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 09. complex filter combination with several groups at the same level --- //
     // [(confidence > 25) AND (marking = marking2)]
     // OR
@@ -586,9 +590,10 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           ],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 10. filter with 'nil' operator --- //
     // test for 'nil': objectMarking is empty
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
@@ -626,7 +631,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
     // --- 11. Aggregation with filters --- //
     // count the number of entities with each marking
@@ -640,7 +645,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, distributionArgs);
-    expect(distribution.length).toEqual(2); // there are 2 markings
+    expect(distribution.length).toEqual(5); // there are 2 markings created + 3 markings in DATA-TEST-STIX2_v2
     const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
     expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
