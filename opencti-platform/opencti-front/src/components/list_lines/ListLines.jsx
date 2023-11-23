@@ -288,7 +288,7 @@ class ListLines extends Component {
                     handleToggleExports();
                   } else if (value && value === 'settings') {
                     this.handleOpenSettings();
-                  } else if (value !== 'export-csv') {
+                  } else if (value && value !== 'export-csv') {
                     handleChangeView(value);
                   }
                 }}
