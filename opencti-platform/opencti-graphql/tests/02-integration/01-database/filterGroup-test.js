@@ -6,6 +6,7 @@ import { distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ID_INTERNAL } from '../../../src/schema/general';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 // test queries involving dynamic filters
 
@@ -634,6 +635,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       isTo: true,
       operation: 'count',
       relationship_type: RELATION_OBJECT_MARKING,
+      fromTypes: [ENTITY_TYPE_CONTAINER_REPORT],
       toRole: 'object-marking_to',
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
     };
