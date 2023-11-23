@@ -171,6 +171,12 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
   return filterGroup;
 };
 
+// input: an array of relations names
+// return an array of the relations names AND their converted names in the rel_'database_name' format
+const extendRelationsWithConvertedNames = (relationNames: string[]) => {
+  return relationNames.concat(relationNames.map((relationName) => `rel_${relationName}`));
+};
+
 /**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
@@ -186,10 +192,10 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
     if (keys.length > 0) {
       let incorrectKeys = keys;
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
-      const availableRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const extendedAvailableStixCoreRelations = STIX_CORE_RELATIONSHIPS.concat(STIX_CORE_RELATIONSHIPS.map((relationName) => `rel_${relationName}`)); // for relations entity ids contained in an entity
+      const extendedAvailableRefRelations = extendRelationsWithConvertedNames(schemaRelationsRefDefinition.getAllInputNames());
+      const extendedAvailableStixCoreRelations = extendRelationsWithConvertedNames(STIX_CORE_RELATIONSHIPS);
       const availableKeys = availableAttributes
-        .concat(availableRelations)
+        .concat(extendedAvailableRefRelations)
         .concat(extendedAvailableStixCoreRelations)
         .concat(specialFilterKeys);
       keys.forEach((k) => {
