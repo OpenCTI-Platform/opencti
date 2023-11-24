@@ -184,14 +184,14 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
 export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  const adaptedFilters = filters
-    ? await resolveFilterGroupValuesWithCache(context, user, filters)
+  const convertedFilters = filters ? checkAndConvertFilters(filters) : undefined;
+  const finalFilters = convertedFilters
+    ? await resolveFilterGroupValuesWithCache(context, user, convertedFilters)
     : {
       mode: FilterMode.And,
       filters: [],
       filterGroups: [],
     };
-  const finalFilters = checkAndConvertFilters(adaptedFilters);
   if (finalFilters && after) {
     finalFilters.filters.push({ key: field, values: [after], operator: FilterOperator.Gte });
   }
