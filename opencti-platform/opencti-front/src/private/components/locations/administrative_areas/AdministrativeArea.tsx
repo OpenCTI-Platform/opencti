@@ -3,8 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
-import AdministrativeAreaPopover from './AdministrativeAreaPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -95,14 +93,6 @@ const AdministrativeArea = ({
   );
   return (
     <>
-      <StixDomainObjectHeader
-        entityType="Administrative-Area"
-        disableSharing={true}
-        stixDomainObject={administrativeArea}
-        isOpenctiAlias={true}
-        PopoverComponent={AdministrativeAreaPopover}
-        enableQuickSubscription={true}
-      />
       <Grid
         container={true}
         spacing={3}

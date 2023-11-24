@@ -3,35 +3,19 @@ import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import PositionPopover from './PositionPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class PositionKnowledgeComponent extends Component {
   render() {
-    const { classes, position } = this.props;
+    const { position } = this.props;
     const link = `/dashboard/locations/positions/${position.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Position'}
-          disableSharing={true}
-          stixDomainObject={position}
-          PopoverComponent={<PositionPopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -314,7 +298,7 @@ class PositionKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -338,5 +322,4 @@ const PositionKnowledge = createFragmentContainer(PositionKnowledgeComponent, {
 export default compose(
   inject18n,
   withRouter,
-  withStyles(styles),
 )(PositionKnowledge);

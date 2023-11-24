@@ -32,7 +32,7 @@ const TopMenuSettings = () => {
   }
 
   return (
-    <div>
+    <>
       <Security needs={[SETTINGS]}>
         <Button
           component={Link}
@@ -159,7 +159,7 @@ const TopMenuSettings = () => {
           <EEChip feature={t('File indexing')} clickable={false} />
         </Button>
       </Security>
-    </div>
+    </>
   );
 };
 

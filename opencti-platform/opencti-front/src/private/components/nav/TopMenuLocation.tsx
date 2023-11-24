@@ -31,19 +31,19 @@ const TopMenuLocation = () => {
   const location = useLocation();
   const { t } = useFormatter();
   return (
-    <div>
+    <>
       {!useIsHiddenEntity('Region') && (
         <Button
           component={Link}
           to="/dashboard/locations/regions"
           variant={
-            location.pathname === '/dashboard/locations/regions'
+            location.pathname.includes('/dashboard/locations/regions')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/locations/regions'
+            location.pathname.includes('/dashboard/locations/regions')
               ? 'secondary'
               : 'primary'
           }
@@ -104,13 +104,13 @@ const TopMenuLocation = () => {
           component={Link}
           to="/dashboard/locations/cities"
           variant={
-            location.pathname === '/dashboard/locations/cities'
+            location.pathname.includes('/dashboard/locations/cities')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/locations/cities'
+            location.pathname.includes('/dashboard/locations/cities')
               ? 'secondary'
               : 'primary'
           }
@@ -125,13 +125,13 @@ const TopMenuLocation = () => {
           component={Link}
           to="/dashboard/locations/positions"
           variant={
-            location.pathname === '/dashboard/locations/positions'
+            location.pathname.includes('/dashboard/locations/positions')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/locations/positions'
+            location.pathname.includes('/dashboard/locations/positions')
               ? 'secondary'
               : 'primary'
           }
@@ -141,7 +141,7 @@ const TopMenuLocation = () => {
           {t('Positions')}
         </Button>
       )}
-    </div>
+    </>
   );
 };
 

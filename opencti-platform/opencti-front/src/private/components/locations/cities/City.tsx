@@ -3,8 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import CityEdition from './CityEdition';
-import CityPopover from './CityPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -88,13 +86,6 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
   const city = useFragment<City_city$key>(cityFragment, cityData);
   return (
     <>
-      <StixDomainObjectHeader
-        entityType={'City'}
-        disableSharing={true}
-        stixDomainObject={city}
-        isOpenctiAlias={true}
-        PopoverComponent={CityPopover}
-      />
       <Grid
         container={true}
         spacing={3}

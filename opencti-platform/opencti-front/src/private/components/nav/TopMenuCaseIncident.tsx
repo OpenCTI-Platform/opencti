@@ -37,7 +37,7 @@ const TopMenuCaseIncident = ({ id: caseId }: { id: string }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   return (
-    <div>
+    <>
       <Button
         component={Link}
         to="/dashboard/cases/incidents"
@@ -175,7 +175,7 @@ const TopMenuCaseIncident = ({ id: caseId }: { id: string }) => {
           {t('Data')}
         </Button>
       </Security>
-    </div>
+    </>
   );
 };
 

@@ -3,8 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import RegionEdition from './RegionEdition';
-import RegionPopover from './RegionPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -100,14 +98,6 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   );
   return (
     <>
-      <StixDomainObjectHeader
-        entityType="Region"
-        disableSharing={true}
-        stixDomainObject={region}
-        isOpenctiAlias={true}
-        PopoverComponent={<RegionPopover id={region.id} />}
-        enableQuickSubscription={true}
-      />
       <Grid
         container={true}
         spacing={3}

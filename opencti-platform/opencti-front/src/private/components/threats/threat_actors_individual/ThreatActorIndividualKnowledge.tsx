@@ -157,7 +157,6 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              tabMode={true}
               {...routeProps}
             />
           )}

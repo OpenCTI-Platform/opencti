@@ -2,9 +2,19 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Redirect, Route, Switch, useParams } from 'react-router-dom';
+import {
+  Link,
+  Redirect,
+  Route,
+  Switch,
+  useLocation,
+  useParams,
+} from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -19,6 +29,7 @@ import { RootAdministrativeAreaQuery } from './__generated__/RootAdministrativeA
 import { RootAdministrativeAreasSubscription } from './__generated__/RootAdministrativeAreasSubscription.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -73,65 +84,125 @@ const RootAdministrativeAreaComponent = ({
     [administrativeAreaId],
   );
   useSubscription(subConfig);
+  const location = useLocation();
+  const { t } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   return (
     <>
       {administrativeArea ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea"
-            render={() => (
-              <AdministrativeArea administrativeAreaData={administrativeArea} />
-            )}
+        <div
+          style={{
+            paddingRight: location.pathname.includes(
+              `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
+            )
+              ? 200
+              : 0,
+          }}
+        >
+          <StixDomainObjectHeader
+            entityType="administrativeArea"
+            disableSharing={true}
+            stixDomainObject={administrativeArea}
+            PopoverComponent={
+              <AdministrativeAreaPopover id={administrativeArea.id} />
+            }
           />
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-            render={() => (
-              <Redirect
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              marginBottom: 4,
+            }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
+                )
+                  ? `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
+                label={t('Overview')}
               />
-            )}
-          />
-          <Route
-            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-            render={() => (
-              <AdministrativeAreaKnowledge
-                administrativeAreaData={administrativeArea}
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
+                label={t('Knowledge')}
               />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/analyses"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Administrative-Area'}
-                  disableSharing={true}
-                  stixDomainObject={administrativeArea}
-                  PopoverComponent={AdministrativeAreaPopover}
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
+                label={t('Analyses')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
+                label={t('Sightings')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
+                label={t('Data')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
+                label={t('History')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea"
+              render={() => (
+                <AdministrativeArea
+                  administrativeAreaData={administrativeArea}
                 />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
+                />
+              )}
+            />
+            <Route
+              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
+              render={() => (
+                <AdministrativeAreaKnowledge
+                  administrativeAreaData={administrativeArea}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/analyses"
+              render={(routeProps) => (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={administrativeArea}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Administrative-Area'}
-                  disableSharing={true}
-                  stixDomainObject={administrativeArea}
-                  PopoverComponent={AdministrativeAreaPopover}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
+              render={(routeProps) => (
                 <EntityStixSightingRelationships
                   entityId={administrativeArea.id}
                   entityLink={link}
@@ -139,20 +210,12 @@ const RootAdministrativeAreaComponent = ({
                   isTo={true}
                   {...routeProps}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/files"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Administrative-Area'}
-                  disableSharing={true}
-                  stixDomainObject={administrativeArea}
-                  PopoverComponent={AdministrativeAreaPopover}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/files"
+              render={(routeProps) => (
                 <FileManager
                   {...routeProps}
                   id={administrativeAreaId}
@@ -160,28 +223,20 @@ const RootAdministrativeAreaComponent = ({
                   connectorsExport={connectorsForExport}
                   entity={administrativeArea}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/history"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Administrative-Area'}
-                  disableSharing={true}
-                  stixDomainObject={administrativeArea}
-                  PopoverComponent={AdministrativeAreaPopover}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/history"
+              render={(routeProps) => (
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={administrativeAreaId}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
@@ -199,8 +254,8 @@ const RootAdministrativeArea = () => {
   );
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   return (
-    <div>
-            <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
+    <>
+      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[
@@ -229,7 +284,7 @@ const RootAdministrativeArea = () => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

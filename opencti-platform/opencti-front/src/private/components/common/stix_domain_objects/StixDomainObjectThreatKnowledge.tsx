@@ -243,7 +243,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
   };
   const paginationOptions = buildPaginationOptions();
   return (
-    <div>
+    <>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
           <Card
@@ -523,7 +523,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
-    </div>
+    </>
   );
 };
 

@@ -130,7 +130,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             <div className="clearfix" />
           </>
           <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 5 }}
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs value={location.pathname}>
               <Tab

@@ -5,21 +5,11 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import CityPopover from './CityPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const cityKnowledgeFragment = graphql`
   fragment CityKnowledge_city on City {
@@ -30,21 +20,13 @@ const cityKnowledgeFragment = graphql`
 `;
 
 const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
-  const classes = useStyles();
   const city = useFragment<CityKnowledge_city$key>(
     cityKnowledgeFragment,
     cityData,
   );
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'City'}
-        disableSharing={true}
-        stixDomainObject={city}
-        PopoverComponent={CityPopover}
-        variant="noaliases"
-      />
+    <>
       <Switch>
         <Route
           exact
@@ -301,7 +283,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           )}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

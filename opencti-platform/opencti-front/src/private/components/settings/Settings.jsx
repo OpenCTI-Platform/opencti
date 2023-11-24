@@ -512,7 +512,7 @@ const Settings = () => {
                               </ListItem>
                               <ListItem divider={true} classes={{ divider: !isEnterpriseEdition ? classes.dividerEE : undefined }}>
                                 <ListItemText
-                                  primary={t('Enable whitemark platform')}
+                                  primary={t('Remove Filigran logos')}
                                   classes={{ root: !isEnterpriseEdition ? classes.listItemTextEE : undefined }}
                                 />
                                 <Field

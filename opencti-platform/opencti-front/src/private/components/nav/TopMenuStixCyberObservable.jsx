@@ -40,7 +40,7 @@ class TopMenuStixCyberObservable extends Component {
       classes,
     } = this.props;
     return (
-      <div>
+      <>
         <Button
           component={Link}
           to="/dashboard/observations/observables"
@@ -183,7 +183,7 @@ class TopMenuStixCyberObservable extends Component {
         >
           {t('History')}
         </Button>
-      </div>
+      </>
     );
   }
 }

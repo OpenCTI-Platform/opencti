@@ -4,21 +4,11 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import RegionPopover from './RegionPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { RegionKnowledge_region$key } from './__generated__/RegionKnowledge_region.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const regionKnowledgeFragment = graphql`
   fragment RegionKnowledge_region on Region {
@@ -33,20 +23,13 @@ const RegionKnowledgeComponent = ({
 }: {
   regionData: RegionKnowledge_region$key;
 }) => {
-  const classes = useStyles();
   const region = useFragment<RegionKnowledge_region$key>(
     regionKnowledgeFragment,
     regionData,
   );
   const link = `/dashboard/locations/regions/${region.id}/knowledge`;
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Region'}
-        disableSharing={true}
-        stixDomainObject={region}
-        PopoverComponent={<RegionPopover id={region.id} />}
-      />
+    <>
       <Switch>
         <Route
           exact
@@ -316,7 +299,7 @@ const RegionKnowledgeComponent = ({
           )}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

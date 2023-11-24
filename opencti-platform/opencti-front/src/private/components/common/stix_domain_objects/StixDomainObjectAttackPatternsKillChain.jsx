@@ -115,7 +115,6 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       openExports,
       handleToggleExports,
       exportContext,
-      tabMode,
     } = this.props;
     const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
@@ -131,7 +130,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       <>
         <div
           className={classes.parameters}
-          style={{ marginTop: tabMode ? -12 : 0 }}
+          style={{ marginTop: -12 }}
         >
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
@@ -298,7 +297,6 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               currentColorsReversed={currentColorsReversed}
               currentModeOnlyActive={currentModeOnlyActive}
               handleAdd={this.handleAdd.bind(this)}
-              tabMode={tabMode}
             />
           )}
           {currentView === 'courses-of-action' && (

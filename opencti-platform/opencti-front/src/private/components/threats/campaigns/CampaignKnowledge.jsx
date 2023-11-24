@@ -3,13 +3,10 @@ import PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import CampaignPopover from './CampaignPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -17,24 +14,12 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class CampaignKnowledgeComponent extends Component {
   render() {
-    const { classes, campaign } = this.props;
+    const { campaign } = this.props;
     const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Campaign'}
-          stixDomainObject={campaign}
-          PopoverComponent={<CampaignPopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -307,7 +292,7 @@ class CampaignKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -330,8 +315,4 @@ const CampaignKnowledge = createFragmentContainer(CampaignKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CampaignKnowledge);
+export default compose(inject18n, withRouter)(CampaignKnowledge);

@@ -3,9 +3,19 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, Switch, useParams } from 'react-router-dom';
+import {
+  Route,
+  Redirect,
+  Switch,
+  useParams,
+  Link,
+  useLocation,
+} from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -20,6 +30,7 @@ import { RootCountriesSubscription } from '../countries/__generated__/RootCountr
 import { RootRegionQuery } from './__generated__/RootRegionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -70,59 +81,115 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
     [regionId],
   );
   useSubscription(subConfig);
+  const location = useLocation();
+  const { t } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
   return (
     <>
       {region ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId"
-            render={() => <Region regionData={region} />}
+        <div
+          style={{
+            paddingRight: location.pathname.includes(
+              `/dashboard/locations/regions/${region.id}/knowledge`,
+            )
+              ? 200
+              : 0,
+          }}
+        >
+          <StixDomainObjectHeader
+            entityType="Region"
+            disableSharing={true}
+            stixDomainObject={region}
+            PopoverComponent={<RegionPopover id={region.id} />}
           />
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId/knowledge"
-            render={() => (
-              <Redirect
-                to={`/dashboard/locations/regions/${regionId}/knowledge/overview`}
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              marginBottom: 4,
+            }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/locations/regions/${region.id}/knowledge`,
+                )
+                  ? `/dashboard/locations/regions/${region.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}`}
+                value={`/dashboard/locations/regions/${region.id}`}
+                label={t('Overview')}
               />
-            )}
-          />
-          <Route
-            path="/dashboard/locations/regions/:regionId/knowledge"
-            render={() => <RegionKnowledge regionData={region} />}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId/analyses"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Region'}
-                  disableSharing={true}
-                  stixDomainObject={region}
-                  PopoverComponent={<RegionPopover id={region.id} />}
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}/knowledge`}
+                value={`/dashboard/locations/regions/${region.id}/knowledge`}
+                label={t('Knowledge')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}/analyses`}
+                value={`/dashboard/locations/regions/${region.id}/analyses`}
+                label={t('Analyses')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}/sightings`}
+                value={`/dashboard/locations/regions/${region.id}/sightings`}
+                label={t('Sightings')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}/files`}
+                value={`/dashboard/locations/regions/${region.id}/files`}
+                label={t('Data')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/locations/regions/${region.id}/history`}
+                value={`/dashboard/locations/regions/${region.id}/history`}
+                label={t('History')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId"
+              render={() => <Region regionData={region} />}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/locations/regions/${regionId}/knowledge/overview`}
                 />
+              )}
+            />
+            <Route
+              path="/dashboard/locations/regions/:regionId/knowledge"
+              render={() => <RegionKnowledge regionData={region} />}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId/analyses"
+              render={(routeProps: any) => (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={region}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId/sightings"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Region'}
-                  disableSharing={true}
-                  stixDomainObject={region}
-                  PopoverComponent={<RegionPopover id={region.id} />}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId/sightings"
+              render={(routeProps: any) => (
                 <EntityStixSightingRelationships
                   entityId={region.id}
                   entityLink={link}
@@ -130,20 +197,12 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
                   isTo={true}
                   {...routeProps}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId/files"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Region'}
-                  disableSharing={true}
-                  stixDomainObject={region}
-                  PopoverComponent={<RegionPopover id={region.id} />}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId/files"
+              render={(routeProps: any) => (
                 <FileManager
                   {...routeProps}
                   id={regionId}
@@ -151,28 +210,20 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
                   connectorsExport={connectorsForExport}
                   entity={region}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/locations/regions/:regionId/history"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Region'}
-                  disableSharing={true}
-                  stixDomainObject={region}
-                  PopoverComponent={<RegionPopover id={region.id} />}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/regions/:regionId/history"
+              render={(routeProps: any) => (
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={regionId}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
@@ -188,7 +239,7 @@ const RootRegion = () => {
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
   return (
     <div>
-            <Route path="/dashboard/locations/regions/:regionId/knowledge">
+      <Route path="/dashboard/locations/regions/:regionId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[

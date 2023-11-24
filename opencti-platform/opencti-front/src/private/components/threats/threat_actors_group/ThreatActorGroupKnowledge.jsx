@@ -138,7 +138,6 @@ class ThreatActorGroupKnowledgeComponent extends Component {
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
-              tabMode={true}
               {...routeProps}
             />
           )}

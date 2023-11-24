@@ -142,7 +142,7 @@ class RootThreatActorGroup extends Component {
                       sx={{
                         borderBottom: 1,
                         borderColor: 'divider',
-                        marginBottom: 5,
+                        marginBottom: 4,
                       }}
                     >
                       <Tabs
@@ -182,7 +182,7 @@ class RootThreatActorGroup extends Component {
                           component={Link}
                           to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
                           value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
-                          label={t('Activity')}
+                          label={t('History')}
                         />
                       </Tabs>
                     </Box>

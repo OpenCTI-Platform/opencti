@@ -98,9 +98,9 @@ class StixDomainObjectKnowledge extends Component {
   render() {
     const { t, n, classes, stixDomainObjectId } = this.props;
     return (
-      <div>
+      <>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -141,7 +141,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -185,7 +185,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -269,7 +269,7 @@ class StixDomainObjectKnowledge extends Component {
             />
           </Grid>
         </Grid>
-      </div>
+      </>
     );
   }
 }

@@ -142,7 +142,7 @@ class RootIntrusionSet extends Component {
                       sx={{
                         borderBottom: 1,
                         borderColor: 'divider',
-                        marginBottom: 5,
+                        marginBottom: 4,
                       }}
                     >
                       <Tabs
@@ -182,7 +182,7 @@ class RootIntrusionSet extends Component {
                           component={Link}
                           to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
                           value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
-                          label={t('Activity')}
+                          label={t('History')}
                         />
                       </Tabs>
                     </Box>

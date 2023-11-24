@@ -3,8 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import PositionEdition from './PositionEdition';
-import PositionPopover from './PositionPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -46,13 +44,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
   );
   return (
     <>
-      <StixDomainObjectHeader
-        entityType={'Position'}
-        disableSharing={true}
-        stixDomainObject={position}
-        isOpenctiAlias={true}
-        PopoverComponent={<PositionPopover />}
-      />
       <Grid
         container={true}
         spacing={3}

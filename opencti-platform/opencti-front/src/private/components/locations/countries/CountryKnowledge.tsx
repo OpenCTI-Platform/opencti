@@ -4,22 +4,12 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import CountryPopover from './CountryPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CountryKnowledge_country$key } from './__generated__/CountryKnowledge_country.graphql';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const countryKnowledgeFragment = graphql`
   fragment CountryKnowledge_country on Country {
@@ -34,21 +24,13 @@ const CountryKnowledgeComponent = ({
 }: {
   countryData: CountryKnowledge_country$key;
 }) => {
-  const classes = useStyles();
   const country = useFragment<CountryKnowledge_country$key>(
     countryKnowledgeFragment,
     countryData,
   );
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Country'}
-        disableSharing={true}
-        stixDomainObject={country}
-        PopoverComponent={CountryPopover}
-        variant="noaliases"
-      />
+    <>
       <Switch>
         <Route
           exact
@@ -317,7 +299,7 @@ const CountryKnowledgeComponent = ({
           )}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

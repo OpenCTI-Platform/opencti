@@ -2,8 +2,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import CountryEdition from './CountryEdition';
-import CountryPopover from './CountryPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -107,14 +105,6 @@ const CountryComponent = ({
   );
   return (
     <>
-      <StixDomainObjectHeader
-        entityType="Country"
-        disableSharing={true}
-        stixDomainObject={country}
-        isOpenctiAlias={true}
-        PopoverComponent={CountryPopover}
-        enableQuickSubscription={true}
-      />
       <Grid
         container={true}
         spacing={3}

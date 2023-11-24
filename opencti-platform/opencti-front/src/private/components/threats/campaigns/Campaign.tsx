@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
-import CampaignPopover from './CampaignPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -17,9 +15,6 @@ import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -92,15 +87,8 @@ const CampaignComponent = ({
 }) => {
   const campaignData = useFragment(campaignFragment, campaign);
   const classes = useStyles();
-
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Campaign'}
-        stixDomainObject={campaignData}
-        PopoverComponent={<CampaignPopover />}
-        enableQuickSubscription
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +129,7 @@ const CampaignComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CampaignEdition campaignId={campaignData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

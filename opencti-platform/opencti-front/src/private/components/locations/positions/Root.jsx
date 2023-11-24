@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import * as R from 'ramda';
 import {
   QueryRenderer,
   requestSubscription,
@@ -17,6 +21,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -76,6 +81,8 @@ class RootPosition extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { positionId },
       },
@@ -92,7 +99,7 @@ class RootPosition extends Component {
               'countries',
               'areas',
               'cities',
-              'threats',
+              'locations',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
@@ -110,64 +117,113 @@ class RootPosition extends Component {
           render={({ props }) => {
             if (props) {
               if (props.position) {
+                const { position } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId"
-                      render={(routeProps) => (
-                        <Position {...routeProps} position={props.position} />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/locations/positions/${position.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Position"
+                      disableSharing={true}
+                      stixDomainObject={props.position}
+                      PopoverComponent={<PositionPopover />}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/locations/positions/${positionId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/locations/positions/${position.id}/knowledge`,
+                          )
+                            ? `/dashboard/locations/positions/${position.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}`}
+                          value={`/dashboard/locations/positions/${position.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/locations/positions/:positionId/knowledge"
-                      render={(routeProps) => (
-                        <PositionKnowledge
-                          {...routeProps}
-                          position={props.position}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/knowledge`}
+                          value={`/dashboard/locations/positions/${position.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Position'}
-                            disableSharing={true}
-                            stixDomainObject={props.position}
-                            PopoverComponent={<PositionPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/analyses`}
+                          value={`/dashboard/locations/positions/${position.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/files`}
+                          value={`/dashboard/locations/positions/${position.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/history`}
+                          value={`/dashboard/locations/positions/${position.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId"
+                        render={(routeProps) => (
+                          <Position {...routeProps} position={props.position} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/locations/positions/${positionId}/knowledge/overview`}
                           />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/locations/positions/:positionId/knowledge"
+                        render={(routeProps) => (
+                          <PositionKnowledge
+                            {...routeProps}
+                            position={props.position}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.position
                             }
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Position'}
-                            disableSharing={true}
-                            stixDomainObject={props.position}
-                            PopoverComponent={<PositionPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
                             entityId={props.position.id}
                             entityLink={link}
@@ -175,20 +231,12 @@ class RootPosition extends Component {
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Position'}
-                            disableSharing={true}
-                            stixDomainObject={props.position}
-                            PopoverComponent={<PositionPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={positionId}
@@ -196,28 +244,20 @@ class RootPosition extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.position}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/locations/positions/:positionId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Position'}
-                            disableSharing={true}
-                            stixDomainObject={props.position}
-                            PopoverComponent={<PositionPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/locations/positions/:positionId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={positionId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -235,4 +275,4 @@ RootPosition.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootPosition);
+export default R.compose(inject18n, withRouter)(RootPosition);

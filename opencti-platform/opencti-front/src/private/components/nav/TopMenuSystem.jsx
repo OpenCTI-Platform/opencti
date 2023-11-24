@@ -41,7 +41,7 @@ class TopMenuSystem extends Component {
       classes,
     } = this.props;
     return (
-      <div>
+      <>
         <Button
           component={Link}
           to="/dashboard/entities/systems"
@@ -185,7 +185,7 @@ class TopMenuSystem extends Component {
         >
           {t('History')}
         </Button>
-      </div>
+      </>
     );
   }
 }

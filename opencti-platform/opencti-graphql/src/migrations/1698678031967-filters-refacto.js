@@ -9,7 +9,7 @@ import {
 } from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
-import { READ_DATA_INDICES } from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -37,6 +37,9 @@ export const up = async (next) => {
     ['hashes_SHA512', 'hashes.SHA-512'],
   ]);
   const convertFilters = (filters, alreadyParsed = false, instance_trigger = false) => {
+    if (isEmptyField(filters)) {
+      return undefined;
+    }
     const parsedFilters = alreadyParsed ? filters : JSON.parse(filters);
     // filters already in new format are not converted again (code protection in case of migration re-run)
     if (parsedFilters.mode) {

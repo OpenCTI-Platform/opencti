@@ -46,7 +46,6 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
-import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTool from './TopMenuTool';
@@ -57,11 +56,6 @@ import TopMenuSector from './TopMenuSector';
 import TopMenuSystem from './TopMenuSystem';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuIndividual from './TopMenuIndividual';
-import TopMenuRegion from './TopMenuRegion';
-import TopMenuCountry from './TopMenuCountry';
-import TopMenuAdministrativeArea from './TopMenuAdministrativeArea';
-import TopMenuCity from './TopMenuCity';
-import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
@@ -214,8 +208,6 @@ const routes = {
     <TopMenuArtifact id={id} />
   ),
   '/dashboard/observations': () => <TopMenuObservations />,
-  // THREATS
-  '/dashboard/threats/campaigns/': (id: string) => <TopMenuCampaign id={id} />,
   '/dashboard/threats': () => <TopMenuThreats />,
   // ARSENAL
   '/dashboard/arsenal/malwares/': (id: string) => <TopMenuMalware id={id} />,
@@ -236,16 +228,6 @@ const routes = {
     <TopMenuIndividual id={id} />
   ),
   '/dashboard/entities': () => <TopMenuEntities />,
-  // LOCATIONS
-  '/dashboard/locations/countries/': (id: string) => <TopMenuCountry id={id} />,
-  '/dashboard/locations/regions/': (id: string) => <TopMenuRegion id={id} />,
-  '/dashboard/locations/administrative_areas/': (id: string) => (
-    <TopMenuAdministrativeArea id={id} />
-  ),
-  '/dashboard/locations/cities/': (id: string) => <TopMenuCity id={id} />,
-  '/dashboard/locations/positions/': (id: string) => (
-    <TopMenuPosition id={id} />
-  ),
   '/dashboard/locations': () => <TopMenuLocation />,
   // TECHNIQUES
   '/dashboard/techniques/attack_patterns/': (id: string) => (

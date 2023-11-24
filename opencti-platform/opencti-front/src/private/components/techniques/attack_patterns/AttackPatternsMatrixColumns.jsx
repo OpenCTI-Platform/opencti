@@ -263,7 +263,6 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       currentModeOnlyActive,
       hideBar,
       handleAdd,
-      tabMode,
     } = this.props;
     const { hover, menuElement, navOpen } = this.state;
     let changeKillChain = handleChangeKillChain;
@@ -369,11 +368,11 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       }),
       killChainPhases,
     );
-    let heightCalc = tabMode ? 300 : 220;
+    let heightCalc = 300;
     let className = navOpen ? classes.containerNavOpen : classes.container;
     if (marginRight) {
       if (hideBar) {
-        heightCalc = tabMode ? 280 : 200;
+        heightCalc = 280;
         className = navOpen
           ? classes.containerWithMarginRightNoBarNavOpen
           : classes.containerWithMarginRightNoBar;
@@ -546,7 +545,6 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   currentModeOnlyActive: PropTypes.bool,
   hideBar: PropTypes.bool,
   handleAdd: PropTypes.func,
-  tabMode: PropTypes.bool,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`

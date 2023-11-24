@@ -299,7 +299,6 @@ class IntrusionSetKnowledgeComponent extends Component {
 
 IntrusionSetKnowledgeComponent.propTypes = {
   intrusionSet: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 

@@ -137,7 +137,7 @@ const RootThreatActorIndividualComponent = ({
               enableQuickSubscription={true}
             />
             <Box
-              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 5 }}
+              sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >
               <Tabs
                 value={
@@ -176,7 +176,7 @@ const RootThreatActorIndividualComponent = ({
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
-                  label={t('Activity')}
+                  label={t('History')}
                 />
               </Tabs>
             </Box>

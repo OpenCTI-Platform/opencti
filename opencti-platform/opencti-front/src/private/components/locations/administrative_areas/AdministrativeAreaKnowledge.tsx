@@ -5,21 +5,11 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import AdministrativeAreaPopover from './AdministrativeAreaPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { AdministrativeAreaKnowledge_administrativeArea$key } from './__generated__/AdministrativeAreaKnowledge_administrativeArea.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const administrativeAreaKnowledgeFragment = graphql`
   fragment AdministrativeAreaKnowledge_administrativeArea on AdministrativeArea {
@@ -34,21 +24,13 @@ const AdministrativeAreaKnowledge = ({
 }: {
   administrativeAreaData: AdministrativeAreaKnowledge_administrativeArea$key;
 }) => {
-  const classes = useStyles();
   const administrativeArea = useFragment<AdministrativeAreaKnowledge_administrativeArea$key>(
     administrativeAreaKnowledgeFragment,
     administrativeAreaData,
   );
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Administrative-Area'}
-        disableSharing={true}
-        stixDomainObject={administrativeArea}
-        PopoverComponent={AdministrativeAreaPopover}
-        variant="noaliases"
-      />
+    <>
       <Switch>
         <Route
           exact
@@ -304,7 +286,7 @@ const AdministrativeAreaKnowledge = ({
           )}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

@@ -9,8 +9,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import SearchInput from '../../../../components/SearchInput';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
@@ -20,11 +19,10 @@ import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
-    marginTop: 15,
     paddingBottom: 70,
   },
   containerGraph: {
-    marginTop: 20,
+    paddingBottom: 0,
   },
   parameters: {
     marginTop: -10,
@@ -58,7 +56,14 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       mode: 'or',
     });
   }
-  if (authorId) additionalFilters.push({ key: 'createdBy', values: [authorId], operator: 'eq', mode: 'or' });
+  if (authorId) {
+    additionalFilters.push({
+      key: 'createdBy',
+      values: [authorId],
+      operator: 'eq',
+      mode: 'or',
+    });
+  }
   if (
     stixDomainObjectOrStixCoreRelationship
     && stixDomainObjectOrStixCoreRelationship.id
@@ -70,11 +75,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       mode: 'or',
     });
   }
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage(
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       filters: initialFilterGroup,
@@ -140,8 +141,13 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     },
   };
 
-  const defaultHandleAddFilter = (inputKey, id, op = 'eq', event = undefined) => {
-    const key = (inputKey === 'container_type') ? 'entity_type' : inputKey;
+  const defaultHandleAddFilter = (
+    inputKey,
+    id,
+    op = 'eq',
+    event = undefined,
+  ) => {
+    const key = inputKey === 'container_type' ? 'entity_type' : inputKey;
     helpers.handleAddFilter(key, id, op, event);
   };
 
@@ -154,55 +160,56 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     }
     return (
       <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={defaultHandleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          handleChangeView={helpers.handleChangeView}
-          openExports={openExports}
-          noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Container"
-          exportContext={exportContext}
-          keyword={searchTerm}
-          handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)}
-          redirectionMode={redirectionMode}
-          filters={filters}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          disableCards={true}
-          enableGraph={true}
-          availableFilterKeys={[
-            'report_types',
-            'container_type',
-            'confidence',
-            'x_opencti_workflow_id',
-            'objectLabel',
-            'createdBy',
-            'objectMarking',
-            'created',
-            'entity_type',
-          ]}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={defaultHandleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        handleChangeView={helpers.handleChangeView}
+        openExports={openExports}
+        noPadding={typeof onChangeOpenExports === 'function'}
+        exportEntityType="Container"
+        exportContext={exportContext}
+        keyword={searchTerm}
+        handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)
+        }
+        redirectionMode={redirectionMode}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        disableCards={true}
+        enableGraph={true}
+        availableFilterKeys={[
+          'report_types',
+          'container_type',
+          'confidence',
+          'x_opencti_workflow_id',
+          'objectLabel',
+          'createdBy',
+          'objectMarking',
+          'created',
+          'entity_type',
+        ]}
       >
         <QueryRenderer
-            query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
-            variables={paginationOptions}
-            render={({ props }) => (
-                <StixCoreObjectOrStixCoreRelationshipContainersLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    initialLoading={props === null}
-                    onLabelClick={defaultHandleAddFilter}
-                    setNumberOfElements={helpers.handleSetNumberOfElements}
-                    redirectionMode={redirectionMode}
-                />
-            )}
+          query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
+          variables={paginationOptions}
+          render={({ props }) => (
+            <StixCoreObjectOrStixCoreRelationshipContainersLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+              onLabelClick={defaultHandleAddFilter}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              redirectionMode={redirectionMode}
+            />
+          )}
         />
       </ListLines>
     );
@@ -218,96 +225,96 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       'report_types',
     ];
     return (
-        <div>
-          <div className={classes.parameters}>
-            <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput
-                  variant="small"
-                  onSubmit={helpers.handleSearch}
-                  keyword={searchTerm}
-              />
-            </div>
-            <Filters
-                availableFilterKeys={availableFilterKeys}
-                handleAddFilter={defaultHandleAddFilter}
+      <>
+        <div className={classes.parameters}>
+          <div style={{ float: 'left', marginRight: 20 }}>
+            <SearchInput
+              variant="small"
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
             />
-            {filters
-              && <FilterIconButton
-                filters={filters}
-                handleRemoveFilter={helpers.handleRemoveFilter}
-                className={5}
-                redirection
-              />
-            }
-            <div className="clearfix" />
           </div>
-          <QueryRenderer
-              query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
-              variables={{
-                id: stixDomainObjectOrStixCoreRelationship.id,
-                types: [
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                  'Vulnerability',
-                  'Attack-Pattern',
-                  'Sector',
-                  'Organization',
-                  'Individual',
-                  'Region',
-                  'Country',
-                  'City',
-                  'uses',
-                  'targets',
-                  'attributed-to',
-                  'located-at',
-                  'part-of',
-                  'employed-by',
-                  'resides-in',
-                  'citizen-of',
-                  'national-of',
-                  'belongs-to',
-                  'related-to',
-                ],
-                filters: paginationOptions.filters,
-                search: searchTerm,
-              }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                      <StixCoreObjectOrStixCoreRelationshipContainersGraph
-                          stixDomainObjectOrStixCoreRelationship={stixDomainObjectOrStixCoreRelationship}
-                          data={props}
-                          handleChangeView={helpers.handleChangeView}
-                      />
-                  );
-                }
-                return (
-                    <div>
-                      <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-                          disabled={true}
-                      />
-                      <Loader />
-                    </div>
-                );
-              }}
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            handleAddFilter={defaultHandleAddFilter}
           />
+          {filters && (
+            <FilterIconButton
+              filters={filters}
+              handleRemoveFilter={helpers.handleRemoveFilter}
+              className={5}
+              redirection
+            />
+          )}
+          <div className="clearfix" />
         </div>
+        <QueryRenderer
+          query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
+          variables={{
+            id: stixDomainObjectOrStixCoreRelationship.id,
+            types: [
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Incident',
+              'Malware',
+              'Tool',
+              'Vulnerability',
+              'Attack-Pattern',
+              'Sector',
+              'Organization',
+              'Individual',
+              'Region',
+              'Country',
+              'City',
+              'uses',
+              'targets',
+              'attributed-to',
+              'located-at',
+              'part-of',
+              'employed-by',
+              'resides-in',
+              'citizen-of',
+              'national-of',
+              'belongs-to',
+              'related-to',
+            ],
+            filters: paginationOptions.filters,
+            search: searchTerm,
+          }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixCoreObjectOrStixCoreRelationshipContainersGraph
+                  stixDomainObjectOrStixCoreRelationship={
+                    stixDomainObjectOrStixCoreRelationship
+                  }
+                  data={props}
+                  handleChangeView={helpers.handleChangeView}
+                />
+              );
+            }
+            return (
+              <>
+                <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+                  disabled={true}
+                />
+                <Loader />
+              </>
+            );
+          }}
+        />
+      </>
     );
   };
 
   return (
-      <div
-          className={
-            view === 'lines' ? classes.container : classes.containerGraph
-          }
-      >
-        {view === 'lines' ? renderLines() : ''}
-        {view === 'graph' ? renderGraph() : ''}
-      </div>
+    <div
+      className={view === 'lines' ? classes.container : classes.containerGraph}
+    >
+      {view === 'lines' ? renderLines() : ''}
+      {view === 'graph' ? renderGraph() : ''}
+    </div>
   );
 };
 

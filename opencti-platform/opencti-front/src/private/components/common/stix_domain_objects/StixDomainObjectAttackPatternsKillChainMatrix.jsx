@@ -23,7 +23,6 @@ class StixDomainObjectAttackPatternsKillChainMatrix extends Component {
       currentColorsReversed,
       currentModeOnlyActive,
       handleAdd,
-      tabMode,
     } = this.props;
     const attackPatterns = R.map(
       (n) => (n.node.to.entity_type === 'Attack-Pattern' ? n.node.to : n.node.from),
@@ -42,7 +41,6 @@ class StixDomainObjectAttackPatternsKillChainMatrix extends Component {
         currentModeOnlyActive={currentModeOnlyActive}
         hideBar={true}
         handleAdd={handleAdd}
-        tabMode={tabMode}
       />
     );
   }
@@ -60,7 +58,6 @@ StixDomainObjectAttackPatternsKillChainMatrix.propTypes = {
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
   handleAdd: PropTypes.func,
-  tabMode: PropTypes.bool,
 };
 
 export default R.compose(

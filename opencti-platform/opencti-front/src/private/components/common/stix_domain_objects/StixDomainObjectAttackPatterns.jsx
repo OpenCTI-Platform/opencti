@@ -23,7 +23,6 @@ const StixDomainObjectAttackPatterns = ({
   defaultStartTime,
   defaultStopTime,
   disableExport,
-  tabMode,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
@@ -64,21 +63,23 @@ const StixDomainObjectAttackPatterns = ({
                 handleAddFilter={helpers.handleAddFilter}
                 handleRemoveFilter={helpers.handleRemoveFilter}
                 handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-                  handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-                  filters={filters}
-                  searchTerm={searchTerm ?? ''}
-                  currentView={view}
-                  defaultStartTime={defaultStartTime}
-                  defaultStopTime={defaultStopTime}
-                  handleToggleExports={disableExport ? null : helpers.handleToggleExports}
-                  openExports={openExports}
-                tabMode={tabMode}/>
+                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                filters={filters}
+                searchTerm={searchTerm ?? ''}
+                currentView={view}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
+                handleToggleExports={
+                  disableExport ? null : helpers.handleToggleExports
+                }
+                openExports={openExports}
+              />
             );
           }
           return <Loader withRightPadding={true} />;
         }}
-        />
-      </div>
+      />
+    </div>
   );
 };
 
