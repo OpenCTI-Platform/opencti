@@ -9,7 +9,6 @@ import type {
 
 export type {
   FilterGroup as GqlFilterGroup,
-  Filter as GqlFilter,
 } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
 export type FilterGroup = {
@@ -273,9 +272,9 @@ const sanitizeFilterGroupKeysForFrontend = (filterGroup: GqlFilterGroup) : Filte
  * and stringify it, ready to be saved in backend.
  * @param filterGroup
  */
-export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
+export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string | null => {
   if (!filterGroup) {
-    return 'null';
+    return null;
   }
   return JSON.stringify(sanitizeFilterGroupKeysForBackend(filterGroup));
 };
