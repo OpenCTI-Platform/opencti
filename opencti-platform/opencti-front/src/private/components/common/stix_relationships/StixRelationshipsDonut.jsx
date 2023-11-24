@@ -276,8 +276,8 @@ const StixRelationshipsDonut = ({
       limit: selection.number ?? 10,
       filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
       isTo: selection.isTo,
-      dynamicFrom: convertFilters(selection.dynamicFrom),
-      dynamicTo: convertFilters(selection.dynamicTo),
+      dynamicFrom: selection.dynamicFrom,
+      dynamicTo: selection.dynamicTo,
     };
     return (
       <QueryRenderer

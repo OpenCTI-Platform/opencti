@@ -71,18 +71,18 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               {
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['login'],
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'login',
-                      value: 'login',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -99,54 +99,54 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 label: 'Create',
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['create'],
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'create',
-                      value: 'create',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
               {
                 label: 'Update',
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['update'],
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'update',
-                      value: 'update',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
               {
                 label: 'Delete',
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['delete'],
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'delete',
-                      value: 'delete',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -164,12 +164,14 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 date_attribute: 'created_at',
                 number: 20,
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
                     },
                   ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -187,18 +189,18 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 date_attribute: 'created_at',
                 number: 10,
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'entity_type',
+                      values: ['History'],
                     },
                   ],
-                  entity_type: [
-                    {
-                      id: 'History',
-                      value: 'Historic (knowledge)',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -215,22 +217,20 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 attribute: 'context_data.created_by_ref_id',
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['export', 'read'],
+                      operator: 'eq',
+                      mode: 'or',
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'export',
-                      value: 'export',
-                    },
-                    {
-                      id: 'read',
-                      value: 'read',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -246,18 +246,18 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               {
                 date_attribute: 'created_at',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['export'],
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'export',
-                      value: 'export',
-                    },
-                  ],
+                  filterGroups: [],
                 },
               },
             ]}
@@ -273,22 +273,20 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
               {
                 attribute: 'context_data.id',
                 filters: {
-                  members_user: [
+                  mode: 'and',
+                  filters: [
                     {
-                      id: user.id,
-                      value: user.name,
+                      key: 'members_user',
+                      values: [user.id],
+                    },
+                    {
+                      key: 'event_scope',
+                      values: ['export', 'read'],
+                      operator: 'eq',
+                      mode: 'or',
                     },
                   ],
-                  event_scope: [
-                    {
-                      id: 'export',
-                      value: 'export',
-                    },
-                    {
-                      id: 'read',
-                      value: 'read',
-                    },
-                  ],
+                  filterGroups: [],
                 },
                 number: 20,
               },
