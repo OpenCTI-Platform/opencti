@@ -99,7 +99,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
     queryFilters.push({ key: 'connections', nested: nestedTo });
   }
   return {
-    mode: adaptedFiltersGroup?.mode ?? 'and',
+    mode: adaptedFiltersGroup.mode,
     filters: queryFilters,
     filterGroups: queryFilterGroups,
   };

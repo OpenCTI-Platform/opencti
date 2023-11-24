@@ -185,18 +185,20 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
   const convertedFilters = filters ? checkAndConvertFilters(filters) : undefined;
-  const finalFilters = convertedFilters
+  let finalFilters = convertedFilters
     ? await resolveFilterGroupValuesWithCache(context, user, convertedFilters)
     : {
       mode: FilterMode.And,
       filters: [],
       filterGroups: [],
     };
-  if (after) {
-    finalFilters.filters.push({ key: field, values: [after], operator: FilterOperator.Gte });
-  }
-  if (before) {
-    finalFilters.filters.push({ key: field, values: [before], operator: FilterOperator.Lte });
+  if (after || before) {
+    const values = after && before ? [after, before] : [after ?? before];
+    finalFilters = {
+      mode: FilterMode.And,
+      filters: [{ key: field, values, operator: FilterOperator.Gte }],
+      filterGroups: [finalFilters],
+    };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
 };
