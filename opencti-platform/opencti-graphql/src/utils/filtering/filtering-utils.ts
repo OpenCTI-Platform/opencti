@@ -142,7 +142,7 @@ const specialFilterKeysConvertor = new Map([
  * @param filterGroup
  */
 const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup => {
-  if (filterGroup && isFilterGroupNotEmpty(filterGroup)) {
+  if (isFilterGroupNotEmpty(filterGroup)) {
     const { filters = [], filterGroups = [] } = filterGroup;
     const newFiltersContent: Filter[] = [];
     const newFilterGroups: FilterGroup[] = [];
@@ -167,7 +167,7 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
       filterGroups: newFilterGroups,
     };
   }
-  // empty or undefined -> untouched
+  // empty -> untouched
   return filterGroup;
 };
 
@@ -184,8 +184,14 @@ const getRelationsConvertedNames = (relationNames: string[]) => {
  * @param filterGroup
  */
 export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
+  if (!filterGroup) {
+    return undefined;
+  }
+  if (!filterGroup.mode || !filterGroup.filters || !filterGroup.filterGroups) { // detect filters in the old format or in a bad format
+    throw Error(`Incorrect filters format: ${JSON.stringify(filterGroup)}`);
+  }
   // TODO improvement: check filters keys correspond to the entity types if types is given
-  if (filterGroup && isFilterGroupNotEmpty(filterGroup)) {
+  if (isFilterGroupNotEmpty(filterGroup)) {
     // 01. check filters keys exist in schema
     const keys = extractFilterKeys(filterGroup)
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
