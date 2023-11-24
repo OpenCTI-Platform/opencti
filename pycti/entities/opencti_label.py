@@ -52,7 +52,7 @@ class Label:
         LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
         query = (
             """
-            query Labels($filters: [LabelsFiltering], $search: String, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
+            query Labels($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
                 labels(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
@@ -197,7 +197,13 @@ class Label:
 
     def read_or_create_unchecked(self, **kwargs):
         value = kwargs.get("value", None)
-        label = self.read(filters=[{"key": "value", "values": [value]}])
+        label = self.read(
+            filters={
+                "mode": "and",
+                "filters": [{"key": "value", "values": [value]}],
+                "filterGroups": [],
+            }
+        )
         if label is None:
             try:
                 return self.create(**kwargs)

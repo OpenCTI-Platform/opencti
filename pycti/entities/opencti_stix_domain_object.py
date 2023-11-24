@@ -1072,7 +1072,7 @@ class StixDomainObject:
         LOGGER.info("Listing Stix-Domain-Objects with filters %s.", json.dumps(filters))
         query = (
             """
-                query StixDomainObjects($types: [String], $filters: [StixDomainObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
+                query StixDomainObjects($types: [String], $filters: FilterGroup, $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
                     stixDomainObjects(types: $types, filters: $filters, search: $search, relationship_type: $relationship_type, elementId: $elementId, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
@@ -1215,20 +1215,32 @@ class StixDomainObject:
             # TODO: Change this logic and move it to the API.
             object_result = self.read(
                 types=types,
-                filters=[{"key": "name", "values": [name]}],
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "name", "values": [name]}],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
             if object_result is None:
                 object_result = self.read(
                     types=types,
-                    filters=[{"key": field_name, "values": [name]}],
+                    filters={
+                        "mode": "and",
+                        "filters": [{"key": field_name, "values": [name]}],
+                        "filterGroups": [],
+                    },
                     customAttributes=custom_attributes,
                 )
                 if object_result is None:
                     for alias in aliases:
                         object_result = self.read(
                             types=types,
-                            filters=[{"key": field_name, "values": [alias]}],
+                            filters={
+                                "mode": "and",
+                                "filters": [{"key": field_name, "values": [alias]}],
+                                "filterGroups": [],
+                            },
                             customAttributes=custom_attributes,
                         )
         return object_result
@@ -1582,7 +1594,11 @@ class StixDomainObject:
         label_name = kwargs.get("label_name", None)
         if label_name is not None:
             label = self.opencti.label.read(
-                filters=[{"key": "value", "values": [label_name]}]
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
             )
             if label:
                 label_id = label["id"]
@@ -1629,7 +1645,11 @@ class StixDomainObject:
         label_name = kwargs.get("label_name", None)
         if label_name is not None:
             label = self.opencti.label.read(
-                filters=[{"key": "value", "values": [label_name]}]
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
             )
             if label:
                 label_id = label["id"]

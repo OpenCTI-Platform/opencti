@@ -185,7 +185,7 @@ class ThreatActorGroup:
         LOGGER.info("Listing Threat-Actors-Group with filters %s.", json.dumps(filters))
         query = (
             """
-            query ThreatActorsGroup($filters: [ThreatActorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
+            query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
                 threatActorsGroup(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

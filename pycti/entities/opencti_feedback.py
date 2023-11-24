@@ -475,7 +475,7 @@ class Feedback:
         )
         query = (
             """
-                query Feedbacks($filters: [FeedbacksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: FeedbacksOrdering, $orderMode: OrderingMode) {
+                query Feedbacks($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: FeedbacksOrdering, $orderMode: OrderingMode) {
                     feedbacks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
@@ -597,10 +597,14 @@ class Feedback:
         if object_result is None and name is not None and created is not None:
             created_final = parse(created).strftime("%Y-%m-%d")
             object_result = self.read(
-                filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "created_day", "values": [created_final]},
-                ],
+                filters={
+                    "mode": "and",
+                    "filters": [
+                        {"key": "name", "values": [name]},
+                        {"key": "created_day", "values": [created_final]},
+                    ],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
         return object_result

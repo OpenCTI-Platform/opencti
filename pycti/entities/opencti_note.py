@@ -492,7 +492,7 @@ class Note:
         LOGGER.info("Listing Notes with filters %s.", json.dumps(filters))
         query = (
             """
-            query Notes($filters: [NotesFiltering], $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
+            query Notes($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
                 notes(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

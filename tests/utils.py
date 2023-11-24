@@ -7,6 +7,14 @@ from dateutil.parser import parse
 from pycti import OpenCTIApiClient, OpenCTIApiConnector, OpenCTIApiWork
 
 
+def is_filters_empty(filters):
+    if not filters:
+        return True
+    if len(filters["filters"]) == 0 and len(filters["filterGroups"]) == 0:
+        return True
+    return False
+
+
 def get_incident_start_date():
     return (
         parse("2019-12-01")

@@ -446,7 +446,7 @@ class Grouping:
         LOGGER.info("Listing Groupings with filters %s.", json.dumps(filters))
         query = (
             """
-            query Groupings($filters: [GroupingsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {
+            query Groupings($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {
                 groupings(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
@@ -565,10 +565,14 @@ class Grouping:
             object_result = self.read(id=stix_id, customAttributes=custom_attributes)
         if object_result is None and name is not None and context is not None:
             object_result = self.read(
-                filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "context", "values": [context]},
-                ],
+                filters={
+                    "mode": "and",
+                    "filters": [
+                        {"key": "name", "values": [name]},
+                        {"key": "context", "values": [context]},
+                    ],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
         return object_result

@@ -397,7 +397,7 @@ class StixCoreRelationship:
         start_time_stop = kwargs.get("startTimeStop", None)
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
-        filters = kwargs.get("filters", [])
+        filters = kwargs.get("filters", None)
         first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -416,7 +416,7 @@ class StixCoreRelationship:
         )
         query = (
             """
-                query StixCoreRelationships($elementId: [String], $elementWithTargetTypes: [String], $fromId: [String], $fromTypes: [String], $toId: [String], $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
+                query StixCoreRelationships($elementId: [String], $elementWithTargetTypes: [String], $fromId: [String], $fromTypes: [String], $toId: [String], $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: FilterGroup, $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
                     stixCoreRelationships(elementId: $elementId, elementWithTargetTypes: $elementWithTargetTypes, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
@@ -819,7 +819,11 @@ class StixCoreRelationship:
         label_name = kwargs.get("label_name", None)
         if label_name is not None:
             label = self.opencti.label.read(
-                filters=[{"key": "value", "values": [label_name]}]
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
             )
             if label:
                 label_id = label["id"]

@@ -22,12 +22,20 @@ opencti_api_client.intrusion_set.create(
 
 # Get the intrusion set Sandworm
 intrusion_set = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["Sandworm Team"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "name", "values": ["Sandworm Team"]}],
+        "filterGroups": [],
+    }
 )
 
 # Get all reports
 reports = opencti_api_client.report.list(
-    filters=[{"key": "objectContains", "values": [intrusion_set["id"]]}],
+    filters={
+        "mode": "and",
+        "filters": [{"key": "contains", "values": [intrusion_set["id"]]}],
+        "filterGroups": [],
+    },
     orderBy="published",
     orderMode="asc",
 )

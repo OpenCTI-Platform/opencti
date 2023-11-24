@@ -289,7 +289,7 @@ class DataComponent:
         LOGGER.info("Listing Data-Components with filters " + json.dumps(filters) + ".")
         query = (
             """
-            query DataComponents($filters: [DataComponentsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: DataComponentsOrdering, $orderMode: OrderingMode) {
+            query DataComponents($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: DataComponentsOrdering, $orderMode: OrderingMode) {
                 dataComponents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

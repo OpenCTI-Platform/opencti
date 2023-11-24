@@ -255,7 +255,7 @@ class Narrative:
         LOGGER.info("Listing Narratives with filters %s.", json.dumps(filters))
         query = (
             """
-            query Narratives($filters: [NarrativesFiltering!], $search: String, $first: Int, $after: ID, $orderBy: NarrativesOrdering, $orderMode: OrderingMode) {
+            query Narratives($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: NarrativesOrdering, $orderMode: OrderingMode) {
                 narratives(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

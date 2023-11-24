@@ -265,7 +265,7 @@ class IntrusionSet:
         LOGGER.info("Listing Intrusion-Sets with filters %s.", json.dumps(filters))
         query = (
             """
-            query IntrusionSets($filters: [IntrusionSetsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IntrusionSetsOrdering, $orderMode: OrderingMode) {
+            query IntrusionSets($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IntrusionSetsOrdering, $orderMode: OrderingMode) {
                 intrusionSets(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

@@ -21,7 +21,11 @@ opencti_api_client.intrusion_set.create(
 
 # Get the intrusion set APT28
 intrusion_set = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["APT28"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "name", "values": ["APT28"]}],
+        "filterGroups": [],
+    }
 )
 
 # Update the description

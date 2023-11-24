@@ -202,8 +202,14 @@ class EntityTest:
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "name",
-            "values": self.data()["name"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "name",
+                    "values": self.data()["name"],
+                }
+            ],
+            "filterGroups": [],
         }
 
     def stix_class(self):
@@ -345,8 +351,14 @@ class ExternalReferenceTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "external_id",
-            "values": self.data()["external_id"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "external_id",
+                    "values": self.data()["external_id"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -433,8 +445,14 @@ class KillChainPhaseTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "kill_chain_name",
-            "values": self.data()["kill_chain_name"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "kill_chain_name",
+                    "values": self.data()["kill_chain_name"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -453,8 +471,14 @@ class LabelTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "value",
-            "values": self.data()["value"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "value",
+                    "values": self.data()["value"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -540,8 +564,14 @@ class MalwareAnalysisTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "result_name",
-            "values": self.data()["result_name"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "result_name",
+                    "values": self.data()["result_name"],
+                }
+            ],
+            "filterGroups": [],
         }
 
     def update_data(self) -> Dict[str, Union[str, int]]:
@@ -568,8 +598,14 @@ class MarkingDefinitionTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "definition",
-            "values": self.data()["definition"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "definition",
+                    "values": self.data()["definition"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -599,8 +635,14 @@ class NoteTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "attribute_abstract",
-            "values": self.data()["abstract"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "attribute_abstract",
+                    "values": self.data()["abstract"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -635,7 +677,11 @@ class ObservedDataTest(EntityTest):
         return {"number_observed": 30}
 
     def get_filter(self) -> Dict[str, str]:
-        return {}
+        return {
+            "mode": "and",
+            "filters": [],
+            "filterGroups": [],
+        }
 
 
 class OpinionTest(EntityTest):
@@ -658,8 +704,14 @@ class OpinionTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "explanation",
-            "values": self.data()["explanation"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "explanation",
+                    "values": self.data()["explanation"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -733,7 +785,11 @@ class StixCoreRelationshipTest(EntityTest):
         ]
 
     def get_filter(self) -> Dict[str, str]:
-        return {}
+        return {
+            "mode": "and",
+            "filters": [],
+            "filterGroups": [],
+        }
 
 
 class StixNestedRefRelationshipTest(EntityTest):
@@ -787,7 +843,11 @@ class StixNestedRefRelationshipTest(EntityTest):
         ]
 
     def get_filter(self) -> Dict[str, str]:
-        return {}
+        return {
+            "mode": "and",
+            "filters": [],
+            "filterGroups": [],
+        }
 
 
 class StixSightingRelationshipTest(EntityTest):
@@ -888,8 +948,14 @@ class StixCyberObservableTest(EntityTest):
 
     def get_filter(self) -> Dict[str, str]:
         return {
-            "key": "value",
-            "values": self.data()["simple_observable_value"],
+            "mode": "and",
+            "filters": [
+                {
+                    "key": "value",
+                    "values": self.data()["simple_observable_value"],
+                }
+            ],
+            "filterGroups": [],
         }
 
 
@@ -920,7 +986,11 @@ class StixCyberObservableASTest(StixCyberObservableTest):
         }
 
     def get_filter(self) -> Dict[str, str]:
-        return {}
+        return {
+            "mode": "and",
+            "filters": [],
+            "filterGroups": [],
+        }
 
 
 class ToolTest(EntityTest):

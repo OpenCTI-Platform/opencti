@@ -20,7 +20,11 @@ opencti_api_client.intrusion_set.create(
 
 # Get the intrusion set APT28
 intrusion_set = opencti_api_client.intrusion_set.read(
-    filters=[{"key": "name", "values": ["EvilSET123"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "name", "values": ["EvilSET123"]}],
+        "filterGroups": [],
+    }
 )
 
 # Delete the intrusion set

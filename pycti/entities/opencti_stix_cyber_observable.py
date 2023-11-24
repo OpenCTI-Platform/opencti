@@ -652,7 +652,7 @@ class StixCyberObservable:
         )
         query = (
             """
-                query StixCyberObservables($types: [String], $filters: [StixCyberObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
+                query StixCyberObservables($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
                     stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
@@ -1963,7 +1963,11 @@ class StixCyberObservable:
         label_name = kwargs.get("label_name", None)
         if label_name is not None:
             label = self.opencti.label.read(
-                filters=[{"key": "value", "values": [label_name]}]
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
             )
             if label:
                 label_id = label["id"]
@@ -2010,7 +2014,11 @@ class StixCyberObservable:
         label_name = kwargs.get("label_name", None)
         if label_name is not None:
             label = self.opencti.label.read(
-                filters=[{"key": "value", "values": [label_name]}]
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
             )
             if label:
                 label_id = label["id"]

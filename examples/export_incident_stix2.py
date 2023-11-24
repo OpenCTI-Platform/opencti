@@ -15,7 +15,11 @@ opencti_api_client.incident.create(name="My new incident")
 
 # Get the incident created in the create_incident_with_ttps_and_indicators.py
 incident = opencti_api_client.incident.read(
-    filters=[{"key": "name", "values": ["My new incident"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "name", "values": ["My new incident"]}],
+        "filterGroups": [],
+    }
 )
 
 # Create the bundle

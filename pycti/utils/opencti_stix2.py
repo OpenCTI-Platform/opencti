@@ -644,10 +644,20 @@ class OpenCTIStix2:
                         else:
                             object_marking_ref_result = (
                                 self.opencti.marking_definition.read(
-                                    filters=[
-                                        {"key": "definition_type", "values": ["TLP"]},
-                                        {"key": "definition", "values": ["TLP:CLEAR"]},
-                                    ]
+                                    filters={
+                                        "mode": "and",
+                                        "filters": [
+                                            {
+                                                "key": "definition_type",
+                                                "values": ["TLP"],
+                                            },
+                                            {
+                                                "key": "definition",
+                                                "values": ["TLP:CLEAR"],
+                                            },
+                                        ],
+                                        "filterGroups": [],
+                                    }
                                 )
                             )
                             self.mapping_cache["marking_tlpclear"] = {
@@ -2124,28 +2134,40 @@ class OpenCTIStix2:
 
         if IdentityTypes.has_value(entity_type):
             if filters is not None:
-                filters.append({"key": "entity_type", "values": [entity_type]})
+                filters.filters.append({"key": "entity_type", "values": [entity_type]})
             else:
-                filters = [{"key": "entity_type", "values": [entity_type]}]
+                filters = {
+                    "mode": "and",
+                    "filters": [{"key": "entity_type", "values": [entity_type]}],
+                    "filterGroups": [],
+                }
             entity_type = "Identity"
 
         if LocationTypes.has_value(entity_type):
             if filters is not None:
-                filters.append({"key": "entity_type", "values": [entity_type]})
+                filters.filters.append({"key": "entity_type", "values": [entity_type]})
             else:
-                filters = [{"key": "entity_type", "values": [entity_type]}]
+                filters = {
+                    "mode": "and",
+                    "filters": [{"key": "entity_type", "values": [entity_type]}],
+                    "filterGroups": [],
+                }
             entity_type = "Location"
 
         if StixCyberObservableTypes.has_value(entity_type):
             if filters is not None:
-                filters.append({"key": "entity_type", "values": [entity_type]})
+                filters.filters.append({"key": "entity_type", "values": [entity_type]})
             else:
-                filters = [{"key": "entity_type", "values": [entity_type]}]
+                filters = {
+                    "mode": "and",
+                    "filters": [{"key": "entity_type", "values": [entity_type]}],
+                    "filterGroups": [],
+                }
             entity_type = "Stix-Cyber-Observable"
 
         if entity_type == "Container":
             if filters is not None:
-                filters.append(
+                filters.filters.append(
                     {
                         "key": "entity_type",
                         "values": [
@@ -2161,21 +2183,25 @@ class OpenCTIStix2:
                     }
                 )
             else:
-                filters = [
-                    {
-                        "key": "entity_type",
-                        "values": [
-                            "Report",
-                            "Grouping",
-                            "Note",
-                            "Observed-Data",
-                            "Opinion",
-                            "Case-Incident",
-                            "Case-Rfi",
-                            "Case-Rft",
-                        ],
-                    }
-                ]
+                filters = {
+                    "mode": "and",
+                    "filters": [
+                        {
+                            "key": "entity_type",
+                            "values": [
+                                "Report",
+                                "Grouping",
+                                "Note",
+                                "Observed-Data",
+                                "Opinion",
+                                "Case-Incident",
+                                "Case-Rfi",
+                                "Case-Rft",
+                            ],
+                        }
+                    ],
+                    "filterGroups": [],
+                }
             entity_type = "Stix-Domain-Object"
 
         # List
