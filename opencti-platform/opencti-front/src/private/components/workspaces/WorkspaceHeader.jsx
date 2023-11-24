@@ -21,12 +21,20 @@ import {
   CloseOutlined,
   MoveToInboxOutlined,
   LockPersonOutlined,
-  ContentCopyOutlined,
+  ContentCopyOutlined, Delete,
 } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
+import { DialogTitle } from '@mui/material';
+import DialogContent from '@mui/material/DialogContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
@@ -38,6 +46,7 @@ import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
+import Transition from '../../../components/Transition';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -103,21 +112,23 @@ const WorkspaceHeader = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const openTagsCreate = false;
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [openTags, setOpenTags] = useState(false);
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
-  const [moreButtonClicked, setMoreButtonClicked] = useState(false);
   const tags = R.propOr([], 'tags', workspace);
 
   const handleOpenTag = () => {
     setOpenTag(!openTag);
-    if (tags.length > 0) {
-      setMoreButtonClicked(true);
-    }
+  };
+
+  const handleToggleOpenTags = () => {
+    setOpenTags(!openTags);
   };
   const getCurrentTags = () => workspace.tags;
   const handleChangeNewTags = (event) => {
@@ -145,7 +156,6 @@ const WorkspaceHeader = ({
     }
     setOpenTag(false);
     setNewTag('');
-    setMoreButtonClicked(false);
     resetForm();
   };
   const deleteTag = (tag) => {
@@ -414,8 +424,8 @@ const WorkspaceHeader = ({
               />
             </div>
           </Security>
-            <div style={{ marginTop: moreButtonClicked ? '8px' : '-8px', float: 'right' }}>
-              {R.take(1, tags).map(
+            <div className={classes.tags}>
+              {R.take(2, tags).map(
                 (tag) => tag.length > 0 && (
                   <Chip
                     key={tag}
@@ -427,19 +437,19 @@ const WorkspaceHeader = ({
               )}
               <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
                 {tags.length > 1 ? (
-                  <Button
+                  <IconButton
                     color="primary"
                     aria-tag="More"
-                    onClick={handleOpenTag}
+                    onClick={handleToggleOpenTags}
+                    size="large"
                     style={{ fontSize: 14, marginRight: '7px' }}
                   >
-                    <DotsHorizontalCircleOutline />
-                    &nbsp;&nbsp;{t('More')}
-                  </Button>
+                    <DotsHorizontalCircleOutline fontSize="small" />
+                  </IconButton>
                 ) : (
                   <Tooltip title={t('Add tag')}>
                     <IconButton
-                      style={{ float: 'left', marginTop: '-6px' }}
+                      style={{ float: 'left', marginTop: '-5px' }}
                       color={openTag ? 'primary' : 'secondary'}
                       aria-tag="Tag"
                       onClick={handleOpenTag}
@@ -453,6 +463,7 @@ const WorkspaceHeader = ({
                     </IconButton>
                   </Tooltip>
                 )}
+
                 <Slide
                   direction="left"
                   in={openTag}
@@ -464,7 +475,7 @@ const WorkspaceHeader = ({
                       initialValues={{ new_tag: '' }}
                       onSubmit={onSubmitCreateTag}
                     >
-                      <Form style={{ float: 'right', marginTop: '8px' }}>
+                      <Form style={{ float: 'right' }}>
                         <Field
                           component={TextField}
                           variant="standard"
@@ -479,6 +490,101 @@ const WorkspaceHeader = ({
                     </Formik>
                   </div>
                 </Slide>
+
+                <Dialog
+                  PaperProps={{ elevation: 1 }}
+                  open={openTags}
+                  TransitionComponent={Transition}
+                  onClose={handleToggleOpenTags}
+                  fullWidth={true}
+                >
+                  <DialogTitle>
+                    {t('Entity aliases')}
+                    <Formik
+                      initialValues={{ new_tag: '' }}
+                      onSubmit={onSubmitCreateTag}
+                    >
+                      {({ submitForm }) => (
+                        <Form style={{ float: 'right' }}>
+                          <Field
+                            component={TextField}
+                            variant="standard"
+                            name="new_tag"
+                            autoFocus={true}
+                            placeholder={t('New tag')}
+                            className={classes.tagsInput}
+                            onChange={handleChangeNewTags}
+                            value={newTag}
+                            onKeyDown={(e) => {
+                              if (e.keyCode === 13) {
+                                return submitForm();
+                              }
+                              return true;
+                            }}
+                          />
+                        </Form>
+                      )}
+                    </Formik>
+                  </DialogTitle>
+                  <DialogContent dividers={true}>
+                    <List>
+                      {(tags).map(
+                        (label) => label.length > 0 && (
+                          <ListItem key={label} disableGutters={true} dense={true}>
+                            <ListItemText primary={label} />
+                            <ListItemSecondaryAction>
+                              <IconButton
+                                edge="end"
+                                aria-label="delete"
+                                onClick={() => deleteTag(label)}
+                                size="large"
+                              >
+                                <Delete />
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                    <div
+                      style={{
+                        display: openTagsCreate ? 'block' : 'none',
+                      }}
+                    >
+                      <Formik
+                        initialValues={{ new_tag: '' }}
+                        onSubmit={onSubmitCreateTag}
+                      >
+                        {({ submitForm }) => (
+                          <Form>
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name="new_tag"
+                              autoFocus={true}
+                              fullWidth={true}
+                              placeholder={t('New tags')}
+                              className={classes.tagsInput}
+                              onChange={handleChangeNewTags}
+                              value={newTag}
+                              onKeyDown={(e) => {
+                                if (e.keyCode === 13) {
+                                  return submitForm();
+                                }
+                                return true;
+                              }}
+                            />
+                          </Form>
+                        )}
+                      </Formik>
+                    </div>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleToggleOpenTags} color="primary">
+                      {t('Close')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </Security>
             </div>
           {variant === 'investigation' && (
