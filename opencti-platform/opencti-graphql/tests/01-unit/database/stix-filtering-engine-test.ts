@@ -261,6 +261,29 @@ describe('Filter Boolean logic engine ', () => {
   });
 
   describe('testFilterGroup', () => {
+    // fake testers for our dummy data (a simplistic version)
+    const testerByFilterKeyMap = {
+      id: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.id]),
+      refs: (data: any, filter: Filter) => engine.testStringFilter(filter, data.refs),
+      score: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.score),
+      labels: (data: any, filter: Filter) => engine.testStringFilter(filter, data.labels),
+      color: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.color]),
+      height: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.height),
+      posX: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posX),
+      posY: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posY),
+      options: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.options),
+    };
+
+    it('handles empty filters', () => {
+      const emptyFilterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [],
+        filterGroups: [],
+      };
+
+      expect(engine.testFilterGroup({ id: 'x', score: 50 }, emptyFilterGroup, testerByFilterKeyMap)).toEqual(true);
+    });
+
     it('recurse properly inside a complex FilterGroup', () => {
       const filterGroup: FilterGroup = { // FG
         mode: FilterMode.And,
@@ -323,19 +346,6 @@ describe('Filter Boolean logic engine ', () => {
         height: 175,
         posX: 10,
         posY: 12,
-      };
-
-      // fake testers for our dummy data (a simplistic version)
-      const testerByFilterKeyMap = {
-        id: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.id]),
-        refs: (data: any, filter: Filter) => engine.testStringFilter(filter, data.refs),
-        score: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.score),
-        labels: (data: any, filter: Filter) => engine.testStringFilter(filter, data.labels),
-        color: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.color]),
-        height: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.height),
-        posX: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posX),
-        posY: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posY),
-        options: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.options),
       };
 
       // our example data+filter matches
