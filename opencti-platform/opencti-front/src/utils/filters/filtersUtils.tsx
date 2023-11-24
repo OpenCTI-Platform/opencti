@@ -272,9 +272,9 @@ const sanitizeFilterGroupKeysForFrontend = (filterGroup: GqlFilterGroup) : Filte
  * and stringify it, ready to be saved in backend.
  * @param filterGroup
  */
-export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string | null => {
+export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
   if (!filterGroup) {
-    return null;
+    return JSON.stringify(initialFilterGroup);
   }
   return JSON.stringify(sanitizeFilterGroupKeysForBackend(filterGroup));
 };
