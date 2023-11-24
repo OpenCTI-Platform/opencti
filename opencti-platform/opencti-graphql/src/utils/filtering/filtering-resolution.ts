@@ -192,10 +192,10 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
       filters: [],
       filterGroups: [],
     };
-  if (finalFilters && after) {
+  if (after) {
     finalFilters.filters.push({ key: field, values: [after], operator: FilterOperator.Gte });
   }
-  if (finalFilters && before) {
+  if (before) {
     finalFilters.filters.push({ key: field, values: [before], operator: FilterOperator.Lte });
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
