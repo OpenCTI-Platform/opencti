@@ -7,12 +7,12 @@ import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../d
 import { UnsupportedError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 
 export const checkRetentionRule = async (context, input) => {
   const { filters, max_retention: maxDays } = input;
-  const jsonFilters = JSON.parse(filters || '{}');
+  const jsonFilters = filters ? JSON.parse(filters) : null;
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = await convertFiltersToQueryOptions(context, RETENTION_MANAGER_USER, jsonFilters, { before });
   const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);

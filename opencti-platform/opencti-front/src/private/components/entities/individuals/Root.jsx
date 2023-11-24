@@ -71,10 +71,11 @@ class RootIndividual extends Component {
         params: { individualId },
       },
     } = props;
+    const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-individual-${individualId}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
@@ -95,10 +96,11 @@ class RootIndividual extends Component {
         params: { individualId },
       },
     } = this.props;
+    const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-individual-${individualId}`,
+      LOCAL_STORAGE_KEY,
       this.state,
       true,
     );

@@ -47,8 +47,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -61,8 +60,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -102,8 +99,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         after: ID
         orderBy: StixObjectOrStixRelationshipsOrdering
         orderMode: OrderingMode
-        filters: [StixObjectOrStixRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
         types: [String]
         all: Boolean
@@ -113,8 +109,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         after: ID
         orderBy: ContainersOrdering
         orderMode: OrderingMode
-        filters: [ContainersFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
         types: [String]
         viaTypes: [String]
@@ -153,30 +148,6 @@ enum GroupingsOrdering {
     creator
 }
 
-# Filtering
-enum GroupingsFilter {
-    name
-    context
-    created
-    created_at
-    confidence
-    source_reliability
-    objectLabel
-    createdBy
-    markedBy
-    labelledBy
-    objectContains
-    x_opencti_workflow_id
-    revoked
-    creator
-}
-input GroupingsFiltering {
-    key: [GroupingsFilter!]!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type GroupingConnection {
     pageInfo: PageInfo!
@@ -195,8 +166,7 @@ type Query {
         after: ID
         orderBy: GroupingsOrdering
         orderMode: OrderingMode
-        filters: [GroupingsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
         toStix: Boolean
     ): GroupingConnection @auth(for: [KNOWLEDGE])
@@ -209,8 +179,7 @@ type Query {
         startDate: DateTime!
         endDate: DateTime!
         interval: String!
-        filters: [GroupingsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsNumber(
@@ -218,8 +187,7 @@ type Query {
         objectId: String
         authorId: String
         endDate: DateTime
-        filters: [GroupingsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): Number @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsDistribution(
         objectId: String
@@ -231,8 +199,7 @@ type Query {
         startDate: DateTime
         endDate: DateTime
         dateAttribute: String
-        filters: [GroupingsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean

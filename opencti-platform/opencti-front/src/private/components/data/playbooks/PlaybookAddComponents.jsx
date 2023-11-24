@@ -23,7 +23,13 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
+  filtersAfterSwitchLocalMode,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/SwitchField';
@@ -92,29 +98,33 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
-  const [filters, setFilters] = useState(
-    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(currentConfig?.filters));
+
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
   );
   const [componentId, setComponentId] = useState(
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
-  const handleAddFilter = (key, id, value) => {
-    if (filters[key] && filters[key].length > 0) {
+
+  const handleAddFilter = (k, id, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, k, id, op));
+  };
+  const handleRemoveFilter = (k, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, k, op));
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
       setFilters({
         ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+        mode: filters.mode === 'and' ? 'or' : 'and',
       });
-    } else {
-      setFilters({ ...filters, [key]: [{ id, value }] });
     }
-  };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
   };
   const handleAddStep = () => {
     setActionsInputs(R.append({}, actionsInputs));
@@ -321,7 +331,7 @@ const PlaybookAddComponentsContent = ({
     const { name, ...config } = values;
     let finalConfig = config;
     if (configurationSchema?.properties?.filters) {
-      const jsonFilters = JSON.stringify(filters);
+      const jsonFilters = serializeFilterGroupForBackend(filters);
       finalConfig = { ...config, filters: jsonFilters };
     }
     if (configurationSchema?.properties?.actions) {
@@ -443,11 +453,11 @@ const PlaybookAddComponentsContent = ({
                             availableFilterKeys={[
                               'entity_type',
                               'x_opencti_workflow_id',
-                              'assigneeTo',
-                              'objectContains',
-                              'markedBy',
-                              'labelledBy',
-                              'creator',
+                              'objectAssignee',
+                              'objects',
+                              'objectMarking',
+                              'objectLabel',
+                              'creator_id',
                               'createdBy',
                               'priority',
                               'severity',
@@ -471,6 +481,8 @@ const PlaybookAddComponentsContent = ({
                         <FilterIconButton
                           filters={filters}
                           handleRemoveFilter={handleRemoveFilter}
+                          handleSwitchGlobalMode={handleSwitchGlobalMode}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
                           classNameNumber={2}
                           styleNumber={2}
                           redirection

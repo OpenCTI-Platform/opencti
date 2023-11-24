@@ -21,6 +21,7 @@ import { dayStartDate } from '../../../../../utils/Time';
 import { AlertingLine_node$key } from './__generated__/AlertingLine_node.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertingPopover from './AlertingPopover';
+import { deserializeFilterGroupForFrontend } from '../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -111,7 +112,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   const classes = useStyles();
   const { t, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
-  const filters = JSON.parse(data.filters ?? '{}');
+  const filters = deserializeFilterGroupForFrontend(data.filters);
   const currentTime = data.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
@@ -164,7 +165,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
-            {data.trigger_type === 'live' && (
+            {data.trigger_type === 'live' && filters && (
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}

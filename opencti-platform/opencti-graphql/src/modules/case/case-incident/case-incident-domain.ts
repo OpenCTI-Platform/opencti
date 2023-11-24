@@ -15,6 +15,7 @@ import type { DomainFindById } from '../../../domain/domainTypes';
 import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
+import { FilterMode } from '../../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
@@ -44,10 +45,14 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
 export const caseIncidentContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseIncidentId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [caseIncidentId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['internal_id'], values: [caseIncidentId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const caseIncidentFound = await findAll(context, user, args);
   return caseIncidentFound.edges.length > 0;

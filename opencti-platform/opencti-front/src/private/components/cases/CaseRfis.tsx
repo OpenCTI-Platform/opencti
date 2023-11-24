@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
@@ -17,19 +16,20 @@ import {
   CaseRfiLinesCasesPaginationQuery$variables,
 } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRfisProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_RFI = 'view-caseRfis';
+export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRfiLinesCasesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_RFI,
+    LOCAL_STORAGE_KEY,
     {
       numberOfElements: {
         number: 0,
@@ -39,7 +39,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -50,7 +50,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY_CASE_RFI);
+  } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
     const {
       sortBy,
@@ -112,11 +112,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       caseRfisLinesQuery,
       paginationOptions,
     );
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Case-Rfi', value: 'Case-Rfi' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Case-Rfi');
     return (
       <ListLines
         sortBy={sortBy}
@@ -126,6 +122,8 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
@@ -138,18 +136,17 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'assigneeTo',
-          'participant',
+          'objectAssignee',
+          'objectParticipant',
           'severity',
           'priority',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
         ]}
       >
         {queryRef && (

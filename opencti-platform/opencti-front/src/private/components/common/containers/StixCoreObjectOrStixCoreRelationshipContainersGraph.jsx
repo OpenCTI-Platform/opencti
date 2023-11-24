@@ -98,7 +98,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
+    const markedBy = R.propOr([], 'objectMarking', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
@@ -821,7 +821,7 @@ export const stixCoreObjectOrStixCoreRelationshipContainersGraphQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipContainersGraphQuery(
     $id: String!
     $types: [String]
-    $filters: [ContainersFiltering]
+    $filters: FilterGroup
     $search: String
   ) {
     ...StixCoreObjectOrStixCoreRelationshipContainersGraph_data

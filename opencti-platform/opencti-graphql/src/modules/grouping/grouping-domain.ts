@@ -10,6 +10,7 @@ import type {
   QueryGroupingsNumberArgs,
   QueryGroupingsTimeSeriesArgs,
 } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import {
   type EntityOptions,
   internalLoadById,
@@ -26,9 +27,10 @@ import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelati
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
-export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, channelId: string) => {
-  return storeLoadById<BasicStoreEntityGrouping>(context, user, channelId, ENTITY_TYPE_CONTAINER_GROUPING);
+export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
+  return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityGrouping>) => {
@@ -44,10 +46,14 @@ export const addGrouping = async (context: AuthContext, user: AuthUser, grouping
 export const groupingContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, groupingId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const opts: EntityOptions<BasicStoreEntityGrouping> = {
-    filters: [
-      { key: ['internal_id'], values: [groupingId] },
-      { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['internal_id'], values: [groupingId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const groupingFound = await findAll(context, user, opts);
   return groupingFound.edges.length > 0;
@@ -67,19 +73,19 @@ export const groupingsNumber = async (context: AuthContext, user: AuthUser, args
 
 export const groupingsTimeSeriesByEntity = (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsTimeSeriesByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
@@ -88,7 +94,7 @@ export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUs
 
 export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
@@ -97,7 +103,7 @@ export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUs
 
 export const groupingsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsDistributionArgs) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 // endregion

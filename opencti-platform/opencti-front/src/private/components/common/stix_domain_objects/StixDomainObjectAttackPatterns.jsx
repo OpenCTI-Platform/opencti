@@ -6,6 +6,7 @@ import StixDomainObjectAttackPatternsKillChain, {
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -24,7 +25,7 @@ const StixDomainObjectAttackPatterns = ({
   disableExport,
   tabMode,
 }) => {
-  const LOCAL_STORAGE_KEY = `view-attack-patterns-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
   const classes = useStyles();
   const {
     viewStorage,
@@ -33,7 +34,7 @@ const StixDomainObjectAttackPatterns = ({
   } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     openExports: false,
-    filters: {},
+    filters: initialFilterGroup,
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;
@@ -62,23 +63,22 @@ const StixDomainObjectAttackPatterns = ({
                 handleSearch={helpers.handleSearch}
                 handleAddFilter={helpers.handleAddFilter}
                 handleRemoveFilter={helpers.handleRemoveFilter}
-                filters={filters}
-                searchTerm={searchTerm ?? ''}
-                currentView={view}
-                defaultStartTime={defaultStartTime}
-                defaultStopTime={defaultStopTime}
-                handleToggleExports={
-                  disableExport ? null : helpers.handleToggleExports
-                }
-                openExports={openExports}
-                tabMode={tabMode}
-              />
+                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+                  handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                  filters={filters}
+                  searchTerm={searchTerm ?? ''}
+                  currentView={view}
+                  defaultStartTime={defaultStartTime}
+                  defaultStopTime={defaultStopTime}
+                  handleToggleExports={disableExport ? null : helpers.handleToggleExports}
+                  openExports={openExports}
+                tabMode={tabMode}/>
             );
           }
           return <Loader withRightPadding={true} />;
         }}
-      />
-    </div>
+        />
+      </div>
   );
 };
 

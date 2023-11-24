@@ -117,9 +117,13 @@ ExternalReferencesFieldProps
   const searchExternalReferences = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    let filters: ExternalReferencesQueriesSearchQuery$variables['filters'] = [];
+    let filters: ExternalReferencesQueriesSearchQuery$variables['filters'];
     if (id) {
-      filters = [{ key: ['usedBy'], values: [id] }];
+      filters = {
+        mode: 'and',
+        filters: [{ key: ['usedBy'], values: [id] }],
+        filterGroups: [],
+      };
     }
     fetchQuery(externalReferencesQueriesSearchQuery, {
       search: event && event.target.value,

@@ -6,6 +6,7 @@ import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationshipsEntitiesView';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
+import { initialFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -28,12 +29,13 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
 
   const { entityId, entityLink, defaultStartTime, defaultStopTime, relationshipTypes, isRelationReversed } = props;
   const entityTypes = ['Stix-Cyber-Observable'];
+  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    `view-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`,
+    LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

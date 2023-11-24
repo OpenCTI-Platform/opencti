@@ -67,13 +67,17 @@ class StixCoreObjectHistory extends Component {
           <QueryRenderer
             query={stixCoreObjectHistoryLinesQuery}
             variables={{
-              filters: [
-                { key: 'entity_id', values: [stixCoreObjectId] },
-                {
-                  key: 'event_type',
-                  values: ['mutation', 'create', 'update', 'delete', 'merge'],
-                },
-              ],
+              filters: {
+                mode: 'and',
+                filterGroups: [],
+                filters: [
+                  { key: 'context_data.id', values: [stixCoreObjectId] },
+                  {
+                    key: 'event_type',
+                    values: ['mutation', 'create', 'update', 'delete', 'merge'],
+                  },
+                ],
+              },
               first: 20,
               orderBy: 'timestamp',
               orderMode: 'desc',
@@ -113,21 +117,35 @@ class StixCoreObjectHistory extends Component {
             <QueryRenderer
               query={stixCoreObjectHistoryLinesQuery}
               variables={{
-                filters: [
-                  {
-                    key: 'connection_id',
-                    values: [stixCoreObjectId],
-                    operator: 'wildcard',
-                  },
-                  {
-                    key: 'event_scope',
-                    values: ['create', 'delete', null], // if event_scope is null, event_type is not
-                  },
-                  {
-                    key: 'event_type',
-                    values: ['create', 'delete', 'mutation'], // retro-compatibility
-                  },
-                ],
+                filters: {
+                  mode: 'and',
+                  filters: [
+                    {
+                      key: 'context_data.id',
+                      values: [stixCoreObjectId],
+                      operator: 'wildcard',
+                    },
+                    {
+                      key: 'event_type',
+                      values: ['create', 'delete', 'mutation'], // retro-compatibility
+                    },
+                  ],
+                  filterGroups: [{
+                    mode: 'or',
+                    filters: [
+                      {
+                        key: 'event_scope',
+                        values: ['create', 'delete'],
+                      },
+                      {
+                        key: 'event_scope',
+                        values: [], // if event_scope is null, event_type is not
+                        operator: 'nil',
+                      },
+                    ],
+                    filterGroups: [],
+                  }],
+                },
                 first: 20,
                 orderBy: 'timestamp',
                 orderMode: 'desc',

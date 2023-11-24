@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -13,7 +12,14 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -50,9 +56,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
-  const [filters, setFilters] = useState(
-    JSON.parse(streamCollection.filters),
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(streamCollection.filters));
   const handleSubmitField = (name, value) => {
     streamCollectionValidation(t)
       .validateAt(name, { [name]: value })
@@ -79,19 +83,9 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key, id, value) => {
-    let newFilters;
-    if (filters[key] && filters[key].length > 0) {
-      newFilters = {
-        ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-      };
-    } else {
-      newFilters = { ...filters, [key]: [{ id, value }] };
-    }
-    const jsonFilters = JSON.stringify(newFilters);
+  const handleAddFilter = (key, id, op = 'eq') => {
+    const newFilters = constructHandleAddFilter(filters, key, id, op);
+    const jsonFilters = serializeFilterGroupForBackend(newFilters);
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
       variables: {
@@ -103,9 +97,9 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       },
     });
   };
-  const handleRemoveFilter = (key) => {
-    const newFilters = R.dissoc(key, filters);
-    const jsonFilters = JSON.stringify(newFilters);
+  const handleRemoveFilter = (key, op = 'eq') => {
+    const newFilters = constructHandleRemoveFilter(filters, key, op);
+    const jsonFilters = serializeFilterGroupForBackend(newFilters);
     const variables = {
       id: streamCollection.id,
       input: { key: 'filters', value: jsonFilters },
@@ -115,6 +109,40 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
       variables,
       onCompleted: () => {
         setFilters(newFilters);
+      },
+    });
+  };
+  const handleSwitchLocalMode = (localFilter) => {
+    const newFilters = filtersAfterSwitchLocalMode(filters, localFilter);
+    const variables = {
+      id: streamCollection.id,
+      input: { key: 'filters', value: serializeFilterGroupForBackend(newFilters) },
+    };
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFilters);
+      },
+    });
+  };
+
+  const handleSwitchGlobalMode = () => {
+    const newFiltersContent = filters
+      ? {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      }
+      : initialFilterGroup;
+    const variables = {
+      id: streamCollection.id,
+      input: { key: 'filters', value: serializeFilterGroupForBackend(newFiltersContent) },
+    };
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFiltersContent);
       },
     });
   };
@@ -176,11 +204,11 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
               availableFilterKeys={[
                 'entity_type',
                 'x_opencti_workflow_id',
-                'assigneeTo',
-                'objectContains',
-                'markedBy',
-                'labelledBy',
-                'creator',
+                'objectAssignee',
+                'objects',
+                'objectMarking',
+                'objectLabel',
+                'creator_id',
                 'createdBy',
                 'priority',
                 'severity',
@@ -206,6 +234,8 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
             classNameNumber={2}
             styleNumber={2}
             handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
             redirection
           />
         </Form>

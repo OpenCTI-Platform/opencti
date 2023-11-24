@@ -34,6 +34,7 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 import { streamToString } from '../../database/file-storage';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
@@ -73,7 +74,7 @@ export const objects = async (context: AuthContext, user: AuthUser, { investigat
   if (isEmptyField(investigated_entities_ids)) {
     return buildPagination(0, null, [], 0);
   }
-  const filters = [{ key: 'internal_id', values: investigated_entities_ids }, ...(args.filters ?? [])];
+  const filters = addFilter(args.filters, 'internal_id', investigated_entities_ids);
   const finalArgs = { ...args, filters };
   if (args.all) {
     return paginateAllThings(context, user, args.types, finalArgs);

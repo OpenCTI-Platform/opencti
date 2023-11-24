@@ -223,10 +223,14 @@ describe('Entities listing', () => {
     expect(indicators.edges.length).toEqual(3);
   });
   it('should list entities with attribute filters', async () => {
-    const filters = [
-      { key: 'x_mitre_id', values: ['T1369'] },
-      { key: 'name', values: ['Spear phishing messages with malicious links'] },
-    ];
+    const filters = {
+      mode: 'and',
+      filters: [
+        { key: 'x_mitre_id', values: ['T1369'] },
+        { key: 'name', values: ['Spear phishing messages with malicious links'] },
+      ],
+      filterGroups: [],
+    };
     const options = { filters };
     const attacks = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern'], options);
     expect(attacks).not.toBeNull();
@@ -238,7 +242,11 @@ describe('Entities listing', () => {
   });
   it('should list multiple entities with attribute filters', async () => {
     const identity = await elLoadById(testContext, ADMIN_USER, 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
-    const filters = [{ key: 'rel_created-by.internal_id', values: [identity.internal_id] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'createdBy', values: [identity.internal_id] }],
+      filterGroups: [],
+    };
     const options = { filters };
     const entities = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
     expect(entities).not.toBeNull();
@@ -394,7 +402,11 @@ describe('Relations listing', () => {
     expect(stixRelations.edges.length).toEqual(2);
   });
   it.skip('should list relations with filters', async () => {
-    let filters = [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'], operator: 'wildcard' }] }];
+    let filters = {
+      mode: 'and',
+      filters: [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'], operator: 'wildcard' }] }],
+      filterGroups: [],
+    };
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     let options = { fromId: malware.internal_id, filters };
     let stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
@@ -403,7 +415,11 @@ describe('Relations listing', () => {
     const target = await elLoadById(testContext, ADMIN_USER, relation.toId);
     expect(target.name).toEqual(expect.stringContaining('malicious'));
     // Test with exact match
-    filters = [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'] }] }];
+    filters = {
+      mode: 'and',
+      filters: [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'] }] }],
+      filterGroups: [],
+    };
     options = { fromId: malware.internal_id, filters };
     stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(0);
@@ -502,7 +518,11 @@ describe('Entities time series', () => {
   it('should start time relation time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const filters = [{ key: [buildRefRelationKey(RELATION_ATTRIBUTED_TO)], values: [intrusionSet.internal_id] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: [buildRefRelationKey(RELATION_ATTRIBUTED_TO)], values: [intrusionSet.internal_id] }],
+      filterGroups: [],
+    };
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -517,7 +537,11 @@ describe('Entities time series', () => {
   });
   it('should local filter time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
-    const filters = [{ key: ['name'], values: ['A new campaign'] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: ['name'], values: ['A new campaign'] }],
+      filterGroups: [],
+    };
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -595,8 +619,7 @@ describe('Entities distribution', () => {
       start,
       end,
     };
-    const filters = [relationFilter];
-    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, ...relationFilter });
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);

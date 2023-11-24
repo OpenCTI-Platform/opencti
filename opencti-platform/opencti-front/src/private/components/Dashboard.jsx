@@ -1092,6 +1092,8 @@ const dashboardMeFragment = graphql`
   }
 `;
 
+const LOCAL_STORAGE_KEY = 'dashboard';
+
 const DashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { me: currentMe, ...context } = useAuth();
@@ -1100,7 +1102,7 @@ const DashboardComponent = ({ queryRef }) => {
   const { default_dashboards: dashboards } = currentMe;
   const { default_time_field, default_dashboard } = me;
   const { viewStorage: localTimeFieldPreferences } = usePaginationLocalStorage(
-    'view-dashboard',
+    LOCAL_STORAGE_KEY,
     {},
   );
   const { dashboard } = localTimeFieldPreferences;

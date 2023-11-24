@@ -25,7 +25,11 @@ export const up = async (next) => {
       .flat();
     bulkOperations.push(...op);
   };
-  const filters = [{ key: buildRefRelationKey(RELATION_INDICATES), values: ['EXISTS'] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: buildRefRelationKey(RELATION_INDICATES), values: ['EXISTS'] }],
+    filterGroups: [],
+  };
   const opts = { types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], filters, callback };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   // Apply operations.

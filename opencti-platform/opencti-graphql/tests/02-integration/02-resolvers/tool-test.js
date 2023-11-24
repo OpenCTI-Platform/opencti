@@ -8,8 +8,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: ToolsOrdering
     $orderMode: OrderingMode
-    $filters: [ToolsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     tools(
@@ -18,7 +17,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

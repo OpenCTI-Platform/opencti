@@ -13,11 +13,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import {
-  commitMutation,
-  handleErrorInForm,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
@@ -27,8 +23,14 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { convertFilters } from '../../../../utils/ListParameters';
+import {
+  addFilter,
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  findFilterFromKey,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
@@ -268,13 +270,16 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   const [filters, setFilters] = useState(
     actualTypeFilter.length > 0
       ? {
-        entity_type: actualTypeFilter.map((n) => ({
-          id: n,
-          label: n,
-          value: n,
-        })),
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          key: 'entity_type',
+          values: actualTypeFilter,
+          operator: 'eq',
+          mode: 'or',
+        }],
       }
-      : {},
+      : initialFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
@@ -406,28 +411,28 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     setOrderAsc(sortOrderAsc);
   };
 
-  const handleAddFilter = (key, id, value, event = null) => {
+  const handleAddFilter = (key, id, op = 'eq', event = null) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
-    }
+    setFilters(constructHandleAddFilter(filters, key, id, op));
+  };
+  const handleRemoveFilter = (key, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, key, op));
   };
 
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
 
   const handleNextStep = () => {
@@ -484,16 +489,10 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   };
 
   const renderSelectEntity = () => {
-    let finalFilters = convertFilters(filters);
-    if (!R.has('entity_type', filters) && actualTypeFilter.length > 0) {
-      finalFilters = convertFilters({
-        ...filters,
-        entity_type: actualTypeFilter.map((n) => ({
-          id: n,
-          label: n,
-          value: n,
-        })),
-      });
+    let finalFilters = filters;
+    const entityTypeFilter = findFilterFromKey(filters?.filters ?? [], 'entity_type');
+    if (entityTypeFilter && actualTypeFilter.length > 0) {
+      finalFilters = addFilter(filters, 'entity_type', actualTypeFilter);
     }
     const searchPaginationOptions = {
       search: searchTerm,
@@ -530,6 +529,8 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   handleSort={handleSort}
                   handleAddFilter={handleAddFilter}
                   handleRemoveFilter={handleRemoveFilter}
+                  handleSwitchLocalMode={handleSwitchLocalMode}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
                   disableCards={true}
                   filters={filters}
                   disableExport={true}
@@ -541,16 +542,14 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   handleToggleSelectAll="no"
                   availableFilterKeys={[
                     'entity_type',
-                    'markedBy',
-                    'labelledBy',
+                    'objectMarking',
+                    'objectLabel',
                     'createdBy',
                     'confidence',
                     'x_opencti_organization_type',
-                    'created_start_date',
-                    'created_end_date',
-                    'created_at_start_date',
-                    'created_at_end_date',
-                    'creator',
+                    'created',
+                    'created_at',
+                    'creator_id',
                   ]}
                 >
                   <QueryRenderer

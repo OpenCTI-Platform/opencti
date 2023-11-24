@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import InvestigationAddStixCoreObjectsLines
-, {
+import InvestigationAddStixCoreObjectsLines, {
   investigationAddStixCoreObjectsLinesQuery,
 } from './InvestigationAddStixCoreObjectsLines';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -12,8 +10,11 @@ import { useFormatter } from '../../../../components/i18n';
 import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { convertFilters } from '../../../../utils/ListParameters';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter, filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 
 const InvestigationAddStixCoreObjects = (props) => {
@@ -39,13 +40,14 @@ const InvestigationAddStixCoreObjects = (props) => {
       || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
     )
       ? {
-        entity_type: targetStixCoreObjectTypes.map((n) => ({
-          id: n,
-          label: n,
-          value: n,
-        })),
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: targetStixCoreObjectTypes,
+        }],
+        filterGroups: [],
       }
-      : {},
+      : initialFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
@@ -56,27 +58,27 @@ const InvestigationAddStixCoreObjects = (props) => {
     setSortBy(field);
     setOrderAsc(sortOrderAsc);
   };
-  const handleAddFilter = (key, id, value, event = null) => {
+  const handleAddFilter = (key, id, op = 'eq', event = null) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
-    }
+    setFilters(constructHandleAddFilter(filters, key, id, op));
   };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
+  const handleRemoveFilter = (key, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, key, op));
+  };
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
   const isTypeDomainObject = (types) => {
     return !types || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0);
@@ -141,11 +143,10 @@ const InvestigationAddStixCoreObjects = (props) => {
     };
   };
 
-  const finalFilters = convertFilters(filters);
   const searchPaginationOptions = {
     types: [resolveAvailableTypes()],
     search: mapping && searchTerm.length === 0 ? selectedText : searchTerm,
-    filters: finalFilters,
+    filters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
   };
@@ -159,13 +160,14 @@ const InvestigationAddStixCoreObjects = (props) => {
         || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
       )
         ? {
-          entity_type: targetStixCoreObjectTypes.map((n) => ({
-            id: n,
-            label: n,
-            value: n,
-          })),
+          mode: 'and',
+          filters: [{
+            key: 'entity_type',
+            values: targetStixCoreObjectTypes,
+          }],
+          filterGroups: [],
         }
-        : {},
+        : initialFilterGroup,
     );
   };
 
@@ -209,6 +211,8 @@ const InvestigationAddStixCoreObjects = (props) => {
                 handleSort={handleSort}
                 handleAddFilter={handleAddFilter}
                 handleRemoveFilter={handleRemoveFilter}
+                handleSwitchLocalMode={handleSwitchLocalMode}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
                 disableCards={true}
                 filters={filters}
                 paginationOptions={searchPaginationOptions}
@@ -219,16 +223,14 @@ const InvestigationAddStixCoreObjects = (props) => {
                 availableEntityTypes={[resolveAvailableTypes()]}
                 availableFilterKeys={[
                   'entity_type',
-                  'markedBy',
-                  'labelledBy',
+                  'objectMarking',
+                  'objectLabel',
                   'createdBy',
                   'confidence',
                   'x_opencti_organization_type',
-                  'created_start_date',
-                  'created_end_date',
-                  'created_at_start_date',
-                  'created_at_end_date',
-                  'creator',
+                  'created',
+                  'created_at',
+                  'creator_id',
                 ]}
               >
                 <QueryRenderer

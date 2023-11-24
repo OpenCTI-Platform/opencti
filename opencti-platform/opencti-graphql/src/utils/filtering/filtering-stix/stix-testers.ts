@@ -1,54 +1,33 @@
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
-import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../schema/general';
-import type { Filter } from './filter-group';
-import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../../schema/identifier';
-import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from './boolean-logic-engine';
-import type { TesterFunction } from './boolean-logic-engine';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-extensions';
+import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
+import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
+import { generateStandardId } from '../../../schema/identifier';
+import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from '../boolean-logic-engine';
+import type { TesterFunction } from '../boolean-logic-engine';
 
 import {
+  ASSIGNEE_FILTER,
   // ASSIGNEE_FILTER,
-  CONFIDENCE_FILTER,
-  CREATED_BY_FILTER,
+  CONFIDENCE_FILTER, CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
+  CREATED_BY_FILTER, CREATOR_FILTER,
   // CREATOR_FILTER,
   DETECTION_FILTER,
-  INDICATOR_FILTER,
+  INDICATOR_FILTER, LABEL_FILTER,
   // LABEL_FILTER,
-  MAIN_OBSERVABLE_TYPE_FILTER,
+  MAIN_OBSERVABLE_TYPE_FILTER, MARKING_FILTER, OBJECT_CONTAINS_FILTER,
   // MARKING_FILTER,
   // OBJECT_CONTAINS_FILTER,
-  PATTERN_FILTER,
-  RELATION_FROM,
-  RELATION_FROM_TYPES,
-  RELATION_TO, RELATION_TO_TYPES,
+  PATTERN_FILTER, PRIORITY_FILTER,
+  RELATION_FROM_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER, RELATION_TO_TYPES_FILTER,
   REVOKED_FILTER,
-  SCORE_FILTER,
+  SCORE_FILTER, SEVERITY_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
-} from '../filtering';
-
-// TODO: changed by Cathia, to integrate properly with her
-const ASSIGNEE_FILTER = 'objectAssignee';
-const CREATOR_FILTER = 'creator_id';
-const LABEL_FILTER = 'objectLabel';
-const MARKING_FILTER = 'objectMarking';
-const OBJECT_CONTAINS_FILTER = 'objects';
-
-// missing in filtering.js
-const PRIORITY_FILTER = 'priority';
-const SEVERITY_FILTER = 'severity';
-const CONNECTED_TO_FILTER = 'connectedToId';
-
-/*
-  ['killChainPhase', 'killChainPhases'],
-  ['participant', 'objectParticipant'],
-  ['hasExternalReference', 'externalReferences'],
-  ['hashes_MD5', 'hashes.MD5'],
-  ['hashes_SHA1', 'hashes.SHA-1'],
-  ['hashes_SHA256', 'hashes.SHA-256'],
-  ['hashes_SHA512', 'hashes.SHA-512'],
-*/
+} from '../filtering-constants';
+import type { Filter } from '../../../generated/graphql';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -293,12 +272,25 @@ export const testRefs = (stix: any, filter: Filter) => {
 };
 
 /**
- * CONNECTED TO
- - depending on stix type (relation or sighting), we might search in different paths, aggregated
+ * CONNECTED TO for DIRECT EVENTS ONLY
+ * test if the stix is directly related to the instance id
  */
 export const testConnectedTo = (stix: any, filter: Filter) => {
   // only applies with "eq" operator
-  if (filter.operator !== 'eq') {
+  if (filter.operator && filter.operator !== 'eq') {
+    return false;
+  }
+  return testStringFilter(filter, [stix.id]);
+};
+
+/**
+ * CONNECTED TO for SIDE EVENTS ONLY
+ * test if the stix is indirectly related to the instance id (= relationship, refs)
+ - depending on stix type (relation or sighting), we might search in different paths, aggregated
+ */
+export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
+  // only applies with "eq" operator
+  if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
 
@@ -343,18 +335,10 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [WORKFLOW_FILTER]: testWorkflow,
 
   // special keys (more complex behavior)
-  [CONNECTED_TO_FILTER]: testConnectedTo,
-  [RELATION_FROM]: testRelationFrom,
-  [RELATION_FROM_TYPES]: testRelationFromTypes,
-  [RELATION_TO]: testRelationTo,
-  [RELATION_TO_TYPES]: testRelationToTypes,
-};
-
-/**
- * Gives the right tester function according to the filter key.
- * If the key is not handled, returns a function that always return false.
- * @param key
- */
-export const getStixTesterFromFilterKey = (key: string): TesterFunction => {
-  return FILTER_KEY_TESTERS_MAP[key];
+  [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
+  [CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER]: testConnectedToSideEvents, // instance trigger, side events
+  [RELATION_FROM_FILTER]: testRelationFrom,
+  [RELATION_FROM_TYPES_FILTER]: testRelationFromTypes,
+  [RELATION_TO_FILTER]: testRelationTo,
+  [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
 };

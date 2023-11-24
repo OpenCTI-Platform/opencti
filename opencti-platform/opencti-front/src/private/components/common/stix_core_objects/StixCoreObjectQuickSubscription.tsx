@@ -4,11 +4,11 @@ import { NotificationsOutlined } from '@mui/icons-material';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery,
-  TriggerFilter,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import StixCoreObjectQuickSubscriptionContent, {
   stixCoreObjectQuickSubscriptionContentQuery,
 } from './StixCoreObjectQuickSubscriptionContent';
+import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreObjectQuickSubscriptionProps {
   instanceId: string;
@@ -19,18 +19,24 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
 StixCoreObjectQuickSubscriptionProps
 > = ({ instanceId, instanceName }) => {
   const paginationOptions = {
-    filters: [
-      {
-        key: ['filters'] as TriggerFilter[],
-        values: [instanceId],
-        operator: 'match',
-      },
-      {
-        key: ['instance_trigger'] as TriggerFilter[],
-        values: [true.toString()],
-        operator: 'match',
-      },
-    ],
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['filters'],
+          values: [instanceId],
+          operator: 'match',
+          mode: 'or',
+        },
+        {
+          key: ['instance_trigger'],
+          values: [true.toString()],
+          operator: 'match',
+          mode: 'or',
+        },
+      ],
+    } as GqlFilterGroup,
   };
   const queryRef = useQueryLoading<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
     stixCoreObjectQuickSubscriptionContentQuery,

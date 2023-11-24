@@ -54,18 +54,6 @@ enum PlaybooksOrdering {
     playbook_running
 }
 
-# Filtering
-enum PlaybookFilter {
-    name
-}
-
-input PlaybooksFiltering {
-    key: [PlaybookFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type PlaybookConnection {
     pageInfo: PageInfo!
@@ -84,8 +72,7 @@ type Query {
         after: ID
         orderBy: PlaybooksOrdering
         orderMode: OrderingMode
-        filters: [PlaybooksFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): PlaybookConnection @auth(for: [SETTINGS_SETACCESSES])
     playbookComponents: [PlaybookComponent]! @auth(for: [SETTINGS_SETACCESSES])

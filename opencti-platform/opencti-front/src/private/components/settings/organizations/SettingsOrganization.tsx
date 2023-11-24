@@ -329,7 +329,7 @@ const SettingsOrganization = ({
         </Grid>
         {setAccess || isEnterpriseEdition ? (
           <>
-            <Triggers recipientId={organization.id} filter="organization_ids" />
+            <Triggers recipientId={organization.id} filterKey="authorized_members.id" />
             <SettingsOrganizationUsers organization={organization} />
           </>
         ) : (

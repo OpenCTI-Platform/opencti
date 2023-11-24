@@ -10,7 +10,6 @@ import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
-import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 import Chart from '../charts/Chart';
 
@@ -37,8 +36,7 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
     $limit: Int
     $order: String
     $types: [String]
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     stixCoreObjectsDistribution(
@@ -55,7 +53,6 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
       order: $order
       types: $types
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       label
@@ -213,17 +210,17 @@ const StixCoreObjectsDonut = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let finalFiltersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = R.head(
-      finalFilters.filter((n) => n.key === 'entity_type'),
+      finalFiltersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+    const dataSelectionObjectId = R.head(finalFiltersContent.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFiltersContent.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    const dataSelectionElementWithTargetTypes = R.head(finalFilters.filter((n) => n.key === 'elementWithTargetTypes'))
+    const dataSelectionToTypes = R.head(finalFiltersContent.filter((n) => n.key === 'toTypes'))?.values || null;
+    const dataSelectionElementWithTargetTypes = R.head(finalFiltersContent.filter((n) => n.key === 'elementWithTargetTypes'))
       ?.values || null;
-    finalFilters = finalFilters.filter(
+    finalFiltersContent = finalFiltersContent.filter(
       (n) => ![
         'entity_type',
         'elementId',
@@ -246,7 +243,10 @@ const StixCoreObjectsDonut = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'created_at',
-      filters: finalFilters,
+      filters: {
+        ...selection.filters,
+        filters: finalFiltersContent,
+      },
       limit: selection.number ?? 10,
     };
     if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {

@@ -1,6 +1,4 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { buildRefRelationKey } from '../../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addFeedback, feedbackContainsStixObjectOrStixRelationship, findAll, findById } from './feedback-domain';
 
@@ -11,13 +9,6 @@ const feedbackResolvers: Resolvers = {
     feedbackContainsStixObjectOrStixRelationship: (_, args, context) => {
       return feedbackContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
-  },
-  FeedbacksFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    creator: 'creator_id',
   },
   FeedbacksOrdering: {
     creator: 'creator_id',

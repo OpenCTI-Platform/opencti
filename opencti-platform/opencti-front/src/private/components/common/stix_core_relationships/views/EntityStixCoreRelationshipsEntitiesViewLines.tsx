@@ -36,7 +36,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[StixCoreObjectsFiltering]" }
+    filters: { type: "FilterGroup" }
     types: { type: "[String]" }
     relationship_type: { type: "[String]" }
     elementId: { type: "[String]" }
@@ -75,7 +75,7 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $types: [String]
     $relationship_type: [String]
     $elementId: [String]

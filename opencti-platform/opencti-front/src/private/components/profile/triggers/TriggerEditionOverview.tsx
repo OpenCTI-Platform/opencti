@@ -3,7 +3,6 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
@@ -14,13 +13,27 @@ import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  filterEventTypesOptions,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
+  Filter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -59,11 +72,6 @@ const triggerEditionOverviewFragment = graphql`
       id
       name
     }
-    resolved_instance_filters {
-        id
-        valid
-        value
-    }
   }
 `;
 
@@ -93,44 +101,55 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const filters = JSON.parse(trigger.filters ?? '{}');
+  const filters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState({});
+  const [instanceFilters, setInstanceFilters] = useState< FilterAutocompleteInputValue[]>([]);
   const handleAddFilter = (
-    key: string,
+    k: string,
     id: string,
-    value: Record<string, unknown> | string,
+    op = 'eq',
   ) => {
-    if (filters[key] && filters[key].length > 0) {
-      const updatedFilters = R.assoc(
-        key,
-        isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        filters,
-      );
+    const newBaseFilters = constructHandleAddFilter(filters, k, id, op);
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
+      },
+    });
+  };
+  const handleRemoveFilter = (k: string, op = 'eq') => {
+    const newBaseFilters = constructHandleRemoveFilter(filters, k, op);
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'filters', value: newBaseFilters ? serializeFilterGroupForBackend(newBaseFilters) : null },
+      },
+    });
+  };
+
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    const newBaseFilters = filtersAfterSwitchLocalMode(filters, localFilter);
+    if (newBaseFilters) {
       commitFieldPatch({
         variables: {
           id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
-        },
-      });
-    } else {
-      const updatedFilters = R.assoc(key, [{ id, value }], filters);
-      commitFieldPatch({
-        variables: {
-          id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+          input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
         },
       });
     }
   };
-  const handleRemoveFilter = (key: string) => {
-    const updatedFilters = R.dissoc(key, filters);
+
+  const handleSwitchGlobalMode = () => {
+    const newBaseFilters = filters
+      ? {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      }
+      : initialFilterGroup;
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
       },
     });
   };
@@ -419,7 +438,7 @@ TriggerEditionOverviewProps
               {trigger.instance_trigger
                 ? (<div style={fieldSpacingContainerStyle}>
                   <FilterAutocomplete
-                    filterKey={'elementId'}
+                    filterKey={'connectedToId'}
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                     defaultHandleAddFilter={handleAddFilter}
                     inputValues={instanceFilters}
@@ -434,11 +453,11 @@ TriggerEditionOverviewProps
                       availableFilterKeys={[
                         'entity_type',
                         'x_opencti_workflow_id',
-                        'assigneeTo',
-                        'objectContains',
-                        'markedBy',
-                        'labelledBy',
-                        'creator',
+                        'objectAssignee',
+                        'objects',
+                        'objectMarking',
+                        'objectLabel',
+                        'creator_id',
                         'createdBy',
                         'priority',
                         'severity',
@@ -473,9 +492,10 @@ TriggerEditionOverviewProps
               <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
                 classNameNumber={2}
                 redirection
-                resolvedInstanceFilters={trigger.resolved_instance_filters ?? []}
               />
             </span>
           }

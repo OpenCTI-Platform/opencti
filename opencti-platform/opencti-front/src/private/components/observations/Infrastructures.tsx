@@ -1,14 +1,11 @@
 import React from 'react';
 import useAuth from '../../../utils/hooks/useAuth';
 import ListLines from '../../../components/list_lines/ListLines';
-import InfrastructuresLines, {
-  infrastructuresLinesQuery,
-} from './infrastructures/InfrastructuresLines';
+import InfrastructuresLines, { infrastructuresLinesQuery } from './infrastructures/InfrastructuresLines';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import {
   InfrastructuresLinesPaginationQuery,
   InfrastructuresLinesPaginationQuery$variables,
@@ -19,8 +16,9 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
 import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'view-infrastructures';
+export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
 const Infrastructures = () => {
   const {
@@ -37,7 +35,7 @@ const Infrastructures = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -60,11 +58,7 @@ const Infrastructures = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    let finalFilters = filters;
-    finalFilters = {
-      ...finalFilters,
-      entity_type: [{ id: 'Infrastructure', value: 'Infrastructure' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Infrastructure');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -116,6 +110,8 @@ const Infrastructures = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
@@ -127,10 +123,9 @@ const Infrastructures = () => {
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
+          'objectLabel',
+          'objectMarking',
+          'created',
           'createdBy',
           'confidence',
         ]}
@@ -168,7 +163,7 @@ const Infrastructures = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               search={searchTerm}
-              filters={finalFilters}
+              filters={toolBarFilters}
               type="Infrastructure"
             />
           </React.Suspense>

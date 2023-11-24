@@ -1,9 +1,4 @@
-import {
-  graphql,
-  loadQuery,
-  useFragment,
-  usePreloadedQuery,
-} from 'react-relay';
+import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -11,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
-import { OpenInNew, ContentCopy, FileDelimitedOutline } from 'mdi-material-ui';
+import { ContentCopy, FileDelimitedOutline, OpenInNew } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { FeedLineDummy } from './FeedLine';
 import { PublicFeedLinesQuery } from './__generated__/PublicFeedLinesQuery.graphql';
@@ -24,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>(() => ({
   bodyItem: {
@@ -59,7 +55,7 @@ const publicFeedLinesFragment = graphql`
 
 const publicFeedLinesQuery = graphql`
   query PublicFeedLinesQuery {
-    feeds(filters: [{ key: feed_public, values: ["true"] }]) {
+    feeds(filters: { mode: and, filters: [{ key: "feed_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicFeedLines_node
@@ -101,14 +97,16 @@ const dataColumns: DataColumns = {
     width: '40%',
     isSortable: false,
     render: (node) => {
-      const nodeFilters = JSON.parse(node.filters);
+      const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
-        <FilterIconButton
-          filters={nodeFilters}
-          dataColumns={this}
-          classNameNumber={3}
-          styleNumber={3}
-        />
+        <>
+          {nodeFilters && <FilterIconButton
+            filters={nodeFilters}
+            dataColumns={this}
+            classNameNumber={3}
+            styleNumber={3}
+          />}
+        </>
       );
     },
   },

@@ -1,16 +1,9 @@
-import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  batchLoader,
-  createEntity,
-  deleteElementById,
-  patchAttribute,
-  updateAttribute
-} from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
-  EditInput,
+  EditInput, FilterGroup,
   QueryNotificationsArgs,
   QueryTriggersActivityArgs,
   QueryTriggersKnowledgeArgs,
@@ -28,7 +21,6 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import {
-  type BasicStoreEntityLiveTrigger,
   type BasicStoreEntityNotification,
   type BasicStoreEntityTrigger,
   ENTITY_TYPE_NOTIFICATION,
@@ -37,11 +29,10 @@ import {
   type NotificationAddInput
 } from './notification-types';
 import { now } from '../../utils/format';
-import { elCount, elFindByIds } from '../../database/engine';
-import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { ENTITY_FILTERS } from '../../utils/filtering';
-import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
+import { elCount } from '../../database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import type { BasicStoreEntity, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
   type AuthorizedMember,
@@ -57,24 +48,8 @@ import {
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-
-// Outcomes
-
-export const batchResolvedInstanceFilters = async (context: AuthContext, user: AuthUser, instanceFiltersIds: string[]) => {
-  const instanceIds = instanceFiltersIds.map((u) => (Array.isArray(u) ? u : [u]));
-  const allInstanceIds = instanceIds.flat();
-  const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
-  const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
-  return instanceIds
-    .map((ids) => ids
-      .map((id) => [
-        id,
-        Object.keys(instances).includes(id),
-        instances[id] ? extractEntityRepresentativeName(instances[id]) : '',
-      ]));
-};
-
-const resolvedInstanceFiltersLoader = batchLoader(batchResolvedInstanceFilters);
+import { validateFilterGroupForActivityEventMatch } from '../../utils/filtering/filtering-activity-event/activity-event-filtering';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -107,6 +82,14 @@ export const addTrigger = async (
   if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).event_types.length === 0) {
     throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
   }
+
+  // our stix matching is currently limited, we need to validate the input filters
+  const input = triggerInput as TriggerLiveAddInput;
+  if (type === TriggerTypeValue.Live && input.filters) {
+    const filters = JSON.parse(input.filters) as FilterGroup;
+    validateFilterGroupForStixMatch(filters);
+  }
+
   let authorizedMembers;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
@@ -149,6 +132,14 @@ export const addTriggerActivity = async (
   if (members.length === 0) {
     throw UnsupportedError('Cannot add a activity trigger without recipients');
   }
+
+  // Validate the filter for activity event matching before saving it
+  const input = triggerInput as TriggerActivityLiveAddInput;
+  if (type === TriggerTypeValue.Live && input.filters) {
+    const filters = JSON.parse(input.filters) as FilterGroup;
+    validateFilterGroupForActivityEventMatch(filters);
+  }
+
   const defaultOpts = {
     created: now(),
     updated: now(),
@@ -190,11 +181,27 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
 
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
+
+  if (trigger.trigger_type === TriggerTypeValue.Live) {
+    const filtersItem = input.find((item) => item.key === 'filters');
+    if (filtersItem?.value[0]) {
+      const filterGroup = JSON.parse((filtersItem?.value[0]) as string) as FilterGroup;
+      // filters need to be validated before save, as we are limited in terms of compatible keys
+      // this depends if it's an activity live trigger or knowledge live trigger
+      if (trigger.trigger_scope === 'knowledge') {
+        validateFilterGroupForStixMatch(filterGroup);
+      }
+      if (trigger.trigger_scope === 'activity') {
+        validateFilterGroupForActivityEventMatch(filterGroup);
+      }
+    }
+  }
+
   const userAccessRight = getUserAccessRight(user, trigger);
   if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
     throw ForbiddenAccess();
   }
-  if (trigger.trigger_type === 'live') {
+  if (trigger.trigger_type === TriggerTypeValue.Live) {
     const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
     if (emptyTriggerEvents.length > 0) {
       throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
@@ -251,34 +258,15 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   });
   return triggerId;
 };
-
-export const resolvedInstanceFiltersGet = async (context: AuthContext, user: AuthUser, trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger) => {
-  if (trigger.trigger_type === 'live') {
-    const filters = trigger.trigger_type === 'live' ? JSON.parse((trigger as BasicStoreEntityLiveTrigger).filters) : {};
-    const instanceFilters = ENTITY_FILTERS.map((n) => filters[n]).filter((el) => el);
-    const instanceFiltersIds = instanceFilters.flat().map((instanceFilter) => instanceFilter.id);
-    const resolvedInstanceFilters = await resolvedInstanceFiltersLoader.load(instanceFiltersIds, context, user) as [string, boolean, string | undefined][];
-    return resolvedInstanceFilters.map((n) => {
-      const [id, valid, value] = n;
-      return { id, valid, value };
-    });
-  }
-  return [];
-};
-
 export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersKnowledgeArgs) => {
   // key is a string[] because of the resolver, we have updated the keys
-  const finalFilter = [];
-  finalFilter.push(...(opts.filters ?? []));
-  finalFilter.push({ key: ['trigger_scope'], values: ['knowledge'] });
+  const finalFilter = addFilter(opts.filters, 'trigger_scope', 'knowledge');
   const queryArgs = { ...opts, filters: finalFilter };
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
 export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
-  const finalFilter = [];
-  finalFilter.push(...(opts.filters ?? []));
-  finalFilter.push({ key: ['trigger_scope'], values: ['activity'] });
+  const finalFilter = addFilter(opts.filters, 'trigger_scope', 'activity');
   const queryArgs = { ...opts, includeAuthorities: true, filters: finalFilter };
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
@@ -291,12 +279,16 @@ export const notificationsFind = (context: AuthContext, user: AuthUser, opts: Qu
   return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], opts);
 };
 export const myNotificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
-  const queryFilters = [...(opts.filters || []), { key: 'user_id', values: [user.id] }];
+  const queryFilters = addFilter(opts.filters, 'user_id', user.id);
   const queryArgs = { ...opts, filters: queryFilters };
   return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
 export const myUnreadNotificationsCount = async (context: AuthContext, user: AuthUser, userId = null) => {
-  const queryFilters = [{ key: 'user_id', values: [userId ?? user.id] }, { key: 'is_read', values: [false] }];
+  const queryFilters = {
+    mode: 'and',
+    filters: [{ key: 'user_id', values: [userId ?? user.id] }, { key: 'is_read', values: [false] }],
+    filterGroups: [],
+  };
   const queryArgs = { filters: queryFilters };
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...queryArgs, types: [ENTITY_TYPE_NOTIFICATION] });
 };

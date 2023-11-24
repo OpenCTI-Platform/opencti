@@ -24,6 +24,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>(() => ({
   bodyItem: {
@@ -59,7 +60,7 @@ const publicTaxiiLinesFragment = graphql`
 
 const publicTaxiiLinesQuery = graphql`
   query PublicTaxiiLinesQuery {
-    taxiiCollections(filters: [{ key: taxii_public, values: ["true"] }]) {
+    taxiiCollections(filters: { mode: and, filters: [{ key: "taxii_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicTaxiiLines_node
@@ -101,14 +102,16 @@ const dataColumns: DataColumns = {
     width: '40%',
     isSortable: false,
     render: (node) => {
-      const nodeFilters = JSON.parse(node.filters);
+      const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
-        <FilterIconButton
-          filters={nodeFilters}
-          dataColumns={this}
-          classNameNumber={3}
-          styleNumber={3}
-        />
+        <>
+          {nodeFilters && <FilterIconButton
+            filters={nodeFilters}
+            dataColumns={this}
+            classNameNumber={3}
+            styleNumber={3}
+          />}
+        </>
       );
     },
   },

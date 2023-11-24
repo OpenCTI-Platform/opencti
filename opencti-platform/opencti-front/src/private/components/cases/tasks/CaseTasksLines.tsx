@@ -57,7 +57,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
     $count: Int
-    $filters: [TasksFiltering!]
+    $filters: FilterGroup
     $cursor: ID
     $orderBy: TasksOrdering
     $orderMode: OrderingMode
@@ -77,7 +77,7 @@ const caseTasksLinesFragment = graphql`
   fragment CaseTasksLines_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
-    filters: { type: "[TasksFiltering!]" }
+    filters: { type: "FilterGroup" }
     cursor: { type: "ID" }
     orderBy: { type: "TasksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }

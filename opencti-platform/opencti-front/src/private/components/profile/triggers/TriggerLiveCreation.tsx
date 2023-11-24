@@ -14,7 +14,6 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
@@ -27,13 +26,25 @@ import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  Filter,
+  FilterGroup,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
-import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import {
+  TriggerEventType,
+  TriggerLiveCreationKnowledgeMutation,
+  TriggerLiveCreationKnowledgeMutation$data,
+} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -122,11 +133,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<
-  Record<string, { id: string; value: string }[]>
-  >({});
+  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const [instanceFilters, setInstanceFilters] = useState({});
+  const [instanceFilters, setInstanceFilters] = useState<FilterAutocompleteInputValue[]>([]);
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
@@ -139,39 +148,37 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 
   const onReset = () => {
     handleClose?.();
-    setFilters({});
+    setFilters(initialFilterGroup);
     setInstanceTrigger(false);
-    setInstanceFilters({});
+    setInstanceFilters([]);
   };
   const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
     setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
     setInstanceTrigger(!instance_trigger);
-    setFilters({});
+    setFilters(initialFilterGroup);
   };
-  const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // TODO MIGRATE LATER
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // TODO MIGRATE LATER
-      setFilters(R.assoc(key, [{ id, value }], filters));
+  const handleAddFilter = (k: string, id: string, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, k, id, op));
+  };
+  const handleRemoveFilter = (k: string, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, k, op));
+  };
+
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    if (filters) {
+      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
     }
   };
-  const handleRemoveFilter = (key: string) => {
-    setFilters(R.dissoc(key, filters));
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
+
   const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(triggerLiveKnowledgeCreationMutation);
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
@@ -185,7 +192,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),
@@ -257,12 +264,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       {instance_trigger
         ? (<div style={fieldSpacingContainerStyle}>
             <FilterAutocomplete
-                filterKey={'elementId'}
-                searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                defaultHandleAddFilter={handleAddFilter}
-                inputValues={instanceFilters}
-                setInputValues={setInstanceFilters}
-                openOnFocus={true}
+              filterKey={'connectedToId'}
+              searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+              defaultHandleAddFilter={handleAddFilter}
+              inputValues={instanceFilters}
+              setInputValues={setInstanceFilters}
+              openOnFocus={true}
             />
           </div>)
         : (
@@ -273,11 +280,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   availableFilterKeys={[
                     'entity_type',
                     'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
                     'createdBy',
                     'priority',
                     'severity',
@@ -332,12 +339,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        handleRemoveFilter={handleRemoveFilter}
-        classNameNumber={2}
-        redirection
-      />
+      {filters && <FilterIconButton
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          classNameNumber={2}
+          redirection
+      />}
     </React.Fragment>
   );
 

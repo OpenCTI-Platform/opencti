@@ -47,6 +47,7 @@ import type {
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -182,7 +183,11 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
-  const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: deletionIds, operator: FilterOperator.Wildcard }],
+    filterGroups: [],
+  };
   const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);

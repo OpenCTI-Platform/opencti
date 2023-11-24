@@ -6,6 +6,8 @@ import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { JSONPath } from 'jsonpath-plus';
 import * as jsonpatch from 'fast-json-patch';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
+
 import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
@@ -293,7 +295,12 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
     ],
   };
-  const filters = [directionInternalIdFilter, oppositeTypeFilter];
+  const filtersContent = [directionInternalIdFilter, oppositeTypeFilter];
+  const filters = {
+    mode: 'and',
+    filters: filtersContent,
+    filterGroups: [],
+  };
   // Resolve all relations
   const indices = withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
   const relations = await elList(context, user, indices, {
@@ -301,7 +308,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     types: [relationType],
     connectionFormat: false,
     search,
-  });
+  }, true);
   // For each relation resolved the target entity
   // Filter on element id if necessary
   let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
@@ -378,12 +385,16 @@ export const loadThroughGetTo = async (context, user, sources, relationType, tar
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
-export const listAllThings = async (context, user, thingsTypes, args = {}) => {
+export const listAllThings = async (context, user, thingsTypes, args = {}, noFiltersChecking = false) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
+  const convertedFilters = (noFiltersChecking || !args.filters)
+    ? args.filters
+    : checkAndConvertFilters(args.filters);
+  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elList(context, user, indices, paginateArgs);
 };
 export const paginateAllThings = async (context, user, thingsTypes, args = {}) => {
@@ -543,7 +554,8 @@ export const stixLoadByIdStringify = async (context, user, id) => {
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
-  const elements = await loadByFiltersWithDependencies(context, user, types, args);
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const elements = await loadByFiltersWithDependencies(context, user, types, { args, filters: convertedFilters });
   return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
@@ -558,11 +570,13 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
 };
 export const timeSeriesHistory = async (context, user, types, args) => {
   const { startDate, endDate, interval } = args;
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, args);
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, { ...args, filters: convertedFilters });
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const timeSeriesArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
@@ -570,12 +584,14 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const timeSeriesArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
+  const convertedFilters = checkAndConvertFilters(args.filters);
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
@@ -588,7 +604,8 @@ export const distributionHistory = async (context, user, types, args) => {
   }
   const distributionData = await elAggregationCount(context, user, READ_INDEX_HISTORY, {
     ...args,
-    field: finalField
+    field: finalField,
+    filters: convertedFilters,
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
@@ -610,7 +627,8 @@ export const distributionHistory = async (context, user, types, args) => {
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (context, user, types, args) => {
-  const distributionArgs = buildEntityFilters({ types, ...args });
+  const convertedFilters = checkAndConvertFilters(args.filters);
+  const distributionArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -649,6 +667,7 @@ export const distributionRelations = async (context, user, args) => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
+  const convertedFilters = checkAndConvertFilters(args.filters);
   const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
@@ -656,7 +675,7 @@ export const distributionRelations = async (context, user, args) => {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types
-  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField };
+  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField, filters: convertedFilters };
   const distributionArgs = buildAggregationRelationFilter(types, opts);
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
@@ -1026,9 +1045,13 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
   }
   const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
   return listEntities(context, user, [type], {
-    filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+      filterGroups: [],
+    },
     connectionFormat: false,
-  });
+  }, true);
 };
 export const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
@@ -1818,8 +1841,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
-    const args = { filters: [{ key: 'user_email', values: [initial.contact_information] }], connectionFormat: false };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'user_email', values: [initial.contact_information] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
     if (users.length > 0) {
       throw FunctionalError('Cannot update an individual corresponding to a user');
     }
@@ -2046,10 +2076,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
       const args = {
-        filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
+          filterGroups: [],
+        },
         connectionFormat: false
       };
-      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args, true);
       if (individuals.length > 0) {
         const individualId = R.head(individuals).id;
         const patch = {
@@ -2462,11 +2496,24 @@ const buildRelationTimeFilter = (input) => {
   }
   return args;
 };
-export const buildDynamicFilterArgs = (filters) => {
+
+export const buildDynamicFilterArgsContent = (inputFilters) => {
+  const { filters = [], filterGroups = [] } = inputFilters;
+  // 01. Handle filterGroups
+  const dynamicFilterGroups = [];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
+    const dynamicGroup = buildDynamicFilterArgsContent(group);
+    dynamicFilterGroups.push(dynamicGroup);
+  }
+  // 02. Handle filters
   // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
   // We need to rebuild the filters
   // Extract elementId and relationship_type
-  const elementId = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'rel_*.internal_id' : n.key === 'rel_*.internal_id')))?.values || null;
+  const elementId = R.head(filters
+    .filter((n) => (Array.isArray(n.key)
+      ? R.head(n.key) === 'rel_*.internal_id'
+      : n.key === 'rel_*.internal_id')))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
   // Build filter without it
   let dynamicFilters = filters.filter((n) => !['rel_*.internal_id', 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
@@ -2488,7 +2535,15 @@ export const buildDynamicFilterArgs = (filters) => {
       }];
     }
   }
-  return { connectionFormat: false, first: 500, filters: dynamicFilters };
+  return {
+    mode: inputFilters.mode ?? 'and',
+    filters: dynamicFilters,
+    filterGroups: dynamicFilterGroups,
+  };
+};
+export const buildDynamicFilterArgs = (inputFilters) => {
+  const filters = buildDynamicFilterArgsContent(inputFilters);
+  return { connectionFormat: false, first: 500, filters };
 };
 
 const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
@@ -3272,8 +3327,15 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // Prevent individual deletion if linked to a user
   if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
-    const args = { filters: [{ key: 'user_email', values: [element.contact_information] }], connectionFormat: false };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'user_email', values: [element.contact_information] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
     if (users.length > 0) {
       throw FunctionalError('Cannot delete an individual corresponding to a user');
     }

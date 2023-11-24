@@ -9,6 +9,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -33,7 +34,7 @@ const ContainerStixCoreObjectsMapping = ({
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
-  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stixCoreObjectsMapping`;
+  const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsMapping`;
   const {
     viewStorage,
     paginationOptions,
@@ -42,7 +43,7 @@ const ContainerStixCoreObjectsMapping = ({
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: false,
@@ -62,6 +63,8 @@ const ContainerStixCoreObjectsMapping = ({
     handleSort,
     handleAddFilter,
     handleSetNumberOfElements,
+    handleSwitchLocalMode,
+    handleSwitchGlobalMode,
   } = helpers;
 
   const dataColumns = {
@@ -111,14 +114,15 @@ const ContainerStixCoreObjectsMapping = ({
           handleSearch={handleSearch}
           handleAddFilter={handleAddFilter}
           handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
           iconExtension={false}
           filters={filters}
           availableFilterKeys={[
             'entity_type',
-            'labelledBy',
-            'markedBy',
-            'created_at_start_date',
-            'created_at_end_date',
+            'objectLabel',
+            'objectMarking',
+            'created_at',
             'createdBy',
           ]}
           keyword={searchTerm}

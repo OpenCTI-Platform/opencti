@@ -7,12 +7,11 @@ import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import {
   type EditContext,
-  type EditInput,
+  type EditInput, FilterMode,
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,
   type StatusAddInput,
-  StatusFilter,
   StatusOrdering,
   type StatusTemplate,
   type StatusTemplateAddInput
@@ -51,7 +50,11 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     const args = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
-      filters: [{ key: [StatusFilter.Type], values: [type] }],
+      filters: {
+        mode: 'and' as FilterMode,
+        filters: [{ key: ['type'], values: [type] }],
+        filterGroups: [],
+      },
     };
     return findAll(context, user, args);
   };
@@ -65,7 +68,11 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
     const args = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
-      filters: [{ key: [StatusFilter.Type], values: types }],
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: types }],
+        filterGroups: [],
+      },
       connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
@@ -144,7 +151,11 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
-  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['template_id'], values: [statusTemplateId] }],
+    filterGroups: [],
+  };
   const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
@@ -174,7 +185,11 @@ export const statusTemplateCleanContext = async (context: AuthContext, user: Aut
   });
 };
 export const statusTemplateUsagesNumber = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
-  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: ['template_id'], values: [statusTemplateId] }],
+    filterGroups: [],
+  };
   const options = { filters, types: [ENTITY_TYPE_STATUS] };
   const result = elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options);
   const count = await Promise.all([result]);

@@ -13,6 +13,7 @@ import {
   batchReports,
   findAll,
   findById,
+  findFiltersRepresentatives,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectCleanContext,
@@ -82,8 +83,8 @@ const stixCoreObjectResolvers = {
     },
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
+    filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
   },
-  StixCoreObjectsFilter: stixCoreObjectOptions.StixCoreObjectsFilter,
   StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {
     // eslint-disable-next-line

@@ -14,7 +14,13 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 
@@ -85,14 +91,14 @@ const RetentionCreationValidation = (t) => Yup.object().shape({
 
 const RetentionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(initialFilterGroup);
   const [verified, setVerified] = useState(false);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCreationMutation,
       variables: {
@@ -118,7 +124,7 @@ const RetentionCreation = (props) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
       variables: {
@@ -136,33 +142,35 @@ const RetentionCreation = (props) => {
     });
   };
 
-  const handleAddFilter = (key, id, value) => {
+  const handleAddFilter = (key, id, op = 'eq') => {
     setVerified(false);
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
-    }
+    setFilters(constructHandleAddFilter(filters, key, id, op));
   };
 
-  const handleRemoveFilter = (key) => {
+  const handleRemoveFilter = (key, op = 'eq') => {
     setVerified(false);
-    setFilters(R.dissoc(key, filters));
+    setFilters(constructHandleRemoveFilter(filters, key, op));
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    if (filters) {
+      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+    }
+  };
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
 
   return (
     <Drawer
       title={t('Create a retention policy')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => setFilters({})}
+      onClose={() => setFilters(initialFilterGroup)}
     >
       {({ onClose }) => (
         <Formik
@@ -212,11 +220,11 @@ const RetentionCreation = (props) => {
                   availableFilterKeys={[
                     'entity_type',
                     'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
                     'createdBy',
                     'priority',
                     'severity',
@@ -238,13 +246,17 @@ const RetentionCreation = (props) => {
                 />
               </div>
               <div className="clearfix" />
-              <FilterIconButton
-                filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                classNameNumber={2}
-                styleNumber={2}
-                redirection
-              />
+              {filters
+                && <FilterIconButton
+                  filters={filters}
+                  handleRemoveFilter={handleRemoveFilter}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  handleSwitchLocalMode={handleSwitchLocalMode}
+                  classNameNumber={2}
+                  styleNumber={2}
+                  redirection
+                />
+              }
               <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button

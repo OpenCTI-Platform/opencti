@@ -11,17 +11,19 @@ import {
   CitiesLinesPaginationQuery,
   CitiesLinesPaginationQuery$variables,
 } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
-import { Filters } from '../../../components/list_lines';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+
+const LOCAL_STORAGE_KEY = 'cities';
 
 const Cities: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
-    'view-cities',
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -67,6 +69,8 @@ const Cities: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="City"
@@ -75,8 +79,7 @@ const Cities: FunctionComponent = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'created_start_date',
-          'created_end_date',
+          'created',
           'createdBy',
         ]}
       >

@@ -7,7 +7,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { convertFilters } from '../../../../utils/ListParameters';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
 
@@ -41,10 +40,9 @@ const stixRelationshipsNumberNumberQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixRelationshipsFiltering]
-    $filterMode: FilterMode
-    $dynamicFrom: [StixCoreObjectsFiltering]
-    $dynamicTo: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
   ) {
     stixRelationshipsNumber(
       noDirection: $noDirection
@@ -62,7 +60,6 @@ const stixRelationshipsNumberNumberQuery = graphql`
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
     ) {
@@ -83,17 +80,17 @@ const StixRelationshipsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
-    const relationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
+    let filtersContent = selection.filters?.filters ?? [];
+    const relationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
       ?.values || null;
-    const elementId = R.head(finalFilters.filter((o) => o.key === 'elementId'))?.values || null;
-    const elementWithTargetTypes = R.head(finalFilters.filter((o) => o.key === 'elementWithTargetTypes'))
+    const elementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
+    const elementWithTargetTypes = R.head(filtersContent.filter((o) => o.key === 'elementWithTargetTypes'))
       ?.values || null;
-    const fromId = R.head(finalFilters.filter((o) => o.key === 'fromId'))?.values || null;
-    const toId = R.head(finalFilters.filter((o) => o.key === 'toId'))?.values || null;
-    const fromTypes = R.head(finalFilters.filter((o) => o.key === 'fromTypes'))?.values || null;
-    const toTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
+    const fromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
+    const toId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
+    const fromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values || null;
+    const toTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
+    filtersContent = filtersContent.filter(
       (o) => ![
         'relationship_type',
         'fromId',
@@ -113,11 +110,11 @@ const StixRelationshipsNumber = ({
           toId,
           toTypes,
           relationship_type: relationshipType,
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           startDate,
           endDate: dayAgo(),
-          dynamicFrom: convertFilters(selection.dynamicFrom),
-          dynamicTo: convertFilters(selection.dynamicTo),
+          dynamicFrom: selection.dynamicFrom,
+          dynamicTo: selection.dynamicTo,
         }}
         render={({ props }) => {
           if (props && props.stixRelationshipsNumber) {

@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
-import ExternalReferencesLines, {
-  externalReferencesLinesQuery,
-} from './external_references/ExternalReferencesLines';
+import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -14,13 +11,15 @@ import {
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { ExternalReferenceLine_node$data } from './external_references/__generated__/ExternalReferenceLine_node.graphql';
+import {
+  ExternalReferenceLine_node$data,
+} from './external_references/__generated__/ExternalReferenceLine_node.graphql';
 import ToolBar from '../data/ToolBar';
-import { Filters } from '../../../components/list_lines';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-externalReferences';
+const LOCAL_STORAGE_KEY = 'externalReferences';
 
 interface ExternalReferencesProps {
   history: History;
@@ -38,7 +37,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
       sortBy: 'created',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
@@ -83,12 +82,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     externalReferencesLinesQuery,
     paginationOptions,
   );
-  let finalFilters = filters;
-  finalFilters = R.assoc(
-    'entity_type',
-    [{ id: 'External-Reference', value: 'External-Reference' }],
-    finalFilters,
-  );
+  const toolBarFilters = filtersWithEntityType(filters, 'External-Reference');
   return (
     <>
       <ListLines
@@ -99,6 +93,8 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         displayImport={true}
@@ -109,9 +105,8 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
         ]}
       >
         {queryRef && (
@@ -147,7 +142,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
                 handleClearSelectedElements={handleClearSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={finalFilters}
+                filters={toolBarFilters}
                 type="External-Reference"
               />
             </>

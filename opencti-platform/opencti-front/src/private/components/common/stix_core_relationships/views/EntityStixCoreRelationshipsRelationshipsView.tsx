@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -14,13 +13,23 @@ import EntityStixCoreRelationshipsLinesFrom, {
 } from '../EntityStixCoreRelationshipsLinesFrom';
 import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
-import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import {
+  computeTargetStixCyberObservableTypes,
+  computeTargetStixDomainObjectTypes,
+  isStixCyberObservables,
+} from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { DataColumns, Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
+import {
+  addFilter, cleanFilters,
+  FilterGroup,
+  filtersWithEntityType,
+  findFilterFromKey,
+  removeFilter,
+} from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -70,13 +79,12 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   const availableFilterKeys = [
     'relationship_type',
     'entity_type',
-    'markedBy',
+    'objectMarking',
     'confidence',
-    'labelledBy',
+    'objectLabel',
     'createdBy',
-    'creator',
-    'created_start_date',
-    'created_end_date',
+    'creator_id',
+    'created',
   ];
 
   const { platformModuleHelpers } = useAuth();
@@ -135,31 +143,23 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     },
   };
 
-  const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
+  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
+  const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
 
   let paginationOptions = {
     relationship_type: selectedRelationshipTypes,
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: convertFilters(
-      R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
-    ),
+    filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
   } as object;
 
-  let backgroundTaskFilters: Filters = {
-    ...filters,
-    entity_type:
-      selectedRelationshipTypes.length > 0
-        ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
-        : [
-          {
-            id: 'stix-core-relationship',
-            value: 'stix-core-relationship',
-          },
-        ],
-  };
+  let backgroundTaskFilters: FilterGroup | undefined = filtersWithEntityType(
+    filters,
+    selectedRelationshipTypes.length > 0
+      ? selectedRelationshipTypes
+      : ['stix-core-relationship'],
+  );
 
   if (allDirections) {
     paginationOptions = {
@@ -167,14 +167,13 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       elementId: entityId,
       elementWithTargetTypes: selectedTypes,
     };
-    backgroundTaskFilters = {
-      ...backgroundTaskFilters,
-      elementId: [{ id: entityId, value: entityId }],
-      elementWithTargetTypes:
-        selectedTypes.length > 0
-          ? selectedTypes.map((n) => ({ id: n, value: n }))
-          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-    };
+    backgroundTaskFilters = addFilter(
+      addFilter(backgroundTaskFilters, 'elementId', entityId),
+      'elementWithTargetTypes',
+      selectedTypes.length > 0
+        ? selectedTypes
+        : ['Stix-Core-Object'],
+    );
   } else if (isRelationReversed) {
     paginationOptions = {
       ...paginationOptions,
@@ -182,14 +181,13 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       toRole: role || null,
       fromTypes: selectedTypes,
     };
-    backgroundTaskFilters = {
-      ...backgroundTaskFilters,
-      toId: [{ id: entityId, value: entityId }],
-      fromTypes:
-        selectedTypes.length > 0
-          ? selectedTypes.map((n) => ({ id: n, value: n }))
-          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-    };
+    backgroundTaskFilters = addFilter(
+      addFilter(backgroundTaskFilters, 'toId', entityId),
+      'fromTypes',
+      selectedTypes.length > 0
+        ? selectedTypes
+        : ['Stix-Core-Object'],
+    );
   } else {
     paginationOptions = {
       ...paginationOptions,
@@ -197,14 +195,13 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       fromRole: role || null,
       toTypes: selectedTypes,
     };
-    backgroundTaskFilters = {
-      ...backgroundTaskFilters,
-      fromId: [{ id: entityId, value: entityId }],
-      toTypes:
-        selectedTypes.length > 0
-          ? selectedTypes.map((n) => ({ id: n, value: n }))
-          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-    };
+    backgroundTaskFilters = addFilter(
+      addFilter(backgroundTaskFilters, 'fromId', entityId),
+      'toTypes',
+      selectedTypes.length > 0
+        ? selectedTypes
+        : ['Stix-Core-Object'],
+    );
   }
 
   const {
@@ -228,6 +225,8 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
               handleSearch={storageHelpers.handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
+              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
               displayImport={true}
               secondaryAction={true}
               iconExtension={true}

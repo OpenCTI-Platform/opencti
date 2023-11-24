@@ -16,8 +16,8 @@ export const findAllPaginated = async (context: AuthContext, user: AuthUser, opt
   return listEntitiesPaginated<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
 };
 
-export const findAllRssIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
+export const findAllRssIngestions = async (context: AuthContext, user: AuthUser, opts = {}, noFiltersChecking = false) => {
+  return listAllEntities<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts, noFiltersChecking);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {

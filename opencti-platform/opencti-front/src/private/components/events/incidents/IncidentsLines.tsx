@@ -24,7 +24,7 @@ export const incidentsLinesPaginationQuery = graphql`
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [IncidentsFiltering]
+    $filters: FilterGroup
   ) {
     ...IncidentsLines_data
       @arguments(
@@ -46,7 +46,7 @@ export const IncidentsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "IncidentsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[IncidentsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "IncidentsLinesRefetchQuery") {
     incidents(

@@ -14,7 +14,12 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
+  filtersAfterSwitchLocalMode,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 
@@ -78,13 +83,11 @@ const retentionValidation = (t) => Yup.object().shape({
 const RetentionEditionContainer = (props) => {
   const { t, classes, open, handleClose, retentionRule } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
-  const [filters, setFilters] = useState(
-    JSON.parse(props.retentionRule.filters),
-  );
+  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(props.retentionRule.filters));
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = R.pipe(
-      R.assoc('filters', JSON.stringify(filters)),
+      R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -104,35 +107,32 @@ const RetentionEditionContainer = (props) => {
       },
     });
   };
-  const handleAddFilter = (key, id, value) => {
+  const handleAddFilter = (key, id, op = 'eq') => {
     setVerified(false);
-    if (filters[key]) {
-      if (filters[key].length > 0) {
-        setFilters(
-          R.assoc(
-            key,
-            isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-            filters,
-          ),
-        );
-      } else {
-        setFilters(R.assoc(key, [{ id, value }], filters));
-      }
-    } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
+    setFilters(constructHandleAddFilter(filters, key, id, op));
+  };
+  const handleRemoveFilter = (key, op = 'eq') => {
+    setVerified(false);
+    setFilters(constructHandleRemoveFilter(filters, key, op));
+  };
+  const handleSwitchLocalMode = (localFilter) => {
+    if (filters) {
+      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
     }
   };
-  const handleRemoveFilter = (key) => {
-    setVerified(false);
-    setFilters(R.dissoc(key, filters));
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
   const handleVerify = (values) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
     )(values);
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
       mutation: RetentionCheckMutation,
       variables: {
@@ -202,11 +202,11 @@ const RetentionEditionContainer = (props) => {
                 availableFilterKeys={[
                   'entity_type',
                   'x_opencti_workflow_id',
-                  'assigneeTo',
-                  'objectContains',
-                  'markedBy',
-                  'labelledBy',
-                  'creator',
+                  'objectAssignee',
+                  'objects',
+                  'objectMarking',
+                  'objectLabel',
+                  'creator_id',
                   'createdBy',
                   'priority',
                   'severity',
@@ -227,13 +227,17 @@ const RetentionEditionContainer = (props) => {
               />
             </div>
             <div className="clearfix" />
-            <FilterIconButton
-              filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
-              classNameNumber={2}
-              styleNumber={2}
-              redirection
-            />
+            {filters
+              && <FilterIconButton
+                filters={filters}
+                handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
+                classNameNumber={2}
+                styleNumber={2}
+                redirection
+              />
+            }
             <div className={classes.buttons}>
               <Button
                 variant="contained"

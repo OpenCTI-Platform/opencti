@@ -32,7 +32,7 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   }
   const finalInput = { ...input, fromId: stixObjectOrRelationshipId };
   if (!isStixRefRelationship(finalInput.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${finalInput.relationship_type}.`);
   }
   // Create relation
   const fromType = stixObjectOrRelationship.entity_type;
@@ -67,7 +67,7 @@ export const stixObjectOrRelationshipAddRefRelations = async (
     throw FunctionalError('Cannot add the relation, Stix-Object or Stix-Relationship cannot be found.');
   }
   if (!isStixRefRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   const finalInput = input.toIds?.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })

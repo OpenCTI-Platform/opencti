@@ -28,6 +28,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditInput,
+  FilterGroup,
   PlaybookAddInput,
   PlaybookAddLinkInput,
   PlaybookAddNodeInput,
@@ -37,6 +38,7 @@ import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, Nod
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -46,8 +48,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
   return listEntitiesPaginated<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
-export const findAllPlaybooks = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
-  return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
+export const findAllPlaybooks = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>, noFiltersChecking = false) => {
+  return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts, noFiltersChecking);
 };
 
 export const availableComponents = () => {
@@ -55,6 +57,15 @@ export const availableComponents = () => {
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
+  // our stix matching is currently limited, we need to validate the input filters
+  if (input.configuration) {
+    const config = JSON.parse(input.configuration);
+    if (config.filters) {
+      const filterGroup = JSON.parse(config.filters) as FilterGroup;
+      validateFilterGroupForStixMatch(filterGroup);
+    }
+  }
+
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -130,6 +141,15 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
+  // our stix matching is currently limited, we need to validate the input filters
+  if (input.configuration) {
+    const config = JSON.parse(input.configuration);
+    if (config.filters) {
+      const filterGroup = JSON.parse(config.filters) as FilterGroup;
+      validateFilterGroupForStixMatch(filterGroup);
+    }
+  }
+
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];

@@ -30,7 +30,7 @@ import {
   type BasicStoreEntityTrigger,
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
-import { convertFiltersFrontendFormat, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
+import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -42,6 +42,13 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type { BasicStoreCommon } from '../types/store';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { replaceFilterKey } from '../utils/filtering/filtering-utils';
+import {
+  CONNECTED_TO_INSTANCE_FILTER,
+  CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER
+} from '../utils/filtering/filtering-constants';
+import type { FilterGroup } from '../generated/graphql';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -375,13 +382,13 @@ const generateNotificationMessageForFilteredSideEvents = async (
   context: AuthContext,
   user: AuthUser,
   data: StixCoreObject | StixRelationshipObject,
-  frontendFilters: Record<string, { id: string, value: string }[]>,
+  frontendFilters: FilterGroup,
   translatedType: string,
   updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
   previousData?: StixCoreObject | StixRelationshipObject,
 ) => {
   // Get ids from the user trigger filters that user has access to
-  const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+  const listenedInstanceIdsMap = await resolveFiltersMapForUser(context, user, frontendFilters);
   // -- 01. Notification for relationships (creation/deletion/newly visible/no more visible)
   if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type) // the event is a relationship
     && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting) // and the relationship from/to contains an instance of the trigger filters
@@ -425,11 +432,14 @@ export const buildTargetEvents = async (
   users: AuthUser[],
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
-  useSideEventMatching = false
+  useSideEventMatching = false,
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters } = trigger;
-  const frontendFilters = JSON.parse(filters);
+  let finalFilters = filters ? JSON.parse(filters) : null;
+  if (useSideEventMatching) { // modifiy filters to look for instance trigger side events
+    finalFilters = replaceFilterKey(JSON.parse(trigger.filters), CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
+  }
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
     triggerEventTypes = useSideEventMatching
@@ -444,10 +454,10 @@ export const buildTargetEvents = async (
       // For each user for a specific trigger
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
+      // TODO: replace with new matcher, but handle side events
       // Check if the event matched/matches the trigger filters and the user rights
-      const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, useSideEventMatching);
-      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
+      const isPreviousMatch = await isStixMatchFilterGroup(context, user, previous, finalFilters);
+      const isCurrentlyMatch = await isStixMatchFilterGroup(context, user, data, finalFilters);
       // Depending on the previous visibility, the displayed event type will be different
       if (!useSideEventMatching) { // Case classic live trigger & instance trigger direct events: user should be notified of the direct event
         const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
@@ -468,10 +478,10 @@ export const buildTargetEvents = async (
       } else { // useSideEventMatching = true: Case side events for instance triggers
         // eslint-disable-next-line no-lonely-if
         if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
-          const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+          const listenedInstanceIdsMap = await resolveFiltersMapForUser(context, user, finalFilters);
           // eslint-disable-next-line max-len
           const translatedType = await eventTypeTranslaterForSideEvents(context, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
-          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, translatedType, updatePatch, previous);
+          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, finalFilters, translatedType, updatePatch, previous);
           if (message) {
             targets.push({ user: notificationUser, type: translatedType, message });
           }
@@ -482,14 +492,13 @@ export const buildTargetEvents = async (
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
-      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
+      const isCurrentlyMatch = await isStixMatchFilterGroup(context, user, data, finalFilters);
       if (isCurrentlyMatch) {
         if (!useSideEventMatching) { // classic live trigger or instance trigger with direct event
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: eventType, message });
         } else { // instance trigger side events
-          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, frontendFilters, eventType);
+          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, finalFilters, eventType);
           if (message) {
             targets.push({ user: notificationUser, type: eventType, message });
           }

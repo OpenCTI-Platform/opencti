@@ -9,7 +9,7 @@ import {
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttackPatternLine, AttackPatternLineDummy } from './AttackPatternLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
@@ -19,12 +19,7 @@ interface AttackPatternsLinesProps {
   dataColumns: DataColumns;
   paginationOptions ? : AttackPatternsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const attackPatternsLinesQuery = graphql`
@@ -34,7 +29,7 @@ export const attackPatternsLinesQuery = graphql`
     $cursor: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
-    $filters: [AttackPatternsFiltering]
+    $filters: FilterGroup
   ) {
     ...AttackPatternsLines_data
     @arguments(
@@ -56,7 +51,7 @@ const attackPatternsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "AttackPatternsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[AttackPatternsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "AttackPatternsLinesRefetchQuery") {
     attackPatterns(

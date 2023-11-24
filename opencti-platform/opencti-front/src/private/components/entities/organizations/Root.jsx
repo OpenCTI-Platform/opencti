@@ -71,10 +71,11 @@ class RootOrganization extends Component {
         params: { organizationId },
       },
     } = props;
+    const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-organization-${organizationId}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
@@ -95,10 +96,11 @@ class RootOrganization extends Component {
         params: { organizationId },
       },
     } = this.props;
+    const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-organization-${organizationId}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

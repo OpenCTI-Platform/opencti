@@ -25,6 +25,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { addFilter, removeFilter } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -59,7 +60,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $search: String
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: FilterGroup
     $selectedIds: [String]
   ) {
     stixCoreRelationshipsExportAsk(
@@ -118,71 +119,37 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       : values.maxMarkingDefinition;
     let finalFilters = paginationOptions.filters ?? [];
     if (paginationOptions.relationship_type) {
-      finalFilters = R.append(
-        {
-          key: 'relationship_type',
-          values: Array.isArray(paginationOptions.relationship_type)
-            ? paginationOptions.relationship_type
-            : [paginationOptions.relationship_type],
-        },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
     }
     if (paginationOptions.elementId) {
-      finalFilters = R.append(
-        { key: 'elementId', values: paginationOptions.elementId },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'elementId', paginationOptions.elementId);
     } else {
-      finalFilters = finalFilters.filter((n) => n.key !== 'elementId');
+      finalFilters = removeFilter(finalFilters, 'elementId');
     }
     if (paginationOptions.fromId) {
-      finalFilters = R.append(
-        { key: 'fromId', values: paginationOptions.fromId },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'fromId', paginationOptions.fromId);
     } else {
-      finalFilters = finalFilters.filter((n) => n.key !== 'fromId');
+      finalFilters = removeFilter(finalFilters, 'fromId');
     }
     if (paginationOptions.toId) {
-      finalFilters = R.append(
-        { key: 'toId', values: paginationOptions.toId },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'toId', paginationOptions.toId);
     } else {
-      finalFilters = finalFilters.filter((n) => n.key !== 'toId');
+      finalFilters = removeFilter(finalFilters, 'toId');
     }
     if (paginationOptions.elementWithTargetTypes) {
-      finalFilters = R.append(
-        {
-          key: 'elementWithTargetTypes',
-          values: paginationOptions.elementWithTargetTypes,
-        },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'elementWithTargetTypes', paginationOptions.elementWithTargetTypes);
     } else {
-      finalFilters = finalFilters.filter(
-        (n) => n.key !== 'elementWithTargetTypes',
-      );
+      finalFilters = removeFilter(finalFilters, 'elementWithTargetTypes');
     }
     if (paginationOptions.fromTypes) {
-      finalFilters = R.append(
-        {
-          key: 'fromTypes',
-          values: paginationOptions.fromTypes,
-        },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'fromTypes', paginationOptions.fromTypes);
     } else {
-      finalFilters = finalFilters.filter((n) => n.key !== 'fromTypes');
+      finalFilters = removeFilter(finalFilters, 'fromTypes');
     }
     if (paginationOptions.toTypes) {
-      finalFilters = R.append(
-        { key: 'toTypes', values: paginationOptions.toTypes },
-        finalFilters,
-      );
+      finalFilters = addFilter(finalFilters, 'toTypes', paginationOptions.toTypes);
     } else {
-      finalFilters = finalFilters.filter((n) => n.key !== 'toTypes');
+      finalFilters = removeFilter(finalFilters, 'toTypes');
     }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,

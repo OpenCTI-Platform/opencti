@@ -1,5 +1,6 @@
 import moment from 'moment';
-import type { Filter, FilterGroup } from './filter-group';
+import type { Filter, FilterGroup } from '../../generated/graphql';
+import { isFilterGroupNotEmpty } from './filtering-utils';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
@@ -162,6 +163,7 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  *                               see unit tests for an example.
  */
 export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
+  if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {

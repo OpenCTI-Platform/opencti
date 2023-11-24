@@ -104,13 +104,17 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
     setTriggerCreation(false);
   };
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filters = [{ key: 'trigger_type', values: ['live'] }];
+    const filtersContent = [{ key: 'trigger_type', values: ['live'] }];
     if (recipientId) {
-      filters.push({ key: 'user_ids', values: [recipientId] });
+      filtersContent.push({ key: 'authorized_members.id', values: [recipientId] });
     }
     fetchQuery(triggersQueriesKnowledgeSearchQuery, {
       search: event && event.target.value,
-      filters,
+      filters: {
+        mode: 'and',
+        filters: filtersContent,
+        filterGroups: [],
+      },
     })
       .toPromise()
       .then((data) => {

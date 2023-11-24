@@ -20,7 +20,7 @@ import type { StixId } from '../types/stix-common';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
-import { OrderingMode } from '../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode } from '../generated/graphql';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -192,8 +192,12 @@ const initHistoryManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
-        filters: [{ key: ['event_access'], values: [null] }]
-      });
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
+          filterGroups: [],
+        },
+      }, true);
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

@@ -5,14 +5,13 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -62,21 +61,21 @@ const StixCoreObjectsMultiAreaChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let finalFilters = convertFilters(selection.filters);
-      const dataSelectionTypes = R.head(
-        finalFilters.filter((n) => n.key === 'entity_type'),
-      )?.values || ['Stix-Core-Object'];
-      const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-      const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
-      finalFilters = finalFilters.filter(
-        (n) => ![
-          'entity_type',
-          'elementId',
-          'relationship_type',
-          'toTypes',
-        ].includes(n.key),
-      );
+      const filtersContent = selection.filters?.filters ?? [];
+      const dataSelectionTypes = findFilterFromKey(filtersContent, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
+      const dataSelectionObjectId = findFilterFromKey(filtersContent, 'elementId', 'eq')?.values ?? null;
+      const dataSelectionRelationshipType = findFilterFromKey(filtersContent, 'relationship_type', 'eq')?.values ?? null;
+      const finalFilters = selection.filters ? {
+        ...selection.filters,
+        filters: filtersContent.filter(
+          (n) => ![
+            'entity_type',
+            'elementId',
+            'relationship_type',
+            'toTypes',
+          ].includes(n.key),
+        ),
+      } : undefined;
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0

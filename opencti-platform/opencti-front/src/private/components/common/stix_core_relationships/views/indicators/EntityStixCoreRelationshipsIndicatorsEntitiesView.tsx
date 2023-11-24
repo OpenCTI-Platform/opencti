@@ -3,20 +3,23 @@ import ListLines from '../../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../../data/ToolBar';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
 import { useFormatter } from '../../../../../../components/i18n';
-import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from '../../../../observations/indicators/StixDomainObjectIndicatorsLines';
+import StixDomainObjectIndicatorsLines, {
+  stixDomainObjectIndicatorsLinesQuery,
+} from '../../../../observations/indicators/StixDomainObjectIndicatorsLines';
 import Security from '../../../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
-import StixCoreRelationshipCreationFromEntity
-  from '../../StixCoreRelationshipCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../StixCoreRelationshipCreationFromEntity';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
 import {
   StixDomainObjectIndicatorsLinesQuery$data,
 } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
-import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
-import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+import {
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
+} from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
+import { addFilter, cleanFilters } from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -51,20 +54,19 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   } = viewStorage;
 
   const availableFilterKeys = [
-    'labelledBy',
-    'markedBy',
-    'created_start_date',
-    'created_end_date',
-    'valid_from_start_date',
-    'valid_until_end_date',
+    'objectLabel',
+    'objectMarking',
+    'created',
+    'valid_from',
+    'valid_until',
     'x_opencti_score',
     'createdBy',
-    'objectContains',
+    'objects',
     'sightedBy',
     'x_opencti_detection',
     'basedOn',
     'revoked',
-    'creator',
+    'creator_id',
     'confidence',
     'indicator_types',
     'pattern_type',
@@ -108,10 +110,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 
   const cleanedFilters = cleanFilters(filters, availableFilterKeys);
 
-  const paginationFilters = convertFilters({
-    ...cleanedFilters,
-    indicates: [{ id: entityId, value: entityId }],
-  });
+  const paginationFilters = addFilter(cleanedFilters, 'indicates', entityId);
 
   const toolBarFilters = {
     ...cleanedFilters,
@@ -147,6 +146,8 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
             handleRemoveFilter={storageHelpers.handleRemoveFilter}
+            handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+            handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
             handleChangeView={storageHelpers.handleChangeView}
             onToggleEntity={onToggleEntity}
             handleToggleSelectAll={handleToggleSelectAll}

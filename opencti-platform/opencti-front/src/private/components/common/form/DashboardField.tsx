@@ -37,7 +37,7 @@ interface DashboardFieldProps {
 
 const workspaceQuery = graphql`
   query DashboardFieldQuery {
-    workspaces(filters: [{ key: type, values: ["Dashboard"] }]) {
+    workspaces(filters: { mode: and, filters: [{ key: "type", values: ["Dashboard"] }], filterGroups: [] }) {
       edges {
         node {
           id

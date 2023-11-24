@@ -2,7 +2,9 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
+import { TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
+import { resolveFilterGroupValuesWithCache } from '../utils/filtering/filtering-resolution';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -32,72 +34,94 @@ export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+export const findAll = (context, user, args, noFiltersChecking = false) => {
+  return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args, noFiltersChecking);
+};
+
+const buildQueryFiltersContent = (adaptedFiltersGroup) => {
+  if (!adaptedFiltersGroup) {
+    return {
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    };
+  }
+  const { filters, filterGroups = [] } = checkAndConvertFilters(adaptedFiltersGroup);
+  const queryFilterGroups = [];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const currentGroup = filterGroups[index];
+    const filtersResult = buildQueryFiltersContent(currentGroup);
+    queryFilterGroups.push(filtersResult);
+  }
+  const queryFilters = [];
+  const nestedFrom = [];
+  const nestedTo = [];
+  let nestedFromRole = false;
+  let nestedToRole = false;
+  for (let index = 0; index < filters.length; index += 1) {
+    const { key, operator, values, mode } = filters[index];
+    if (key === TYPE_FILTER) {
+      // filter types to keep only the ones that can be handled by background tasks
+      const filteredTypes = values.filter((v) => isTaskEnabledEntity(v));
+      queryFilters.push({ key, values: filteredTypes, operator, mode });
+    } else if (key === 'elementId') {
+      const nestedElement = [{ key: 'internal_id', values }];
+      queryFilters.push({ key: 'connections', nested: nestedElement });
+    } else if (key === 'elementWithTargetTypes') {
+      const nestedElementTypes = [{ key: 'types', values }];
+      queryFilters.push({ key: 'connections', nested: nestedElementTypes });
+    } else if (key === 'fromId') {
+      nestedFrom.push({ key: 'internal_id', values });
+      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+      nestedFromRole = true;
+    } else if (key === 'fromTypes') {
+      nestedFrom.push({ key: 'types', values });
+      if (!nestedFromRole) {
+        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+      }
+    } else if (key === 'toId' || key === 'toSightingId') {
+      nestedTo.push({ key: 'internal_id', values });
+      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      nestedToRole = true;
+    } else if (key === 'toTypes') {
+      nestedTo.push({ key: 'types', values });
+      if (!nestedToRole) {
+        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      }
+    } else {
+      queryFilters.push({ key, values, operator, mode });
+    }
+  }
+  if (nestedFrom.length > 0) {
+    queryFilters.push({ key: 'connections', nested: nestedFrom });
+  }
+  if (nestedTo.length > 0) {
+    queryFilters.push({ key: 'connections', nested: nestedTo });
+  }
+  return {
+    mode: adaptedFiltersGroup.mode,
+    filters: queryFilters,
+    filterGroups: queryFilterGroups,
+  };
 };
 
 const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
-  const types = [];
-  const queryFilters = [];
+  // Construct filters
+  let adaptedFilterGroup;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
-    const adaptedFilters = await convertFiltersFrontendFormat(context, user, filters);
-    const nestedFrom = [];
-    const nestedTo = [];
-    let nestedFromRole = false;
-    let nestedToRole = false;
-    for (let index = 0; index < adaptedFilters.length; index += 1) {
-      const { key, operator, values, filterMode } = adaptedFilters[index];
-      if (key === TYPE_FILTER) {
-        // filter types to keep only the ones that can be handled by background tasks
-        const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
-        types.push(...filteredTypes);
-      } else if (key === 'elementId') {
-        const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
-        queryFilters.push({ key: 'connections', nested: nestedElement });
-      } else if (key === 'elementWithTargetTypes') {
-        const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
-        queryFilters.push({ key: 'connections', nested: nestedElementTypes });
-      } else if (key === 'fromId') {
-        nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });
-        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-        nestedFromRole = true;
-      } else if (key === 'fromTypes') {
-        nestedFrom.push({ key: 'types', values: values.map((v) => v.id) });
-        if (!nestedFromRole) {
-          nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-        }
-      } else if (key === 'toId' || key === 'toSightingId') {
-        nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
-        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-        nestedToRole = true;
-      } else if (key === 'toTypes') {
-        nestedTo.push({ key: 'types', values: values.map((v) => v.id) });
-        if (!nestedToRole) {
-          nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-        }
-      } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
-      }
-    }
-    if (nestedFrom.length > 0) {
-      queryFilters.push({ key: 'connections', nested: nestedFrom });
-    }
-    if (nestedTo.length > 0) {
-      queryFilters.push({ key: 'connections', nested: nestedTo });
-    }
+    adaptedFilterGroup = await resolveFilterGroupValuesWithCache(context, user, filters);
   }
+  const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   // Avoid empty type which will target internal objects and relationships as well
-  if (types.length === 0) {
-    types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
-  }
+  const types = newFilters.filters.filter((f) => f.key === TYPE_FILTER)?.values ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   return {
     types,
     first: MAX_TASK_ELEMENTS,
     orderMode: 'asc',
     orderBy: 'created_at',
     after: taskPosition,
-    filters: queryFilters,
+    filters: newFilters,
     search: search && search.length > 0 ? search : null,
   };
 };
@@ -109,7 +133,14 @@ export const executeTaskQuery = async (context, user, filters, search, start = n
 export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
-  const opts = enable ? buildEntityFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
+  const opts = enable
+    ? buildEntityFilters(scan)
+    : { filters: {
+      mode: 'and',
+      filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+      filterGroups: [],
+    }
+    };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
@@ -144,7 +175,11 @@ export const createQueryTask = async (context, user, input) => {
 };
 
 export const deleteRuleTasks = async (context, user, ruleId) => {
-  const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
+  const tasksFilters = {
+    mode: 'and',
+    filters: [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }],
+    filterGroups: [],
+  };
   const args = { filters: tasksFilters, connectionFormat: false };
   const tasks = await listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
   await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_BACKGROUND_TASK)));

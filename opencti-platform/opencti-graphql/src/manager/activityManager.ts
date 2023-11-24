@@ -35,7 +35,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import { OrderingMode } from '../generated/graphql';
+import { FilterMode, OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
 import type { ActivityStreamEvent } from './activityListener';
 import { BASE_TYPE_ENTITY } from '../schema/general';
@@ -44,8 +44,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
-import { convertFiltersFrontendFormat } from '../utils/filtering';
-import type { BasicStoreEntityLiveTrigger } from '../modules/notification/notification-types';
+import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -56,61 +55,6 @@ export const isLiveActivity = (n: ResolvedTrigger): n is ResolvedLive => n.trigg
 export const getLiveActivityNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);
   return liveNotifications.filter(isLiveActivity);
-};
-
-const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntityLiveTrigger, event: ActivityStreamEvent) => {
-  const { type, event_scope, status, origin } = event;
-  const { filters: rawFilters } = trigger;
-  const filters = rawFilters ? JSON.parse(rawFilters) : {};
-  const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, filters);
-  for (let index = 0; index < adaptedFilters.length; index += 1) {
-    const { key, values } = adaptedFilters[index];
-    if (values.length > 0) {
-      if (key === 'event_type') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(type)) {
-          return false;
-        }
-      }
-      if (key === 'event_scope') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(event_scope)) {
-          return false;
-        }
-      }
-      if (key === 'members_user') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(origin.user_id)) {
-          return false;
-        }
-      }
-      if (key === 'members_group') {
-        const ids = values.map((v) => v.id);
-        if (!ids.some((id) => (origin.group_ids ?? []).includes(id))) {
-          return false;
-        }
-      }
-      if (key === 'members_organization') {
-        const ids = values.map((v) => v.id);
-        if (!ids.some((id) => (origin.organization_ids ?? []).includes(id))) {
-          return false;
-        }
-      }
-      if (key === 'activity_statuses') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(status)) {
-          return false;
-        }
-      }
-      if (key === 'activity_statuses') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(status)) {
-          return false;
-        }
-      }
-    }
-  }
-  return true;
 };
 
 const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
@@ -127,8 +71,9 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
       const { trigger, users } = triggers[triggerIndex];
       const { internal_id: notification_id, notifiers } = trigger;
+      const triggerFilters = trigger.filters ? JSON.parse(trigger.filters) : null;
       // Filter the event
-      const isMatchFilter = await isEventMatchFilter(context, trigger, event.data);
+      const isMatchFilter = triggerFilters ? await isActivityEventMatchFilterGroup(event.data, triggerFilters) : true;
       if (isMatchFilter) {
         const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;
@@ -249,8 +194,12 @@ const initActivityManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
-        filters: [{ key: ['event_access'], values: ['EXISTS'] }]
-      });
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['event_access'], values: ['EXISTS'] }],
+          filterGroups: [],
+        },
+      }, true);
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

@@ -47,8 +47,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -61,8 +60,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
   revoked: Boolean!
@@ -102,8 +99,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     all: Boolean
@@ -113,8 +109,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     viaTypes: [String]
@@ -154,32 +149,6 @@ enum CasesOrdering {
   objectMarking
 }
 
-# Filtering
-enum CasesFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  x_opencti_workflow_id
-  confidence
-  source_reliability
-}
-
-input CasesFiltering {
-  key: [CasesFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type CaseConnection {
   pageInfo: PageInfo!
@@ -199,8 +168,7 @@ type Query {
     after: ID
     orderBy: CasesOrdering
     orderMode: OrderingMode
-    filters: [CasesFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     toStix: Boolean
   ): CaseConnection @auth(for: [KNOWLEDGE])

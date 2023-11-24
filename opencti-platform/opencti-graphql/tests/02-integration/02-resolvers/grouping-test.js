@@ -12,8 +12,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: GroupingsOrdering
     $orderMode: OrderingMode
-    $filters: [GroupingsFiltering!]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     groupings(
@@ -22,7 +21,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {
@@ -288,10 +286,14 @@ describe('Grouping resolver standard behavior', () => {
         ADMIN_USER,
         [ENTITY_TYPE_WORKSPACE],
         {
-          filters: [{
-            key: 'type',
-            value: 'investigation'
-          }]
+          filters: {
+            mode: 'and',
+            filters: [{
+              key: ['type'],
+              values: ['investigation'],
+            }],
+            filterGroups: [],
+          }
         }
       );
 

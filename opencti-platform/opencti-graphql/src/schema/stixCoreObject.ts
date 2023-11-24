@@ -2,10 +2,8 @@ import { isStixCyberObservable } from './stixCyberObservable';
 import { isStixDomainObject } from './stixDomainObject';
 import { isStixMetaObject } from './stixMetaObject';
 import { isInternalObject } from './internalObject';
-import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey } from './general';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT } from './general';
 import { isStixRelationshipExceptRef } from './stixRelationship';
-import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from './stixRefRelationship';
-import { RELATION_INDICATES, RELATION_RELATED_TO, RELATION_TARGETS } from './stixCoreRelationship';
 import { RELATION_PARTICIPATE_TO } from './internalRelationship';
 import type { StoreObject } from '../types/store';
 
@@ -18,24 +16,5 @@ export const isStixExportableData = (instance: StoreObject) => isStixObject(inst
   || isStixRelationshipExceptRef(instance.entity_type) || INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type);
 
 export const stixCoreObjectOptions = {
-  StixCoreObjectsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT),
-    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
-    killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
-    indicates: buildRefRelationKey(RELATION_INDICATES),
-    elementId: buildRefRelationKey('*'),
-    creator: 'creator_id',
-    hashes_MD5: 'hashes.MD5',
-    hashes_SHA1: 'hashes.SHA-1',
-    hashes_SHA256: 'hashes.SHA-256',
-    hashes_SHA512: 'hashes.SHA-512',
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
-  },
   StixCoreObjectsOrdering: {}
 };

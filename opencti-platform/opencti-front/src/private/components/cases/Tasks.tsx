@@ -2,7 +2,6 @@ import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -13,8 +12,9 @@ import {
   TasksLinesPaginationQuery$variables,
 } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_TASKS = 'view-cases-casesTasks';
+export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
 const Tasks = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TasksLinesPaginationQuery$variables>(
@@ -28,7 +28,7 @@ const Tasks = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -54,11 +54,7 @@ const Tasks = () => {
       tasksLinesQuery,
       paginationOptions,
     );
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Task', value: 'Task' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Task');
     return (
       <ListLines
         sortBy={sortBy}
@@ -67,6 +63,8 @@ const Tasks = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         handleToggleSelectAll={handleToggleSelectAll}
         dataColumns={tasksDataColumns}
@@ -80,12 +78,12 @@ const Tasks = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'assigneeTo',
-          'participant',
-          'markedBy',
-          'labelledBy',
+          'objectAssignee',
+          'objectParticipant',
+          'objectMarking',
+          'objectLabel',
           'createdBy',
-          'creator',
+          'creator_id',
         ]}
       >
         {queryRef && (

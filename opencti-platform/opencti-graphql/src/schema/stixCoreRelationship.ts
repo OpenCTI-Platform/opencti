@@ -1,6 +1,5 @@
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from './general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from './general';
 import { schemaTypesDefinition } from './schema-types';
-import { RELATION_CREATED_BY, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from './stixRefRelationship';
 
 // region Standard STIX core
 export const RELATION_DELIVERS = 'delivers';
@@ -113,12 +112,5 @@ export const isStixCoreRelationship = (type: string): boolean => schemaTypesDefi
  || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 
 export const stixCoreRelationshipOptions = {
-  StixCoreRelationshipsFilter: {
-    creator: 'creator_id',
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
-  },
   StixCoreRelationshipsOrdering: {}
 };

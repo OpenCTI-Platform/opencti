@@ -22,7 +22,6 @@ import {
   type PlaybookComponent,
   type PlaybookComponentConfiguration
 } from './playbook-types';
-import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
@@ -33,7 +32,8 @@ import {
 } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
-  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -63,7 +63,13 @@ import {
   ENTITY_TYPE_INDICATOR,
   isStixDomainObjectContainer
 } from '../../schema/stixDomainObject';
-import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
+import type {
+  StixBundle,
+  StixCoreObject,
+  StixCyberObject,
+  StixDomainObject,
+  StixObject
+} from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -78,8 +84,8 @@ import { extractStixRepresentative } from '../../database/stix-representative';
 import {
   isEmptyField,
   isNotEmptyField,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES_WITHOUT_INFERRED,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -103,6 +109,7 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-sro';
 import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -224,20 +231,19 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
     // Checking on all bundle elements
     if (all) {
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const isMatch = await isStixMatchFilters(context, SYSTEM_USER, baseData, adaptedFilters);
+    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
   }
 };
@@ -267,11 +273,10 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, jsonFilters);
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilters(context, SYSTEM_USER, bundleElement, adaptedFilters);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
       if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
     }
     const newBundle = { ...bundle, objects: matchedElements };

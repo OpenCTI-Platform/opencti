@@ -32,7 +32,7 @@ import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, 
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, VIRTUAL_ORGANIZATION_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
@@ -479,7 +479,12 @@ export const addUser = async (context, user, newUser) => {
   }));
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
   // Assign default groups to user
-  const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
+  const defaultAssignationFilter = {
+    mode: 'and',
+    filters: [{ key: 'default_assignation', values: [true] }],
+    filterGroups: [],
+  };
+  const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
   const relationGroups = defaultGroups.edges.map((e) => ({
     fromId: element.id,
     toId: e.node.internal_id,
@@ -521,7 +526,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   const finalInput = R.assoc('fromId', roleId, input);
   const relationData = await createRelation(context, user, finalInput);
@@ -705,7 +710,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
   }
   if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   // Check in case organization admins adds non-grantable goup a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
@@ -788,7 +793,12 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region test the groups existence and eventually auto create groups
   if (providerGroups.length > 0) {
     const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
-    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: [{ key: 'standard_id', values: providerGroupsIds }] });
+    const groupsFilters = {
+      mode: 'and',
+      filters: [{ key: 'standard_id', values: providerGroupsIds }],
+      filterGroups: [],
+    };
+    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: groupsFilters });
     const foundGroupsNames = foundGroups.edges.map((group) => group.node.name);
     const newGroupsToCreate = [];
     providerGroups.forEach((groupName) => {
@@ -1006,8 +1016,13 @@ export const buildCompleteUser = async (context, client) => {
     return undefined;
   }
   const batchOpts = { batched: false, paginate: false };
-  const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
-  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  const contactInformationFilter = {
+    mode: 'and',
+    filters: [{ key: 'contact_information', values: [client.user_email] }],
+    filterGroups: [],
+  };
+  const args = { filters: contactInformationFilter, connectionFormat: false };
+  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args, true);
   const organizationsPromise = batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
   const userGroupsPromise = listThroughGetTo(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);

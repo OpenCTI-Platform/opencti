@@ -35,9 +35,8 @@ import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
+import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
-
-const LOCAL_STORAGE_KEY = 'view-audit';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -46,6 +45,8 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+const LOCAL_STORAGE_KEY = 'audit';
+
 export const AuditCSVQuery = graphql`
   query AuditCSVQuery(
     $search: String
@@ -53,7 +54,7 @@ export const AuditCSVQuery = graphql`
     $first: Int!
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [LogsFiltering!]
+    $filters: FilterGroup
   ) {
     audits(
       search: $search
@@ -106,7 +107,7 @@ const Audit = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'timestamp',
       orderAsc: false,
@@ -116,7 +117,7 @@ const Audit = () => {
     },
   );
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc, types } = viewStorage;
-  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>('view-audit');
+  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     timestamp: {
       label: 'Date',
@@ -225,6 +226,8 @@ const Audit = () => {
         handleSearch={storageHelpers.handleSearch}
         handleAddFilter={storageHelpers.handleAddFilter}
         handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
         selectAll={selectAll}
         extraFields={extraFields}
         keyword={searchTerm}
@@ -236,14 +239,13 @@ const Audit = () => {
           'members_user',
           'members_organization',
           'members_group',
-          'created_start_date',
-          'created_end_date',
+          'created',
           'elementType',
           'elementId',
           'createdBy',
-          'markedBy',
-          'labelledBy',
-          'creator',
+          'objectMarking',
+          'objectLabel',
+          'creator_id',
         ]}
       >
         {queryRef && (

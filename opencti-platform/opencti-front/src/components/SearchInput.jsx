@@ -119,7 +119,7 @@ SearchInput.propTypes = {
   onSubmit: PropTypes.func,
   variant: PropTypes.string,
   fullWidth: PropTypes.bool,
-  placeholder: PropTypes.func,
+  placeholder: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(SearchInput);

@@ -21,6 +21,7 @@ import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/st
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
+import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -36,7 +37,7 @@ export const references = async (context, user, externalReferenceId, args) => {
   if (args.types) {
     types = args.types;
   }
-  const filters = [{ key, values: [externalReferenceId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, key, externalReferenceId);
   if (args.all) {
     return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   }
@@ -77,7 +78,7 @@ export const externalReferenceAddRelation = async (context, user, externalRefere
     throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
   }
   if (!isStixRefRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${input.relationship_type}`);
   }
   const finalInput = { ...input, toId: externalReferenceId };
   return createRelation(context, user, finalInput).then((relationData) => {

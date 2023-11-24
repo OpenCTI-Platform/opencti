@@ -15,7 +15,13 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -102,9 +108,9 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const StreamCollectionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(initialFilterGroup);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
       access_right: 'view',
@@ -132,26 +138,31 @@ const StreamCollectionCreation = (props) => {
       },
     });
   };
-  const handleAddFilter = (key, id, value) => {
-    if (filters[key] && filters[key].length > 0) {
+  const handleAddFilter = (k, id, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, k, id, op));
+  };
+  const handleRemoveFilter = (k, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, k, op));
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
       setFilters({
         ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+        mode: filters.mode === 'and' ? 'or' : 'and',
       });
-    } else {
-      setFilters({ ...filters, [key]: [{ id, value }] });
     }
   };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
-  };
+
   return (
     <Drawer
       title={t('Create a stream')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => setFilters({})}
+      onClose={() => setFilters(initialFilterGroup)}
     >
       {({ onClose }) => (
         <Formik
@@ -221,11 +232,11 @@ const StreamCollectionCreation = (props) => {
                   availableFilterKeys={[
                     'entity_type',
                     'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
                     'createdBy',
                     'priority',
                     'severity',
@@ -249,6 +260,8 @@ const StreamCollectionCreation = (props) => {
               <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
                 classNameNumber={2}
                 styleNumber={2}
                 redirection

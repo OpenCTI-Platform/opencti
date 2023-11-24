@@ -24,7 +24,7 @@ export const threatActorsGroupCardsQuery = graphql`
     $cursor: ID
     $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsFiltering]
+    $filters: FilterGroup
   ) {
     ...ThreatActorsGroupCards_data
       @arguments(
@@ -46,7 +46,7 @@ export const ThreatActorsGroupCardsFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[ThreatActorsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ThreatActorsGroupRefetchQuery") {
     threatActorsGroup(

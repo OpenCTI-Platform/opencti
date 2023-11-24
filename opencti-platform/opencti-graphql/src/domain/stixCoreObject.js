@@ -10,13 +10,15 @@ import {
   storeLoadByIdWithRefs,
   timeSeriesEntities,
 } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
+import { findById as findStatusById } from './status';
 import {
+  ABSTRACT_BASIC_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
@@ -39,7 +41,9 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_LOCATION_COUNTRY, isStixDomainObjectContainer,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -55,12 +59,7 @@ import { deleteFile, loadFile, storeFileConverter, upload } from '../database/fi
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import {
-  isEmptyField,
-  isNotEmptyField,
-  READ_ENTITIES_INDICES,
-  READ_INDEX_INFERRED_ENTITIES
-} from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -71,11 +70,14 @@ import {
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { addFilter, extractFilterGroupValues } from '../utils/filtering/filtering-utils';
+import { specialFilterKeys } from '../utils/filtering/filtering-constants';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
-    types = R.filter((type) => isStixCoreObject(type), args.types);
+    types = args.types.filter((type) => isStixCoreObject(type));
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
@@ -83,7 +85,7 @@ export const findAll = async (context, user, args) => {
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
-  let filters = args.filters ?? [];
+  let { filters } = args;
   if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -91,9 +93,9 @@ export const findAll = async (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
     }
   }
   if (args.globalSearch) {
@@ -281,10 +283,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types } = args;
-  const filters = [{
-    key: [buildRefRelationKey(RELATION_CREATED_BY, '*')],
-    values: [authorId]
-  }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
@@ -321,7 +320,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
 export const stixCoreObjectsNumber = (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
-    types = R.filter((type) => isStixCoreObject(type), args.types);
+    types = args.types.filter((type) => isStixCoreObject(type));
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
@@ -329,7 +328,7 @@ export const stixCoreObjectsNumber = (context, user, args) => {
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
-  let filters = args.filters ?? [];
+  let { filters } = args;
   if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -337,9 +336,9 @@ export const stixCoreObjectsNumber = (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
     }
   }
   return {
@@ -352,7 +351,7 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
   return Promise.all(args.numberParameters.map((numberParameter) => {
     let types = [];
     if (isNotEmptyField(numberParameter.types)) {
-      types = R.filter((type) => isStixCoreObject(type), args.types);
+      types = args.types.filter((type) => isStixCoreObject(type));
     }
     if (types.length === 0) {
       types.push(ABSTRACT_STIX_CORE_OBJECT);
@@ -360,7 +359,7 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
     if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
       throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
     }
-    let filters = numberParameter.filters ?? [];
+    let { filters } = numberParameter;
     if (isNotEmptyField(numberParameter.elementId)) {
       // In case of element id, we look for a specific entity used by relationships independent of the direction
       // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -368,9 +367,9 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
       // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
       if (isNotEmptyField(numberParameter.relationship_type)) {
         const relationshipFilterKeys = numberParameter.relationship_type.map((n) => buildRefRelationKey(n));
-        filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(numberParameter.elementId) ? numberParameter.elementId : [numberParameter.elementId] }];
+        filters = addFilter(filters, relationshipFilterKeys, numberParameter.elementId);
       } else {
-        filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(numberParameter.elementId) ? numberParameter.elementId : [numberParameter.elementId] }];
+        filters = addFilter(filters, buildRefRelationKey('*'), numberParameter.elementId);
       }
     }
     return {
@@ -394,10 +393,7 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types } = args;
-  const filters = [{
-    key: (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')),
-    values: Array.isArray(objectId) ? objectId : [objectId]
-  }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')), objectId);
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
@@ -412,11 +408,10 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
-  const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
+  const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, relationship_type, elementId };
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const listParams = exportTransformFilters(argsFilters, ordersOpts);
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
@@ -593,4 +588,31 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
   });
 };
+// endregion
+
+// region filters representatives
+// return an array of the value of the ids existing in inputFilters:
+// the entity representative for entities, null for deleted or restricted entities, the id for ids not corresponding to an entity
+export const findFiltersRepresentatives = async (context, user, inputFilters) => {
+  const filtersRepresentatives = [];
+  // extract the ids to resolve from inputFilters
+  const refsInputNames = schemaRelationsRefDefinition.getAllInputNames().concat(specialFilterKeys);
+  const idsToResolve = extractFilterGroupValues(inputFilters, refsInputNames);
+  const otherIds = extractFilterGroupValues(inputFilters, refsInputNames, true);
+  // resolve the ids
+  const resolvedEntities = await storeLoadByIds(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
+  // resolve status ids differently
+  for (let index = 0; index < resolvedEntities.length; index += 1) {
+    let entity = resolvedEntities[index];
+    if (entity?.entity_type === 'Status') {
+      // complete the result with the cache for statuses to have all the infos to fetch the representative
+      entity = await findStatusById(context, user, entity.id);
+    }
+    // add the entity representative in 'value', or null for deleted/restricted entities
+    filtersRepresentatives.push({ id: idsToResolve[index], value: (entity ? extractEntityRepresentativeName(entity) : null) });
+  }
+  // add ids that don't require a resolution
+  return filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: id })));
+};
+
 // endregion

@@ -13,7 +13,8 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
-  EVENT_TYPE_UPDATE, extractIdsFromStoreObject,
+  EVENT_TYPE_UPDATE,
+  extractIdsFromStoreObject,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INFERRED_ENTITIES,
@@ -37,11 +38,14 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
-  STIX_TYPE_RELATION, STIX_TYPE_SIGHTING
+  STIX_TYPE_RELATION,
+  STIX_TYPE_SIGHTING
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { convertFiltersFrontendFormat, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
+import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
+import { findFilterFromKey } from '../utils/filtering/filtering-utils';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
@@ -51,6 +55,7 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
+import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -106,7 +111,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
       res.status(401).end();
       return { error: res.statusMessage };
     }
-    return { streamFilters: {}, collection: null };
+    return { streamFilters: null, collection: null };
   }
   const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
@@ -146,9 +151,10 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   }
   // If no marking part of filtering are accessible for the user, return
   // It's better to prevent connection instead of having no events accessible
-  if (streamFilters.markedBy && Array.isArray(streamFilters.markedBy)) {
+  const objectMarkingFilters = findFilterFromKey(streamFilters.filters, MARKING_FILTER, 'eq');
+  if (objectMarkingFilters) {
     const userMarkings = (user.allowed_marking || []).map((m) => m.internal_id);
-    const filterMarkings = streamFilters.markedBy.map((m) => m.id);
+    const filterMarkings = objectMarkingFilters.values;
     const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
@@ -414,26 +420,28 @@ const createSseMiddleware = () => {
     let match = false;
     const matches = [];
     const fromAllTypes = [type, ...getParentTypes(type)];
+    const entityTypeFilter = findFilterFromKey(filters.filters, 'entity_type', 'eq');
+    const entityTypeFilterValues = entityTypeFilter?.values ?? [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const filter of filters.entity_type.values) {
+    for (const id of entityTypeFilterValues) {
       // consider the operator
-      if (filter.operator === 'not_eq') {
-        if (!fromAllTypes.includes(filter.id)) {
+      if (entityTypeFilter.operator === 'not_eq') {
+        if (!fromAllTypes.includes(id)) {
           matches.push(true);
         } else {
           matches.push(false);
         }
-      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq'
+      } else if (fromAllTypes.includes(id)) { // operator = 'eq'
         matches.push(true);
       } else {
         matches.push(false);
       }
-      // consider the filterMode
-      if (filter.filterMode === 'and') {
+      // consider the mode
+      if (entityTypeFilter.mode === 'and') {
         if (!matches.includes(false)) {
           match = true;
         }
-      } else if (matches.includes(true)) { // filterMode = 'or'
+      } else if (matches.includes(true)) { // mode = 'or'
         match = true;
       }
     }
@@ -447,7 +455,8 @@ const createSseMiddleware = () => {
     const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
     const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
     // Pre-filter by type to prevent resolutions as much as possible.
-    if (streamFilters.entity_type && streamFilters.entity_type.values.length > 0) {
+    const entityTypeFilters = findFilterFromKey(streamFilters.filters, 'entity_type', 'eq');
+    if (entityTypeFilters && entityTypeFilters.values.length > 0) {
       const fromType = isRel ? stix.extensions[STIX_EXT_OCTI].source_type : stix.extensions[STIX_EXT_OCTI].sighting_of_type;
       const matchingFrom = isFiltersEntityTypeMatch(streamFilters, fromType);
       const toType = isRel ? stix.extensions[STIX_EXT_OCTI].target_type : stix.extensions[STIX_EXT_OCTI].where_sighted_types[0];
@@ -460,9 +469,8 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
-      const isFromVisible = await isStixMatchFilters(context, user, fromStix, adaptedFilters);
-      const isToVisible = await isStixMatchFilters(context, user, toStix, adaptedFilters);
+      const isFromVisible = await isStixMatchFilterGroup(context, user, fromStix, streamFilters);
+      const isToVisible = await isStixMatchFilterGroup(context, user, toStix, streamFilters);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -560,11 +568,10 @@ const createSseMiddleware = () => {
               const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
               const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
-                const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
-                const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, adaptedFilters);
+                const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                  const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, adaptedFilters);
+                  const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                     cache.set(stix.id);
@@ -587,14 +594,18 @@ const createSseMiddleware = () => {
                   } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                     // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
+                    const filters = {
+                      mode: 'and',
+                      filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
+                      filterGroups: [],
+                    };
                     const args = { connectionFormat: false, filters };
                     const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
                     let isContainerMatching = false;
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                       const container = containers[containerIndex];
                       const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilters(context, user, stixContainer, adaptedFilters);
+                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, streamFilters);
                       if (containerMatch) {
                         isContainerMatching = true;
                         break;

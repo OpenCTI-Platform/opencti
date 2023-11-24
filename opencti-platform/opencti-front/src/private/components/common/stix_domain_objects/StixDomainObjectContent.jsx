@@ -167,12 +167,13 @@ const getExportFiles = (stixDomainObject) => {
 
 class StixDomainObjectContentComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `stix-domain-object-content-${props.stixDomainObject.id}`;
     super(props);
 
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-stix-domain-object-content-${props.stixDomainObject.id}`,
+      LOCAL_STORAGE_KEY,
     );
 
     const files = getFiles(props.stixDomainObject);
@@ -209,10 +210,11 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   saveView() {
+    const LOCAL_STORAGE_KEY = `stix-domain-object-content-${this.props.stixDomainObject.id}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-stix-domain-object-content-${this.props.stixDomainObject.id}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

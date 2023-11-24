@@ -1282,8 +1282,8 @@ const WorkbenchFileContentComponent = ({
       }),
     );
     const hashes = {};
-    if (values.hashes_MD5 && values.hashes_MD5.length > 0) {
-      hashes.MD5 = values.hashes_MD5;
+    if (values['hashes.MD5'] && values['hashes.MD5'].length > 0) {
+      hashes.MD5 = values['hashes.MD5'];
     }
     if (values['hashes_SHA-1'] && values['hashes_SHA-1'].length > 0) {
       hashes['SHA-1'] = values['hashes_SHA-1'];
@@ -1308,7 +1308,7 @@ const WorkbenchFileContentComponent = ({
           'objectMarking',
           'createdBy',
           'externalReferences',
-          'hashes_MD5',
+          'hashes.MD5',
           'hashes_SHA-1',
           'hashes_SHA-256',
           'hashes_SHA-512',
@@ -2389,7 +2389,7 @@ const WorkbenchFileContentComponent = ({
                   ? observable[attribute].join(',')
                   : observable[attribute];
               } else if (attribute === 'hashes') {
-                initialValues.hashes_MD5 = observable[attribute]
+                initialValues['hashes.MD5'] = observable[attribute]
                   ? observable[attribute].MD5 ?? ''
                   : '';
                 initialValues['hashes_SHA-1'] = observable[attribute]
@@ -2445,7 +2445,7 @@ const WorkbenchFileContentComponent = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                name="hashes_MD5"
+                                name="hashes.MD5"
                                 label={t('hash_md5')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
@@ -3156,20 +3156,24 @@ const WorkbenchFileContentComponent = ({
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
                               types: [type],
-                              filters: [
-                                {
-                                  key: [
-                                    'name',
-                                    'aliases',
-                                    'x_opencti_aliases',
-                                    'x_mitre_id',
-                                  ],
-                                  values:
-                                    object.name
-                                    || object.value
-                                    || object.definition,
-                                },
-                              ],
+                              filters: {
+                                mode: 'and',
+                                filters: [
+                                  {
+                                    key: [
+                                      'name',
+                                      'aliases',
+                                      'x_opencti_aliases',
+                                      'x_mitre_id',
+                                    ],
+                                    values:
+                                      [object.name
+                                      || object.value
+                                      || object.definition],
+                                  },
+                                ],
+                                filterGroups: [],
+                              },
                               count: 1,
                             }}
                             render={({ props }) => {
@@ -3400,18 +3404,22 @@ const WorkbenchFileContentComponent = ({
                             query={stixCyberObservablesLinesSearchQuery}
                             variables={{
                               types: [type],
-                              filters: [
-                                {
-                                  key: [
-                                    'name',
-                                    'value',
-                                    'hashes_MD5',
-                                    'hashes_SHA1',
-                                    'hashes_SHA256',
-                                  ],
-                                  values: [object.default_value],
-                                },
-                              ],
+                              filters: {
+                                mode: 'and',
+                                filters: [
+                                  {
+                                    key: [
+                                      'name',
+                                      'value',
+                                      'hashes.MD5',
+                                      'hashes.SHA-1',
+                                      'hashes.SHA-256',
+                                    ],
+                                    values: [object.default_value],
+                                  },
+                                ],
+                                filterGroups: [],
+                              },
                               count: 1,
                             }}
                             render={({ props }) => {
@@ -3936,25 +3944,29 @@ const WorkbenchFileContentComponent = ({
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
                               types: [type],
-                              filters: [
-                                {
-                                  key: [
-                                    'name',
-                                    'aliases',
-                                    'x_opencti_aliases',
-                                    'x_mitre_id',
-                                  ],
-                                  values:
-                                    object.name
-                                    || object.value
-                                    || object.definition
-                                    || 'Unknown',
-                                },
-                                {
-                                  key: 'created',
-                                  values: object.created ?? now(),
-                                },
-                              ],
+                              filters: {
+                                mode: 'and',
+                                filters: [
+                                  {
+                                    key: [
+                                      'name',
+                                      'aliases',
+                                      'x_opencti_aliases',
+                                      'x_mitre_id',
+                                    ],
+                                    values:
+                                      [object.name
+                                      || object.value
+                                      || object.definition
+                                      || 'Unknown'],
+                                  },
+                                  {
+                                    key: 'created',
+                                    values: [object.created ?? now()],
+                                  },
+                                ],
+                                filterGroups: [],
+                              },
                               count: 1,
                             }}
                             render={({ props }) => {

@@ -39,6 +39,7 @@ import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -194,25 +195,14 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   return worksForExport;
 };
 
-export const exportTransformFilters = (listFilters, filterOptions, orderOptions) => {
-  const filtersInversed = invertObj(filterOptions);
+export const exportTransformFilters = (filteringArgs, orderOptions) => {
   const orderingInversed = invertObj(orderOptions);
   return {
-    ...listFilters,
-    orderBy: listFilters.orderBy in orderingInversed
-      ? orderingInversed[listFilters.orderBy]
-      : listFilters.orderBy,
-    filters: (listFilters.filters ?? []).map(
-      (n) => {
-        const keys = Array.isArray(n.key) ? n.key : [n.key];
-        const key = keys.map((k) => (k in filtersInversed ? filtersInversed[k] : k));
-        return {
-          key,
-          values: n.values,
-          operator: n.operator ?? 'eq',
-        };
-      }
-    ),
+    ...filteringArgs,
+    orderBy: filteringArgs.orderBy in orderingInversed
+      ? orderingInversed[filteringArgs.orderBy]
+      : filteringArgs.orderBy,
+    filters: checkAndConvertFilters(filteringArgs),
   };
 };
 
@@ -228,7 +218,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     });
   const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
   const filters = {
-    objectContains: [{ id: containerId, value: containerId }],
+    objects: [{ id: containerId, value: containerId }],
     entity_type: SCAN_ENTITIES.map((e) => ({ id: e, value: e })),
   };
   const input = {

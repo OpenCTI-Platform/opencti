@@ -27,7 +27,7 @@ const contextualViewLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[StixCoreObjectsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ContextualViewLines_refetch") {
     stixCoreObjects(
@@ -60,7 +60,7 @@ export const contextualViewLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {

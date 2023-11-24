@@ -5,17 +5,22 @@ import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import {
-  StixSightingRelationshipsFiltering,
   StixSightingRelationshipsLinesPaginationQuery$data,
   StixSightingRelationshipsLinesPaginationQuery$variables,
 } from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
-import { convertFilters } from '../../../utils/ListParameters';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
+import {
+  StixSightingRelationshipLine_node$data,
+} from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import {
+  filtersWithEntityType,
+  findFilterFromKey,
+  GqlFilterGroup,
+  initialFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -64,7 +69,7 @@ const dataColumns = {
   },
 };
 
-const LOCAL_STORAGE_KEY = 'view-stixSightingRelationships';
+const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const {
@@ -74,7 +79,7 @@ const StixSightingRelationships = () => {
   } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'last_seen',
       orderAsc: false,
@@ -102,18 +107,9 @@ const StixSightingRelationships = () => {
   } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
   const renderLines = (
-    paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
+    paginationOptions : StixSightingRelationshipsLinesPaginationQuery$variables,
   ) => {
-    let renderFilters = filters;
-    renderFilters = {
-      ...renderFilters,
-      entity_type: [
-        {
-          id: 'stix-sighting-relationship',
-          value: 'stix-sighting-relationship',
-        },
-      ],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'stix-sighting-relationship');
     return (
       <>
         <ListLines
@@ -124,6 +120,8 @@ const StixSightingRelationships = () => {
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
@@ -137,12 +135,11 @@ const StixSightingRelationships = () => {
           iconExtension={true}
           availableFilterKeys={[
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'confidence',
-            'created_start_date',
-            'created_end_date',
+            'created',
             'toSightingId',
             'x_opencti_negative',
             'creator',
@@ -177,7 +174,7 @@ const StixSightingRelationships = () => {
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={renderFilters}
+          filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="stix-sighting-relationship"
         />
@@ -188,17 +185,19 @@ const StixSightingRelationships = () => {
   // As toSightingId must be converted to a connection nested filter in backend
   // we need to remove it from the filters and use a specific api parameter instead
   let toSightingId: string | undefined;
-  const newFilters = { ...filters };
-  if (newFilters.toSightingId) {
-    toSightingId = String(newFilters.toSightingId.at(0)?.id);
-    delete newFilters.toSightingId;
+  let newFilters = filters;
+  const toSightingIdFilter = newFilters?.filters ? findFilterFromKey(newFilters.filters, 'toSightingId') : undefined;
+  if (newFilters && toSightingIdFilter) {
+    toSightingId = String(toSightingIdFilter.values?.[0]);
+    newFilters = {
+      ...newFilters,
+      filters: newFilters.filters.filter((f) => f.key !== 'toSightingId'),
+    };
   }
   const enrichedPaginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables = {
     ...rawPaginationOptions,
     toId: toSightingId,
-    filters: convertFilters(
-      newFilters,
-    ) as unknown as StixSightingRelationshipsFiltering[],
+    filters: newFilters as unknown as GqlFilterGroup,
   };
   return (
     <ExportContextProvider>

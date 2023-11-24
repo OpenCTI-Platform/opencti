@@ -5,6 +5,7 @@ import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -22,7 +23,11 @@ export const findById = async (context: AuthContext, user: AuthUser, entitySetti
 export const findByType = async (context: AuthContext, user: AuthUser, targetType: string): Promise<BasicStoreEntityEntitySetting> => {
   const findByTypeFn = async () => {
     return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
-      filters: [{ key: 'target_type', values: [targetType] }]
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'target_type', values: [targetType] }],
+        filterGroups: [],
+      }
     });
   };
   return telemetry(context, user, 'QUERY entitySetting', {
@@ -34,7 +39,11 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
 export const batchEntitySettingsByType = async (context: AuthContext, user: AuthUser, targetTypes: string[]) => {
   const findByTypeFn = async () => {
     const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
-      filters: [{ key: 'target_type', values: targetTypes }],
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['target_type'], values: targetTypes }],
+        filterGroups: [],
+      },
       connectionFormat: false
     });
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));

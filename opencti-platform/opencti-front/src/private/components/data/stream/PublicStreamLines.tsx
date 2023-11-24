@@ -19,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   bodyItem: {
@@ -55,7 +56,7 @@ const publicStreamLinesFragment = graphql`
 
 const publicStreamLinesQuery = graphql`
   query PublicStreamLinesQuery {
-    streamCollections(filters: [{ key: stream_public, values: ["true"] }]) {
+    streamCollections(filters: { mode: and, filters: [{ key: "stream_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicStreamLines_node
@@ -101,14 +102,16 @@ const dataColumns: DataColumns = {
     width: '40%',
     isSortable: false,
     render: (node) => {
-      const nodeFilters = JSON.parse(node.filters);
+      const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
-        <FilterIconButton
-          filters={nodeFilters}
-          dataColumns={this}
-          classNameNumber={3}
-          styleNumber={3}
-        />
+        <>
+          {nodeFilters && <FilterIconButton
+            filters={nodeFilters}
+            dataColumns={this}
+            classNameNumber={3}
+            styleNumber={3}
+          />}
+        </>
       );
     },
   },

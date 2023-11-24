@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, useMutation } from 'react-relay';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,12 +11,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
-import {
-  CheckCircleOutlined,
-  ClearOutlined,
-  DeleteOutlined,
-  UnpublishedOutlined,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, ClearOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -35,6 +29,8 @@ import { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 import Transition from '../../../../components/Transition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { FilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
@@ -47,14 +43,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     flex: '1 1 100%',
     fontSize: '12px',
-  },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
   },
   selectedElementsNumber: {
     padding: '2px 5px 2px 5px',
@@ -96,7 +84,7 @@ interface NotificationsToolBarProps {
   selectedElements: Record<string, NotificationLine_node$data>;
   deSelectedElements: Record<string, NotificationLine_node$data>;
   selectAll: boolean;
-  filters: Record<string, { id: string; value: string }[]>;
+  filters: FilterGroup;
 }
 
 const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
@@ -184,7 +172,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
   const submitTask = () => {
     setProcessing(true);
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = JSON.stringify(filters);
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalActions = actions.map((action) => ({
       type: action.type,
       context: action.context
@@ -350,64 +338,9 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                       <TableCell>{t('N/A')}</TableCell>
                       <TableCell>
                         {selectAll ? (
-                          <div className={classes.filters}>
-                            {R.toPairs(filters).map((currentFilter) => {
-                              const label = `${truncate(
-                                currentFilter[0].startsWith('rel_')
-                                  ? t(
-                                    `relationship_${currentFilter[0]
-                                      .replace('rel_', '')
-                                      .replace('.*', '')}`,
-                                  )
-                                  : t(`filter_${currentFilter[0]}`),
-                                20,
-                              )}`;
-                              const localFilterMode = currentFilter[0].endsWith(
-                                'not_eq',
-                              )
-                                ? t('AND')
-                                : t('OR');
-                              const values = (
-                                <span>
-                                  {currentFilter[1].map((o) => (
-                                    <span
-                                      key={typeof o === 'string' ? o : o.value}
-                                    >
-                                      {/* eslint-disable-next-line no-nested-ternary */}
-                                      {typeof o === 'string'
-                                        ? o
-                                        : o.value && o.value.length > 0
-                                          ? truncate(o.value, 15)
-                                          : t('No label')}{' '}
-                                      {R.last(currentFilter[1])?.value
-                                        !== o.value && (
-                                        <code>{localFilterMode}</code>
-                                      )}{' '}
-                                    </span>
-                                  ))}
-                                </span>
-                              );
-                              return (
-                                <span key={currentFilter[0]}>
-                                  <Chip
-                                    classes={{ root: classes.filter }}
-                                    label={
-                                      <div>
-                                        <strong>{label}</strong>: {values}
-                                      </div>
-                                    }
-                                  />
-                                  {R.last(R.toPairs(filters))?.[0]
-                                    !== currentFilter[0] && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
-                                  )}
-                                </span>
-                              );
-                            })}
-                          </div>
+                          <TasksFilterValueContainer
+                            filters={filters}
+                          ></TasksFilterValueContainer>
                         ) : (
                           <span>
                             {truncate(

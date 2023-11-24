@@ -88,7 +88,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: FilterGroup
     $fromTypes: [String]
   ) {
     ...EntityStixCoreRelationshipsLinesAll_data
@@ -125,7 +125,7 @@ export default createPaginationContainer(
           defaultValue: start_time
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[StixCoreRelationshipsFiltering]" }
+        filters: { type: "FilterGroup" }
       ) {
         stixCoreRelationships(
           elementId: $elementId

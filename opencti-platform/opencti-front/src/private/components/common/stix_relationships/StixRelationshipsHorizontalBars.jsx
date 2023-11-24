@@ -13,7 +13,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
@@ -45,10 +44,9 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixRelationshipsFiltering]
-    $filterMode: FilterMode
-    $dynamicFrom: [StixCoreObjectsFiltering]
-    $dynamicTo: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -70,7 +68,6 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
       confidences: $confidences
       search: $search
       filters: $filters
-      filterMode: $filterMode
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
     ) {
@@ -239,7 +236,7 @@ const StixRelationshipsHorizontalBars = ({
   const { t } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
-    let finalFilters = [];
+    let filtersContent = [];
     let selection = {};
     let dataSelectionDateAttribute = null;
     let dataSelectionRelationshipType = null;
@@ -250,18 +247,18 @@ const StixRelationshipsHorizontalBars = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      finalFilters = convertFilters(selection.filters);
+      filtersContent = selection.filters?.filters ?? [];
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
         ?.values || null;
-      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
+      dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
+      dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
+      dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values
         || null;
-      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-      finalFilters = finalFilters.filter(
+      dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
+      filtersContent = filtersContent.filter(
         (n) => ![
           'relationship_type',
           'fromId',
@@ -284,10 +281,10 @@ const StixRelationshipsHorizontalBars = ({
       endDate,
       dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: selection.number ?? 10,
-      filters: finalFilters,
+      filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
       isTo: selection.isTo,
-      dynamicFrom: convertFilters(selection.dynamicFrom),
-      dynamicTo: convertFilters(selection.dynamicTo),
+      dynamicFrom: selection.dynamicFrom,
+      dynamicTo: selection.dynamicTo,
     };
     return (
       <QueryRenderer

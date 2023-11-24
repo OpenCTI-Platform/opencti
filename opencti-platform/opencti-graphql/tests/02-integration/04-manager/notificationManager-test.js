@@ -253,10 +253,9 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const [userOrganizationId, userOrganizationStandardId, userOrganizationName] = [
+  const [userOrganizationId, userOrganizationStandardId] = [
     userOrganizationAddResult.data.organizationAdd.id,
     userOrganizationAddResult.data.organizationAdd.standard_id,
-    userOrganizationAddResult.data.organizationAdd.name
   ];
   await queryAsAdmin({ // create the relation between the green user and the userOrganization
     query: USER_ORGANIZATION_ADD_QUERY,
@@ -421,17 +420,6 @@ describe('Notification manager behaviors test', async () => {
     extensions: {
       [STIX_EXT_OCTI]: {
         type: ENTITY_TYPE_MALWARE
-      }
-    }
-  };
-  const stixRedAttackPattern = {
-    name: 'attack-pattern_name',
-    id: redAttackPatternStandardId,
-    type: ENTITY_TYPE_ATTACK_PATTERN,
-    object_marking_refs: [MARKING_TLP_RED],
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        type: ENTITY_TYPE_ATTACK_PATTERN
       }
     }
   };
@@ -1099,210 +1087,122 @@ describe('Notification manager behaviors test', async () => {
       }
     };
     // -- frontend filters
-    const frontendFiltersReport = {
-      elementId: [{
-        id: reportId,
-        value: stixReport.name,
-      }]
-    };
-    const frontendFiltersRedReport = {
-      elementId: [{
-        id: redReportId,
-        value: stixRedReportWithRefs.name,
-      }]
-    };
-    const frontendFiltersMalware = {
-      elementId: [{
-        id: malwareId,
-        value: stixMalware.name,
-      }]
-    };
-    const frontendFiltersRedAttackPattern = {
-      elementId: [{
-        id: redAttackPatternId,
-        value: stixRedAttackPattern.name,
-      }]
-    };
-    const frontendFiltersRedOrganization = {
-      elementId: [{
-        id: redOrganizationId,
-        value: stixRedOrganization.name,
-      }]
-    };
-    const frontendFiltersOrganizations = {
-      elementId: [{
-        id: redOrganizationId,
-        value: stixRedOrganization.name,
-      },
-      {
-        id: greenOrganizationId,
-        value: stixGreenOrganization.name,
-      },
-      {
-        id: userOrganizationId,
-        value: userOrganizationName,
-      }]
-    };
-    const frontendFiltersAttackPattern = {
-      elementId: [{
-        id: redAttackPatternId,
-        value: stixRedAttackPattern.name,
-      }]
-    };
-    const frontendFiltersMalwareAndRedAttackPattern = {
-      elementId: [{
-        id: malwareId,
-        value: stixMalware.name,
-      },
-      {
-        id: redAttackPatternId,
-        value: stixRedAttackPattern.name,
-      }
-      ]
-    };
-    const frontendFiltersMalwareAndRedOrganization = {
-      elementId: [{
-        id: malwareId,
-        value: stixMalware.name,
-      },
-      {
-        id: redOrganizationId,
-        value: stixRedOrganization.name,
-      }
-      ]
-    };
-    const frontendFiltersMalwareAndGreenOrganization = {
-      elementId: [{
-        id: malwareId,
-        value: stixMalware.name,
-      },
-      {
-        id: greenOrganizationId,
-        value: stixGreenOrganization.name,
-      }
-      ]
-    };
-    const frontendFiltersMalwareAndRedOrganizationAndRedAttackPattern = {
-      elementId: [{
-        id: malwareId,
-        value: stixMalware.name,
-      },
-      {
-        id: redOrganizationId,
-        value: stixRedOrganization.name,
-      },
-      {
-        id: redAttackPatternId,
-        value: stixRedAttackPattern.name,
-      }
-      ]
+    const createInstanceFilters = (instanceIds) => {
+      const values = Array.isArray(instanceIds) ? instanceIds : [instanceIds];
+      return JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['connectedToId'], values, operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
     };
     // -- triggers inputs
     const triggerReportUpdate = { // instance trigger on a report, update only
       name: 'triggerReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
-      notifiers: ['UI'],
-      filters: JSON.stringify(frontendFiltersReport),
+      notifiers: [],
+      filters: createInstanceFilters(reportId),
     };
     const triggerReportDelete = { // instance trigger on a report, deletion only
+      name: 'triggerReportDelete',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
-      notifiers: ['UI'],
-      filters: JSON.stringify(frontendFiltersReport),
+      notifiers: [],
+      filters: createInstanceFilters(reportId),
     };
     const triggerRedReportUpdate = { // instance trigger on a red report update
+      name: 'triggerRedReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersRedReport),
+      filters: createInstanceFilters(redReportId),
     };
     const triggerRedReportAllEvents = { // instance trigger on a red report
       name: 'triggerRedReportAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersRedReport),
+      filters: createInstanceFilters(redReportId),
     };
     const triggerRedAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersRedAttackPattern),
+      filters: createInstanceFilters(redAttackPatternId),
     };
     const triggerMalwareAllEvents = { // instance trigger on a malware
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalware),
+      filters: createInstanceFilters(malwareId),
     };
     const triggerMalwareUpdate = { // instance trigger on a malware, update only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalware),
+      filters: createInstanceFilters(malwareId),
     };
     const triggerMalwareDelete = { // instance trigger on a malware, delete only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalware),
+      filters: createInstanceFilters(malwareId),
     };
     const triggerRedOrganizationAllEvents = { // instance trigger on an organization with marking red
       name: 'triggerRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersRedOrganization),
+      filters: createInstanceFilters(redOrganizationId),
     };
     const triggerOrganizationsAllEvents = { // instance trigger on an organization with marking green, an organization with marking red, and the user organization
       name: 'triggerOrganizationsAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersOrganizations),
+      filters: createInstanceFilters([redOrganizationId, greenOrganizationId, userOrganizationId]),
     };
     const triggerAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersAttackPattern),
+      filters: createInstanceFilters(redAttackPatternId),
     };
     const triggerMalwareAndRedAttackPatternAllEvents = { // instance trigger on a malware and a red attack pattern
       name: 'triggerMalwareAndRedAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalwareAndRedAttackPattern),
+      filters: createInstanceFilters([malwareId, redAttackPatternId]),
     };
     const triggerMalwareAndRedOrganizationAllEvents = { // instance trigger on a malware and a red organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalwareAndRedOrganization),
+      filters: createInstanceFilters([malwareId, redOrganizationId]),
     };
     const triggerMalwareAndGreenOrganizationAllEvents = { // instance trigger on a malware and a green organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalwareAndGreenOrganization),
+      filters: createInstanceFilters([malwareId, greenOrganizationId]),
     };
     const triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents = { // instance trigger on a malware, a red organization and a red attack pattern
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
-      filters: JSON.stringify(frontendFiltersMalwareAndRedOrganizationAndRedAttackPattern),
+      filters: createInstanceFilters([malwareId, redOrganizationId, redAttackPatternId]),
     };
     // -- create the triggers
-    const triggersToCreate = [triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
+    const triggersToCreate = [triggerReportUpdate, triggerReportDelete, triggerReportUpdate, triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
       triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
       triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents
     ];
@@ -1542,7 +1442,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[report] report_name');
-    expect(result[0].user.notifiers).toEqual(['UI']);
+    expect(result[0].user.notifiers).toEqual([]);
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingToReportContainingMalware, triggerReportUpdate, true); // side events

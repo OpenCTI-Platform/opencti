@@ -14,6 +14,7 @@ import { RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../sche
 import { taskAdd } from '../task/task-domain';
 import { batchListThroughGetTo } from '../../database/middleware';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { FilterMode } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, caseId: string): BasicStoreEntityCase => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE) as unknown as BasicStoreEntityCase;
@@ -30,7 +31,13 @@ export const batchParticipants = (context: AuthContext, user: AuthUser, caseIds:
 export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser, id: string, caseTemplateId: string) => {
   const currentCase = await findById(context, user, id);
   // Get all tasks from template
-  const opts = { filters: [{ key: buildRefRelationKey(TEMPLATE_TASK_RELATION), values: [caseTemplateId] }] };
+  const opts = {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
+      filterGroups: [],
+    }
+  };
   const templateTasks = await listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
   // Convert template to real task
   const tasks = templateTasks.map((template) => {

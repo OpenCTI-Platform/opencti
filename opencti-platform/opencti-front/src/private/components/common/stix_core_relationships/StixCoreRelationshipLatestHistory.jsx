@@ -18,10 +18,14 @@ class StixCoreRelationshipLatestHistory extends Component {
         <QueryRenderer
           query={stixCoreObjectHistoryLinesQuery}
           variables={{
-            filters: [
-              { key: 'entity_id', values: [stixCoreRelationshipId] },
-              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
-            ],
+            filters: {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: 'context_data.id', values: [stixCoreRelationshipId] },
+                { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+              ],
+            },
             first: 7,
             orderBy: 'timestamp',
             orderMode: 'desc',

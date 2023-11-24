@@ -8,8 +8,6 @@ import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import * as R from 'ramda';
-import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import FormControl from '@mui/material/FormControl';
@@ -42,11 +40,11 @@ import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ExportButtons from '../../../../components/ExportButtons';
-import { truncate } from '../../../../utils/String';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { findFilterFromKey, initialFilterGroup, removeFilter } from '../../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -86,11 +84,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 15px',
   },
   filter: {
-    marginRight: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
     marginRight: 10,
   },
 }));
@@ -147,11 +140,11 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
 }) => {
   const classes = useStyles();
   const { n, t } = useFormatter();
-  const LOCAL_STORAGE_KEY = `view-stix-domain-object-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
   const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -199,11 +192,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
   )}/${stixDomainObjectId}/knowledge`;
   const buildPaginationOptions = () => {
     let toTypes: string[];
-    if (filters?.entity_type && filters.entity_type.length > 0) {
-      if (filters.entity_type.filter((o) => o.id === 'all').length > 0) {
+    const entityTypeFilters = findFilterFromKey(filters?.filters ?? [], 'entity_type');
+    if (entityTypeFilters && entityTypeFilters.values.length > 0) {
+      if (entityTypeFilters.values.filter((id) => id === 'all').length > 0) {
         toTypes = [];
       } else {
-        toTypes = filters.entity_type.map((o) => o.id) as string[];
+        toTypes = entityTypeFilters.values;
       }
     } else if (viewType === 'timeline') {
       toTypes = [
@@ -227,14 +221,14 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
     } else {
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
-    const finalFilters = filters ? R.dissoc('entity_type', filters) : {};
+    const finalFilters = filters ? removeFilter(filters, 'entity_type') : undefined;
     const finalPaginationOptions = {
       ...rawPaginationOptions,
       elementId: stixDomainObjectId,
       elementWithTargetTypes: toTypes.filter(
         (x) => x.toLowerCase() !== stixDomainObjectType,
       ),
-      filters: convertFilters(finalFilters),
+      filters: finalFilters,
     };
     if (viewType === 'timeline') {
       finalPaginationOptions.relationship_type = nestedRelationships
@@ -426,11 +420,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           <Filters
             availableFilterKeys={[
               'entity_type',
-              'markedBy',
+              'objectMarking',
               'createdBy',
-              'labelledBy',
-              'created_start_date',
-              'created_end_date',
+              'objectLabel',
+              'created',
             ]}
             handleAddFilter={helpers.handleAddFilter}
             allEntityTypes={true}
@@ -443,54 +436,13 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           >
             <SettingsOutlined />
           </IconButton>
-          <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
-            {filters && (R.map((currentFilter) => {
-              const label = `${truncate(
-                t(`filter_${currentFilter[0]}`),
-                20,
-              )}`;
-              const localFilterMode = currentFilter[0].endsWith('not_eq')
-                ? t('AND')
-                : t('OR');
-              const values = (
-                <span>
-                  {R.map(
-                    (o) => (
-                      <span key={o.value as (string | null)}>
-                        {o.value && (o.value as string).length > 0
-                          ? truncate(o.value, 15)
-                          : t('No label')}{' '}
-                        {R.last(currentFilter[1])?.value !== o.value && (
-                          <code>{localFilterMode}</code>
-                        )}{' '}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span key={label}>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={(_) => helpers.handleRemoveFilter(currentFilter[0])}
-                  />
-                  {R.last(R.toPairs(filters))?.[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, R.toPairs(filters)))}
-          </div>
+          {filters
+            && <FilterIconButton
+              filters={filters}
+              handleRemoveFilter={helpers.handleRemoveFilter}
+              classNameNumber={8}
+            ></FilterIconButton>
+          }
           <Popover
             classes={{ paper: classes.container }}
             open={openTimeField}

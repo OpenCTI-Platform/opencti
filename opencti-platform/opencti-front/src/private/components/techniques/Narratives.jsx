@@ -31,6 +31,8 @@ export const narrativesSearchQuery = graphql`
   }
 `;
 
+const LOCAL_STORAGE_KEY = 'narratives';
+
 const styles = () => ({
   parameters: {
     float: 'left',
@@ -44,7 +46,7 @@ class Narratives extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-narratives',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
@@ -56,7 +58,7 @@ class Narratives extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-narratives',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

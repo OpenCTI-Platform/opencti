@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { NotesFilter } from './__generated__/NotesLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixCoreRelationshipNotesCards, {
   stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './StixCoreObjectOrStixCoreRelationshipNotesCards';
@@ -11,6 +10,7 @@ import {
   OrderingMode,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
@@ -36,12 +36,17 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
     count: 200,
     orderBy: 'created' as NotesOrdering,
     orderMode: 'desc' as OrderingMode,
-    filters: [
-      {
-        key: ['objectContains' as NotesFilter],
-        values: [stixCoreObjectOrStixCoreRelationshipId],
-      },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['objects'],
+          values: [stixCoreObjectOrStixCoreRelationshipId],
+          operator: 'eq',
+        },
+      ],
+      filterGroups: [],
+    } as GqlFilterGroup,
   };
   let queryRef;
   let title;

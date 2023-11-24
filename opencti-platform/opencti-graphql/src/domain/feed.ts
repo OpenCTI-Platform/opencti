@@ -13,6 +13,7 @@ import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
 import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { FilterMode } from '../generated/graphql';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -80,7 +81,15 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsAr
     return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }
   // No user specify, listing only public csv feeds
-  const publicArgs = { ...(opts ?? {}), filters: [{ key: ['feed_public'], values: ['true'] }] };
+  const filters = {
+    mode: FilterMode.And,
+    filterGroups: [],
+    filters: [{
+      key: ['feed_public'],
+      values: ['true'],
+    }],
+  };
+  const publicArgs = { ...(opts ?? {}), filters };
   return listEntitiesPaginated<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {

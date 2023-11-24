@@ -17,8 +17,7 @@ const LIST_WORK_QUERY = gql`
     $orderBy: WorksOrdering
     $orderMode: OrderingMode
     $search: String
-    $filters: [WorksFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
   ) {
     works(
       first: $first
@@ -27,7 +26,6 @@ const LIST_WORK_QUERY = gql`
       orderMode: $orderMode
       search: $search
       filters: $filters
-      filterMode: $filterMode
     ) {
       edges {
         node {
@@ -134,7 +132,13 @@ describe('Connector resolver standard behaviour', () => {
     // List all works for connector
     const queryResult = await queryAsAdmin({
       query: LIST_WORK_QUERY,
-      variables: { filters: { key: 'connector_id', values: [testConnectorId] } },
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'connector_id', values: [testConnectorId] }],
+          filterGroups: [],
+        },
+      },
     });
 
     expect(queryResult.data.works.edges.length).toEqual(1);

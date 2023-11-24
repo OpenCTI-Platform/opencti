@@ -28,6 +28,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -268,39 +269,42 @@ const SyncCreation = ({ paginationOptions }) => {
                       }
                     >
                       {streams.map(
-                        ({ value, label, name, description, filters }) => (
-                          <EnrichedTooltip
-                            key={value}
-                            value={value}
-                            style={{ overflow: 'hidden' }}
-                            title={
-                              <Grid
-                                container
-                                spacing={1}
-                                style={{ overflow: 'hidden' }}
+                        ({ value, label, name, description, filters }) => {
+                          const streamsFilters = deserializeFilterGroupForFrontend(filters);
+                          return (
+                              <EnrichedTooltip
+                                  key={value}
+                                  value={value}
+                                  style={{ overflow: 'hidden' }}
+                                  title={
+                                    <Grid
+                                        container
+                                        spacing={1}
+                                        style={{ overflow: 'hidden' }}
+                                    >
+                                      <Grid key={name} item xs={12}>
+                                        <Typography>{name}</Typography>
+                                      </Grid>
+                                      <Grid key={description} item xs={12}>
+                                        <Typography>{description}</Typography>
+                                      </Grid>
+                                      <Grid key={filters} item xs={12}>
+                                        {streamsFilters && <FilterIconButton
+                                          filters={streamsFilters}
+                                          classNameNumber={3}
+                                          styleNumber={3}
+                                        />}
+                                      </Grid>
+                                    </Grid>
+                                  }
+                                  placement="bottom-start"
                               >
-                                <Grid key={name} item xs={12}>
-                                  <Typography>{name}</Typography>
-                                </Grid>
-                                <Grid key={description} item xs={12}>
-                                  <Typography>{description}</Typography>
-                                </Grid>
-                                <Grid key={filters} item xs={12}>
-                                  <FilterIconButton
-                                    filters={JSON.parse(filters)}
-                                    classNameNumber={3}
-                                    styleNumber={3}
-                                  />
-                                </Grid>
-                              </Grid>
-                            }
-                            placement="bottom-start"
-                          >
-                            <MenuItem key={value} value={value}>
-                              {label}
-                            </MenuItem>
-                          </EnrichedTooltip>
-                        ),
+                                <MenuItem key={value} value={value}>
+                                  {label}
+                                </MenuItem>
+                              </EnrichedTooltip>
+                          );
+                        },
                       )}
                     </Field>
                   )}

@@ -26,7 +26,7 @@ const AuditLineFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "LogsOrdering", defaultValue: timestamp }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[LogsFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "AuditLinesRefetchQuery") {
     audits(
@@ -60,7 +60,7 @@ export const AuditLinesQuery = graphql`
     $cursor: ID
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [LogsFiltering!]
+    $filters: FilterGroup
   ) {
     ...AuditLines_data
       @arguments(

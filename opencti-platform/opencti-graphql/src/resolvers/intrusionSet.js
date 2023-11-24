@@ -1,4 +1,4 @@
-import { addIntrusionSet, findAll, findById, batchLocations } from '../domain/intrusionSet';
+import { addIntrusionSet, batchLocations, findAll, findById } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,15 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const locationsLoader = batchLoader(batchLocations);
 
@@ -26,14 +18,6 @@ const intrusionSetResolvers = {
   },
   IntrusionSet: {
     locations: (intrusionSet, _, context) => locationsLoader.load(intrusionSet.id, context, context.user),
-  },
-  IntrusionSetsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    creator: 'creator_id',
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, context) => ({

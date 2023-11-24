@@ -47,8 +47,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -61,8 +60,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -132,29 +129,6 @@ enum EventsOrdering {
     stop_time
 }
 
-# Filtering
-enum EventsFilter {
-    name
-    aliases
-    event_types
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    x_opencti_workflow_id
-    start_time
-    stop_time
-}
-input EventsFiltering {
-    key: [EventsFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type EventConnection {
     pageInfo: PageInfo!
@@ -173,8 +147,7 @@ type Query {
         after: ID
         orderBy: EventsOrdering
         orderMode: OrderingMode
-        filters: [EventsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): EventConnection @auth(for: [KNOWLEDGE])
 }

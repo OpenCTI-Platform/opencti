@@ -5,8 +5,8 @@ import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '.
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { OrderingMode } from '../generated/graphql';
-import { extractFilterIdsToResolve } from '../utils/filtering';
+import { FilterMode, OrderingMode } from '../generated/graphql';
+import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';
@@ -63,12 +63,17 @@ const workflowStatuses = (context: AuthContext) => {
 const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
+    const initialFilterGroup = JSON.stringify({
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    });
     // Stream filters
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...streams.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Trigger filters
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...triggers.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Playbook filters
     const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
     const playbookFilterIds = playbooks
@@ -76,7 +81,7 @@ const platformResolvedFilters = (context: AuthContext) => {
       .map((c) => c.nodes.map((n) => JSON.parse(n.configuration))).flat()
       .map((config) => config.filters)
       .filter((f) => isNotEmptyField(f))
-      .map((f) => extractFilterIdsToResolve(JSON.parse(f)))
+      .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
     filteringIds.push(...playbookFilterIds);
     // Resolve filteringIds
@@ -121,8 +126,13 @@ const platformTriggers = (context: AuthContext) => {
 };
 const platformRunningPlaybooks = (context: AuthContext) => {
   const reloadPlaybooks = () => {
-    const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
-    return findAllPlaybooks(context, SYSTEM_USER, opts);
+    const filters = {
+      mode: FilterMode.And,
+      filters: [{ key: ['playbook_running'], values: ['true'] }],
+      filterGroups: [],
+    };
+    const opts = { filters, connectionFormat: false };
+    return findAllPlaybooks(context, SYSTEM_USER, opts, true);
   };
   return { values: null, fn: reloadPlaybooks };
 };

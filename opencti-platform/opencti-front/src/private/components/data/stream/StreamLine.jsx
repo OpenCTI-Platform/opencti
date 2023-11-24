@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -61,7 +62,7 @@ const styles = (theme) => ({
 class StreamLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const filters = JSON.parse(node.filters);
+    const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -89,12 +90,14 @@ class StreamLineLineComponent extends Component {
               >
                 {node.description}
               </div>
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-              />
+              {filters
+                && <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
+                />
+              }
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.id.width, paddingRight: 10 }}

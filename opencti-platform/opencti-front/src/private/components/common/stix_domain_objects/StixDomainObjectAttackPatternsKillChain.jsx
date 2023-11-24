@@ -105,6 +105,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       handleSearch,
       handleAddFilter,
       handleRemoveFilter,
+      handleSwitchLocalMode,
+      handleSwitchGlobalMode,
       filters,
       handleChangeView,
       searchTerm,
@@ -178,21 +180,22 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
           </div>
           <Filters
             availableFilterKeys={[
-              'markedBy',
+              'objectMarking',
               'createdBy',
-              'created_start_date',
-              'created_end_date',
+              'created',
             ]}
             handleAddFilter={handleAddFilter}
             handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
           />
-          <FilterIconButton
+          {filters && <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
             classNameNumber={6}
             styleNumber={2}
             redirection
-          />
+          />}
           <div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               <Tooltip title={t('Matrix view')}>
@@ -343,6 +346,8 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
   handleSearch: PropTypes.func,
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
+  handleSwitchLocalMode: PropTypes.func,
+  handleSwitchGlobalMode: PropTypes.func,
   filters: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -354,7 +359,7 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
     $elementId: [String]
     $elementWithTargetTypes: [String]
     $first: Int
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     ...StixDomainObjectAttackPatternsKillChain_data
   }

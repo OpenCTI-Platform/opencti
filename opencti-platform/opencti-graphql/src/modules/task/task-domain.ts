@@ -27,6 +27,7 @@ import {
 import type { EditInput, StixRefRelationshipAddInput, TaskAddInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { FilterMode } from '../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CONTAINER_TASK);
@@ -63,10 +64,14 @@ export const taskEdit = async (context: AuthContext, user: AuthUser, id: string,
 export const taskContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, taskId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [taskId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['internal_id'], values: [taskId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const taskFound = await findAll(context, user, args);
   return taskFound.edges.length > 0;

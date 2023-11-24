@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 
-const LOCAL_STORAGE_KEY = 'sync-view';
+const LOCAL_STORAGE_KEY = 'sync';
 
 const useStyles = makeStyles(() => ({
   container: {

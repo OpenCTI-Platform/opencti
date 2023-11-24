@@ -15,6 +15,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import type { CaseRfiAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
+import { FilterMode } from '../../../generated/graphql';
 
 export const findById: DomainFindById<BasicStoreEntityCaseRfi> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFI);
@@ -44,10 +45,14 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
 export const caseRfiContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseRfiId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [caseRfiId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['internal_id'], values: [caseRfiId] },
+        { key: [buildRefRelationKey(RELATION_OBJECT)], values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const caseRfiFound = await findAll(context, user, args);
   return caseRfiFound.edges.length > 0;

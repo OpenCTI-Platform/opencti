@@ -19,8 +19,7 @@ type Workspace implements InternalObject & BasicObject {
         after: ID
         orderBy: StixObjectOrStixRelationshipsOrdering
         orderMode: OrderingMode
-        filters: [StixObjectOrStixRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
         types: [String]
         all: Boolean
@@ -38,19 +37,6 @@ enum WorkspacesOrdering {
     updated_at
     creator
 }
-# Filtering
-enum WorkspacesFilter {
-    name
-    creator
-    tag
-    type
-}
-input WorkspacesFiltering {
-    key: [WorkspacesFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 
 # Relay connections
 type WorkspaceConnection {
@@ -66,8 +52,7 @@ type Query {
         after: ID
         orderBy: WorkspacesOrdering
         orderMode: OrderingMode
-        filters: [WorkspacesFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         includeAuthorities: Boolean
         search: String
     ): WorkspaceConnection @auth(for: [EXPLORE])

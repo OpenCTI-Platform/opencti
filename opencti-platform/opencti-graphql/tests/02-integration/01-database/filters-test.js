@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../../src/utils/filtering';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import { isEmptyField } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
+import { isStixMatchFilterGroup } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
@@ -11,8 +11,7 @@ const applyFilters = async (filters, user = ADMIN_USER) => {
   const filteredObjects = [];
   for (let i = 0; i < data.objects.length; i += 1) {
     const stix = data.objects[i];
-    const adaptedFilters = await convertFiltersFrontendFormat(testContext, user, filters);
-    const isCurrentlyVisible = await isStixMatchFilters(testContext, user, stix, adaptedFilters);
+    const isCurrentlyVisible = await isStixMatchFilterGroup(testContext, user, stix, filters);
     if (isCurrentlyVisible) {
       filteredObjects.push(stix);
     }
@@ -26,7 +25,16 @@ describe('Filters testing', () => {
 
   it('Should marking filters correctly applied for admin user', async () => {
     // With eq on marking
-    const filters = { markedBy: [{ id: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectMarking'],
+        values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(17);
     for (let objectIndex = 0; objectIndex < filteredObjects.length; objectIndex += 1) {
@@ -34,7 +42,16 @@ describe('Filters testing', () => {
       expect(filteredObject.object_marking_refs.includes('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27')).toBe(true);
     }
     // With _not_eq
-    const filtersNot = { markedBy_not_eq: [{ id: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['objectMarking'],
+        values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+        operator: 'not_eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -42,7 +59,16 @@ describe('Filters testing', () => {
   it('Should marking filters correctly applied for standard user', async () => {
     const WHITE_USER = buildStandardUser([WHITE_TLP]);
     // With eq on marking
-    const filters = { createdBy: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['createdBy'],
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsWhite = await applyFilters(filters, WHITE_USER);
     expect(filteredObjectsWhite.length).toBe(0);
     const filteredObjectAdmin = await applyFilters(filters);
@@ -53,7 +79,16 @@ describe('Filters testing', () => {
   it('Should entity filters correctly applied for standard user', async () => {
     const WHITE_USER = buildStandardUser([WHITE_TLP]);
     // With eq on marking
-    const filters = { entity_type: [{ id: ENTITY_TYPE_INTRUSION_SET }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['entity_type'],
+        values: [ENTITY_TYPE_INTRUSION_SET],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsWhite = await applyFilters(filters, WHITE_USER);
     expect(filteredObjectsWhite.length).toBe(0);
     const filteredObjectAdmin = await applyFilters(filters);
@@ -66,11 +101,29 @@ describe('Filters testing', () => {
 
   it('Should createdBy filters correctly applied', async () => {
     // With eq on marking
-    const filters = { createdBy: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['createdBy'],
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3);
     // With _not_eq
-    const filtersNot = { createdBy_not_eq: [{ id: 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['createdBy'],
+        values: ['identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'],
+        operator: 'not_eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -79,11 +132,29 @@ describe('Filters testing', () => {
 
   it('Should labels filters correctly applied', async () => {
     // With eq on marking
-    const filters = { labelledBy: [{ id: 'attack-pattern', value: 'attack-pattern' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['attack-pattern'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(2);
     // With _not_eq
-    const filtersNot = { labelledBy_not_eq: [{ id: 'attack-pattern', value: 'attack-pattern' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['attack-pattern'],
+        operator: 'not_eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
@@ -92,11 +163,29 @@ describe('Filters testing', () => {
 
   it('Should confidence filters correctly applied', async () => {
     // With gte on marking
-    const filters = { confidence_gte: [{ id: 30 }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['confidence'],
+        values: ['30'],
+        operator: 'gte',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(9);
     // With lt
-    const filtersNot = { confidence_lt: [{ id: 30 }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['confidence'],
+        values: ['30'],
+        operator: 'lt',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(filteredObjectsNot.length).toBe(8);
     // With nothing
@@ -107,54 +196,125 @@ describe('Filters testing', () => {
 
   it('Should pattern_type filters correctly applied', async () => {
     // With eq on marking
-    const filters = { pattern_type: [{ id: 'stix' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['pattern_type'],
+        values: ['stix'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3);
   });
 
   it('Should objects filters correctly applied', async () => {
     // With eq on marking
-    const filters = { objectContains: [{ id: 'note--573f623c-bf68-4f19-9500-d618f0d00af0' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objects'],
+        values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
     // With _not_eq
-    const filtersNot = { objectContains_not_eq: [{ id: 'note--573f623c-bf68-4f19-9500-d618f0d00af0' }] };
+    const filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['objects'],
+        values: ['note--573f623c-bf68-4f19-9500-d618f0d00af0'],
+        operator: 'not_eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
 
   it('Should from filters correctly applied', async () => {
     // With eq on marking
-    const filters = { fromId: [{ id: 'indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['fromId'],
+        values: ['indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(3); // 2 source_ref, 1 sighting_of_ref
   });
 
   it('Should to filters correctly applied', async () => {
     // With eq on marking
-    const filters = { toId: [{ id: 'location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['toId'],
+        values: ['location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(1);
   });
 
   // severity
   it('Should severity filters correctly applied', async () => {
-    const filters = { severity: [{ id: 'low', value: 'low' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['severity'],
+        values: ['low'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no severity in the data
 
-    const filtersNo = { severity: [{ id: '', value: '' }] };
+    const filtersNo = {
+      mode: 'and',
+      filters: [{ key: ['severity'], values: [], operator: 'nil', mode: 'or' }],
+      filterGroups: [],
+    };
     const filteredObjectsNo = await applyFilters(filtersNo);
     expect(filteredObjectsNo.length).toBe(64);
   });
 
   // priority
   it('Should priority filters correctly applied', async () => {
-    const filters = { priority: [{ id: 'p2', value: 'p2' }] };
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['priority'],
+        values: ['p2'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(0); // no priority in the data
 
-    const filtersNo = { priority: [{ id: '', value: '' }] };
+    const filtersNo = {
+      mode: 'and',
+      filters: [{ key: ['priority'], values: [], operator: 'nil', mode: 'or' }],
+      filterGroups: [],
+    };
     const filteredObjectsNo = await applyFilters(filtersNo);
     expect(filteredObjectsNo.length).toBe(64);
   });

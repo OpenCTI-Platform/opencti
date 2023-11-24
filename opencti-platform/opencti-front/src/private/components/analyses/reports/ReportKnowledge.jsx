@@ -7,28 +7,20 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import ReportKnowledgeGraph, {
-  reportKnowledgeGraphQuery,
-} from './ReportKnowledgeGraph';
-import ReportKnowledgeCorrelation, {
-  reportKnowledgeCorrelationQuery,
-} from './ReportKnowledgeCorrelation';
+import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
+import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
 import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import ReportKnowledgeTimeLine, {
-  reportKnowledgeTimeLineQuery,
-} from './ReportKnowledgeTimeLine';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -119,11 +111,12 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
 
 class ReportKnowledgeComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `report-knowledge-${props.report.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-knowledge-${props.report.id}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
@@ -135,16 +128,17 @@ class ReportKnowledgeComponent extends Component {
         params,
       ),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
-      timeLineFilters: propOr({}, 'timeLineFilters', params),
+      timeLineFilters: propOr(initialFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }
 
   saveView() {
+    const LOCAL_STORAGE_KEY = `report-knowledge-${this.props.report.id}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-knowledge-${this.props.report.id}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }
@@ -186,45 +180,24 @@ class ReportKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, value, event = null) {
+  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (
-      this.state.timeLineFilters[key]
-      && this.state.timeLineFilters[key].length > 0
-    ) {
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            [key]: isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [
-                { id, value },
-                ...this.state.timeLineFilters[key],
-              ]),
-          },
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            [key]: [{ id, value }],
-          },
-        },
-        () => this.saveView(),
-      );
-    }
+    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    this.setState(
+      {
+        timeLineFilters: newFilters,
+      },
+      () => this.saveView(),
+    );
   }
 
-  handleRemoveTimeLineFilter(key) {
+  handleRemoveTimeLineFilter(key, op = 'eq') {
+    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
     this.setState(
-      { timeLineFilters: R.dissoc(key, this.state.timeLineFilters) },
+      { timeLineFilters: newFilters },
       () => this.saveView(),
     );
   }
@@ -251,11 +224,10 @@ class ReportKnowledgeComponent extends Component {
       timeLineFunctionalDate,
       timeLineSearchTerm,
     } = this.state;
-    const finalFilters = convertFilters(timeLineFilters);
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
       .length > 0
       ? []
       : defaultTypes;
@@ -268,7 +240,7 @@ class ReportKnowledgeComponent extends Component {
     const timeLinePaginationOptions = {
       types,
       search: timeLineSearchTerm,
-      filters: finalFilters,
+      filters: timeLineFilters,
       orderBy,
       orderMode: 'desc',
     };

@@ -11,8 +11,8 @@ import stixRfis from '../../data/stream-events/stream-event-stix2-rfis.json';
 import stixSightings from '../../data/stream-events/stream-event-stix2-sightings.json';
 import stixRelationships from '../../data/stream-events/stream-event-stix2-relationships.json';
 
-import * as testers from '../../../src/utils/stix-filtering/stix-testers';
-import type { Filter } from '../../../src/utils/stix-filtering/filter-group';
+import * as testers from '../../../src/utils/filtering/filtering-stix/stix-testers';
+import type { Filter } from '../../../src/generated/graphql';
 
 describe('Stix filter testers', () => {
   describe('by Markings (key=objectMarking)', () => {
@@ -25,7 +25,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9']
-      };
+      } as Filter;
       expect(testers.testMarkingFilter(stixWithMarkings, filter)).toEqual(true);
       expect(testers.testMarkingFilter(stixWithoutMarkings, filter)).toEqual(false);
 
@@ -34,7 +34,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
-      };
+      } as Filter;
       expect(testers.testMarkingFilter(stixWithMarkings, filter)).toEqual(false);
       expect(testers.testMarkingFilter(stixWithoutMarkings, filter)).toEqual(false);
     });
@@ -50,7 +50,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['Report', 'Note']
-      };
+      } as Filter;
       expect(testers.testEntityType(report, filter)).toEqual(true);
 
       filter = {
@@ -58,7 +58,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['Report', 'Note']
-      };
+      } as Filter;
       expect(testers.testEntityType(report, filter)).toEqual(false);
     });
 
@@ -68,7 +68,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['Indicator']
-      };
+      } as Filter;
       expect(testers.testEntityType(stixWithExtType, filter)).toEqual(true);
 
       filter = {
@@ -76,7 +76,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['Note', 'Report']
-      };
+      } as Filter;
       expect(testers.testEntityType(stixWithExtType, filter)).toEqual(false);
     });
 
@@ -86,7 +86,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Report']
-      };
+      } as Filter;
       expect(testers.testEntityType(report, filter)).toEqual(true);
 
       filter = {
@@ -94,7 +94,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['Stix-Object', 'Stix-Cyber-Observable', 'Report']
-      };
+      } as Filter;
       expect(testers.testEntityType(report, filter)).toEqual(false);
     });
   });
@@ -109,7 +109,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['unknown']
-      };
+      } as Filter;
       expect(testers.testIndicatorTypes(stixWithIndicatorTypes, filter)).toEqual(true);
       expect(testers.testIndicatorTypes(stixWithoutIndicatorTypes, filter)).toEqual(false);
 
@@ -118,7 +118,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
-      };
+      } as Filter;
       expect(testers.testIndicatorTypes(stixWithIndicatorTypes, filter)).toEqual(false);
       expect(testers.testIndicatorTypes(stixWithoutIndicatorTypes, filter)).toEqual(false);
     });
@@ -134,7 +134,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'bd156107-1f9a-43df-9595-574c467e9e21']
-      };
+      } as Filter;
       expect(testers.testWorkflow(reportWithWorkflow, filter)).toEqual(true);
       expect(testers.testWorkflow(reportWithoutWorkflow, filter)).toEqual(false);
 
@@ -143,7 +143,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
-      };
+      } as Filter;
       expect(testers.testWorkflow(reportWithWorkflow, filter)).toEqual(false);
       expect(testers.testWorkflow(reportWithoutWorkflow, filter)).toEqual(false);
     });
@@ -159,7 +159,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'identity--4f347cc9-4658-59ee-9707-134f434f9d1c']
-      };
+      } as Filter;
       expect(testers.testCreatedBy(stixWithCreatedBy, filter)).toEqual(true);
       expect(testers.testCreatedBy(stixWithoutCreatedBy, filter)).toEqual(false);
 
@@ -168,7 +168,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
-      };
+      } as Filter;
       expect(testers.testCreatedBy(stixWithCreatedBy, filter)).toEqual(false);
       expect(testers.testCreatedBy(stixWithoutCreatedBy, filter)).toEqual(false);
     });
@@ -183,7 +183,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', '88ec0c6a-13ce-5e39-b486-354fe4a7084f']
-      };
+      } as Filter;
       expect(testers.testCreator(stixWithCreator, filter)).toEqual(true);
 
       filter = {
@@ -191,7 +191,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
-      };
+      } as Filter;
       expect(testers.testCreator(stixWithCreator, filter)).toEqual(false);
     });
   });
@@ -207,7 +207,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f']
-      };
+      } as Filter;
       expect(testers.testAssignee(stixWithAssignee, filter)).toEqual(true);
       expect(testers.testIndicatorTypes(stixWithoutAssignee, filter)).toEqual(false);
 
@@ -216,7 +216,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', '<some-other-id>']
-      };
+      } as Filter;
       expect(testers.testIndicatorTypes(stixWithAssignee, filter)).toEqual(false);
       expect(testers.testIndicatorTypes(stixWithoutAssignee, filter)).toEqual(false);
     });
@@ -232,7 +232,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-label>', 'test-label']
-      };
+      } as Filter;
       expect(testers.testLabel(stixWithLabel, filter)).toEqual(true);
       expect(testers.testLabel(stixWithoutLabel, filter)).toEqual(false);
 
@@ -241,7 +241,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-label>', '<some-other-label>']
-      };
+      } as Filter;
       expect(testers.testLabel(stixWithLabel, filter)).toEqual(false);
       expect(testers.testLabel(stixWithoutLabel, filter)).toEqual(false);
     });
@@ -256,7 +256,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['true']
-      };
+      } as Filter;
       expect(testers.testRevoked(stixWithRevoked, filter)).toEqual(true);
 
       filter = {
@@ -264,7 +264,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['false']
-      };
+      } as Filter;
       expect(testers.testRevoked(stixWithRevoked, filter)).toEqual(false);
     });
   });
@@ -279,7 +279,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['true']
-      };
+      } as Filter;
       expect(testers.testDetection(stixWithDetection, filter)).toEqual(true);
       expect(testers.testDetection(stixWithoutDetection, filter)).toEqual(false);
 
@@ -288,7 +288,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['false']
-      };
+      } as Filter;
       expect(testers.testDetection(stixWithDetection, filter)).toEqual(false);
       expect(testers.testDetection(stixWithoutDetection, filter)).toEqual(false);
     });
@@ -304,7 +304,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'lt',
         values: ['75']
-      };
+      } as Filter;
       expect(testers.testScore(stixWithScore, filter)).toEqual(true);
       expect(testers.testScore(stixWithoutScore, filter)).toEqual(false);
 
@@ -313,7 +313,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'lt',
         values: ['25']
-      };
+      } as Filter;
       expect(testers.testScore(stixWithScore, filter)).toEqual(false);
       expect(testers.testScore(stixWithoutScore, filter)).toEqual(false);
     });
@@ -329,7 +329,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'gt',
         values: ['50']
-      };
+      } as Filter;
       expect(testers.testConfidence(stixWithConfidence75, filter)).toEqual(true);
       expect(testers.testConfidence(stixWithConfidence0, filter)).toEqual(false);
 
@@ -338,7 +338,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'lt',
         values: ['50']
-      };
+      } as Filter;
       expect(testers.testConfidence(stixWithConfidence75, filter)).toEqual(false);
       expect(testers.testConfidence(stixWithConfidence0, filter)).toEqual(true);
     });
@@ -354,7 +354,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['stix']
-      };
+      } as Filter;
       expect(testers.testPattern(stixWithPattern, filter)).toEqual(true);
       expect(testers.testPattern(stixWithoutPattern, filter)).toEqual(false);
 
@@ -363,7 +363,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['not-stix']
-      };
+      } as Filter;
       expect(testers.testPattern(stixWithPattern, filter)).toEqual(false);
       expect(testers.testPattern(stixWithoutPattern, filter)).toEqual(false);
     });
@@ -379,7 +379,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['Unknown']
-      };
+      } as Filter;
       expect(testers.testMainObservableType(stixWithMOT, filter)).toEqual(true);
       expect(testers.testMainObservableType(stixWithoutMOT, filter)).toEqual(false);
 
@@ -388,7 +388,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['IPv4']
-      };
+      } as Filter;
       expect(testers.testMainObservableType(stixWithMOT, filter)).toEqual(false);
       expect(testers.testMainObservableType(stixWithoutMOT, filter)).toEqual(false);
     });
@@ -404,7 +404,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['<some-id>', 'incident--572ee294-04a6-548f-a091-a4502a44c342']
-      };
+      } as Filter;
       expect(testers.testObjectContains(stixWithObjectRefs, filter)).toEqual(true);
       expect(testers.testObjectContains(stixWithoutObjectRefs, filter)).toEqual(false);
 
@@ -413,7 +413,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
-      };
+      } as Filter;
       expect(testers.testObjectContains(stixWithObjectRefs, filter)).toEqual(false);
       expect(testers.testObjectContains(stixWithoutObjectRefs, filter)).toEqual(false);
     });
@@ -429,7 +429,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['medium']
-      };
+      } as Filter;
       expect(testers.testSeverity(stixWithSeverity, filter)).toEqual(true);
       expect(testers.testSeverity(stixWithoutSeverity, filter)).toEqual(false);
 
@@ -438,7 +438,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'eq',
         values: ['low']
-      };
+      } as Filter;
       expect(testers.testSeverity(stixWithSeverity, filter)).toEqual(false);
       expect(testers.testSeverity(stixWithoutSeverity, filter)).toEqual(false);
     });
@@ -454,7 +454,7 @@ describe('Stix filter testers', () => {
         mode: 'or',
         operator: 'eq',
         values: ['p3', 'p4']
-      };
+      } as Filter;
       expect(testers.testPriority(stixWithPriority, filter)).toEqual(true);
       expect(testers.testPriority(stixWithoutPriority, filter)).toEqual(false);
 
@@ -463,7 +463,7 @@ describe('Stix filter testers', () => {
         mode: 'and',
         operator: 'lt',
         values: ['p3']
-      };
+      } as Filter;
       expect(testers.testPriority(stixWithPriority, filter)).toEqual(false);
       expect(testers.testPriority(stixWithoutPriority, filter)).toEqual(false);
     });
@@ -479,7 +479,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
-        };
+        } as Filter;
         expect(testers.testRelationFrom(stixRelationship, filter)).toEqual(true);
 
         filter = {
@@ -487,7 +487,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationFrom(stixRelationship, filter)).toEqual(false);
       });
     });
@@ -499,7 +499,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'grouping--e09ce86e-0bd0-5a09-a5e9-4ebd76b79bd4']
-        };
+        } as Filter;
         expect(testers.testRelationTo(stixRelationship, filter)).toEqual(true);
 
         filter = {
@@ -507,7 +507,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationTo(stixRelationship, filter)).toEqual(false);
       });
     });
@@ -519,7 +519,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Threat-Actor-Group']
-        };
+        } as Filter;
         expect(testers.testRelationFromTypes(stixRelationship, filter)).toEqual(true);
 
         filter = {
@@ -527,7 +527,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationFromTypes(stixRelationship, filter)).toEqual(false);
       });
     });
@@ -539,7 +539,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Grouping']
-        };
+        } as Filter;
         expect(testers.testRelationToTypes(stixRelationship, filter)).toEqual(true);
 
         filter = {
@@ -547,7 +547,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationToTypes(stixRelationship, filter)).toEqual(false);
       });
     });
@@ -563,7 +563,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b']
-        };
+        } as Filter;
         expect(testers.testRelationFrom(stixSighting, filter)).toEqual(true);
 
         filter = {
@@ -571,7 +571,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationFrom(stixSighting, filter)).toEqual(false);
       });
     });
@@ -583,7 +583,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
-        };
+        } as Filter;
         expect(testers.testRelationTo(stixSighting, filter)).toEqual(true);
 
         filter = {
@@ -591,7 +591,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationTo(stixSighting, filter)).toEqual(false);
       });
     });
@@ -603,7 +603,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Indicator']
-        };
+        } as Filter;
         expect(testers.testRelationFromTypes(stixSighting, filter)).toEqual(true);
 
         filter = {
@@ -611,7 +611,7 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationFromTypes(stixSighting, filter)).toEqual(false);
       });
     });
@@ -623,7 +623,7 @@ describe('Stix filter testers', () => {
           mode: 'or',
           operator: 'eq',
           values: ['<some-id>', 'Country']
-        };
+        } as Filter;
         expect(testers.testRelationToTypes(stixSighting, filter)).toEqual(true);
 
         filter = {
@@ -631,14 +631,14 @@ describe('Stix filter testers', () => {
           mode: 'and',
           operator: 'eq',
           values: ['<some-id>']
-        };
+        } as Filter;
         expect(testers.testRelationToTypes(stixSighting, filter)).toEqual(false);
       });
     });
   });
 
-  describe('by "Connected to" (key=connectedToId)', () => {
-    const stixRelationship = stixRelationships[0];
+  describe('by "Connected to / Direct" (key=connectedToId)', () => {
+    const stixReport = stixReports[0];
     const stixSighting = stixSightings[0];
 
     it('should test positive for a stix object with matching filter', () => {
@@ -646,26 +646,51 @@ describe('Stix filter testers', () => {
         key: ['connectedToId'],
         mode: 'or',
         operator: 'eq',
-        values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
-      };
-      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(true);
-
-      filter = {
-        key: ['connectedToId'],
-        mode: 'or',
-        operator: 'eq',
-        values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
-      };
-      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(true);
+        values: ['<some-id>', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32']
+      } as Filter;
+      expect(testers.testConnectedTo(stixReport, filter)).toEqual(true);
+      expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
 
       filter = {
         key: ['connectedToId'],
         mode: 'and',
         operator: 'eq',
         values: ['<some-id>']
-      };
-      expect(testers.testConnectedTo(stixRelationship, filter)).toEqual(false);
+      } as Filter;
+      expect(testers.testConnectedTo(stixReport, filter)).toEqual(false);
       expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
+    });
+  });
+
+  describe('by "Connected to / Side Events" (key=connectedToId_sideEvents)', () => {
+    const stixRelationship = stixRelationships[0];
+    const stixSighting = stixSightings[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixRelationship, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['<some-id>', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixSighting, filter)).toEqual(true);
+
+      filter = {
+        key: ['connectedToId_sideEvents'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['<some-id>']
+      } as Filter;
+      expect(testers.testConnectedToSideEvents(stixRelationship, filter)).toEqual(false);
+      expect(testers.testConnectedToSideEvents(stixSighting, filter)).toEqual(false);
     });
   });
 });

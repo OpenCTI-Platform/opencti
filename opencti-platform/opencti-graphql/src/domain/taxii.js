@@ -2,19 +2,16 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elIndex, elPaginate } from '../database/engine';
-import {
-  INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_INTERNAL_OBJECTS,
-  READ_STIX_INDICES
-} from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
+import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { addFilter } from '../utils/filtering/filtering-utils';
+import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
@@ -52,8 +49,8 @@ export const findAll = (context, user, args) => {
     return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
   }
   // No user specify, listing only public taxii collections
-  const publicFilter = { key: ['taxii_public'], values: ['true'] };
-  const publicArgs = { ...(args ?? {}), filters: [...(args?.filters ?? []), publicFilter] };
+  const filters = addFilter(args?.filters, 'taxii_public', 'true');
+  const publicArgs = { ...(args ?? {}), filters };
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
@@ -64,6 +61,7 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     }
     return item;
   });
+
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
   await publishUserAction({
     user,
@@ -110,7 +108,7 @@ const prepareManifestElement = async (data) => {
   };
 };
 
-const collectionQuery = async (context, user, collection, args) => {
+export const collectionQuery = async (context, user, collection, args) => {
   const { added_after, limit, next, match = {} } = args;
   const { id, spec_version, type, version } = match;
   if (spec_version && spec_version !== '2.1') {
