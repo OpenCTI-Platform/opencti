@@ -289,8 +289,8 @@ describe('Grouping resolver standard behavior', () => {
           filters: {
             mode: 'and',
             filters: [{
-              key: 'type',
-              value: 'investigation',
+              key: ['type'],
+              values: ['investigation'],
             }],
             filterGroups: [],
           }
