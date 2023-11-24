@@ -35,10 +35,11 @@ export const validateFilterGroupForActivityEventMatch = (filterGroup: FilterGrou
  */
 export const isActivityEventMatchFilterGroup = async (
   event: ActivityStreamEvent,
-  filterGroup: FilterGroup,
+  filterGroup?: FilterGroup,
 ) : Promise<boolean> => {
   // check the filter is well formed and compatible for event matching
-  validateFilterGroupForActivityEventMatch(filterGroup);
+  if (filterGroup) validateFilterGroupForActivityEventMatch(filterGroup);
+  if (!filterGroup) return true; // if no filters: the event always match
   // then call our boolean engine on the filter group using the event testers
   return testFilterGroup(event, filterGroup, FILTER_WITH_EVENTS_KEY_TESTERS_MAP);
 };
