@@ -49,7 +49,6 @@ import TopMenuThreats from './TopMenuThreats';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTool from './TopMenuTool';
-import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuVulnerability from './TopMenuVulnerability';
 import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
@@ -61,17 +60,13 @@ import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import TopMenuChannel from './TopMenuChannel';
-import TopMenuNarrative from './TopMenuNarrative';
 import TopMenuEvent from './TopMenuEvent';
 import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
-import TopMenuDataComponent from './TopMenuDataComponent';
-import TopMenuDataSource from './TopMenuDataSource';
 import TopMenuCaseIncident from './TopMenuCaseIncident';
 import TopMenuCaseFeedback from './TopMenuCaseFeedback';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
@@ -229,22 +224,6 @@ const routes = {
   ),
   '/dashboard/entities': () => <TopMenuEntities />,
   '/dashboard/locations': () => <TopMenuLocation />,
-  // TECHNIQUES
-  '/dashboard/techniques/attack_patterns/': (id: string) => (
-    <TopMenuAttackPattern id={id} />
-  ),
-  '/dashboard/techniques/narratives/': (id: string) => (
-    <TopMenuNarrative id={id} />
-  ),
-  '/dashboard/techniques/courses_of_action/': (id: string) => (
-    <TopMenuCourseOfAction id={id} />
-  ),
-  '/dashboard/techniques/data_components/': (id: string) => (
-    <TopMenuDataComponent id={id} />
-  ),
-  '/dashboard/techniques/data_sources/': (id: string) => (
-    <TopMenuDataSource id={id} />
-  ),
   '/dashboard/techniques': () => <TopMenuTechniques />,
   '/dashboard/data': () => <TopMenuData />,
   '/dashboard/activity': () => <TopMenuAudits />,

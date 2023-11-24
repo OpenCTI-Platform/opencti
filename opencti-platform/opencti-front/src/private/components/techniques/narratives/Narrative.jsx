@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
+import withStyles from '@mui/styles/withStyles';
 import NarrativeDetails from './NarrativeDetails';
 import NarrativeEdition from './NarrativeEdition';
-import NarrativePopover from './NarrativePopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -31,12 +27,7 @@ class NarrativeComponent extends Component {
   render() {
     const { classes, narrative } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType='Narrative'
-          stixDomainObject={narrative}
-          PopoverComponent={<NarrativePopover />}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -46,7 +37,10 @@ class NarrativeComponent extends Component {
             <NarrativeDetails narrative={narrative} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={narrative} displayConfidence={false} />
+            <StixDomainObjectOverview
+              stixDomainObject={narrative}
+              displayConfidence={false}
+            />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -75,7 +69,7 @@ class NarrativeComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NarrativeEdition narrativeId={narrative.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -149,4 +143,4 @@ const Narrative = createFragmentContainer(NarrativeComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Narrative);
+export default withStyles(styles)(Narrative);

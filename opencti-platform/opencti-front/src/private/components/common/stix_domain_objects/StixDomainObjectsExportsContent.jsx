@@ -36,13 +36,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
   }
 
   render() {
-    const {
-      t,
-      data,
-      exportEntityType,
-      paginationOptions,
-      context,
-    } = this.props;
+    const { t, data, exportEntityType, paginationOptions, context } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
     let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
     if (paginationOptions?.fromId) {
@@ -51,8 +45,13 @@ class StixDomainObjectsExportsContentComponent extends Component {
         mode: paginationOptionsForExport.filters.mode,
         filterGroups: paginationOptionsForExport.filters.filterGroups,
         filters: [
-          ...paginationOptionsForExport.filters.filters,
-          { key: 'fromId', values: [paginationOptions.fromId], operator: 'eq', mode: 'or' },
+          ...(paginationOptionsForExport.filters?.filters ?? []),
+          {
+            key: 'fromId',
+            values: [paginationOptions.fromId],
+            operator: 'eq',
+            mode: 'or',
+          },
         ],
       };
       paginationOptionsForExport = {
@@ -64,15 +63,17 @@ class StixDomainObjectsExportsContentComponent extends Component {
       <div>
         <List>
           {stixDomainObjectsExportFiles.length > 0 ? (
-            stixDomainObjectsExportFiles.map((file) => file?.node && (
-              <FileLine
-                key={file.node.id}
-                file={file.node}
-                dense={true}
-                disableImport={true}
-                directDownload={true}
-              />
-            ))
+            stixDomainObjectsExportFiles.map(
+              (file) => file?.node && (
+                  <FileLine
+                    key={file.node.id}
+                    file={file.node}
+                    dense={true}
+                    disableImport={true}
+                    directDownload={true}
+                  />
+              ),
+            )
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
@@ -152,6 +153,4 @@ StixDomainObjectsExportsContent.propTypes = {
   context: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-)(StixDomainObjectsExportsContent);
+export default compose(inject18n)(StixDomainObjectsExportsContent);

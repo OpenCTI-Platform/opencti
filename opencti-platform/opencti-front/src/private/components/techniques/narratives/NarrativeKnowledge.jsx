@@ -3,36 +3,20 @@ import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import NarrativePopover from './NarrativePopover';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
 
 class NarrativeKnowledgeComponent extends Component {
   render() {
-    const { classes, narrative } = this.props;
+    const { narrative } = this.props;
     const link = `/dashboard/techniques/narratives/${narrative.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Narrative'}
-          disableSharing={true}
-          stixDomainObject={narrative}
-          PopoverComponent={<NarrativePopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -204,7 +188,7 @@ class NarrativeKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -228,8 +212,4 @@ const NarrativeKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(NarrativeKnowledge);
+export default compose(inject18n, withRouter)(NarrativeKnowledge);

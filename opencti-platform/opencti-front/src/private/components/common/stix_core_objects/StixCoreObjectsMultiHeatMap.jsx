@@ -89,15 +89,12 @@ const StixCoreObjectsMultiHeatMap = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let types = ['Stix-Core-Object'];
-      const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
-      if (
-        entityTypeFilter
-        && entityTypeFilter.values.length > 0
-      ) {
-        if (
-          entityTypeFilter.values.filter((n) => n === 'all').length
-          === 0
-        ) {
+      const entityTypeFilter = findFilterFromKey(
+        selection.filters?.filters ?? [],
+        'entity_type',
+      );
+      if (entityTypeFilter && entityTypeFilter.values.length > 0) {
+        if (entityTypeFilter.values.filter((n) => n === 'all').length === 0) {
           types = entityTypeFilter;
         }
       }

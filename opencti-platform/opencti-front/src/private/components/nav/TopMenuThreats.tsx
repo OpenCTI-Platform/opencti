@@ -110,7 +110,7 @@ const TopMenuThreats = () => {
           }
           size="small"
           color={
-            location.pathname === '/dashboard/threats/campaigns'
+            location.pathname.includes('/dashboard/threats/campaigns')
               ? 'secondary'
               : 'primary'
           }

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import ThreatActorGroupDetails from './ThreatActorGroupDetails';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 import Security from '../../../../utils/Security';
@@ -146,4 +144,4 @@ const ThreatActorGroup = createFragmentContainer(ThreatActorGroupComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ThreatActorGroup);
+export default withStyles(styles)(ThreatActorGroup);

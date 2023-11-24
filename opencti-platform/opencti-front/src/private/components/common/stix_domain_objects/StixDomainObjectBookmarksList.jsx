@@ -219,14 +219,12 @@ const StixDomainObjectBookmarksList = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let types = [];
-    const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
-    if (
-      entityTypeFilter
-      && entityTypeFilter.values.length > 0
-    ) {
-      if (
-        entityTypeFilter.values.filter((o) => o === 'all').length === 0
-      ) {
+    const entityTypeFilter = findFilterFromKey(
+      selection.filters?.filters || [],
+      'entity_type',
+    );
+    if (entityTypeFilter && entityTypeFilter.values.length > 0) {
+      if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
         types = entityTypeFilter;
       }
     }

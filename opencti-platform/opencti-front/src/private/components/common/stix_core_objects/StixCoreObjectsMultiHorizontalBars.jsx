@@ -402,7 +402,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
       ),
     );
     const subSelection = dataSelection[1];
-    let subSelectionFiltersContent = subSelection.filters.filters;
+    let subSelectionFiltersContent = subSelection.filters?.filters ?? [];
     const subSelectionDataSelectionTypes = R.head(
       subSelectionFiltersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
@@ -432,7 +432,9 @@ const stixCoreObjectsMultiHorizontalBars = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters: selection.filters
+            ? { ...selection.filters, filters: filtersContent }
+            : undefined,
           limit: selection.number ?? 10,
           subDistributionRelationshipType:
             subSelectionDataSelectionRelationshipType,
@@ -448,7 +450,10 @@ const stixCoreObjectsMultiHorizontalBars = ({
           subDistributionOperation: 'count',
           subDistributionLimit: subSelection.number ?? 10,
           subDistributionTypes: subSelectionDataSelectionTypes,
-          subDistributionFilters: { ...subSelection.filters, filters: subSelectionFiltersContent },
+          subDistributionFilters: {
+            ...subSelection.filters,
+            filters: subSelectionFiltersContent,
+          },
         }}
         render={({ props }) => {
           if (

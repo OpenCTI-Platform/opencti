@@ -141,31 +141,41 @@ const AuditsList = ({
     }
     const selection = dataSelection[0];
     let types = ['History', 'Activity'];
-    const entityTypeFilter = selection.filters?.filters ? findFilterFromKey(selection.filters.filters, 'entity_type') : undefined;
-    if (
-      entityTypeFilter
-      && entityTypeFilter.values.length > 0
-    ) {
-      if (
-        entityTypeFilter.values.filter((o) => o.id === 'all').length === 0
-      ) {
+    const entityTypeFilter = findFilterFromKey(
+      selection.filters?.filters ?? [],
+      'entity_type',
+    );
+    if (entityTypeFilter && entityTypeFilter.values.length > 0) {
+      if (entityTypeFilter.values.filter((o) => o.id === 'all').length === 0) {
         types = entityTypeFilter;
       }
     }
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'timestamp';
-    const filtersContent = (selection.filters?.filters ?? []).filter((f) => f.key !== 'entity_type');
+    const filtersContent = (selection.filters?.filters ?? []).filter(
+      (f) => f.key !== 'entity_type',
+    );
     if (startDate) {
-      filtersContent.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
+      filtersContent.push({
+        key: dateAttribute,
+        values: [startDate],
+        operator: 'gt',
+      });
     }
     if (endDate) {
-      filtersContent.push({ key: dateAttribute, values: [endDate], operator: 'lt' });
+      filtersContent.push({
+        key: dateAttribute,
+        values: [endDate],
+        operator: 'lt',
+      });
     }
-    const filters = selection.filters ? {
-      ...selection.filters,
-      filters: filtersContent,
-    } : undefined;
+    const filters = selection.filters
+      ? {
+        ...selection.filters,
+        filters: filtersContent,
+      }
+      : undefined;
     return (
       <QueryRenderer
         query={auditsListQuery}

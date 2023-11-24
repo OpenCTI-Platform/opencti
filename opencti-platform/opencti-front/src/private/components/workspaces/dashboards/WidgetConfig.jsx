@@ -60,16 +60,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
 import Filters from '../../common/lists/Filters';
 import {
-  findFilterFromKey, findFilterIndexFromKey,
+  findFilterFromKey,
+  findFilterIndexFromKey,
   findFiltersFromKeys,
   initialFilterGroup,
   isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
-import {
-  stixCyberObservablesLinesAttributesQuery,
-} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -428,7 +427,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   };
   const getCurrentSelectedEntityTypes = (index) => {
     return R.uniq(
-      findFiltersFromKeys(dataSelection[index].filters.filters, ['fromTypes', 'toTypes', 'entity_type'])
+      findFiltersFromKeys(dataSelection[index]?.filters?.filters ?? [], [
+        'fromTypes',
+        'toTypes',
+        'entity_type',
+      ])
         .map((f) => f.values)
         .flat(),
     );
@@ -445,7 +448,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective: selectedPerspective,
-      filters: selectedPerspective === n.perspective ? n.filters : initialFilterGroup,
+      filters:
+        selectedPerspective === n.perspective ? n.filters : initialFilterGroup,
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
@@ -495,9 +499,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         const dataFilters = data[filterName];
-        const filter = findFilterFromKey(dataFilters.filters, key, op);
+        const filter = findFilterFromKey(dataFilters.filters ?? [], key, op);
         if (filter) {
-          const newValues = isUniqFilter(key) ? [id] : R.uniq([...filter?.values ?? [], id]);
+          const newValues = isUniqFilter(key)
+            ? [id]
+            : R.uniq([...(filter?.values ?? []), id]);
           const newFilterElement = {
             key,
             values: newValues,
@@ -507,7 +513,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           const newBaseFilters = {
             ...dataFilters,
             filters: [
-              ...dataFilters.filters.filter((f) => f.key !== key || f.operator !== op), // remove filter with k as key
+              ...(dataFilters.filters ?? []).filter(
+                (f) => f.key !== key || f.operator !== op,
+              ), // remove filter with k as key
               newFilterElement, // add new filter
             ],
           };
@@ -524,7 +532,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         };
         const newBaseFilters = {
           ...dataFilters,
-          filters: [...dataFilters.filters, newFilterElement], // add new filter
+          filters: [...(dataFilters.filters ?? []), newFilterElement], // add new filter
         };
         return {
           ...data,
@@ -541,7 +549,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         const dataFilters = data[filterName];
         const newFilters = {
           ...dataFilters,
-          filters: dataFilters.filters.filter((f) => f.key !== key || f.operator !== op),
+          filters: (dataFilters.filters ?? []).filter(
+            (f) => f.key !== key || f.operator !== op,
+          ),
         };
         return {
           ...data,
@@ -557,9 +567,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         const filters = data[filterName];
-        const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+        const filterIndex = findFilterIndexFromKey(
+          filters.filters ?? [],
+          localFilter.key,
+          localFilter.operator,
+        );
         if (filterIndex !== null) {
-          const newFiltersContent = [...filters.filters];
+          const newFiltersContent = [...(filters.filters || [])];
           newFiltersContent[filterIndex] = {
             ...localFilter,
             mode: localFilter.mode === 'and' ? 'or' : 'and',
@@ -852,7 +866,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           <Filters
                             availableFilterKeys={availableFilterKeys}
                             availableEntityTypes={availableEntityTypes}
-                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
+                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)
+                            }
                             noDirectFilters={true}
                           />
                           {(dataSelection[i].perspective ?? perspective)
@@ -863,7 +878,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                 'Stix-Domain-Object',
                                 'Stix-Cyber-Observable',
                               ]}
-                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicFrom', key, id, op)}
+                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicFrom', key, id, op)
+                              }
                               noDirectFilters={true}
                               type="from"
                             />
@@ -876,7 +892,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                 'Stix-Domain-Object',
                                 'Stix-Cyber-Observable',
                               ]}
-                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicTo', key, id, op)}
+                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicTo', key, id, op)
+                              }
                               noDirectFilters={true}
                               type="to"
                             />
@@ -887,33 +904,42 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   />
                 </div>
                 <div className="clearfix" />
-                { dataSelection[i].filters && (
+                {dataSelection[i].filters && (
                   <FilterIconButton
                     filters={dataSelection[i].filters}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)
+                    }
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)
+                    }
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')
+                    }
                     classNameNumber={7}
                     styleNumber={2}
                   />
                 )}
-                { dataSelection[i].dynamicFrom && (
+                {dataSelection[i].dynamicFrom && (
                   <FilterIconButton
                     filters={dataSelection[i].dynamicFrom}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)}
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)}
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)
+                    }
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)
+                    }
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')
+                    }
                     classNameNumber={7}
                     styleNumber={2}
                     chipColor={'warning'}
                   />
                 )}
-                { dataSelection[i].dynamicTo && (
+                {dataSelection[i].dynamicTo && (
                   <FilterIconButton
                     filters={dataSelection[i].dynamicTo}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)}
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)}
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')}
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)
+                    }
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)
+                    }
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')
+                    }
                     classNameNumber={7}
                     styleNumber={2}
                     chipColor={'success'}
