@@ -85,7 +85,7 @@ export const stixDomainObjectsTimeSeries = (context, user, args) => {
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
-  let filters = args.filters ?? [];
+  let { filters } = args;
   if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -93,9 +93,9 @@ export const stixDomainObjectsTimeSeries = (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
     }
   }
   return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
@@ -130,16 +130,17 @@ export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
   const filteringArgs = { search, orderBy, orderMode, filters, relationship_type, elementId };
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
-  let newArgsFiltersFilters = filteringArgs.filters?.filters ?? [];
+  const argsFiltersContent = filteringArgs.filters?.filters ?? [];
+  let newArgsFiltersContent = filteringArgs.filters?.filters ?? [];
   const initialParams = {};
-  if (filteringArgs.filters?.filters && filteringArgs.filters.filters.length > 0) {
-    if (filteringArgs.filters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
-      initialParams.elementId = R.head(R.head(filteringArgs.filters.filters.filter((n) => n.key.includes('elementId'))).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
+  if (argsFiltersContent.length > 0) {
+    if (argsFiltersContent.filter((n) => n.key.includes('elementId')).length > 0) {
+      initialParams.elementId = R.head(R.head(argsFiltersContent.filter((n) => n.key.includes('elementId'))).values);
+      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('elementId'));
     }
-    if (filteringArgs.filters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
-      initialParams.fromId = R.head(R.head(filteringArgs.filters.filters.filter((n) => n.key.includes('fromId'))).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('fromId'));
+    if (argsFiltersContent.filter((n) => n.key.includes('fromId')).length > 0) {
+      initialParams.fromId = R.head(R.head(argsFiltersContent.filter((n) => n.key.includes('fromId'))).values);
+      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('fromId'));
     }
   }
   const finalFilteringArgs = {
@@ -147,7 +148,7 @@ export const stixDomainObjectsExportAsk = async (context, user, args) => {
     filters: {
       mode: filteringArgs.filters?.mode ?? 'and',
       filterGroups: filteringArgs.filters?.filterGroups ?? [],
-      filters: newArgsFiltersFilters,
+      filters: newArgsFiltersContent,
     },
   };
   const listParams = { ...initialParams, ...exportTransformFilters(finalFilteringArgs, ordersOpts) };
