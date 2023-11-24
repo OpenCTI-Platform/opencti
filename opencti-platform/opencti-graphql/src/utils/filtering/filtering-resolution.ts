@@ -19,7 +19,7 @@ import type { StixObject } from '../../types/stix-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
-import { checkAndConvertFilters, extractFilterGroupValues } from './filtering-utils';
+import { checkAndConvertFilters, extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -203,7 +203,7 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
     finalFilters = {
       mode: FilterMode.And,
       filters: filtersContent,
-      filterGroups: [finalFilters],
+      filterGroups: isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
     };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };

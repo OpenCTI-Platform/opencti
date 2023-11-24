@@ -28,7 +28,7 @@ export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup) => {
  * Note that it's a shallow check; it does not recurse into the nested groups.
  * @param filterGroup
  */
-export const isFilterGroupNotEmpty = (filterGroup: FilterGroup) => {
+export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup) => {
   return filterGroup
     && (
       (filterGroup.filters && filterGroup.filters.length > 0)
