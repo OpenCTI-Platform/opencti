@@ -14,14 +14,19 @@ import {
   ACCOUNT_STATUSES,
   OPENCTI_SESSION
 } from '../config/conf';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
+import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elFindByIds, elLoadBy } from '../database/engine';
+import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
+import {
+  buildPagination,
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_INTERNAL_OBJECTS
+} from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -681,6 +686,80 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 
+export const deleteAllWorkspaceForUser = async (userId) => {
+  return await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    body: {
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: 'Workspace' } } },
+            { term: { 'authorized_members.id.keyword': { value: userId } } }
+          ],
+          filter: {
+            script: {
+              script: 'return (doc[\'authorized_members.id.keyword\'].size() == 1);'
+            }
+          }
+        }
+      }
+    }
+  }).catch((err) => {
+    throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
+  });
+};
+
+export const deleteAllTrigerAndDigestByUser = async (userId) => {
+  return await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    body: {
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: 'Trigger' } } },
+            { term: { 'authorized_members.id.keyword': { value: userId } } }
+          ]
+        }
+      }
+    }
+  }).catch((err) => {
+    throw DatabaseError(`[DELETE] Error deleting Trigger for user ${userId} elastic.`, { error: err });
+  });
+};
+export const deleteAllNotificationByUser = async (userId) => {
+  return await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    body: {
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: 'Notification' } } },
+            { term: { 'user_id.keyword': { value: userId } } }
+          ]
+        }
+      }
+    }
+  }).catch((err) => {
+    throw DatabaseError(`[DELETE] Error deleting notification for user ${userId} elastic.`, { error: err });
+  });
+};
+
+/**
+ * Delete a user and related data:
+ * - Delete relation
+ * - Delete user's Notification, Digests and Triggers (both are Triggers)
+ * - Delete user's Investigation and Dashboard (both are Workspace) that are not shared to another 'admin' or 'edit'.
+ *
+ * User workspace where the user is 'admin' and having other users with 'view' only are deleted too.
+ * Only one audit log is create for the user deletion. No audit log for Notification, Triggers, Workspace deletion.
+ * @param context
+ * @param user the user that is user to call delete
+ * @param userId id of user to delete and cleanup data
+ * @returns {Promise<*>}
+ */
 export const userDelete = async (context, user, userId) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN)) {
     // When user is organization admin, we make sure that the deleted user is in one of the administrated organizations of the admin
@@ -690,6 +769,10 @@ export const userDelete = async (context, user, userId) => {
       throw ForbiddenAccess();
     }
   }
+  await deleteAllTrigerAndDigestByUser(userId);
+  await deleteAllNotificationByUser(userId);
+  await deleteAllWorkspaceForUser(userId);
+
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
