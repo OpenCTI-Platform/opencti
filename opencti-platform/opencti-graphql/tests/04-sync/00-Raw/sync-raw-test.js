@@ -12,6 +12,8 @@ import {
 } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { checkPostSyncContent, checkPreSyncContent } from '../sync-utils';
+import { elAggregationCount } from '../../../src/database/engine';
+import { READ_DATA_INDICES } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
   query vocabularies(
@@ -74,8 +76,16 @@ describe('Database sync raw', () => {
         if (!found) vocabAdded.push(va);
       });
 
-      expect(vocabRemoved.map((v) => v.name)).toEqual(['aaadsdsd']);
-      expect(vocabAdded.map((v) => v.name)).toEqual(['ssssss']);
+      expect(vocabRemoved.length).toEqual(vocabAfter.length);
+      expect(vocabRemoved.map((v) => v.name)).toEqual([]);
+      expect(vocabAdded.map((v) => v.name)).toEqual([]);
+
+      const plop = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
+      const maaaap = new Map(plop.map((i) => [i.label, i.value]));
+      expect(maaaap.get('Indicator')).toEqual(28);
+      expect(maaaap.get('Malware')).toEqual(27);
+      expect(maaaap.get('Label')).toEqual(13);
+      expect(maaaap.get('Vocabulary')).toEqual(330);
 
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
