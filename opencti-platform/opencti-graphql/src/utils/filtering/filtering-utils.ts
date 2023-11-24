@@ -12,6 +12,18 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 // Basic utility functions
 
 /**
+ * Tells if a filter group is in the correct format
+ * (Enables to check filters are not in the old format)
+ * Note that it's a shallow check; it does not recurse into the nested groups.
+ * @param filterGroup
+ */
+export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup) => {
+  return (filterGroup.mode
+    && filterGroup.filters && Array.isArray(filterGroup.filters)
+    && filterGroup.filterGroups && Array.isArray(filterGroup.filters));
+};
+
+/**
  * Tells if a filter group contains at least 1 filter or nested filter group
  * Note that it's a shallow check; it does not recurse into the nested groups.
  * @param filterGroup
@@ -187,7 +199,7 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
   if (!filterGroup) {
     return undefined;
   }
-  if (!filterGroup.mode || !filterGroup.filters || !filterGroup.filterGroups) { // detect filters in the old format or in a bad format
+  if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
     throw Error(`Incorrect filters format: ${JSON.stringify(filterGroup)}`);
   }
   // TODO improvement: check filters keys correspond to the entity types if types is given
