@@ -193,10 +193,16 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
       filterGroups: [],
     };
   if (after || before) {
-    const values = after && before ? [after, before] : [after ?? before];
+    const filtersContent = [];
+    if (after) {
+      filtersContent.push({ key: field, values: [after], operator: FilterOperator.Gte });
+    }
+    if (before) {
+      filtersContent.push({ key: field, values: [before], operator: FilterOperator.Lte });
+    }
     finalFilters = {
       mode: FilterMode.And,
-      filters: [{ key: field, values, operator: FilterOperator.Gte }],
+      filters: filtersContent,
       filterGroups: [finalFilters],
     };
   }
