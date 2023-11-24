@@ -111,7 +111,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
       res.status(401).end();
       return { error: res.statusMessage };
     }
-    return { streamFilters: {}, collection: null };
+    return { streamFilters: null, collection: null };
   }
   const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
