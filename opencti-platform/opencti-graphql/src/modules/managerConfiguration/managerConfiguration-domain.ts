@@ -8,7 +8,7 @@ import {
   type BasicStoreEntityManagerConfiguration,
   ENTITY_TYPE_MANAGER_CONFIGURATION
 } from './managerConfiguration-types';
-import type { EditInput } from '../../generated/graphql';
+import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -20,7 +20,13 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findByManagerId = async (context: AuthContext, user: AuthUser, managerId: string): Promise<BasicStoreEntityManagerConfiguration> => {
   const findByTypeFn = async () => {
     return loadEntity(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION], {
-      filters: [{ key: 'manager_id', values: [managerId] }]
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['manager_id'], values: [managerId], mode: 'or', operator: 'eq' }
+        ],
+        filterGroups: [],
+      } as FilterGroup
     });
   };
   return telemetry(context, user, 'QUERY managerConfiguration', {
