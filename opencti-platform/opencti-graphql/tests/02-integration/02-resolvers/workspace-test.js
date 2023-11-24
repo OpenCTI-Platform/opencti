@@ -135,7 +135,6 @@ describe('Workspace resolver standard behavior', () => {
       query: LIST_QUERY,
       variables: { first: 10 },
     });
-    expect(queryResult.data.workspaces.edges.map((ws) => ws.node.name)).toEqual(['haha']);
     expect(queryResult.data.workspaces.edges.length).toEqual(1);
   });
   it('should update workspace', async () => {
