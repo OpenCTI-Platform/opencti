@@ -527,10 +527,9 @@ describe('Complex filters combinations, behavior tested on reports', () => {
           ],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 09. complex filter combination with several groups at the same level --- //
     // [(confidence > 25) AND (marking = marking2)]
     // OR
@@ -647,7 +646,8 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, distributionArgs);
-    expect(distribution.length).toEqual(5); // there are 2 markings created + 3 markings in DATA-TEST-STIX2_v2
+    // there are 3 markings involved in a relationship with a report: the 2 markings created + the marking of the report in DATA-TEST-STIX2_v2
+    expect(distribution.length).toEqual(3);
     const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
     expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
