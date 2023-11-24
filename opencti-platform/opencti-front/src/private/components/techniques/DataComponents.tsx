@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import DataComponentLines, { dataComponentsLinesQuery, } from './data_components/DataComponentsLines';
+import DataComponentLines, { dataComponentsLinesQuery } from './data_components/DataComponentsLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';

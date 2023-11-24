@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
-import { findFilterFromKey } from "../../../../utils/filters/filtersUtils";
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -91,11 +91,11 @@ const StixCoreObjectsMultiHeatMap = ({
       let types = ['Stix-Core-Object'];
       const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
       if (
-          entityTypeFilter
+        entityTypeFilter
         && entityTypeFilter.values.length > 0
       ) {
         if (
-            entityTypeFilter.values.filter((n) => n === 'all').length
+          entityTypeFilter.values.filter((n) => n === 'all').length
           === 0
         ) {
           types = entityTypeFilter;

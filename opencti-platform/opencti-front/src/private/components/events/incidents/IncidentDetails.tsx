@@ -94,12 +94,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
           },
           {
             key: 'relationship_type',
-            values: ['related-to', 'targets', 'uses', 'attributed-to']
-          }
+            values: ['related-to', 'targets', 'uses', 'attributed-to'],
+          },
         ],
         filterGroups: [],
       },
-    }
+    },
   ];
   const observablesDataSelection = [
     {
@@ -117,12 +117,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
           },
           {
             key: 'relationship_type',
-            values: ['related-to']
-          }
+            values: ['related-to'],
+          },
         ],
         filterGroups: [],
       },
-    }
+    },
   ];
   return (
     <div style={{ height: '100%' }}>

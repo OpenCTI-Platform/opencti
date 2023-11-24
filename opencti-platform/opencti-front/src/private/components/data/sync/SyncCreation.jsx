@@ -28,7 +28,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { deserializeFilterGroupForFrontend } from "../../../../utils/filters/filtersUtils";
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {

@@ -2,7 +2,7 @@ import React, { FunctionComponent, Suspense } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import FeedbacksLines, { feedbacksLinesQuery, } from './feedbacks/FeedbacksLines';
+import FeedbacksLines, { feedbacksLinesQuery } from './feedbacks/FeedbacksLines';
 import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';

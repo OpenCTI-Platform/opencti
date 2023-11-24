@@ -86,11 +86,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   filter: {
     marginRight: 10,
   },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    marginRight: 10,
-  },
 }));
 
 const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`

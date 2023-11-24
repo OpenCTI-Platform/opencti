@@ -1,4 +1,4 @@
-import { graphql, loadQuery, useFragment, usePreloadedQuery, } from 'react-relay';
+import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';

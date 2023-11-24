@@ -3,7 +3,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import IngestionRssLines, { IngestionRssLinesQuery, } from './ingestionRss/IngestionRssLines';
+import IngestionRssLines, { IngestionRssLinesQuery } from './ingestionRss/IngestionRssLines';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';

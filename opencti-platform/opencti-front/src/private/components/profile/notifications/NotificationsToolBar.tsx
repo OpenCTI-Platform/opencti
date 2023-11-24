@@ -29,7 +29,7 @@ import { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 import Transition from '../../../../components/Transition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { FilterGroup, serializeFilterGroupForBackend, } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 
 const useStyles = makeStyles<Theme>((theme) => ({

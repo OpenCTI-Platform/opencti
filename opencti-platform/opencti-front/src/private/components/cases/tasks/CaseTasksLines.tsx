@@ -1,4 +1,4 @@
-import { AddOutlined,  ContentPasteGoOutlined } from '@mui/icons-material';
+import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';

@@ -27,7 +27,7 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { findFilterFromKey } from "../../../../utils/filters/filtersUtils";
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -133,9 +133,9 @@ const AuditsMultiHeatMap = ({
         && entityTypeFilter.values.length > 0
       ) {
         if (
-            entityTypeFilter.values.filter((o) => o === 'all').length === 0
+          entityTypeFilter.values.filter((o) => o === 'all').length === 0
         ) {
-            types = entityTypeFilter;
+          types = entityTypeFilter;
         }
       }
       const filters = {

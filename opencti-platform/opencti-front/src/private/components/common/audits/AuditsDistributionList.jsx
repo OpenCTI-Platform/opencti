@@ -30,7 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import useGranted, { SETTINGS, SETTINGS_SETACCESSES, } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles({

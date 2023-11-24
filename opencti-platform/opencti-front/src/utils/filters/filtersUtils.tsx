@@ -299,20 +299,22 @@ export const deserializeFilterGroupForFrontend = (filterGroup: GqlFilterGroup | 
 
 // Dashboard manifests are complex objects with filters deeply nested in widgets configurations
 // (de)serialization is a bit more complex
-type DashboardManifest = any;
+// We use any here and use it when manipulating the manifest or internal fields
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyForDashboardManifest = any;
 
 /**
  * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
  * @param manifest
  */
-export const serializeDashboardManifestForBackend = (manifest: DashboardManifest) : string => {
-  const newWidgets: Record<string, any> = {};
+export const serializeDashboardManifestForBackend = (manifest: AnyForDashboardManifest) : string => {
+  const newWidgets: Record<string, AnyForDashboardManifest> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
-      dataSelection: widget.dataSelection.map((selection: any) => ({
+      dataSelection: widget.dataSelection.map((selection: AnyForDashboardManifest) => ({
         ...selection,
         filters: sanitizeFilterGroupKeysForBackend(selection.filters),
         dynamicFrom: sanitizeFilterGroupKeysForBackend(selection.dynamicFrom),
@@ -327,16 +329,16 @@ export const serializeDashboardManifestForBackend = (manifest: DashboardManifest
   });
 };
 
-export const deserializeDashboardManifestForFrontend = (manifestStr: string) : DashboardManifest => {
+export const deserializeDashboardManifestForFrontend = (manifestStr: string) : AnyForDashboardManifest => {
   const manifest = JSON.parse(manifestStr);
 
-  const newWidgets: Record<string, any> = {};
+  const newWidgets: Record<string, AnyForDashboardManifest> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
-      dataSelection: widget.dataSelection.map((selection: any) => ({
+      dataSelection: widget.dataSelection.map((selection: AnyForDashboardManifest) => ({
         ...selection,
         filters: sanitizeFilterGroupKeysForFrontend(selection.filters),
         dynamicFrom: sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom),

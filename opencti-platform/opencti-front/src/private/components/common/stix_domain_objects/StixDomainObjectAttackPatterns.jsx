@@ -73,10 +73,10 @@ const StixDomainObjectAttackPatterns = ({
                   handleToggleExports={disableExport ? null : helpers.handleToggleExports}
                   openExports={openExports}
                 tabMode={tabMode}/>
-              );
-            }
-            return <Loader withRightPadding={true} />;
-          }}
+            );
+          }
+          return <Loader withRightPadding={true} />;
+        }}
         />
       </div>
   );

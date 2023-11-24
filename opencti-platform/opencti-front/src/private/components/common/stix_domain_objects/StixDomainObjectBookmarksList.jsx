@@ -15,7 +15,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
-import { findFilterFromKey } from "../../../../utils/filters/filtersUtils";
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -225,7 +225,7 @@ const StixDomainObjectBookmarksList = ({
       && entityTypeFilter.values.length > 0
     ) {
       if (
-          entityTypeFilter.values.filter((o) => o === 'all').length === 0
+        entityTypeFilter.values.filter((o) => o === 'all').length === 0
       ) {
         types = entityTypeFilter;
       }

@@ -10,7 +10,7 @@ import {
 } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
-import PositionsLines, { positionsLinesQuery, } from './positions/PositionsLines';
+import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
 import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';

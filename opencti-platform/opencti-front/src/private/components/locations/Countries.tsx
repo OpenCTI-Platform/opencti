@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import CountriesLines, { countriesLinesQuery, } from './countries/CountriesLines';
+import CountriesLines, { countriesLinesQuery } from './countries/CountriesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
