@@ -76,7 +76,7 @@ describe('Database sync raw', () => {
         if (!found) vocabAdded.push(va);
       });
 
-      expect(vocabRemoved.length).toEqual(vocabAfter.length);
+      expect(vocabBefore.length).toEqual(vocabAfter.length);
       expect(vocabRemoved.map((v) => v.name)).toEqual([]);
       expect(vocabAdded.map((v) => v.name)).toEqual([]);
 
