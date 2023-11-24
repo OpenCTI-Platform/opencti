@@ -296,7 +296,7 @@ class Infrastructure:
         LOGGER.info("Listing Infrastructures with filters %s.", json.dumps(filters))
         query = (
             """
-            query Infrastructures($filters: [InfrastructuresFiltering], $search: String, $first: Int, $after: ID, $orderBy: InfrastructuresOrdering, $orderMode: OrderingMode) {
+            query Infrastructures($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: InfrastructuresOrdering, $orderMode: OrderingMode) {
                 infrastructures(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

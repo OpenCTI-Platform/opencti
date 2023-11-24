@@ -178,7 +178,7 @@ class Tool:
         LOGGER.info("Listing Tools with filters %s.", json.dumps(filters))
         query = (
             """
-            query Tools($filters: [ToolsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {
+            query Tools($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {
                 tools(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

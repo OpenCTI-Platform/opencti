@@ -259,7 +259,7 @@ class Campaign:
         LOGGER.info("Listing Campaigns with filters %s.", json.dumps(filters))
         query = (
             """
-            query Campaigns($filters: [CampaignsFiltering], $search: String, $first: Int, $after: ID, $orderBy: CampaignsOrdering, $orderMode: OrderingMode) {
+            query Campaigns($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CampaignsOrdering, $orderMode: OrderingMode) {
                 campaigns(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

@@ -254,7 +254,7 @@ class Opinion:
         LOGGER.info("Listing Opinions with filters %s.", json.dumps(filters))
         query = (
             """
-            query Opinions($filters: [OpinionsFiltering], $search: String, $first: Int, $after: ID, $orderBy: OpinionsOrdering, $orderMode: OrderingMode) {
+            query Opinions($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: OpinionsOrdering, $orderMode: OrderingMode) {
                 opinions(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

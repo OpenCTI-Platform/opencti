@@ -63,7 +63,12 @@ def main():
 
     # Resolve the entity
     threat = opencti_api_client.stix_domain_object.read(
-        types=[entity_type], filters=[{"key": "name", "values": [name]}]
+        types=[entity_type],
+        filters={
+            "mode": "and",
+            "filters": [{"key": "name", "values": [name]}],
+            "filterGroups": [],
+        },
     )
 
     if not threat:
@@ -87,11 +92,15 @@ def main():
             first=50,
             after=after,
             customAttributes=custom_attributes,
-            filters=[
-                {"key": "indicates", "values": [threat["id"]]},
-                {"key": "created_at", "values": [created_after], "operator": "gt"},
-                {"key": "created_at", "values": [created_before], "operator": "lt"},
-            ],
+            filters={
+                "mode": "and",
+                "filters": [
+                    {"key": "indicates", "values": [threat["id"]]},
+                    {"key": "created_at", "values": [created_after], "operator": "gt"},
+                    {"key": "created_at", "values": [created_before], "operator": "lt"},
+                ],
+                "filterGroups": [],
+            },
             orderBy="created_at",
             orderMode="asc",
             withPagination=True,

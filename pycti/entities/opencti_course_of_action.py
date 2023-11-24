@@ -258,7 +258,7 @@ class CourseOfAction:
         LOGGER.info("Listing Courses-Of-Action with filters %s.", json.dumps(filters))
         query = (
             """
-            query CoursesOfAction($filters: [CoursesOfActionFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
+            query CoursesOfAction($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
                 coursesOfAction(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

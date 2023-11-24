@@ -264,7 +264,7 @@ class Location:
         LOGGER.info("Listing Locations with filters %s.", json.dumps(filters))
         query = (
             """
-            query Locations($types: [String], $filters: [LocationsFiltering], $search: String, $first: Int, $after: ID, $orderBy: LocationsOrdering, $orderMode: OrderingMode) {
+            query Locations($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: LocationsOrdering, $orderMode: OrderingMode) {
                 locations(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

@@ -187,7 +187,7 @@ class ThreatActorIndividual:
         )
         query = (
             """
-                query ThreatActorsIndividual($filters: [ThreatActorsIndividualFiltering!], $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsIndividualOrdering, $orderMode: OrderingMode) {
+                query ThreatActorsIndividual($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsIndividualOrdering, $orderMode: OrderingMode) {
                     threatActorsIndividuals(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {

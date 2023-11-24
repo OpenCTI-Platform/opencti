@@ -95,7 +95,7 @@ class ExternalReference:
         LOGGER.info("Listing External-Reference with filters %s.", json.dumps(filters))
         query = (
             """
-            query ExternalReferences($filters: [ExternalReferencesFiltering], $first: Int, $after: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
+            query ExternalReferences($filters: FilterGroup, $first: Int, $after: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
                 externalReferences(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

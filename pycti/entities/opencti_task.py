@@ -274,7 +274,7 @@ class Task:
         LOGGER.info("Listing Tasks with filters " + json.dumps(filters) + ".")
         query = (
             """
-        query tasks($filters: [TasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
+        query tasks($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
             tasks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                 edges {
                     node {
@@ -389,10 +389,14 @@ class Task:
         if object_result is None and name is not None and created is not None:
             created_final = parse(created).strftime("%Y-%m-%d")
             object_result = self.read(
-                filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "created_day", "values": [created_final]},
-                ],
+                filters={
+                    "mode": "and",
+                    "filters": [
+                        {"key": "name", "values": [name]},
+                        {"key": "created_day", "values": [created_final]},
+                    ],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
         return object_result

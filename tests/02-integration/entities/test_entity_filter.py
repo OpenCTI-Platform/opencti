@@ -1,7 +1,7 @@
 from pytest_cases import fixture, parametrize_with_cases
 
 from tests.cases.entities import EntityTestCases
-from tests.utils import compare_values
+from tests.utils import compare_values, is_filters_empty
 
 
 @fixture
@@ -13,7 +13,7 @@ def entity_class(entity):
 
 
 def test_filter(entity_class):
-    if len(entity_class.get_filter()) == 0:
+    if is_filters_empty(entity_class.get_filter()):
         return
 
     class_data = entity_class.data()

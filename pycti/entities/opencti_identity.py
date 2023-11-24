@@ -276,7 +276,7 @@ class Identity:
         LOGGER.info("Listing Identities with filters %s.", json.dumps(filters))
         query = (
             """
-            query Identities($types: [String], $filters: [IdentitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
+            query Identities($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
                 identities(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

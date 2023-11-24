@@ -497,7 +497,7 @@ class CaseRft:
         LOGGER.info("Listing Case Rfts with filters " + json.dumps(filters) + ".")
         query = (
             """
-                        query CaseRfts($filters: [CaseRftsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: CaseRftsOrdering, $orderMode: OrderingMode) {
+                        query CaseRfts($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CaseRftsOrdering, $orderMode: OrderingMode) {
                             caseRfts(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                                 edges {
                                     node {
@@ -617,10 +617,14 @@ class CaseRft:
         if object_result is None and name is not None and created is not None:
             created_final = parse(created).strftime("%Y-%m-%d")
             object_result = self.read(
-                filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "created_day", "values": [created_final]},
-                ],
+                filters={
+                    "mode": "and",
+                    "filters": [
+                        {"key": "name", "values": [name]},
+                        {"key": "created_day", "values": [created_final]},
+                    ],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
         return object_result

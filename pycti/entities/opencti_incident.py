@@ -268,7 +268,7 @@ class Incident:
         LOGGER.info("Listing Incidents with filters %s.", json.dumps(filters))
         query = (
             """
-            query Incidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
+            query Incidents($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
                 incidents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

@@ -292,7 +292,7 @@ class AttackPattern:
         LOGGER.info("Listing Attack-Patterns with filters %s.", json.dumps(filters))
         query = (
             """
-            query AttackPatterns($filters: [AttackPatternsFiltering], $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
+            query AttackPatterns($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
                 attackPatterns(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

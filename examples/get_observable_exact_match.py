@@ -15,7 +15,11 @@ opencti_api_client.stix_cyber_observable.create(
 )
 print("IP ADDRESS")
 observable = opencti_api_client.stix_cyber_observable.read(
-    filters=[{"key": "value", "values": ["110.172.180.180"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "value", "values": ["110.172.180.180"]}],
+        "filterGroups": [],
+    }
 )
 print(observable)
 
@@ -25,7 +29,11 @@ opencti_api_client.stix_cyber_observable.create(
 )
 print("FILE NAME")
 observable = opencti_api_client.stix_cyber_observable.read(
-    filters=[{"key": "name", "values": ["activeds.dll"]}]
+    filters={
+        "mode": "and",
+        "filters": [{"key": "name", "values": ["activeds.dll"]}],
+        "filterGroups": [],
+    }
 )
 print(observable)
 
@@ -36,6 +44,12 @@ opencti_api_client.stix_cyber_observable.create(
 )
 print("FILE MD5")
 observable = opencti_api_client.stix_cyber_observable.read(
-    filters=[{"key": "hashes_MD5", "values": ["3aad33e025303dbae12c12b4ec5258c1"]}]
+    filters={
+        "mode": "and",
+        "filters": [
+            {"key": "hashes.MD5", "values": ["3aad33e025303dbae12c12b4ec5258c1"]}
+        ],
+        "filterGroups": [],
+    }
 )
 print(observable)

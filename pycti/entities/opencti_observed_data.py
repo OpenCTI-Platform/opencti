@@ -482,7 +482,7 @@ class ObservedData:
         LOGGER.info("Listing ObservedDatas with filters %s.", json.dumps(filters))
         query = (
             """
-            query ObservedDatas($filters: [ObservedDatasFiltering], $search: String, $first: Int, $after: ID, $orderBy: ObservedDatasOrdering, $orderMode: OrderingMode) {
+            query ObservedDatas($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ObservedDatasOrdering, $orderMode: OrderingMode) {
                 observedDatas(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

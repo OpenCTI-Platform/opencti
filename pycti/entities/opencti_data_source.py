@@ -260,7 +260,7 @@ class DataSource:
         )
         query = (
             """
-            query DataSources($filters: [DataSourcesFiltering!], $search: String, $first: Int, $after: ID, $orderBy: DataSourcesOrdering, $orderMode: OrderingMode) {
+            query DataSources($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: DataSourcesOrdering, $orderMode: OrderingMode) {
                 dataSources(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {

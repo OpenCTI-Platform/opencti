@@ -93,7 +93,11 @@ def test_external_import_connector(
 
     for elem in external_import_connector_data:
         sdo = api_client.stix_domain_object.read(
-            filters=[{"key": "name", "values": elem["name"]}]
+            filters={
+                "mode": "and",
+                "filters": [{"key": "name", "values": elem["name"]}],
+                "filterGroups": [],
+            }
         )
         if sdo is None:
             continue

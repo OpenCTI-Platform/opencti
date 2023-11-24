@@ -493,7 +493,7 @@ class Report:
         LOGGER.info("Listing Reports with filters %s.", json.dumps(filters))
         query = (
             """
-            query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
+            query Reports($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
                 reports(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
@@ -613,10 +613,14 @@ class Report:
         if object_result is None and name is not None and published is not None:
             published_final = parse(published).strftime("%Y-%m-%d")
             object_result = self.read(
-                filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "published_day", "values": [published_final]},
-                ],
+                filters={
+                    "mode": "and",
+                    "filters": [
+                        {"key": "name", "values": [name]},
+                        {"key": "published_day", "values": [published_final]},
+                    ],
+                    "filterGroups": [],
+                },
                 customAttributes=custom_attributes,
             )
         return object_result
