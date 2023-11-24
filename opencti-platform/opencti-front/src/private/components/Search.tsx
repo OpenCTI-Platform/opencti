@@ -3,11 +3,11 @@ import { KeyboardDoubleArrowDownOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
 import {
-    SearchStixCoreObjectLine_node$data,
+  SearchStixCoreObjectLine_node$data,
 } from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
 import {
-    SearchStixCoreObjectsLinesPaginationQuery,
-    SearchStixCoreObjectsLinesPaginationQuery$variables,
+  SearchStixCoreObjectsLinesPaginationQuery,
+  SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
