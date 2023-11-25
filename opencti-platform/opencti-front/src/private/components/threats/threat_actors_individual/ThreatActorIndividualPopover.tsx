@@ -9,7 +9,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,12 +22,6 @@ import ThreatActorIndividualEditionContainer, {
 } from './ThreatActorIndividualEditionContainer';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 const ThreatActorIndividualPopoverDeletionMutation = graphql`
   mutation ThreatActorIndividualPopoverDeletionMutation($id: ID!) {
     threatActorIndividualDelete(id: $id)
@@ -36,7 +29,6 @@ const ThreatActorIndividualPopoverDeletionMutation = graphql`
 `;
 
 const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -87,7 +79,7 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
     });
   };
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -132,7 +124,7 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

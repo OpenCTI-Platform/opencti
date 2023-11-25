@@ -41,11 +41,11 @@ class StixDomainObjectsExportsContentComponent extends Component {
     let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
     if (paginationOptions?.fromId) {
       // for relationships contained in entity>Knowledge>Sightings
-      const filtersForExport = {
+      const filtersForExport = paginationOptionsForExport.filters ? {
         mode: paginationOptionsForExport.filters.mode,
         filterGroups: paginationOptionsForExport.filters.filterGroups,
         filters: [
-          ...(paginationOptionsForExport.filters?.filters ?? []),
+          ...(paginationOptionsForExport.filters.filters ?? []),
           {
             key: 'fromId',
             values: [paginationOptions.fromId],
@@ -53,7 +53,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
             mode: 'or',
           },
         ],
-      };
+      } : undefined;
       paginationOptionsForExport = {
         ...paginationOptions,
         filters: filtersForExport,

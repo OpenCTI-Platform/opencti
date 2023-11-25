@@ -31,7 +31,7 @@ const TopMenuThreats = () => {
   const location = useLocation();
 
   return (
-    <div>
+    <>
       {!useIsHiddenEntity('Threat-Actor-Group') && (
         <Button
           component={Link}
@@ -98,7 +98,7 @@ const TopMenuThreats = () => {
           {t('Campaigns')}
         </Button>
       )}
-    </div>
+    </>
   );
 };
 

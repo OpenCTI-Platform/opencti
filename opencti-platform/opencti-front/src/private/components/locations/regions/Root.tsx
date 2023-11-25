@@ -102,6 +102,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             disableSharing={true}
             stixDomainObject={region}
             PopoverComponent={<RegionPopover id={region.id} />}
+            enableQuickSubscription={true}
           />
           <Box
             sx={{

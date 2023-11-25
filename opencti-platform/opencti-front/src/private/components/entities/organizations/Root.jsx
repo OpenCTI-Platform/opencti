@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -22,6 +26,7 @@ import {
 } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -111,6 +116,8 @@ class RootOrganization extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { organizationId },
       },
@@ -118,7 +125,7 @@ class RootOrganization extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/entities/organizations/:organizationId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -149,86 +156,135 @@ class RootOrganization extends Component {
           render={({ props }) => {
             if (props) {
               if (props.organization) {
+                const { organization } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId"
-                      render={(routeProps) => (
-                        <Organization
-                          {...routeProps}
-                          organization={props.organization}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
-                        />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/entities/organizations/${organization.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Organization"
+                      disableSharing={true}
+                      stixDomainObject={organization}
+                      isOpenctiAlias={true}
+                      enableQuickSubscription={true}
+                      PopoverComponent={<OrganizationPopover />}
+                      onViewAs={this.handleChangeViewAs.bind(this)}
+                      viewAs={viewAs}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/entities/organizations/${organization.id}/knowledge`,
+                          )
+                            ? `/dashboard/entities/organizations/${organization.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}`}
+                          value={`/dashboard/entities/organizations/${organization.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/entities/organizations/:organizationId/knowledge"
-                      render={(routeProps) => (
-                        <OrganizationKnowledge
-                          {...routeProps}
-                          organization={props.organization}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/knowledge`}
+                          value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId/analyses"
-                      render={(routeProps) => (
-                        <OrganizationAnalysis
-                          {...routeProps}
-                          organization={props.organization}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/analyses`}
+                          value={`/dashboard/entities/organizations/${organization.id}/analyses`}
+                          label={t('Analyses')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Organization'}
-                            disableSharing={true}
-                            stixDomainObject={props.organization}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<OrganizationPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/files`}
+                          value={`/dashboard/entities/organizations/${organization.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/history`}
+                          value={`/dashboard/entities/organizations/${organization.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId"
+                        render={(routeProps) => (
+                          <Organization
+                            {...routeProps}
+                            organization={props.organization}
+                            viewAs={viewAs}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/entities/organizations/:organizationId/knowledge"
+                        render={(routeProps) => (
+                          <OrganizationKnowledge
+                            {...routeProps}
+                            organization={organization}
+                            viewAs={viewAs}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId/analyses"
+                        render={(routeProps) => (
+                          <OrganizationAnalysis
+                            {...routeProps}
+                            organization={organization}
+                            viewAs={viewAs}
+                            onViewAs={this.handleChangeViewAs.bind(this)}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
-                            entityId={props.organization.id}
+                            entityId={organization.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Organization'}
-                            disableSharing={true}
-                            stixDomainObject={props.organization}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<OrganizationPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={organizationId}
@@ -236,29 +292,20 @@ class RootOrganization extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.organization}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/organizations/:organizationId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Organization'}
-                            disableSharing={true}
-                            stixDomainObject={props.organization}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<OrganizationPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/organizations/:organizationId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={organizationId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -266,7 +313,7 @@ class RootOrganization extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -276,4 +323,4 @@ RootOrganization.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootOrganization);
+export default R.compose(inject18n, withRouter)(RootOrganization);

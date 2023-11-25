@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -17,6 +21,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -76,13 +81,15 @@ class RootEvent extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { eventId },
       },
     } = this.props;
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/entities/events/:eventId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -106,105 +113,142 @@ class RootEvent extends Component {
           render={({ props }) => {
             if (props) {
               if (props.event) {
+                const { event } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId"
-                      render={(routeProps) => (
-                        <Event {...routeProps} event={props.event} />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/entities/events/${event.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Event"
+                      stixDomainObject={event}
+                      enableQuickSubscription={true}
+                      PopoverComponent={<EventPopover />}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/entities/events/${event.id}/knowledge`,
+                          )
+                            ? `/dashboard/entities/events/${event.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}`}
+                          value={`/dashboard/entities/events/${event.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/entities/events/:eventId/knowledge"
-                      render={(routeProps) => (
-                        <EventKnowledge {...routeProps} event={props.event} />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Event'}
-                            stixDomainObject={props.event}
-                            PopoverComponent={<EventPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}/knowledge`}
+                          value={`/dashboard/entities/events/${event.id}/knowledge`}
+                          label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}/analyses`}
+                          value={`/dashboard/entities/events/${event.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}/files`}
+                          value={`/dashboard/entities/events/${event.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}/history`}
+                          value={`/dashboard/entities/events/${event.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId"
+                        render={(routeProps) => (
+                          <Event {...routeProps} event={props.event} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
                           />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/entities/events/:eventId/knowledge"
+                        render={(routeProps) => (
+                          <EventKnowledge {...routeProps} event={event} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={props.event}
+                            stixDomainObjectOrStixCoreRelationship={event}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Event'}
-                            stixDomainObject={props.event}
-                            PopoverComponent={<EventPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
-                            entityId={props.event.id}
+                            entityId={event.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Event'}
-                            stixDomainObject={props.event}
-                            PopoverComponent={<EventPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={eventId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.event}
+                            entity={event}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/events/:eventId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Event'}
-                            stixDomainObject={props.event}
-                            PopoverComponent={<EventPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/events/:eventId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={eventId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -212,7 +256,7 @@ class RootEvent extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -222,4 +266,4 @@ RootEvent.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootEvent);
+export default R.compose(inject18n, withRouter)(RootEvent);

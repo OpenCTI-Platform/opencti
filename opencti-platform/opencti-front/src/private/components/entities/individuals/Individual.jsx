@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import IndividualDetails from './IndividualDetails';
 import IndividualEdition from './IndividualEdition';
-import IndividualPopover from './IndividualPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -19,9 +15,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -29,22 +22,12 @@ const styles = () => ({
 
 class IndividualComponent extends Component {
   render() {
-    const { classes, individual, viewAs, onViewAs } = this.props;
+    const { classes, individual, viewAs } = this.props;
     const lastReportsProps = viewAs === 'knowledge'
       ? { stixCoreObjectOrStixRelationshipId: individual.id }
       : { authorId: individual.id };
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Individual'}
-          disableSharing={true}
-          stixDomainObject={individual}
-          isOpenctiAlias={true}
-          PopoverComponent={<IndividualPopover />}
-          onViewAs={onViewAs.bind(this)}
-          viewAs={viewAs}
-          disablePopover={individual.isUser}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -97,7 +80,7 @@ class IndividualComponent extends Component {
             <IndividualEdition individualId={individual.id} />
           </Security>
         )}
-      </div>
+      </>
     );
   }
 }
@@ -105,9 +88,7 @@ class IndividualComponent extends Component {
 IndividualComponent.propTypes = {
   individual: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   viewAs: PropTypes.string,
-  onViewAs: PropTypes.func,
 };
 
 const Individual = createFragmentContainer(IndividualComponent, {
@@ -174,4 +155,4 @@ const Individual = createFragmentContainer(IndividualComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Individual);
+export default withStyles(styles)(Individual);

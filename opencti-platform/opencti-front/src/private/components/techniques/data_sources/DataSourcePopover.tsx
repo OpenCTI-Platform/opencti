@@ -74,7 +74,7 @@ const DataSourcePopover = ({ id }: { id: string }) => {
   };
 
   return (
-    <div>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -119,7 +119,7 @@ const DataSourcePopover = ({ id }: { id: string }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

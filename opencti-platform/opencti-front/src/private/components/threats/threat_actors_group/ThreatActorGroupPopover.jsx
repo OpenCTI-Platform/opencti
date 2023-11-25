@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -11,7 +10,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -20,17 +18,7 @@ import { ThreatActorGroupEditionQuery } from './ThreatActorGroupEdition';
 import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
-});
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const ThreatActorGroupPopoverDeletionMutation = graphql`
   mutation ThreatActorGroupPopoverDeletionMutation($id: ID!) {
@@ -99,9 +87,9 @@ class ThreatActorGroupPopover extends Component {
   }
 
   render() {
-    const { classes, t, id } = this.props;
+    const { t, id } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
@@ -168,7 +156,7 @@ class ThreatActorGroupPopover extends Component {
             return <div />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -176,13 +164,8 @@ class ThreatActorGroupPopover extends Component {
 ThreatActorGroupPopover.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ThreatActorGroupPopover);
+export default compose(inject18n, withRouter)(ThreatActorGroupPopover);

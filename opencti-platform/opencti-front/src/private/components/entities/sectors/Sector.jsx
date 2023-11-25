@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import SectorDetails from './SectorDetails';
 import SectorEdition from './SectorEdition';
-import SectorPopover from './SectorPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -19,9 +15,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -31,15 +24,7 @@ class SectorComponent extends Component {
   render() {
     const { classes, sector } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Sector'}
-          disableSharing={true}
-          stixDomainObject={sector}
-          isOpenctiAlias={true}
-          PopoverComponent={<SectorPopover />}
-          enableQuickSubscription
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -49,7 +34,10 @@ class SectorComponent extends Component {
             <SectorDetails sector={sector} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={sector} displayConfidence={false} />
+            <StixDomainObjectOverview
+              stixDomainObject={sector}
+              displayConfidence={false}
+            />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -78,7 +66,7 @@ class SectorComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SectorEdition sectorId={sector.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -151,4 +139,4 @@ const Sector = createFragmentContainer(SectorComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Sector);
+export default withStyles(styles)(Sector);

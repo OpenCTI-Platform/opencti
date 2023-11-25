@@ -1,15 +1,11 @@
 import * as R from 'ramda';
 import { useFormatter } from '../../components/i18n';
 
-import type {
-  FilterGroup as GqlFilterGroup,
-} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
 //----------------------------------------------------------------------------------------------------------------------
 
-export type {
-  FilterGroup as GqlFilterGroup,
-} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
 export type FilterGroup = {
   mode: string;
@@ -145,12 +141,19 @@ export const entityTypesFilters = [
 // utilities
 
 export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
-  return filterGroup && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0);
+  return (
+    filterGroup
+    && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0)
+  );
 };
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
-export const findFilterFromKey = (filters: Filter[], key: string, operator?: string) => {
+export const findFilterFromKey = (
+  filters: Filter[],
+  key: string,
+  operator?: string,
+) => {
   for (const filter of filters) {
     if (filter.key === key) {
       if (operator && filter.operator === operator) {
@@ -164,7 +167,11 @@ export const findFilterFromKey = (filters: Filter[], key: string, operator?: str
   return null;
 };
 
-export const findFiltersFromKeys = (filters: Filter[], keys: string[], operator?: string) => {
+export const findFiltersFromKeys = (
+  filters: Filter[],
+  keys: string[],
+  operator?: string,
+) => {
   const result = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
@@ -179,7 +186,11 @@ export const findFiltersFromKeys = (filters: Filter[], keys: string[], operator?
   return result;
 };
 
-export const findFilterIndexFromKey = (filters: Filter[], key: string, operator?: string) => {
+export const findFilterIndexFromKey = (
+  filters: Filter[],
+  key: string,
+  operator?: string,
+) => {
   for (let i = 0; i < filters.length; i += 1) {
     const filter = filters[i];
     if (filter.key === key) {
@@ -194,8 +205,11 @@ export const findFilterIndexFromKey = (filters: Filter[], key: string, operator?
   return null;
 };
 
-export const filtersWithEntityType = (filters: FilterGroup | undefined, type: string | string[]): FilterGroup => {
-  const entityTypeFilter : Filter = {
+export const filtersWithEntityType = (
+  filters: FilterGroup | undefined,
+  type: string | string[],
+): FilterGroup => {
+  const entityTypeFilter: Filter = {
     key: 'entity_type',
     values: Array.isArray(type) ? type : [type],
     operator: 'eq',
@@ -205,10 +219,7 @@ export const filtersWithEntityType = (filters: FilterGroup | undefined, type: st
     mode: filters?.mode ?? 'and',
     filterGroups: filters?.filterGroups ?? [],
     filters: filters
-      ? [
-        ...filters.filters,
-        entityTypeFilter,
-      ]
+      ? [...filters.filters, entityTypeFilter]
       : [entityTypeFilter],
   };
 };
@@ -216,7 +227,8 @@ export const filtersWithEntityType = (filters: FilterGroup | undefined, type: st
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
-  if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) { // TODO: improvement: boolean filters based on schema definition (not an enum)
+  if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) {
+    // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }
   if (filterKey === 'basedOn') {
@@ -234,7 +246,8 @@ export const filterValue = (filterKey: string, value?: string | null) => {
           : `relationship_${value.toString()}`,
       );
   }
-  if (dateFilters.includes(filterKey)) { // TODO: improvement: date filters based on schema definition (not an enum)
+  if (dateFilters.includes(filterKey)) {
+    // TODO: improvement: date filters based on schema definition (not an enum)
     return nsd(value);
   }
   return value;
@@ -250,19 +263,29 @@ export const filterValue = (filterKey: string, value?: string | null) => {
 // GQL input coercion allows to use non-array value of same type as inside the array
 // but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
 // --> saved filters MUST be properly sanitized
-const sanitizeFilterGroupKeysForBackend = (filterGroup: FilterGroup): GqlFilterGroup => {
+const sanitizeFilterGroupKeysForBackend = (
+  filterGroup: FilterGroup,
+): GqlFilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key : [f.key] })),
+    filters: filterGroup.filters.map((f) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+    })),
     filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
   } as GqlFilterGroup;
 };
 
 // reverse operation of sanitizeFilterGroupKeysForBackend
-const sanitizeFilterGroupKeysForFrontend = (filterGroup: GqlFilterGroup) : FilterGroup => {
+const sanitizeFilterGroupKeysForFrontend = (
+  filterGroup: GqlFilterGroup,
+): FilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => ({ ...f, key: Array.isArray(f.key) ? f.key[0] : f.key })),
+    filters: filterGroup.filters.map((f) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key[0] : f.key,
+    })),
     filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
   } as FilterGroup;
 };
@@ -272,7 +295,9 @@ const sanitizeFilterGroupKeysForFrontend = (filterGroup: GqlFilterGroup) : Filte
  * and stringify it, ready to be saved in backend.
  * @param filterGroup
  */
-export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null): string => {
+export const serializeFilterGroupForBackend = (
+  filterGroup?: FilterGroup | null,
+): string => {
   if (!filterGroup) {
     return JSON.stringify(initialFilterGroup);
   }
@@ -284,7 +309,9 @@ export const serializeFilterGroupForBackend = (filterGroup?: FilterGroup | null)
  * And turns it into the frontend format (single key).²
  * @param filterGroup
  */
-export const deserializeFilterGroupForFrontend = (filterGroup: GqlFilterGroup | string | null): FilterGroup | null => {
+export const deserializeFilterGroupForFrontend = (
+  filterGroup: GqlFilterGroup | string | null,
+): FilterGroup | null => {
   if (!filterGroup) {
     return null;
   }
@@ -307,19 +334,29 @@ type AnyForDashboardManifest = any;
  * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
  * @param manifest
  */
-export const serializeDashboardManifestForBackend = (manifest: AnyForDashboardManifest) : string => {
+export const serializeDashboardManifestForBackend = (
+  manifest: AnyForDashboardManifest,
+): string => {
   const newWidgets: Record<string, AnyForDashboardManifest> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
-      dataSelection: widget.dataSelection.map((selection: AnyForDashboardManifest) => ({
-        ...selection,
-        filters: sanitizeFilterGroupKeysForBackend(selection.filters),
-        dynamicFrom: sanitizeFilterGroupKeysForBackend(selection.dynamicFrom),
-        dynamicTo: sanitizeFilterGroupKeysForBackend(selection.dynamicTo),
-      })),
+      dataSelection: widget.dataSelection.map(
+        (selection: AnyForDashboardManifest) => ({
+          ...selection,
+          filters: selection.filters
+            ? sanitizeFilterGroupKeysForBackend(selection.filters)
+            : undefined,
+          dynamicFrom: selection.dynamicFrom
+            ? sanitizeFilterGroupKeysForBackend(selection.dynamicFrom)
+            : undefined,
+          dynamicTo: selection.dynamicTo
+            ? sanitizeFilterGroupKeysForBackend(selection.dynamicTo)
+            : undefined,
+        }),
+      ),
     };
   });
 
@@ -329,21 +366,30 @@ export const serializeDashboardManifestForBackend = (manifest: AnyForDashboardMa
   });
 };
 
-export const deserializeDashboardManifestForFrontend = (manifestStr: string) : AnyForDashboardManifest => {
+export const deserializeDashboardManifestForFrontend = (
+  manifestStr: string,
+): AnyForDashboardManifest => {
   const manifest = JSON.parse(manifestStr);
-
   const newWidgets: Record<string, AnyForDashboardManifest> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
-      dataSelection: widget.dataSelection.map((selection: AnyForDashboardManifest) => ({
-        ...selection,
-        filters: sanitizeFilterGroupKeysForFrontend(selection.filters),
-        dynamicFrom: sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom),
-        dynamicTo: sanitizeFilterGroupKeysForFrontend(selection.dynamicTo),
-      })),
+      dataSelection: widget.dataSelection.map(
+        (selection: AnyForDashboardManifest) => ({
+          ...selection,
+          filters: selection.filters
+            ? sanitizeFilterGroupKeysForFrontend(selection.filters)
+            : undefined,
+          dynamicFrom: selection.dynamicFrom
+            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom)
+            : undefined,
+          dynamicTo: selection.dynamicTo
+            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicTo)
+            : undefined,
+        }),
+      ),
     };
   });
 
@@ -356,7 +402,13 @@ export const deserializeDashboardManifestForFrontend = (manifestStr: string) : A
 //----------------------------------------------------------------------------------------------------------------------
 
 // forcefully add a filter into a filterGroup, no check done
-export const addFilter = (filters: FilterGroup | undefined, key: string, value: string | string[], operator = 'eq', mode = 'or'): FilterGroup | undefined => {
+export const addFilter = (
+  filters: FilterGroup | undefined,
+  key: string,
+  value: string | string[],
+  operator = 'eq',
+  mode = 'or',
+): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
@@ -375,7 +427,10 @@ export const addFilter = (filters: FilterGroup | undefined, key: string, value: 
 };
 
 // forcefully remove a filter into a filterGroup, no check done
-export const removeFilter = (filters: FilterGroup | undefined, key: string | string[]) => {
+export const removeFilter = (
+  filters: FilterGroup | undefined,
+  key: string | string[],
+) => {
   if (!filters) {
     return undefined;
   }
@@ -391,7 +446,10 @@ export const removeFilter = (filters: FilterGroup | undefined, key: string | str
 
 // remove from filter all keys not listed in availableFilterKeys
 // if filter ends up empty, return undefined
-export const cleanFilters = (filters: FilterGroup | undefined, availableFilterKeys: string[]) => {
+export const cleanFilters = (
+  filters: FilterGroup | undefined,
+  availableFilterKeys: string[],
+) => {
   if (!filters) {
     return undefined;
   }
@@ -407,13 +465,20 @@ export const cleanFilters = (filters: FilterGroup | undefined, availableFilterKe
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
-export const constructHandleAddFilter = (filters: FilterGroup | undefined | null, k: string, id: string | null, op = 'eq') => {
+export const constructHandleAddFilter = (
+  filters: FilterGroup | undefined | null,
+  k: string,
+  id: string | null,
+  op = 'eq',
+) => {
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
     let newValues: string[] = [];
     if (id !== null) {
-      newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+      newValues = isUniqFilter(k)
+        ? [id]
+        : R.uniq([...(filter?.values ?? []), id]);
     }
     const newFilterElement = {
       key: k,
@@ -437,24 +502,29 @@ export const constructHandleAddFilter = (filters: FilterGroup | undefined | null
     operator: op ?? 'eq',
     mode: 'or',
   };
-  return filters ? {
-    ...filters,
-    filters: [...filters.filters, newFilterElement], // add new filter
-  } : {
-    mode: 'and',
-    filterGroups: [],
-    filters: [newFilterElement],
-  };
+  return filters
+    ? {
+      ...filters,
+      filters: [...filters.filters, newFilterElement], // add new filter
+    }
+    : {
+      mode: 'and',
+      filterGroups: [],
+      filters: [newFilterElement],
+    };
 };
 
 // remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
-export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | null, k: string, op = 'eq') => {
+export const constructHandleRemoveFilter = (
+  filters: FilterGroup | undefined | null,
+  k: string,
+  op = 'eq',
+) => {
   if (filters) {
     const newBaseFilters = {
       ...filters,
-      filters: filters.filters
-        .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+      filters: filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
     };
     return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : undefined;
   }
@@ -462,9 +532,16 @@ export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | n
 };
 
 // switch the mode inside a specific filter
-export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | null, localFilter: Filter) => {
+export const filtersAfterSwitchLocalMode = (
+  filters: FilterGroup | undefined | null,
+  localFilter: Filter,
+) => {
   if (filters) {
-    const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+    const filterIndex = findFilterIndexFromKey(
+      filters.filters,
+      localFilter.key,
+      localFilter.operator,
+    );
     if (filterIndex !== null) {
       const newFiltersContent = [...filters.filters];
       newFiltersContent[filterIndex] = {

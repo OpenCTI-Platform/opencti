@@ -1,43 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import IndividualPopover from './IndividualPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: 0,
-  },
-});
-
 class IndividualKnowledgeComponent extends Component {
   render() {
-    const { classes, individual, viewAs, onViewAs } = this.props;
+    const { individual, viewAs } = this.props;
     const link = `/dashboard/entities/individuals/${individual.id}/knowledge`;
     return (
-      <div
-        className={classes.container}
-        style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
-      >
-        <StixDomainObjectHeader
-          entityType={'Individual'}
-          disableSharing={true}
-          stixDomainObject={individual}
-          isOpenctiAlias={true}
-          PopoverComponent={<IndividualPopover />}
-          onViewAs={onViewAs.bind(this)}
-          viewAs={viewAs}
-        />
+      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
         <Switch>
           <Route
             exact
@@ -263,10 +239,7 @@ class IndividualKnowledgeComponent extends Component {
 
 IndividualKnowledgeComponent.propTypes = {
   individual: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   viewAs: PropTypes.string,
-  onViewAs: PropTypes.func,
 };
 
 const IndividualKnowledge = createFragmentContainer(
@@ -282,8 +255,4 @@ const IndividualKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(IndividualKnowledge);
+export default withRouter(IndividualKnowledge);

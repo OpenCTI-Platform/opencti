@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import EventEdition from './EventEdition';
-import EventPopover from './EventPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -19,9 +15,6 @@ import EventDetails from './EventDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -31,12 +24,7 @@ class EventComponent extends Component {
   render() {
     const { classes, event } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Event'}
-          stixDomainObject={event}
-          PopoverComponent={<EventPopover />}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -46,7 +34,10 @@ class EventComponent extends Component {
             <EventDetails event={event} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={event} displayConfidence={false} />
+            <StixDomainObjectOverview
+              stixDomainObject={event}
+              displayConfidence={false}
+            />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -75,7 +66,7 @@ class EventComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <EventEdition eventId={event.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -148,4 +139,4 @@ const Event = createFragmentContainer(EventComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Event);
+export default withStyles(styles)(Event);

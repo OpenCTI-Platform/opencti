@@ -8,7 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,12 +20,6 @@ import Transition from '../../../../components/Transition';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 const DataComponentPopoverDeletionMutation = graphql`
   mutation DataComponentPopoverDeletionMutation($id: ID!) {
     dataComponentDelete(id: $id)
@@ -37,14 +30,11 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
   dataComponentId,
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -52,13 +42,11 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-
   const [commit] = useMutation(DataComponentPopoverDeletionMutation);
   const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(
     dataComponentEditionQuery,
     { id: dataComponentId },
   );
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -72,16 +60,13 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
       },
     });
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => setDisplayEdit(false);
-
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -126,7 +111,7 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

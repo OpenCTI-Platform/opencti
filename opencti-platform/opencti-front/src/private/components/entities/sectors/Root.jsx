@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -17,6 +21,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -78,13 +83,15 @@ class RootSector extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { sectorId },
       },
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -108,118 +115,144 @@ class RootSector extends Component {
           render={({ props }) => {
             if (props) {
               if (props.sector) {
+                const { sector } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId"
-                      render={(routeProps) => (
-                        <Sector {...routeProps} sector={props.sector} />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/entities/sectors/${sector.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Sector"
+                      disableSharing={true}
+                      stixDomainObject={sector}
+                      isOpenctiAlias={true}
+                      enableQuickSubscription={true}
+                      PopoverComponent={<SectorPopover />}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/entities/sectors/${sector.id}/knowledge`,
+                          )
+                            ? `/dashboard/entities/sectors/${sector.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}`}
+                          value={`/dashboard/entities/sectors/${sector.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/entities/sectors/:sectorId/knowledge"
-                      render={(routeProps) => (
-                        <SectorKnowledge
-                          {...routeProps}
-                          sector={props.sector}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/knowledge`}
+                          value={`/dashboard/entities/sectors/${sector.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Sector'}
-                            disableSharing={true}
-                            stixDomainObject={props.sector}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SectorPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/analyses`}
+                          value={`/dashboard/entities/sectors/${sector.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/files`}
+                          value={`/dashboard/entities/sectors/${sector.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/history`}
+                          value={`/dashboard/entities/sectors/${sector.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId"
+                        render={(routeProps) => (
+                          <Sector {...routeProps} sector={sector} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                           />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/entities/sectors/:sectorId/knowledge"
+                        render={(routeProps) => (
+                          <SectorKnowledge {...routeProps} sector={sector} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.sector
-                            }
+                            stixDomainObjectOrStixCoreRelationship={sector}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Sector'}
-                            disableSharing={true}
-                            stixDomainObject={props.sector}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SectorPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
-                            entityId={props.sector.id}
+                            entityId={sector.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Sector'}
-                            disableSharing={true}
-                            stixDomainObject={props.sector}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SectorPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={sectorId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.sector}
+                            entity={sector}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/sectors/:sectorId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Sector'}
-                            disableSharing={true}
-                            stixDomainObject={props.sector}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SectorPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/sectors/:sectorId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={sectorId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -227,7 +260,7 @@ class RootSector extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -237,4 +270,4 @@ RootSector.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootSector);
+export default R.compose(inject18n, withRouter)(RootSector);

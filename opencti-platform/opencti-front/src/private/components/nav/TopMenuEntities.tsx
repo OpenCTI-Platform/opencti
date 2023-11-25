@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { AccountBalanceOutlined, DomainOutlined, EventOutlined, PersonOutlined, StorageOutlined } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  DomainOutlined,
+  EventOutlined,
+  PersonOutlined,
+  StorageOutlined,
+} from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
@@ -24,45 +30,34 @@ const TopMenuEntities = () => {
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
-
   return (
-    <div>
+    <>
       {!useIsHiddenEntity('Sector') && (
-          <Button
-            component={Link}
-            to="/dashboard/entities/sectors"
-            variant={
-              location.pathname === '/dashboard/entities/sectors'
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname === '/dashboard/entities/sectors'
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-          >
-            <DomainOutlined className={classes.icon} fontSize="small" />
-            {t('Sectors')}
-          </Button>
+        <Button
+          component={Link}
+          to="/dashboard/entities/sectors"
+          variant={
+            location.pathname.includes('/dashboard/entities/sectors')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          classes={{ root: classes.button }}
+        >
+          <DomainOutlined className={classes.icon} fontSize="small" />
+          {t('Sectors')}
+        </Button>
       )}
       {!useIsHiddenEntity('Event') && (
         <Button
           component={Link}
           to="/dashboard/entities/events"
           variant={
-            location.pathname === '/dashboard/entities/events'
+            location.pathname.includes('/dashboard/entities/events')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/entities/events'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <EventOutlined className={classes.icon} fontSize="small" />
@@ -74,22 +69,14 @@ const TopMenuEntities = () => {
           component={Link}
           to="/dashboard/entities/organizations"
           variant={
-            location.pathname === '/dashboard/entities/organizations'
+            location.pathname.includes('/dashboard/entities/organizations')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/entities/organizations'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
-          <AccountBalanceOutlined
-            className={classes.icon}
-            fontSize="small"
-          />
+          <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
       )}
@@ -98,16 +85,11 @@ const TopMenuEntities = () => {
           component={Link}
           to="/dashboard/entities/systems"
           variant={
-            location.pathname === '/dashboard/entities/systems'
+            location.pathname.includes('/dashboard/entities/systems')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/entities/systems'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <StorageOutlined className={classes.icon} fontSize="small" />
@@ -119,23 +101,18 @@ const TopMenuEntities = () => {
           component={Link}
           to="/dashboard/entities/individuals"
           variant={
-            location.pathname === '/dashboard/entities/individuals'
+            location.pathname.includes('/dashboard/entities/individuals')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/entities/individuals'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Individuals')}
         </Button>
       )}
-    </div>
+    </>
   );
 };
 

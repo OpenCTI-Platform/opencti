@@ -1,43 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import OrganizationPopover from './OrganizationPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: 0,
-  },
-});
-
 class OrganizationKnowledgeComponent extends Component {
   render() {
-    const { classes, organization, viewAs, onViewAs } = this.props;
+    const { organization, viewAs } = this.props;
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
-      <div
-        className={classes.container}
-        style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
-      >
-        <StixDomainObjectHeader
-          entityType={'Organization'}
-          disableSharing={true}
-          stixDomainObject={organization}
-          isOpenctiAlias={true}
-          PopoverComponent={<OrganizationPopover />}
-          onViewAs={onViewAs.bind(this)}
-          viewAs={viewAs}
-        />
+      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
         <Switch>
           <Route
             exact
@@ -320,10 +296,7 @@ class OrganizationKnowledgeComponent extends Component {
 
 OrganizationKnowledgeComponent.propTypes = {
   organization: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   viewAs: PropTypes.string,
-  onViewAs: PropTypes.func,
 };
 
 const OrganizationKnowledge = createFragmentContainer(
@@ -339,8 +312,4 @@ const OrganizationKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(OrganizationKnowledge);
+export default withRouter(OrganizationKnowledge);

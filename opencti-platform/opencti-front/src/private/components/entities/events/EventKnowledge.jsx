@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -12,19 +9,12 @@ import EventPopover from './EventPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class EventKnowledgeComponent extends Component {
   render() {
-    const { classes, event } = this.props;
+    const { event } = this.props;
     const link = `/dashboard/entities/events/${event.id}/knowledge`;
     return (
-      <div className={classes.container}>
+      <>
         <StixDomainObjectHeader
           entityType={'Event'}
           stixDomainObject={event}
@@ -227,7 +217,7 @@ class EventKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -248,8 +238,4 @@ const EventKnowledge = createFragmentContainer(EventKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(EventKnowledge);
+export default withRouter(EventKnowledge);

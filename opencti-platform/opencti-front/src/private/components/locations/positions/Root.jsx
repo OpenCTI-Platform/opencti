@@ -133,6 +133,7 @@ class RootPosition extends Component {
                       disableSharing={true}
                       stixDomainObject={props.position}
                       PopoverComponent={<PositionPopover />}
+                      enableQuickSubscription={true}
                     />
                     <Box
                       sx={{

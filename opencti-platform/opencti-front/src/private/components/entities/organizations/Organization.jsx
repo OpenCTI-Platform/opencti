@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import OrganizationDetails from './OrganizationDetails';
 import OrganizationEdition from './OrganizationEdition';
-import OrganizationPopover from './OrganizationPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -19,9 +15,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -29,22 +22,12 @@ const styles = () => ({
 
 class OrganizationComponent extends Component {
   render() {
-    const { classes, organization, viewAs, onViewAs } = this.props;
+    const { classes, organization, viewAs } = this.props;
     const lastReportsProps = viewAs === 'knowledge'
       ? { stixCoreObjectOrStixRelationshipId: organization.id }
       : { authorId: organization.id };
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Organization'}
-          disableSharing={true}
-          stixDomainObject={organization}
-          isOpenctiAlias={true}
-          PopoverComponent={<OrganizationPopover />}
-          onViewAs={onViewAs.bind(this)}
-          viewAs={viewAs}
-          enableQuickSubscription
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -95,7 +78,7 @@ class OrganizationComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <OrganizationEdition organizationId={organization.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -103,9 +86,7 @@ class OrganizationComponent extends Component {
 OrganizationComponent.propTypes = {
   organization: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   viewAs: PropTypes.string,
-  onViewAs: PropTypes.func,
 };
 
 const Organization = createFragmentContainer(OrganizationComponent, {
@@ -171,4 +152,4 @@ const Organization = createFragmentContainer(OrganizationComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Organization);
+export default withStyles(styles)(Organization);

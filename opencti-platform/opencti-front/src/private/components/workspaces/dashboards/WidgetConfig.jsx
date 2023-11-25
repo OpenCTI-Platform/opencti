@@ -511,7 +511,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             mode: 'or',
           };
           const newBaseFilters = {
-            ...(dataFilters ?? []),
+            ...(dataFilters ?? {}),
             filters: [
               ...(dataFilters?.filters ?? []).filter(
                 (f) => f.key !== key || f.operator !== op,
@@ -531,7 +531,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           mode: 'or',
         };
         const newBaseFilters = {
-          ...(dataFilters ?? []),
+          ...(dataFilters ?? {}),
           filters: [...(dataFilters?.filters ?? []), newFilterElement], // add new filter
         };
         return {
@@ -548,7 +548,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       if (n === i) {
         const dataFilters = data[filterName];
         const newFilters = {
-          ...(dataFilters ?? []),
+          ...(dataFilters ?? {}),
           filters: (dataFilters?.filters ?? []).filter(
             (f) => f.key !== key || f.operator !== op,
           ),
@@ -904,7 +904,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   />
                 </div>
                 <div className="clearfix" />
-                {dataSelection[i].filters && (
+                {dataSelection[i]?.filters && (
                   <FilterIconButton
                     filters={dataSelection[i].filters}
                     handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)

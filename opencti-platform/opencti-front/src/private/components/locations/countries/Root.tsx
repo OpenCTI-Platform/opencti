@@ -29,6 +29,7 @@ import { RootCountryQuery } from './__generated__/RootCountryQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import CountryPopover from './CountryPopover';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -99,7 +100,8 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             entityType="country"
             disableSharing={true}
             stixDomainObject={country}
-            PopoverComponent={<countryPopover id={country.id} />}
+            PopoverComponent={<CountryPopover id={country.id} />}
+            enableQuickSubscription={true}
           />
           <Box
             sx={{

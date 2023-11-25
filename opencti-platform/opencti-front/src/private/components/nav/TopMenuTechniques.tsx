@@ -30,7 +30,7 @@ const TopMenuTechniques = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   return (
-    <div>
+    <>
       {!useIsHiddenEntity('Attack-Pattern') && (
         <Button
           component={Link}
@@ -113,7 +113,7 @@ const TopMenuTechniques = () => {
           {t('Data sources')}
         </Button>
       )}
-    </div>
+    </>
   );
 };
 

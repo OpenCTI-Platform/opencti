@@ -258,7 +258,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
   if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixCoreObject(type), args.types);
   }
-  if (types.length === 0) {
+  if (isEmptyField(types)) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
@@ -278,7 +278,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
       filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
     }
   }
-  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...R.omit(['elementId', 'relationship_type'], args), filters });
+  return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
@@ -293,7 +293,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
     if (isNotEmptyField(timeSeriesParameter.types)) {
       types = R.filter((type) => isStixCoreObject(type), timeSeriesParameter.types);
     }
-    if (types.length === 0) {
+    if (isEmptyField(types)) {
       types.push(ABSTRACT_STIX_CORE_OBJECT);
     }
     if (isNotEmptyField(timeSeriesParameter.relationship_type) && isEmptyField(timeSeriesParameter.elementId)) {
@@ -313,7 +313,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
         filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(timeSeriesParameter.elementId) ? timeSeriesParameter.elementId : [timeSeriesParameter.elementId] }];
       }
     }
-    return { data: timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...R.omit(['elementId', 'relationship_type'], timeSeriesParameter), filters }) };
+    return { data: timeSeriesEntities(context, user, types, { ...args, ...R.omit(['elementId', 'relationship_type'], timeSeriesParameter), filters }) };
   }));
 };
 

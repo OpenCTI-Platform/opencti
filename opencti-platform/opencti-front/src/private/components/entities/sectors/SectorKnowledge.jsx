@@ -1,37 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import SectorPopover from './SectorPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
 
 class SectorKnowledgeComponent extends Component {
   render() {
-    const { classes, sector } = this.props;
+    const { sector } = this.props;
     const link = `/dashboard/entities/sectors/${sector.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Sector'}
-          disableSharing={true}
-          stixDomainObject={sector}
-          isOpenctiAlias={true}
-          PopoverComponent={<SectorPopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -229,15 +210,13 @@ class SectorKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
 
 SectorKnowledgeComponent.propTypes = {
   sector: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
@@ -250,8 +229,4 @@ const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(SectorKnowledge);
+export default withRouter(SectorKnowledge);

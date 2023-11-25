@@ -29,6 +29,7 @@ import { RootCitiesSubscription } from './__generated__/RootCitiesSubscription.g
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import CityPopover from './CityPopover';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -97,7 +98,8 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             entityType="city"
             disableSharing={true}
             stixDomainObject={city}
-            PopoverComponent={<cityPopover id={city.id} />}
+            PopoverComponent={<CityPopover id={city.id} />}
+            enableQuickSubscription={true}
           />
           <Box
             sx={{

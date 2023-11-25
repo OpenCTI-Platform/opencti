@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -11,7 +10,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -20,17 +18,7 @@ import { systemEditionQuery } from './SystemEdition';
 import SystemEditionContainer from './SystemEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
-});
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const SystemPopoverDeletionMutation = graphql`
   mutation SystemPopoverDeletionMutation($id: ID!) {
@@ -93,14 +81,15 @@ class SystemPopover extends Component {
   }
 
   render() {
-    const { classes, t, id, disabled } = this.props;
+    const { t, id, disabled } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <IconButton
           disabled={disabled}
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size="large"
+          style={{ marginTop: 3 }}
         >
           <MoreVert />
         </IconButton>
@@ -162,7 +151,7 @@ class SystemPopover extends Component {
             return <div />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -175,8 +164,4 @@ SystemPopover.propTypes = {
   disabled: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(SystemPopover);
+export default compose(inject18n, withRouter)(SystemPopover);

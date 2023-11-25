@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -22,6 +26,7 @@ import {
 } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -112,6 +117,8 @@ class RootIndividual extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { individualId },
       },
@@ -119,7 +126,7 @@ class RootIndividual extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/entities/individuals/:individualId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -146,116 +153,155 @@ class RootIndividual extends Component {
           render={({ props }) => {
             if (props) {
               if (props.individual) {
+                const { individual } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId"
-                      render={(routeProps) => (
-                        <Individual
-                          {...routeProps}
-                          individual={props.individual}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
-                        />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/entities/individuals/${individual.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Individual"
+                      disableSharing={true}
+                      stixDomainObject={individual}
+                      isOpenctiAlias={true}
+                      enableQuickSubscription={true}
+                      PopoverComponent={<IndividualPopover />}
+                      onViewAs={this.handleChangeViewAs.bind(this)}
+                      viewAs={viewAs}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/entities/individuals/${individual.id}/knowledge`,
+                          )
+                            ? `/dashboard/entities/individuals/${individual.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}`}
+                          value={`/dashboard/entities/individuals/${individual.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/entities/individuals/:individualId/knowledge"
-                      render={(routeProps) => (
-                        <IndividualKnowledge
-                          {...routeProps}
-                          individual={props.individual}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+                          value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId/analyses"
-                      render={(routeProps) => (
-                        <IndividualAnalysis
-                          {...routeProps}
-                          individual={props.individual}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/analyses`}
+                          value={`/dashboard/entities/individuals/${individual.id}/analyses`}
+                          label={t('Analyses')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Individual'}
-                            disableSharing={true}
-                            stixDomainObject={props.individual}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<IndividualPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/files`}
+                          value={`/dashboard/entities/individuals/${individual.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/history`}
+                          value={`/dashboard/entities/individuals/${individual.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId"
+                        render={(routeProps) => (
+                          <Individual
+                            {...routeProps}
+                            individual={individual}
+                            viewAs={viewAs}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/entities/individuals/:individualId/knowledge"
+                        render={(routeProps) => (
+                          <IndividualKnowledge
+                            {...routeProps}
+                            individual={individual}
+                            viewAs={viewAs}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId/analyses"
+                        render={(routeProps) => (
+                          <IndividualAnalysis
+                            {...routeProps}
+                            individual={individual}
+                            viewAs={viewAs}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
-                            entityId={props.individual.id}
+                            entityId={individual.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Individual'}
-                            disableSharing={true}
-                            stixDomainObject={props.individual}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<IndividualPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={individualId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.individual}
+                            entity={individual}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/individuals/:individualId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Individual'}
-                            disableSharing={true}
-                            stixDomainObject={props.individual}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<IndividualPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/individuals/:individualId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={individualId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -263,7 +309,7 @@ class RootIndividual extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -273,4 +319,4 @@ RootIndividual.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootIndividual);
+export default R.compose(inject18n, withRouter)(RootIndividual);

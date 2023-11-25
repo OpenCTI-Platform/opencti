@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -11,38 +10,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { individualEditionQuery } from './IndividualEdition';
 import IndividualEditionContainer from './IndividualEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-
-const styles = (theme) => ({
-  container: {
-    margin: '3px 0 0 0',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-});
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const IndividualPopoverDeletionMutation = graphql`
   mutation IndividualPopoverDeletionMutation($id: ID!) {
@@ -105,13 +81,14 @@ class IndividualPopover extends Component {
   }
 
   render() {
-    const { classes, t, id, disabled } = this.props;
+    const { t, id, disabled } = this.props;
     return (
-      <div className={classes.container}>
+      <d>
         <IconButton
           disabled={disabled}
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
+          style={{ marginTop: 3 }}
           size="large"
         >
           <MoreVert />
@@ -171,10 +148,10 @@ class IndividualPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
-      </div>
+      </d>
     );
   }
 }
@@ -187,8 +164,4 @@ IndividualPopover.propTypes = {
   disabled: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(IndividualPopover);
+export default compose(inject18n, withRouter)(IndividualPopover);

@@ -156,7 +156,7 @@ class RootSystem extends Component {
                   <div
                     style={{
                       paddingRight: location.pathname.includes(
-                        `/dashboard/threats/campaigns/${system.id}/knowledge`,
+                        `/dashboard/entities/systems/${system.id}/knowledge`,
                       )
                         ? 200
                         : 0,

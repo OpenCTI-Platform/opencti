@@ -107,6 +107,7 @@ const RootAdministrativeAreaComponent = ({
             PopoverComponent={
               <AdministrativeAreaPopover id={administrativeArea.id} />
             }
+            enableQuickSubscription={true}
           />
           <Box
             sx={{

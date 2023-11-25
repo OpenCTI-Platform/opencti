@@ -109,12 +109,14 @@ const AuditsMultiVerticalBars = ({
           types = entityTypeFilter;
         }
       }
-      const filters = {
-        ...selection.filters,
-        filters: selection.filters.filters.filter(
-          (f) => f.key !== 'entity_type',
-        ),
-      };
+      const filters = selection.filters
+        ? {
+          ...selection.filters,
+          filters: selection.filters.filters.filter(
+            (f) => f.key !== 'entity_type',
+          ),
+        }
+        : undefined;
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0

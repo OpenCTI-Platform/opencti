@@ -48,10 +48,6 @@ import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuEntities from './TopMenuEntities';
-import TopMenuSector from './TopMenuSector';
-import TopMenuSystem from './TopMenuSystem';
-import TopMenuOrganization from './TopMenuOrganization';
-import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
@@ -60,7 +56,6 @@ import Security from '../../../utils/Security';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
-import TopMenuEvent from './TopMenuEvent';
 import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuCaseIncident from './TopMenuCaseIncident';
@@ -84,7 +79,6 @@ import {
 import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
-import TopMenuAudits from './TopMenuAudits';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -201,21 +195,10 @@ const routes = {
   '/dashboard/observations': () => <TopMenuObservations />,
   '/dashboard/threats': () => <TopMenuThreats />,
   '/dashboard/arsenal': () => <TopMenuArsenal />,
-  // ENTITIES
-  '/dashboard/entities/sectors/': (id: string) => <TopMenuSector id={id} />,
-  '/dashboard/entities/systems/': (id: string) => <TopMenuSystem id={id} />,
-  '/dashboard/entities/events/': (id: string) => <TopMenuEvent id={id} />,
-  '/dashboard/entities/organizations/': (id: string) => (
-    <TopMenuOrganization id={id} />
-  ),
-  '/dashboard/entities/individuals/': (id: string) => (
-    <TopMenuIndividual id={id} />
-  ),
   '/dashboard/entities': () => <TopMenuEntities />,
   '/dashboard/locations': () => <TopMenuLocation />,
   '/dashboard/techniques': () => <TopMenuTechniques />,
   '/dashboard/data': () => <TopMenuData />,
-  '/dashboard/activity': () => <TopMenuAudits />,
   '/dashboard/settings': () => <TopMenuSettings />,
   '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards />,
   '/dashboard/workspaces/investigations': () => (
