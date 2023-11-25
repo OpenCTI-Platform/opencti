@@ -37,16 +37,11 @@ const TopMenuAnalyses = () => {
           component={Link}
           to="/dashboard/analyses/reports"
           variant={
-            location.pathname === '/dashboard/analyses/reports'
+            location.pathname.includes('/dashboard/analyses/reports')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/analyses/reports'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <DescriptionOutlined className={classes.icon} fontSize="small" />
@@ -58,16 +53,11 @@ const TopMenuAnalyses = () => {
           component={Link}
           to="/dashboard/analyses/groupings"
           variant={
-            location.pathname === '/dashboard/analyses/groupings'
+            location.pathname.includes('/dashboard/analyses/groupings')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/analyses/groupings'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <WorkspacesOutlined className={classes.icon} fontSize="small" />
@@ -79,16 +69,11 @@ const TopMenuAnalyses = () => {
           component={Link}
           to="/dashboard/analyses/malware_analyses"
           variant={
-            location.pathname === '/dashboard/analyses/malware_analyses'
+            location.pathname.includes('/dashboard/analyses/malware_analyses')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/analyses/malware_analyses'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BiotechOutlined className={classes.icon} fontSize="small" />
@@ -100,15 +85,9 @@ const TopMenuAnalyses = () => {
           component={Link}
           to="/dashboard/analyses/notes"
           variant={
-            location.pathname === '/dashboard/analyses/notes'
+            location.pathname.includes('/dashboard/analyses/notes')
               ? 'contained'
               : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/analyses/notes'
-              ? 'secondary'
-              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -120,16 +99,11 @@ const TopMenuAnalyses = () => {
         component={Link}
         to="/dashboard/analyses/external_references"
         variant={
-          location.pathname === '/dashboard/analyses/external_references'
+          location.pathname.includes('/dashboard/analyses/external_references')
             ? 'contained'
             : 'text'
         }
         size="small"
-        color={
-          location.pathname === '/dashboard/analyses/external_references'
-            ? 'secondary'
-            : 'primary'
-        }
         classes={{ root: classes.button }}
       >
         <LocalOfferOutlined className={classes.icon} fontSize="small" />

@@ -5,25 +5,16 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import NoteDetails from './NoteDetails';
 import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import { CollaborativeSecurity } from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import NotePopover from './NotePopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -33,23 +24,7 @@ class NoteComponent extends Component {
   render() {
     const { classes, note } = this.props;
     return (
-      <div className={classes.container}>
-        <CollaborativeSecurity
-          data={note}
-          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-          placeholder={
-            <ContainerHeader
-              container={note}
-              PopoverComponent={<NotePopover note={note} />}
-            />
-          }
-        >
-          <ContainerHeader
-            container={note}
-            PopoverComponent={<NotePopover note={note} />}
-            popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
-          />
-        </CollaborativeSecurity>
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -91,7 +66,7 @@ class NoteComponent extends Component {
         <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
           <NoteEdition noteId={note.id} />
         </CollaborativeSecurity>
-      </div>
+      </>
     );
   }
 }

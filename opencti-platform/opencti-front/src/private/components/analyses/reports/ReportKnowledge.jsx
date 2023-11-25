@@ -7,27 +7,37 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
-import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
+import ReportKnowledgeGraph, {
+  reportKnowledgeGraphQuery,
+} from './ReportKnowledgeGraph';
+import ReportKnowledgeCorrelation, {
+  reportKnowledgeCorrelationQuery,
+} from './ReportKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import ReportKnowledgeTimeLine, {
+  reportKnowledgeTimeLineQuery,
+} from './ReportKnowledgeTimeLine';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   initialFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
+import ContainerContent, {
+  containerContentQuery,
+} from '../../common/containers/ContainerContent';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: 0,
-    padding: 0,
   },
 });
 
@@ -185,7 +195,12 @@ class ReportKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    const newFilters = constructHandleAddFilter(
+      this.state.timeLineFilters,
+      key,
+      id,
+      op,
+    );
     this.setState(
       {
         timeLineFilters: newFilters,
@@ -195,11 +210,12 @@ class ReportKnowledgeComponent extends Component {
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
-    this.setState(
-      { timeLineFilters: newFilters },
-      () => this.saveView(),
+    const newFilters = constructHandleRemoveFilter(
+      this.state.timeLineFilters,
+      key,
+      op,
     );
+    this.setState({ timeLineFilters: newFilters }, () => this.saveView());
   }
 
   handleTimeLineSearch(value) {
@@ -227,8 +243,8 @@ class ReportKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
-      .length > 0
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))
+      ?.values.length > 0
       ? []
       : defaultTypes;
     let orderBy = 'created_at';
@@ -257,6 +273,8 @@ class ReportKnowledgeComponent extends Component {
             modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
           />
         )}
         <Route

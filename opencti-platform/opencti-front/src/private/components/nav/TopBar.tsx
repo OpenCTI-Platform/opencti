@@ -32,11 +32,7 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuAnalyses from './TopMenuAnalyses';
-import TopMenuReport from './TopMenuReport';
-import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
-import TopMenuGrouping from './TopMenuGrouping';
-import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
 import TopMenuObservations from './TopMenuObservations';
 import TopMenuThreats from './TopMenuThreats';
@@ -52,11 +48,8 @@ import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
-import TopMenuCaseIncident from './TopMenuCaseIncident';
-import TopMenuCaseFeedback from './TopMenuCaseFeedback';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
-import TopMenuMalwareAnalysis from './TopMenuMalwareAnalysis';
 import { Theme } from '../../../components/Theme';
 import {
   EXPLORE,
@@ -70,9 +63,6 @@ import {
   TopBarNotificationNumberSubscription,
   TopBarNotificationNumberSubscription$data,
 } from './__generated__/TopBarNotificationNumberSubscription.graphql';
-import TopMenuCaseRfi from './TopMenuCaseRfi';
-import TopMenuCaseRft from './TopMenuCaseRft';
-import TopMenuTask from './TopMenuTask';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -143,28 +133,8 @@ const routes = {
   // ME
   '/dashboard/profile/me': () => <TopMenuProfile />,
   '/dashboard/profile/': () => <TopMenuNotifications />,
-  // CASES
-  '/dashboard/cases/feedbacks/': (id: string) => (
-    <TopMenuCaseFeedback id={id} />
-  ),
-  '/dashboard/cases/tasks/': (id: string) => <TopMenuTask id={id} />,
-  '/dashboard/cases/rfts/': (id: string) => <TopMenuCaseRft id={id} />,
-  '/dashboard/cases/rfis/': (id: string) => <TopMenuCaseRfi id={id} />,
-  '/dashboard/cases/incidents/': (id: string) => (
-    <TopMenuCaseIncident id={id} />
-  ),
   '/dashboard/cases': () => <TopMenuCases />,
-  // ANALYSIS
-  '/dashboard/analyses/reports/': (id: string) => <TopMenuReport id={id} />,
-  '/dashboard/analyses/groupings/': (id: string) => <TopMenuGrouping id={id} />,
-  '/dashboard/analyses/malware_analyses/': (id: string) => (
-    <TopMenuMalwareAnalysis id={id} />
-  ),
-  '/dashboard/analyses/notes/': (id: string) => <TopMenuNote id={id} />,
   '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id} />,
-  '/dashboard/analyses/external_references/': (id: string) => (
-    <TopMenuExternalReference id={id} />
-  ),
   '/dashboard/analyses': () => <TopMenuAnalyses />,
   '/dashboard/events': () => <TopMenuEvents />,
   '/dashboard/observations': () => <TopMenuObservations />,

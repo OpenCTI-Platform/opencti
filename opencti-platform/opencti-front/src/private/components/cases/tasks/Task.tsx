@@ -3,11 +3,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import TaskDetails from './TaskDetails';
-import TaskPopover from './TaskPopover';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -17,9 +15,6 @@ import ContainerStixObjectsOrStixRelationships from '../../common/containers/Con
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
 }));
 
@@ -96,14 +91,8 @@ export const taskFragment = graphql`
 const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
   const classes = useStyles();
   const task = useFragment(taskFragment, data);
-
   return (
-    <div className={classes.container}>
-      <ContainerHeader
-        container={task}
-        PopoverComponent={<TaskPopover id={task.id} />}
-        enableSuggestions={false}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -138,7 +127,7 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <TaskEdition caseId={task.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

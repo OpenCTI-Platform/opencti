@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportDetails from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -14,7 +11,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import ReportPopover from './ReportPopover';
 
 const styles = () => ({
   gridContainer: {
@@ -27,13 +23,6 @@ class ReportComponent extends Component {
     const { classes, report } = this.props;
     return (
       <>
-        <ContainerHeader
-          container={report}
-          PopoverComponent={<ReportPopover />}
-          enableSuggestions={true}
-          enableQuickSubscription
-          enableQuickExport
-        />
         <Grid
           container={true}
           spacing={3}
@@ -73,7 +62,6 @@ class ReportComponent extends Component {
 ReportComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const Report = createFragmentContainer(ReportComponent, {
@@ -156,4 +144,4 @@ const Report = createFragmentContainer(ReportComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Report);
+export default withStyles(styles)(Report);

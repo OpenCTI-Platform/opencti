@@ -4,8 +4,12 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -20,6 +24,7 @@ import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -61,105 +66,163 @@ const caseIncidentQuery = graphql`
 `;
 
 const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootIncidentSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: caseId },
     }),
     [caseId],
   );
+  const location = useLocation();
+  const { t } = useFormatter();
   useSubscription(subConfig);
   const {
     caseIncident: caseData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
+  let paddingRight = 0;
+  if (caseData) {
+    if (
+      location.pathname.includes(
+        `/dashboard/cases/incidents/${caseData.id}/entities`,
+      )
+      || location.pathname.includes(
+        `/dashboard/cases/incidents/${caseData.id}/observables`,
+      )
+    ) {
+      paddingRight = 260;
+    }
+    if (
+      location.pathname.includes(
+        `/dashboard/cases/incidents/${caseData.id}/content`,
+      )
+    ) {
+      paddingRight = 350;
+    }
+  }
   return (
-    <div>
+    <>
       {caseData ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId"
-            render={() => <CaseIncident data={caseData} />}
+        <div style={{ paddingRight, position: 'relative' }}>
+          <ContainerHeader
+            container={caseData}
+            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+            enableQuickSubscription={true}
+            enableQuickExport={true}
           />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/entities"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={caseData}
-                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                  enableSuggestions={false}
-                />
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              marginBottom: 4,
+            }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/cases/incidents/${caseData.id}/knowledge`,
+                )
+                  ? `/dashboard/cases/incidents/${caseData.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}`}
+                value={`/dashboard/cases/incidents/${caseData.id}`}
+                label={t('Overview')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+                value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+                label={t('Knowledge')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}/content`}
+                value={`/dashboard/cases/incidents/${caseData.id}/content`}
+                label={t('Content')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}/entities`}
+                value={`/dashboard/cases/incidents/${caseData.id}/entities`}
+                label={t('Entities')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}/observables`}
+                value={`/dashboard/cases/incidents/${caseData.id}/observables`}
+                label={t('Observables')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/incidents/${caseData.id}/files`}
+                value={`/dashboard/cases/incidents/${caseData.id}/files`}
+                label={t('Data')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId"
+              render={() => <CaseIncident data={caseData} />}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/entities"
+              render={(routeProps) => (
                 <ContainerStixDomainObjects
                   {...routeProps}
                   container={caseData}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/observables"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={caseData}
-                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                  enableSuggestions={false}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/observables"
+              render={(routeProps) => (
                 <ContainerStixCyberObservables
                   {...routeProps}
                   container={caseData}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/knowledge"
-            render={() => (
-              <Redirect
-                to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/content"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={caseData}
-                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                  enableSuggestions={false}
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
                 />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/content"
+              render={(routeProps) => (
                 <StixDomainObjectContent
                   {...routeProps}
                   stixDomainObject={caseData}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
-            render={(routeProps) => (
-              <IncidentKnowledge {...routeProps} caseData={caseData} />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/incidents/:caseId/files"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={caseData}
-                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                  enableSuggestions={false}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
+              render={(routeProps) => (
+                <IncidentKnowledge {...routeProps} caseData={caseData} />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/incidents/:caseId/files"
+              render={(routeProps) => (
                 <StixCoreObjectFilesAndHistory
                   {...routeProps}
                   id={caseId}
@@ -169,14 +232,14 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
-    </div>
+    </>
   );
 };
 

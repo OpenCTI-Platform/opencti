@@ -9,26 +9,14 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 export const externalReferencePopoverDeletionMutation = graphql`
   mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
@@ -56,7 +44,6 @@ interface ExternalReferencePopoverProps {
 const ExternalReferencePopover: FunctionComponent<
 ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -113,7 +100,7 @@ ExternalReferencePopoverProps
     });
   };
   return (
-    <span className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -188,7 +175,7 @@ ExternalReferencePopoverProps
           </Button>
         </DialogActions>
       </Dialog>
-    </span>
+    </>
   );
 };
 

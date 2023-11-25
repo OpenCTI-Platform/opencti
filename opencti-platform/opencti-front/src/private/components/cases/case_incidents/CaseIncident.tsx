@@ -11,7 +11,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -24,7 +23,6 @@ import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
 import CaseIncidentEdition from './CaseIncidentEdition';
-import CaseIncidentPopover from './CaseIncidentPopover';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -33,9 +31,6 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
   paper: {
     height: '100%',
@@ -81,13 +76,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
     paginationOptions,
   );
   return (
-    <div className={classes.container}>
-      <ContainerHeader
-        container={caseIncidentData}
-        PopoverComponent={<CaseIncidentPopover id={caseIncidentData.id} />}
-        enableSuggestions={false}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -198,7 +187,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

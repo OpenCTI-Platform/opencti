@@ -903,7 +903,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
       <UserContext.Consumer>
         {({ bannerSettings }) => {
           const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
-          const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
+          const graphHeight = window.innerHeight - 235 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
               <CaseRftKnowledgeGraphBar

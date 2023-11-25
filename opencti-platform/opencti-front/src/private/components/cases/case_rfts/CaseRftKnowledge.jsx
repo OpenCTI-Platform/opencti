@@ -20,6 +20,7 @@ import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnow
 import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
 import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({
   container: {
@@ -255,6 +256,8 @@ class CaseRftKnowledgeComponent extends Component {
             modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
           />
         )}
         <Route

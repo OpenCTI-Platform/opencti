@@ -10,7 +10,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -19,7 +18,6 @@ import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRfiDetails from './CaseRfiDetails';
 import CaseRfiEdition from './CaseRfiEdition';
-import CaseRfiPopover from './CaseRfiPopover';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
@@ -33,9 +31,6 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
   paper: {
     height: '100%',
@@ -79,13 +74,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
     paginationOptions,
   );
   return (
-    <div className={classes.container}>
-      <ContainerHeader
-        container={caseRfiData}
-        PopoverComponent={<CaseRfiPopover id={caseRfiData.id} />}
-        enableSuggestions={false}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -183,7 +172,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRfiEdition caseId={caseRfiData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

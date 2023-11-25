@@ -10,7 +10,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -23,7 +22,6 @@ import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRftDetails from './CaseRftDetails';
 import CaseRftEdition from './CaseRftEdition';
-import CaseRftPopover from './CaseRftPopover';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -33,9 +31,6 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
   paper: {
     height: '100%',
@@ -79,13 +74,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
     paginationOptions,
   );
   return (
-    <div className={classes.container}>
-      <ContainerHeader
-        container={caseRftData}
-        PopoverComponent={<CaseRftPopover id={caseRftData.id} />}
-        enableSuggestions={false}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -183,7 +172,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRftEdition caseId={caseRftData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

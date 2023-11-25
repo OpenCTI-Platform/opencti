@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
@@ -12,7 +12,7 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
-import { pdfjs, Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
@@ -43,18 +43,17 @@ const styles = () => ({
     width: '100%',
     height: '100%',
     margin: '20px 0 0 0',
-    padding: '0 350px 0 0',
   },
   documentContainer: {
     margin: '15px 0 0 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 240px)',
+    minHeight: 'calc(100vh - 280px)',
     width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 240px)',
+    height: 'calc(100vh - 280px)',
     maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 240px)',
+    maxHeight: 'calc(100vh - 280px)',
     display: 'flex',
     justifyContent: 'center',
   },
@@ -63,11 +62,11 @@ const styles = () => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 465px)',
-    minHeight: 'calc(100vh - 240px)',
+    minHeight: 'calc(100vh - 280px)',
     width: 'calc(100vw - 465px)',
-    height: 'calc(100vh - 240px)',
+    height: 'calc(100vh - 280px)',
     maxWidth: 'calc(100vw - 465px)',
-    maxHeight: 'calc(100vh - 240px)',
+    maxHeight: 'calc(100vh - 280px)',
     display: 'flex',
     justifyContent: 'center',
     position: 'relative',
@@ -77,11 +76,11 @@ const styles = () => ({
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 240px)',
+    minHeight: 'calc(100vh - 280px)',
     width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 240px)',
+    height: 'calc(100vh - 280px)',
     maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 240px)',
+    maxHeight: 'calc(100vh - 280px)',
     display: 'flex',
     justifyContent: 'center',
   },
@@ -90,11 +89,11 @@ const styles = () => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 590px)',
-    minHeight: 'calc(100vh - 240px)',
+    minHeight: 'calc(100vh - 280px)',
     width: 'calc(100vw - 590px)',
-    height: 'calc(100vh - 240px)',
+    height: 'calc(100vh - 280px)',
     maxWidth: 'calc(100vw - 590px)',
-    maxHeight: 'calc(100vh - 240px)',
+    maxHeight: 'calc(100vh - 280px)',
     display: 'flex',
     justifyContent: 'center',
     position: 'relative',
@@ -145,31 +144,47 @@ const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
 const sortByLastModified = R.sortBy(R.prop('lastModified'));
 
 const getFiles = (stixDomainObject) => {
-  const importFiles = stixDomainObject.importFiles?.edges?.filter((n) => !!n?.node)
+  const importFiles = stixDomainObject.importFiles?.edges
+    ?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
   const externalReferencesFiles = stixDomainObject.externalReferences?.edges
-    ?.map((n) => n?.node?.importFiles?.edges).flat().filter((n) => !!n?.node)
+    ?.map((n) => n?.node?.importFiles?.edges)
+    .flat()
+    .filter((n) => !!n?.node)
     .map((n) => n.node)
-    .filter((n) => n.metaData && isEmptyField(n.metaData.external_reference_id)) ?? [];
-  const result = sortByLastModified([...importFiles, ...externalReferencesFiles].filter((n) => {
-    return ['application/pdf', 'text/plain', 'text/html', 'text/markdown'].includes(n.metaData.mimetype);
-  }));
-  return result;
+    .filter(
+      (n) => n.metaData && isEmptyField(n.metaData.external_reference_id),
+    ) ?? [];
+  return sortByLastModified(
+    [...importFiles, ...externalReferencesFiles].filter((n) => {
+      return [
+        'application/pdf',
+        'text/plain',
+        'text/html',
+        'text/markdown',
+      ].includes(n.metaData.mimetype);
+    }),
+  );
 };
 
 const getExportFiles = (stixDomainObject) => {
-  const exportFiles = stixDomainObject.exportFiles?.edges?.filter((n) => !!n?.node)
+  const exportFiles = stixDomainObject.exportFiles?.edges
+    ?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  return sortByLastModified([...exportFiles].filter((n) => {
-    return (['application/pdf'].includes(n.metaData.mimetype) || n.uploadStatus === 'progress');
-  }));
+  return sortByLastModified(
+    [...exportFiles].filter((n) => {
+      return (
+        ['application/pdf'].includes(n.metaData.mimetype)
+        || n.uploadStatus === 'progress'
+      );
+    }),
+  );
 };
 
 class StixDomainObjectContentComponent extends Component {
   constructor(props) {
     const LOCAL_STORAGE_KEY = `stix-domain-object-content-${props.stixDomainObject.id}`;
     super(props);
-
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
@@ -183,10 +198,9 @@ class StixDomainObjectContentComponent extends Component {
     let isLoading = false;
     let onProgressExportFileName;
     if (params.currentFileId) {
-      const onProgressExportFile = exportFiles.find((file) => (
-        (file.id === params.currentFileId)
-        && (file.uploadStatus === 'progress')
-      ));
+      const onProgressExportFile = exportFiles.find(
+        (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
+      );
       if (onProgressExportFile) {
         isLoading = true;
         onProgressExportFileName = onProgressExportFile.name;
@@ -221,7 +235,10 @@ class StixDomainObjectContentComponent extends Component {
 
   loadFileContent() {
     const { stixDomainObject } = this.props;
-    const files = [...getFiles(stixDomainObject), ...getExportFiles(stixDomainObject)];
+    const files = [
+      ...getFiles(stixDomainObject),
+      ...getExportFiles(stixDomainObject),
+    ];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
       if (!currentFileId) {
@@ -259,7 +276,10 @@ class StixDomainObjectContentComponent extends Component {
 
     const { stixDomainObject } = this.props;
     const { currentFileId } = this.state;
-    const files = [...getFiles(stixDomainObject), ...getExportFiles(stixDomainObject)];
+    const files = [
+      ...getFiles(stixDomainObject),
+      ...getExportFiles(stixDomainObject),
+    ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
     if (currentFile?.uploadStatus !== 'progress') {
@@ -273,7 +293,9 @@ class StixDomainObjectContentComponent extends Component {
     const exportFiles = getExportFiles(stixDomainObject);
 
     if (onProgressExportFileName) {
-      const exportFile = exportFiles.find((file) => file.name === onProgressExportFileName);
+      const exportFile = exportFiles.find(
+        (file) => file.name === onProgressExportFileName,
+      );
       if (exportFile?.uploadStatus === 'complete') {
         this.handleSelectFile(exportFile.id);
         this.setState({
@@ -431,16 +453,22 @@ class StixDomainObjectContentComponent extends Component {
 
       let pdfElementMaxWidth = 0;
       // We need to get tables width inside ckeditor in order to know which mode we should save the PDF
-      const elementCkEditor = document.querySelector('.ck-content.ck-editor__editable.ck-editor__editable_inline');
+      const elementCkEditor = document.querySelector(
+        '.ck-content.ck-editor__editable.ck-editor__editable_inline',
+      );
       if (elementCkEditor) {
-        Array.from((elementCkEditor.querySelectorAll('figure.table') ?? [])).forEach((c) => {
+        Array.from(
+          elementCkEditor.querySelectorAll('figure.table') ?? [],
+        ).forEach((c) => {
           if (c.offsetWidth > pdfElementMaxWidth) {
             pdfElementMaxWidth = c.offsetWidth;
           }
         });
       }
       const maxContentForPortraitMode = 680;
-      const pageOrientation = pdfElementMaxWidth > maxContentForPortraitMode ? 'landscape' : 'portrait';
+      const pageOrientation = pdfElementMaxWidth > maxContentForPortraitMode
+        ? 'landscape'
+        : 'portrait';
       const pdfData = {
         content: ret.content,
         images,
@@ -482,7 +510,8 @@ class StixDomainObjectContentComponent extends Component {
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
 
-    const currentFile = currentFileId && [...files, ...exportFiles].find((n) => n.id === currentFileId);
+    const currentFile = currentFileId
+      && [...files, ...exportFiles].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
 
     const { innerHeight } = window;
@@ -580,11 +609,11 @@ class StixDomainObjectContentComponent extends Component {
                     selectedTab={markdownSelectedTab}
                     onTabChange={this.onMarkdownChangeTab.bind(this)}
                     generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <MarkdownDisplay
-                        content={markdown}
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />,
+                        <MarkdownDisplay
+                          content={markdown}
+                          remarkGfmPlugin={true}
+                          commonmark={true}
+                        />,
                     )
                     }
                     l18n={{
@@ -646,21 +675,20 @@ class StixDomainObjectContentComponent extends Component {
                     width: '100%',
                   }}
                 >
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No file selected.')}
-              </span>
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('No file selected.')}
+                  </span>
                 </div>
               </div>
             )}
           </>
         )}
-
       </div>
     );
   }

@@ -23,13 +23,12 @@ import {
 import ContainerContent, {
   containerContentQuery,
 } from '../../common/containers/ContainerContent';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: 0,
-    padding: 0,
   },
 });
 
@@ -175,9 +174,11 @@ class GroupingKnowledgeComponent extends Component {
             container={grouping}
             PopoverComponent={<GroupingPopover />}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'content', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
           />
         )}
         <Route

@@ -3,7 +3,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
@@ -12,14 +11,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 const ReportPopover = ({ id }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -39,7 +31,7 @@ const ReportPopover = ({ id }) => {
   };
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -76,7 +68,7 @@ const ReportPopover = ({ id }) => {
           return <div />;
         }}
       />
-    </div>
+    </>
   );
 };
 

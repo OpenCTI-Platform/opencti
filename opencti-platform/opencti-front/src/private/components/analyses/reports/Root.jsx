@@ -1,8 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Redirect, Route, withRouter } from 'react-router-dom';
+import { Link, Switch, Redirect, Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import {
+  QueryRenderer,
+  requestSubscription,
+} from '../../../../relay/environment';
 import Report from './Report';
 import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
@@ -13,6 +20,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -33,6 +41,7 @@ const subscription = graphql`
 const reportQuery = graphql`
   query RootReportQuery($id: String!) {
     report(id: $id) {
+      id
       standard_id
       ...Report_report
       ...ReportDetails_report
@@ -75,119 +84,174 @@ class RootReport extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { reportId },
       },
     } = this.props;
     return (
-      <div>
+      <>
         <QueryRenderer
           query={reportQuery}
           variables={{ id: reportId }}
           render={({ props }) => {
             if (props) {
               if (props.report) {
+                const { report } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/analyses/reports/${report.id}/entities`,
+                  )
+                  || location.pathname.includes(
+                    `/dashboard/analyses/reports/${report.id}/observables`,
+                  )
+                ) {
+                  paddingRight = 260;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/analyses/reports/${report.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div>
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId"
-                      render={(routeProps) => (
-                        <Report {...routeProps} report={props.report} />
-                      )}
+                  <div style={{ paddingRight, position: 'relative' }}>
+                    <ContainerHeader
+                      container={report}
+                      PopoverComponent={<ReportPopover />}
+                      enableQuickSubscription={true}
+                      enableQuickExport={true}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/entities"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.report}
-                            PopoverComponent={<ReportPopover />}
-                            disableSharing={true}
-                          />
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/analyses/reports/${report.id}/knowledge`,
+                          )
+                            ? `/dashboard/analyses/reports/${report.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}`}
+                          value={`/dashboard/analyses/reports/${report.id}`}
+                          label={t('Overview')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}/knowledge`}
+                          value={`/dashboard/analyses/reports/${report.id}/knowledge`}
+                          label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}/content`}
+                          value={`/dashboard/analyses/reports/${report.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}/entities`}
+                          value={`/dashboard/analyses/reports/${report.id}/entities`}
+                          label={t('Entities')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}/observables`}
+                          value={`/dashboard/analyses/reports/${report.id}/observables`}
+                          label={t('Observables')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/analyses/reports/${report.id}/files`}
+                          value={`/dashboard/analyses/reports/${report.id}/files`}
+                          label={t('Data')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId"
+                        render={(routeProps) => (
+                          <Report {...routeProps} report={report} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/entities"
+                        render={(routeProps) => (
                           <ContainerStixDomainObjects
                             {...routeProps}
-                            container={props.report}
+                            container={report}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/observables"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.report}
-                            PopoverComponent={<ReportPopover />}
-                            disableSharing={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/observables"
+                        render={(routeProps) => (
                           <ContainerStixCyberObservables
                             {...routeProps}
-                            container={props.report}
+                            container={report}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/content"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.report}
-                            PopoverComponent={<ReportPopover />}
-                            disableSharing={true}
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/content"
+                        render={(routeProps) => (
                           <StixDomainObjectContent
                             {...routeProps}
-                            stixDomainObject={props.report}
+                            stixDomainObject={report}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/knowledge/:mode"
-                      render={(routeProps) => (
-                        <ReportKnowledge
-                          {...routeProps}
-                          report={props.report}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.report}
-                            PopoverComponent={<ReportPopover />}
-                            enableSuggestions={true}
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/knowledge/:mode"
+                        render={(routeProps) => (
+                          <ReportKnowledge
+                            {...routeProps}
+                            report={report}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/analyses/reports/:reportId/files"
+                        render={(routeProps) => (
                           <StixCoreObjectFilesAndHistory
                             {...routeProps}
                             id={reportId}
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
-                            entity={props.report}
+                            entity={report}
                             withoutRelations={true}
                             bypassEntityId={true}
                           />
-                        </React.Fragment>
-                      )}
-                    />
+                        )}
+                      />
+                    </Switch>
                   </div>
                 );
               }
@@ -196,7 +260,7 @@ class RootReport extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -206,4 +270,4 @@ RootReport.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootReport);
+export default R.compose(inject18n, withRouter)(RootReport);

@@ -3,9 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -17,6 +21,7 @@ import CaseTask from './Task';
 import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -63,48 +68,93 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     }),
     [taskId],
   );
+  const location = useLocation();
+  const { t } = useFormatter();
   useSubscription(subConfig);
   const {
     task: data,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
+  let paddingRight = 0;
+  if (data) {
+    if (
+      location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content`)
+    ) {
+      paddingRight = 350;
+    }
+  }
   return (
-    <div>
+    <>
       {data ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/cases/tasks/:taskId"
-            render={() => <CaseTask data={data} />}
+        <div style={{ paddingRight }}>
+          <ContainerHeader
+            container={data}
+            PopoverComponent={<TasksPopover id={data.id} />}
+            enableSuggestions={false}
           />
-          <Route
-            exact
-            path="/dashboard/cases/tasks/:taskId/content"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={data}
-                  PopoverComponent={<TasksPopover id={data.id} />}
-                  enableSuggestions={false}
-                />
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              marginBottom: 4,
+            }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/cases/tasks/${data.id}/knowledge`,
+                )
+                  ? `/dashboard/cases/tasks/${data.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/tasks/${data.id}`}
+                value={`/dashboard/cases/tasks/${data.id}`}
+                label={t('Overview')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/tasks/${data.id}/content`}
+                value={`/dashboard/cases/tasks/${data.id}/content`}
+                label={t('Content')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/tasks/${data.id}/files`}
+                value={`/dashboard/cases/tasks/${data.id}/files`}
+                label={t('Data')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/cases/tasks/${data.id}/history`}
+                value={`/dashboard/cases/tasks/${data.id}/history`}
+                label={t('History')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/cases/tasks/:taskId"
+              render={() => <CaseTask data={data} />}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/tasks/:taskId/content"
+              render={(routeProps) => (
                 <StixDomainObjectContent
                   {...routeProps}
                   stixDomainObject={data}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/tasks/:taskId/files"
-            render={(routeProps) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={data}
-                  PopoverComponent={<TasksPopover id={data.id} />}
-                  enableSuggestions={false}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/tasks/:taskId/files"
+              render={(routeProps) => (
                 <StixCoreObjectFilesAndHistory
                   {...routeProps}
                   id={taskId}
@@ -114,32 +164,24 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/cases/tasks/:taskId/history"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <ContainerHeader
-                  container={data}
-                  PopoverComponent={<TasksPopover id={data.id} />}
-                  enableSuggestions={false}
-                  disableSharing={true}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/cases/tasks/:taskId/history"
+              render={(routeProps: any) => (
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={taskId}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
-    </div>
+    </>
   );
 };
 

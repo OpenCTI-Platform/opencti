@@ -10,7 +10,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { groupingEditionQuery } from './GroupingEdition';
@@ -18,12 +17,6 @@ import GroupingEditionContainer from './GroupingEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const GroupingPopoverDeletionMutation = graphql`
   mutation GroupingPopoverDeletionMutation($id: ID!) {
@@ -34,7 +27,6 @@ const GroupingPopoverDeletionMutation = graphql`
 const GroupingPopover = (props) => {
   const { id } = props;
   const history = useHistory();
-  const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -65,7 +57,7 @@ const GroupingPopover = (props) => {
   };
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -116,7 +108,7 @@ const GroupingPopover = (props) => {
           return <div />;
         }}
       />
-    </div>
+    </>
   );
 };
 

@@ -894,7 +894,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     } = this.state;
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const width = window.innerWidth - 210;
-    const height = window.innerHeight - 180;
+    const height = window.innerHeight - 235;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const stixCoreObjectsTypes = R.pipe(
       R.map((n) => R.assoc(
@@ -967,7 +967,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       <UserContext.Consumer>
         {({ bannerSettings }) => {
           const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
-          const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
+          const graphHeight = window.innerHeight - 235 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
               <GroupingKnowledgeGraphBar

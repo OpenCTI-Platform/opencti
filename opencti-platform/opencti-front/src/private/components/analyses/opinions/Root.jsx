@@ -1,17 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
 import Opinion from './Opinion';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
-import ReportPopover from '../reports/ReportPopover';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
@@ -80,7 +76,7 @@ class RootOpinion extends Component {
       },
     } = this.props;
     return (
-      <div>
+      <>
         <QueryRenderer
           query={opinionQuery}
           variables={{ id: opinionId }}
@@ -88,7 +84,7 @@ class RootOpinion extends Component {
             if (props) {
               if (props.opinion) {
                 return (
-                  <div>
+                  <Switch>
                     <Route
                       exact
                       path="/dashboard/analyses/opinions/:opinionId"
@@ -96,42 +92,7 @@ class RootOpinion extends Component {
                         <Opinion {...routeProps} opinion={props.opinion} />
                       )}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/opinions/:opinionId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.opinion}
-                            PopoverComponent={<ReportPopover />}
-                          />
-                          <FileManager
-                            {...routeProps}
-                            id={opinionId}
-                            connectorsExport={props.connectorsForExport}
-                            connectorsImport={props.connectorsForImport}
-                            entity={props.opinion}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/opinions/:opinionId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <ContainerHeader
-                            container={props.opinion}
-                            PopoverComponent={<ReportPopover />}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={opinionId}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                  </div>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;
@@ -139,7 +100,7 @@ class RootOpinion extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

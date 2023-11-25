@@ -23,7 +23,6 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -48,8 +47,24 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles({
+  containerDefault: {
+    marginTop: 0,
+  },
+  containerKnowledge: {
+    position: 'absolute',
+    top: 50,
+    right: 0,
+    zIndex: 2000,
+  },
+  containerGraph: {
+    position: 'absolute',
+    top: 50,
+    right: 0,
+    zIndex: 2000,
+  },
   title: {
     float: 'left',
   },
@@ -70,11 +85,6 @@ const useStyles = makeStyles({
     float: 'right',
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -603,9 +613,12 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, {
-        [type]: selectedEntity[type],
-      }]);
+      setApplied([
+        ...applied,
+        {
+          [type]: selectedEntity[type],
+        },
+      ]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
@@ -614,8 +627,12 @@ const ContainerHeader = (props) => {
     if (type === 'threats-arsenal' && selectedEntity) {
       // create all targets relationships
       setApplying([...applying, type]);
-      const selectedObjectType = objects.filter((n) => n.id === selectedEntity[type]).at(0).entity_type;
-      const resolvedArsenal = resolveArsenal(objects).filter((n) => n.entity_type !== selectedObjectType);
+      const selectedObjectType = objects
+        .filter((n) => n.id === selectedEntity[type])
+        .at(0).entity_type;
+      const resolvedArsenal = resolveArsenal(objects).filter(
+        (n) => n.entity_type !== selectedObjectType,
+      );
       const createdRelationships = await Promise.all(
         resolvedArsenal.map((arsenal) => {
           const values = {
@@ -657,9 +674,12 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, {
-        [type]: selectedEntity[type],
-      }]);
+      setApplied([
+        ...applied,
+        {
+          [type]: selectedEntity[type],
+        },
+      ]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
@@ -710,48 +730,62 @@ const ContainerHeader = (props) => {
       );
       MESSAGING$.notifySuccess('Suggestion successfully applied.');
       setAppliedSuggestion(type);
-      setApplied([...applied, {
-        [type]: selectedEntity[type],
-      }]);
+      setApplied([
+        ...applied,
+        {
+          [type]: selectedEntity[type],
+        },
+      ]);
       setApplying(applying.filter((n) => n !== type));
       if (onApplied) {
         return onApplied(createdRelationships);
       }
     }
   };
+  let className = 'containerDefault';
+  if (knowledge) {
+    className = 'containerKnowledge';
+  }
+  if (currentMode === 'graph' || currentMode === 'correlation') {
+    className = 'containerGraph';
+  }
   return (
-    <>
-      <Tooltip
-        title={
-          container.name
-          || container.attribute_abstract
-          || container.content
-          || container.opinion
-          || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-        }
-      >
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {truncate(
+    <div className={classes[className]}>
+      {!knowledge && (
+        <Tooltip
+          title={
             container.name
             || container.attribute_abstract
             || container.content
             || container.opinion
-            || `${fd(container.first_observed)} - ${fd(
-              container.last_observed,
-            )}`,
-            80,
-          )}
-        </Typography>
-      </Tooltip>
-      <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
-        <div className={classes.popover}>
-          {React.cloneElement(PopoverComponent, { id: container.id })}
-        </div>
-      </Security>
+            || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+          }
+        >
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {truncate(
+              container.name
+                || container.attribute_abstract
+                || container.content
+                || container.opinion
+                || `${fd(container.first_observed)} - ${fd(
+                  container.last_observed,
+                )}`,
+              80,
+            )}
+          </Typography>
+        </Tooltip>
+      )}
+      {!knowledge && (
+        <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
+          <div className={classes.popover}>
+            {React.cloneElement(PopoverComponent, { id: container.id })}
+          </div>
+        </Security>
+      )}
       {knowledge && (
         <div className={classes.export}>
           <ExportButtons
@@ -863,24 +897,29 @@ const ContainerHeader = (props) => {
                       color="secondary"
                       exclusive={false}
                     >
-                      {disableSharing !== true && (
+                      {!knowledge && disableSharing !== true && (
                         <StixCoreObjectSharing
                           elementId={container.id}
                           variant="header"
                         />
                       )}
                       {enableQuickExport && (
-                        <StixCoreObjectFileExport id={container.id} type={container.entity_type}/>
+                        <StixCoreObjectFileExport
+                          id={container.id}
+                          type={container.entity_type}
+                        />
                       )}
                       {enableSuggestions && (
                         <React.Fragment>
                           <Tooltip title={t('Open the suggestions')}>
                             <ToggleButton
                               onClick={() => setDisplaySuggestions(true)}
-                              disabled={suggestions.length === 0}
+                              disabled={
+                                suggestions.length === 0
+                                || currentMode !== 'graph'
+                              }
                               value="suggestion"
                               size="small"
-                              style={{ marginRight: 3 }}
                             >
                               <Badge
                                 badgeContent={
@@ -913,9 +952,11 @@ const ContainerHeader = (props) => {
                           instanceName={defaultValue(container)}
                         />
                       )}
-                      <StixCoreObjectEnrichment
-                        stixCoreObjectId={container.id}
-                      />
+                      {!knowledge && (
+                        <StixCoreObjectEnrichment
+                          stixCoreObjectId={container.id}
+                        />
+                      )}
                     </ToggleButtonGroup>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
@@ -977,7 +1018,10 @@ const ContainerHeader = (props) => {
                                   }
                                   size="large"
                                   color={
-                                    applied.some((a) => a[suggestion.type] === selectedEntity[suggestion.type])
+                                    applied.some(
+                                      (a) => a[suggestion.type]
+                                        === selectedEntity[suggestion.type],
+                                    )
                                       ? 'success'
                                       : 'secondary'
                                   }
@@ -992,7 +1036,7 @@ const ContainerHeader = (props) => {
                                       color="inherit"
                                     />
                                   ) : (
-                                    <AddTaskOutlined/>
+                                    <AddTaskOutlined />
                                   )}
                                 </IconButton>
                               </ListItemSecondaryAction>
@@ -1013,12 +1057,12 @@ const ContainerHeader = (props) => {
                 );
               }
             }
-            return <div/>;
+            return <div />;
           }}
         />
       </div>
-      <div className="clearfix"/>
-    </>
+      <div className="clearfix" />
+    </div>
   );
 };
 

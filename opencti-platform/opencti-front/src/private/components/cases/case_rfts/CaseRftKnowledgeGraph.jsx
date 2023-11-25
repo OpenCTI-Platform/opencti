@@ -1401,7 +1401,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
         {({ bannerSettings }) => {
           const graphWidth = width || window.innerWidth - (navOpen ? 210 : 70);
           const graphHeight = height
-            || window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
+            || window.innerHeight - 235 - bannerSettings.bannerHeightNumber * 2;
           return (
             <>
               <ContainerHeader

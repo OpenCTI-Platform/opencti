@@ -4,13 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, ReviewsOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
-import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -37,29 +31,9 @@ const styles = (theme) => ({
 
 class TopMenuOpinion extends Component {
   render() {
-    const {
-      t,
-      location,
-      id: opinionId,
-      classes,
-    } = this.props;
+    const { t, location, id: opinionId, classes } = this.props;
     return (
-      <div>
-        <Button
-          component={Link}
-          to="/dashboard/analyses/opinions"
-          variant="contained"
-          size="small"
-          color="primary"
-          classes={{ root: classes.buttonHome }}
-        >
-          <ReviewsOutlined className={classes.icon} fontSize="small" />
-          {t('Opinions')}
-        </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
-          classes={{ root: classes.arrow }}
-        />
+      <>
         <Button
           component={Link}
           to={`/dashboard/analyses/opinions/${opinionId}`}
@@ -69,61 +43,12 @@ class TopMenuOpinion extends Component {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === `/dashboard/analyses/opinions/${opinionId}`
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
           disabled={!opinionId}
         >
-          {t('Overview')}
+          {t('Opinion')}
         </Button>
-        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
-          <Button
-            component={Link}
-            to={`/dashboard/analyses/opinions/${opinionId}/files`}
-            variant={
-              location.pathname
-              === `/dashboard/analyses/opinions/${opinionId}/files`
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname
-              === `/dashboard/analyses/opinions/${opinionId}/files`
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-            disabled={!opinionId}
-          >
-            {t('Data')}
-          </Button>
-        </Security>
-        <Button
-          component={Link}
-          to={`/dashboard/analyses/opinions/${opinionId}/history`}
-          variant={
-            location.pathname
-            === `/dashboard/analyses/opinions/${opinionId}/history`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/analyses/opinions/${opinionId}/history`
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-          disabled={!opinionId}
-        >
-          {t('History')}
-        </Button>
-      </div>
+      </>
     );
   }
 }

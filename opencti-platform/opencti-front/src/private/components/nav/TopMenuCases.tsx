@@ -37,16 +37,11 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/incidents"
           variant={
-            location.pathname === '/dashboard/cases/incidents'
+            location.pathname.includes('/dashboard/cases/incidents')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/cases/incidents'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BriefcaseEyeOutline className={classes.icon} fontSize="small" />
@@ -58,14 +53,11 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/rfis"
           variant={
-            location.pathname === '/dashboard/cases/rfis' ? 'contained' : 'text'
+            location.pathname.includes('/dashboard/cases/rfis')
+              ? 'contained'
+              : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/cases/rfis'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BriefcaseSearchOutline className={classes.icon} fontSize="small" />
@@ -77,14 +69,11 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/rfts"
           variant={
-            location.pathname === '/dashboard/cases/rfts' ? 'contained' : 'text'
+            location.pathname.includes('/dashboard/cases/rfts')
+              ? 'contained'
+              : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/cases/rfts'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BriefcaseRemoveOutline className={classes.icon} fontSize="small" />
@@ -96,16 +85,11 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/tasks"
           variant={
-            location.pathname === '/dashboard/cases/tasks'
+            location.pathname.includes('/dashboard/cases/tasks')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/cases/tasks'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <TaskAltOutlined className={classes.icon} fontSize="small" />
@@ -117,16 +101,11 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/feedbacks"
           variant={
-            location.pathname === '/dashboard/cases/feedbacks'
+            location.pathname.includes('/dashboard/cases/feedbacks')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/cases/feedbacks'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BriefcaseEditOutline className={classes.icon} fontSize="small" />

@@ -3,8 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import FeedbackDetails from './FeedbackDetails';
-import FeedbackPopover from './FeedbackPopover';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import Security from '../../../../utils/Security';
@@ -17,9 +15,6 @@ import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
-  },
-  container: {
-    margin: 0,
   },
 }));
 
@@ -103,14 +98,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
   const feedbackData = useFragment(feedbackFragment, data);
 
   return (
-    <div className={classes.container}>
-      <ContainerHeader
-        container={feedbackData}
-        PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-        enableSuggestions={false}
-        disableSharing={true}
-        enableQuickSubscription={true}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -144,7 +132,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <FeedbackEdition feedbackId={feedbackData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 
