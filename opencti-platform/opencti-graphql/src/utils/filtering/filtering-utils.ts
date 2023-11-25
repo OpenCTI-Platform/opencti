@@ -4,7 +4,19 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { Filter, FilterGroup } from '../../generated/graphql';
 import { FilterOperator } from '../../generated/graphql';
-import { INSTANCE_FILTER, SIGHTED_BY_FILTER, specialFilterKeys } from './filtering-constants';
+import {
+  CONTEXT_CREATED_BY_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CONTEXT_ENTITY_ID_FILTER,
+  CONTEXT_ENTITY_TYPE_FILTER,
+  CONTEXT_OBJECT_LABEL_FILTER,
+  CONTEXT_OBJECT_MARKING_FILTER,
+  INSTANCE_FILTER, MEMBERS_GROUP_FILTER,
+  MEMBERS_ORGANIZATION_FILTER,
+  MEMBERS_USER_FILTER,
+  SIGHTED_BY_FILTER,
+  specialFilterKeys
+} from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 
@@ -147,6 +159,15 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
 const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
   [INSTANCE_FILTER, buildRefRelationKey('*')],
+  [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
+  [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
+  [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],
+  [CONTEXT_CREATED_BY_FILTER, 'context_data.created_by_ref_id'],
+  [CONTEXT_OBJECT_MARKING_FILTER, 'context_data.object_marking_refs_ids'],
+  [CONTEXT_OBJECT_LABEL_FILTER, 'context_data.labels_ids'],
+  [MEMBERS_USER_FILTER, 'user_id'],
+  [MEMBERS_GROUP_FILTER, 'group_ids'],
+  [MEMBERS_ORGANIZATION_FILTER, 'organization_ids'],
 ]);
 
 /**

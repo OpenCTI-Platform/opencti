@@ -193,12 +193,12 @@ const auditsFilters = [
   'members_group',
   'members_organization',
   'members_user',
-  'elementType',
-  'elementId',
-  'createdBy',
-  'markedBy',
-  'labelledBy',
-  'creator',
+  'contextEntityId',
+  'contextEntityType',
+  'contextCreatedBy',
+  'contextObjectMarking',
+  'contextObjectLabel',
+  'contextCreator',
 ];
 
 const visualizationTypes = [

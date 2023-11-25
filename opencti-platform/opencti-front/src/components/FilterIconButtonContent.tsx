@@ -6,14 +6,12 @@ import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 
 export const filterIconButtonContentQuery = graphql`
-    query FilterIconButtonContentQuery(
-        $filters: FilterGroup!
-    ) {
-        filtersRepresentatives(filters: $filters) {
-            id
-            value
-        }
+  query FilterIconButtonContentQuery($filters: FilterGroup!) {
+    filtersRepresentatives(filters: $filters) {
+      id
+      value
     }
+  }
 `;
 interface FilterIconButtonContentProps {
   redirection?: boolean;
@@ -23,19 +21,13 @@ interface FilterIconButtonContentProps {
   value?: string | null;
 }
 
-const FilterIconButtonContent: FunctionComponent<FilterIconButtonContentProps> = ({
-  redirection,
-  isFilterTooltip,
-  filterKey,
-  id,
-  value,
-}) => {
+const FilterIconButtonContent: FunctionComponent<
+FilterIconButtonContentProps
+> = ({ redirection, isFilterTooltip, filterKey, id, value }) => {
   const { t } = useFormatter();
-
   const displayedValue = isFilterTooltip
     ? filterValue(filterKey, value)
     : truncate(filterValue(filterKey, value), 15);
-
   if (displayedValue === null) {
     return (
       <>
@@ -50,9 +42,7 @@ const FilterIconButtonContent: FunctionComponent<FilterIconButtonContentProps> =
       </Link>
     );
   }
-  return (
-    <span>{displayedValue}</span>
-  );
+  return <span>{displayedValue}</span>;
 };
 
 export default FilterIconButtonContent;

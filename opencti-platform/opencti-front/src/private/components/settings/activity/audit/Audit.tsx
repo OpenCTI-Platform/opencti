@@ -236,16 +236,18 @@ const Audit = () => {
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
         availableFilterKeys={[
-          'members_user',
-          'members_organization',
+          'event_type',
+          'event_scope',
           'members_group',
+          'members_organization',
+          'members_user',
           'created',
-          'elementType',
-          'elementId',
-          'createdBy',
-          'objectMarking',
-          'objectLabel',
-          'creator_id',
+          'contextEntityId',
+          'contextEntityType',
+          'contextCreatedBy',
+          'contextObjectMarking',
+          'contextObjectLabel',
+          'contextCreator',
         ]}
       >
         {queryRef && (

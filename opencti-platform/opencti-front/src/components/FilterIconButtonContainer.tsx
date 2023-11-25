@@ -11,7 +11,9 @@ import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
 import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
-import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import FilterIconButtonContent, {
+  filterIconButtonContentQuery,
+} from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -83,7 +85,9 @@ interface FilterIconButtonContainerProps {
   chipColor?: ChipOwnProps['color'];
 }
 
-const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProps> = ({
+const FilterIconButtonContainer: FunctionComponent<
+FilterIconButtonContainerProps
+> = ({
   filters,
   handleRemoveFilter,
   handleSwitchGlobalMode,
@@ -96,9 +100,13 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
-  const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, filtersRepresentativesQueryRef);
-  const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
+  const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
+    filterIconButtonContentQuery,
+    filtersRepresentativesQueryRef,
+  );
+  const filtersRepresentativesMap = new Map(
+    filtersRepresentatives.map((n) => [n.id, n.value]),
+  );
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
@@ -112,38 +120,42 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
   }
   const lastKey = last(displayedFilters)?.key;
   const lastOperator = last(displayedFilters)?.operator;
-
   return (
     <>
-      {displayedFilters
-        .map((currentFilter) => {
-          const filterKey = currentFilter.key;
-          const filterValues = currentFilter.values;
-          const filterOperator = currentFilter.operator;
-          const isOperatorNegative = filterOperator.startsWith('not_');
-          const isOperatorDisplayed = !['eq', 'not_eq', 'nil', 'not_nil'].includes(filterOperator);
-          const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
-          const keyLabel = isOperatorDisplayed
-            ? truncate(t(`filter_${filterKey}_${filterOperator}`), 20)
-            : truncate(t(`filter_${filterKey}`), 20);
-          const label = `${isOperatorNegative ? `${t('NOT')} ` : ''}${keyLabel}`;
-          const isNotLastFilter = lastKey !== filterKey || lastOperator !== filterOperator;
-          const values = (tooltip: boolean) => (
-            <>
-              {isOperatorNil
-                ? <span>{t('No value')}</span>
-                : filterValues.map((id) => {
-                  return (
+      {displayedFilters.map((currentFilter) => {
+        const filterKey = currentFilter.key;
+        const filterValues = currentFilter.values;
+        const filterOperator = currentFilter.operator;
+        const isOperatorNegative = filterOperator.startsWith('not_');
+        const isOperatorDisplayed = ![
+          'eq',
+          'not_eq',
+          'nil',
+          'not_nil',
+        ].includes(filterOperator);
+        const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
+        const keyLabel = isOperatorDisplayed
+          ? truncate(t(`filter_${filterKey}_${filterOperator}`), 20)
+          : truncate(t(`filter_${filterKey}`), 20);
+        const label = `${isOperatorNegative ? `${t('NOT')} ` : ''}${keyLabel}`;
+        const isNotLastFilter = lastKey !== filterKey || lastOperator !== filterOperator;
+        const values = (tooltip: boolean) => (
+          <>
+            {isOperatorNil ? (
+              <span>{t('No value')}</span>
+            ) : (
+              filterValues.map((id) => {
+                return (
                   <span key={id}>
-                    {filtersRepresentativesMap.has(id)
-                      && (<FilterIconButtonContent
+                    {filtersRepresentativesMap.has(id) && (
+                      <FilterIconButtonContent
                         redirection={tooltip ? false : redirection}
                         isFilterTooltip={!!tooltip}
                         filterKey={filterKey}
                         id={id}
                         value={filtersRepresentativesMap.get(id)}
-                      ></FilterIconButtonContent>)
-                    }
+                      />
+                    )}
                     {last(filterValues) !== id && (
                       <Chip
                         className={classes.inlineOperator}
@@ -152,71 +164,76 @@ const FilterIconButtonContainer: FunctionComponent<FilterIconButtonContainerProp
                       />
                     )}{' '}
                   </span>
-                  );
-                })}
-            </>
-          );
-          return (
-            <span key={filterKey}>
-              <Tooltip
-                title={
+                );
+              })
+            )}
+          </>
+        );
+        return (
+          <span key={filterKey}>
+            <Tooltip
+              title={
+                <>
+                  <strong>{label}</strong>: {values(true)}
+                </>
+              }
+            >
+              <Chip
+                classes={{ root: classFilter, label: classes.chipLabel }}
+                color={chipColor}
+                label={
                   <>
-                    <strong>{label}</strong>: {values(true)}
+                    <strong>{label}</strong>: {values(false)}
                   </>
                 }
-              >
-                <Chip
-                  classes={{ root: classFilter, label: classes.chipLabel }}
-                  color={chipColor}
-                  label={
-                    <>
-                      <strong>{label}</strong>: {values(false)}
-                    </>
-                  }
-                  disabled={
-                    disabledPossible
-                      ? displayedFilters.length === 1
-                      : undefined
-                  }
-                  onDelete={
-                    handleRemoveFilter
-                      ? () => handleRemoveFilter(filterKey, filterOperator ?? undefined)
-                      : undefined
-                  }
-                />
-              </Tooltip>
-              {isNotLastFilter && (
-                <Chip
-                  classes={{ root: classOperator }}
-                  label={t(globalMode.toUpperCase())}
-                  onClick={handleSwitchGlobalMode}
-                />
-              )}
-            </span>
-          );
-        })
-      }
-      {filters.filterGroups && filters.filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        && (
-        <Chip
-          classes={{ root: classFilter, label: classes.chipLabel }}
-          color={'warning'}
-          label={
-          <>
-            {t('Filters are not fully displayed')}
-            <Tooltip title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
-            They might have been created via the API or a migration from a previous filter format.
-            For your information, here is the content of the filter object: ${JSON.stringify(filters.filterGroups)}`}>
-              <InformationOutline
-                fontSize="small"
-                color="secondary"
-                style={{ cursor: 'default' }}
+                disabled={
+                  disabledPossible ? displayedFilters.length === 1 : undefined
+                }
+                onDelete={
+                  handleRemoveFilter
+                    ? () => handleRemoveFilter(
+                      filterKey,
+                      filterOperator ?? undefined,
+                    )
+                    : undefined
+                }
               />
             </Tooltip>
-          </>
-          }
-        />)
-      }
+            {isNotLastFilter && (
+              <Chip
+                classes={{ root: classOperator }}
+                label={t(globalMode.toUpperCase())}
+                onClick={handleSwitchGlobalMode}
+              />
+            )}
+          </span>
+        );
+      })}
+      {filters.filterGroups
+        && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+          <Chip
+            classes={{ root: classFilter, label: classes.chipLabel }}
+            color={'warning'}
+            label={
+              <>
+                {t('Filters are not fully displayed')}
+                <Tooltip
+                  title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
+            They might have been created via the API or a migration from a previous filter format.
+            For your information, here is the content of the filter object: ${JSON.stringify(
+                    filters.filterGroups,
+                  )}`}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="secondary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
+              </>
+            }
+          />
+      )}
     </>
   );
 };

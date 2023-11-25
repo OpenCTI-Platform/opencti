@@ -2,10 +2,14 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, initialFilterGroup } from '../utils/filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  GqlFilterGroup,
+  initialFilterGroup,
+} from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
-import Loader from './Loader';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
 
@@ -74,7 +78,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   chipColor,
 }) => {
   const classes = useStyles();
-
   let finalClassName = classes.filters1;
   if (classNameNumber === 2) {
     finalClassName = classes.filters2;
@@ -91,36 +94,37 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   } else if (classNameNumber === 8) {
     finalClassName = classes.filters8;
   }
-
   const displayedFilters = {
     ...filters,
-    filters: filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)) || [],
+    filters:
+      filters.filters.filter(
+        (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
+      ) || [],
   };
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     { filters: displayedFilters as unknown as GqlFilterGroup },
   );
-
   return (
     <div
       className={finalClassName}
       style={{ width: dataColumns?.filters.width }}
     >
-    {filtersRepresentativesQueryRef && (
-      <React.Suspense fallback={<Loader />}>
-        <FilterIconButtonContainer
-          handleRemoveFilter={handleRemoveFilter}
-          handleSwitchGlobalMode={handleSwitchGlobalMode}
-          handleSwitchLocalMode={handleSwitchLocalMode}
-          styleNumber={styleNumber}
-          chipColor={chipColor}
-          disabledPossible={disabledPossible}
-          redirection={redirection}
-          filters={displayedFilters}
-          filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
-        ></FilterIconButtonContainer>
-      </React.Suspense>)
-    }
+      {filtersRepresentativesQueryRef && (
+        <React.Suspense fallback={<div />}>
+          <FilterIconButtonContainer
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            styleNumber={styleNumber}
+            chipColor={chipColor}
+            disabledPossible={disabledPossible}
+            redirection={redirection}
+            filters={displayedFilters}
+            filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

@@ -47,6 +47,7 @@ export const directFilters = [
   'fromId',
   'toId',
   'elementId',
+  'contextEntityId',
   'note_types',
   'context',
   'trigger_type',
@@ -119,6 +120,7 @@ export const entityFilters = [
   'indicates',
   'targets',
   'connectedToId',
+  'contextEntityId',
 ];
 
 export const booleanFilters = [
@@ -135,6 +137,7 @@ export const entityTypesFilters = [
   'toTypes',
   'relationship_types',
   'container_type',
+  'contextEntityType',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------

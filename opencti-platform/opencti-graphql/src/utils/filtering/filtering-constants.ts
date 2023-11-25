@@ -16,7 +16,6 @@ export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_TO_FILTER = 'toId';
 export const INSTANCE_FILTER = 'elementId';
-export const INSTANCE_TYPE_FILTER = 'elementType';
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
@@ -39,16 +38,23 @@ export const RELATION_TO_TYPES_FILTER = 'toTypes';
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
 export const CONNECTIONS_FILTER = 'connections';
+export const RULE_FILTER = 'rule';
+
+// for audit logging (Elastic + Stream)
+export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
+export const CONTEXT_ENTITY_TYPE_FILTER = 'contextEntityType';
+export const CONTEXT_CREATOR_FILTER = 'contextCreator';
+export const CONTEXT_CREATED_BY_FILTER = 'contextCreatedBy';
+export const CONTEXT_OBJECT_MARKING_FILTER = 'contextObjectMarking';
+export const CONTEXT_OBJECT_LABEL_FILTER = 'contextObjectLabel';
 export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
-export const RULE_FILTER = 'rule';
 
 // list of the special filtering keys (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
 export const specialFilterKeys = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
-  INSTANCE_TYPE_FILTER, // element type involved in audit logging
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
@@ -58,8 +64,14 @@ export const specialFilterKeys = [
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
-  MEMBERS_USER_FILTER, // for activity trigger
-  MEMBERS_GROUP_FILTER, // for activity trigger
-  MEMBERS_ORGANIZATION_FILTER, // for activity trigger
+  CONTEXT_ENTITY_ID_FILTER,
+  CONTEXT_ENTITY_TYPE_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CONTEXT_CREATED_BY_FILTER,
+  CONTEXT_OBJECT_MARKING_FILTER,
+  CONTEXT_OBJECT_LABEL_FILTER,
+  MEMBERS_USER_FILTER,
+  MEMBERS_GROUP_FILTER,
+  MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
 ];

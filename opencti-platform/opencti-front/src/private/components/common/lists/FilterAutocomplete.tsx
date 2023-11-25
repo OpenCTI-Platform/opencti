@@ -1,4 +1,9 @@
-import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
+import React, {
+  Dispatch,
+  FunctionComponent,
+  SyntheticEvent,
+  useState,
+} from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import makeStyles from '@mui/styles/makeStyles';
@@ -7,7 +12,10 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
+import {
+  EqFilters,
+  onlyGroupOrganization,
+} from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -38,9 +46,9 @@ export interface FilterAutocompleteInputValue {
 
 interface FilterAutocompleteProps {
   filterKey: string;
-  searchContext: { entityTypes: string[], elementId?: string[] };
+  searchContext: { entityTypes: string[]; elementId?: string[] };
   defaultHandleAddFilter: HandleAddFilter;
-  inputValues: { key: string, values: string[], operator?: string }[];
+  inputValues: { key: string; values: string[]; operator?: string }[];
   setInputValues: (value: FilterAutocompleteInputValue[]) => void;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
@@ -94,9 +102,14 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     Record<string, OptionValue[]>,
     (
       filterKey: string,
-      cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
-      setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
-      event: SyntheticEvent
+      cacheEntities: Record<
+      string,
+      { label: string; value: string; type: string }[]
+      >,
+      setCacheEntities: Dispatch<
+      Record<string, { label: string; value: string; type: string }[]>
+      >,
+      event: SyntheticEvent,
     ) => Record<string, OptionValue[]>,
   ]; // change when useSearchEntities will be in TS
   const isStixObjectTypes = [
@@ -107,6 +120,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     'targets',
     'elementId',
     'indicates',
+    'contextEntityId',
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
@@ -115,12 +129,22 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         && (event as unknown as MouseEvent).altKey
         && event.type === 'click'
       ) {
-        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'not_nil' : 'not_eq', event);
+        defaultHandleAddFilter(
+          filterKey,
+          value.value,
+          value.value === null ? 'not_nil' : 'not_eq',
+          event,
+        );
       } else {
         const group = !onlyGroupOrganization.includes(filterKey)
           ? value.group
           : undefined;
-        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'nil' : group, event);
+        defaultHandleAddFilter(
+          filterKey,
+          value.value,
+          value.value === null ? 'nil' : group,
+          event,
+        );
       }
     }
   };
@@ -155,12 +179,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t('No available options')}
       options={options}
-      onInputChange={(event) => searchEntities(
-        filterKey,
-        cacheEntities,
-        setCacheEntities,
-        event,
-      )}
+      onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
+      }
       inputValue={input}
       onChange={handleChange}
       groupBy={
@@ -176,12 +196,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
           variant="outlined"
           size="small"
           fullWidth={true}
-          onFocus={(event) => searchEntities(
-            filterKey,
-            cacheEntities,
-            setCacheEntities,
-            event,
-          )
+          onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
           }
           InputProps={{
             ...params.InputProps,
