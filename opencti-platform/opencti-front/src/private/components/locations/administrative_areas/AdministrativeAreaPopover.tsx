@@ -12,8 +12,9 @@ import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
-import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import AdministrativeAreaEditionContainer, {
+  administrativeAreaEditionQuery,
+} from './AdministrativeAreaEditionContainer';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
@@ -105,9 +106,7 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <AdministrativeAreaEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

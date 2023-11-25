@@ -2,8 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import DataComponentPopover from './DataComponentPopover';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import DataComponentEdition from './DataComponentEdition';
@@ -86,18 +84,9 @@ const DataComponent: FunctionComponent<{
   data: DataComponent_dataComponent$key;
 }> = ({ data }) => {
   const classes = useStyles();
-
   const dataComponent = useFragment(DataComponentFragment, data);
-
   return (
-    <div>
-      <StixDomainObjectHeader
-        entityType={'Data-Component'}
-        stixDomainObject={dataComponent}
-        PopoverComponent={
-          <DataComponentPopover dataComponentId={dataComponent.id} />
-        }
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -138,7 +127,7 @@ const DataComponent: FunctionComponent<{
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataComponentEdition dataComponentId={dataComponent.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

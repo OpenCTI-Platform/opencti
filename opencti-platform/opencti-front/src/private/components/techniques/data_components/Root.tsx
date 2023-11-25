@@ -3,9 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useLocation } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -17,6 +21,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQuery.graphql';
 import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -68,81 +73,112 @@ const RootDataComponent = () => {
     [dataComponentId],
   );
   useSubscription(subConfig);
+  const location = useLocation();
+  const { t } = useFormatter();
   return (
-    <div>
-            <QueryRenderer
+    <>
+      <QueryRenderer
         query={dataComponentQuery}
         variables={{ id: dataComponentId }}
         render={({ props }: { props: RootDataComponentQuery$data }) => {
           if (props) {
             if (props.dataComponent) {
+              const { dataComponent } = props;
               return (
-                <Switch>
-                  <Route
-                    exact
-                    path="/dashboard/techniques/data_components/:dataComponentId"
-                    render={(routeProps: any) => (
-                      <DataComponent
-                        {...routeProps}
-                        data={props.dataComponent}
-                      />
-                    )}
+                <div
+                  style={{
+                    paddingRight: location.pathname.includes(
+                      `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
+                    )
+                      ? 200
+                      : 0,
+                  }}
+                >
+                  <StixDomainObjectHeader
+                    entityType="Data-Component"
+                    stixDomainObject={props.dataComponent}
+                    PopoverComponent={
+                      <DataComponentPopover dataComponentId={dataComponentId} />
+                    }
                   />
-                  <Route
-                    path="/dashboard/techniques/data_components/:dataComponentId/knowledge"
-                    render={(routeProps: any) => (
-                      <DataComponentKnowledge
-                        {...routeProps}
-                        data={props.dataComponent}
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      marginBottom: 4,
+                    }}
+                  >
+                    <Tabs
+                      value={
+                        location.pathname.includes(
+                          `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
+                        )
+                          ? `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`
+                          : location.pathname
+                      }
+                    >
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/techniques/data_components/${dataComponent.id}`}
+                        value={`/dashboard/techniques/data_components/${dataComponent.id}`}
+                        label={t('Overview')}
                       />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/techniques/data_components/:dataComponentId/files"
-                    render={(routeProps: any) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          entityType={'Data-Component'}
-                          stixDomainObject={props.dataComponent}
-                          PopoverComponent={
-                            <DataComponentPopover
-                              dataComponentId={dataComponentId}
-                            />
-                          }
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
+                        value={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
+                        label={t('Data')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/techniques/data_components/${dataComponent.id}/history`}
+                        value={`/dashboard/techniques/data_components/${dataComponent.id}/history`}
+                        label={t('History')}
+                      />
+                    </Tabs>
+                  </Box>
+                  <Switch>
+                    <Route
+                      exact
+                      path="/dashboard/techniques/data_components/:dataComponentId"
+                      render={(routeProps: any) => (
+                        <DataComponent {...routeProps} data={dataComponent} />
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/techniques/data_components/:dataComponentId/knowledge"
+                      render={(routeProps: any) => (
+                        <DataComponentKnowledge
+                          {...routeProps}
+                          data={dataComponent}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/techniques/data_components/:dataComponentId/files"
+                      render={(routeProps: any) => (
                         <FileManager
                           {...routeProps}
                           id={dataComponentId}
                           connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
-                          entity={props.dataComponent}
+                          entity={dataComponent}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/techniques/data_components/:dataComponentId/history"
-                    render={(routeProps: any) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          entityType={'Data-Component'}
-                          stixDomainObject={props.dataComponent}
-                          PopoverComponent={
-                            <DataComponentPopover
-                              dataComponentId={dataComponentId}
-                            />
-                          }
-                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/techniques/data_components/:dataComponentId/history"
+                      render={(routeProps: any) => (
                         <StixCoreObjectHistory
                           {...routeProps}
                           stixCoreObjectId={dataComponentId}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                </Switch>
+                      )}
+                    />
+                  </Switch>
+                </div>
               );
             }
             return <ErrorNotFound />;
@@ -150,7 +186,7 @@ const RootDataComponent = () => {
           return <Loader />;
         }}
       />
-    </div>
+    </>
   );
 };
 

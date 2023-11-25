@@ -42,11 +42,6 @@ const TopMenuLocation = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/locations/regions')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <PublicOutlined className={classes.icon} fontSize="small" />
@@ -63,11 +58,6 @@ const TopMenuLocation = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/locations/countries')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <FlagOutlined className={classes.icon} fontSize="small" />
@@ -86,13 +76,6 @@ const TopMenuLocation = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes(
-              '/dashboard/locations/administrative_areas',
-            )
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <MapOutlined className={classes.icon} fontSize="small" />
@@ -109,11 +92,6 @@ const TopMenuLocation = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/locations/cities')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <CityVariantOutline className={classes.icon} fontSize="small" />
@@ -130,11 +108,6 @@ const TopMenuLocation = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/locations/positions')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <PlaceOutlined className={classes.icon} fontSize="small" />

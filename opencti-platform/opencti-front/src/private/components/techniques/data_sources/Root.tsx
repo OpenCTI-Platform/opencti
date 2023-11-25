@@ -3,9 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import { useLocation } from 'react-router-dom-v5-compat';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -17,6 +21,7 @@ import DataSourceKnowledgeComponent from './DataSourceKnowledge';
 import DataSource from './DataSource';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -66,40 +71,82 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
     [dataSourceId],
   );
   useSubscription(subConfig);
+  const location = useLocation();
+  const { t } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   return (
-    <div>
+    <>
       {dataSource ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/techniques/data_sources/:dataSourceId"
-            render={() => <DataSource data={dataSource} />}
+        <div
+          style={{
+            paddingRight: location.pathname.includes(
+              `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
+            )
+              ? 200
+              : 0,
+          }}
+        >
+          <StixDomainObjectHeader
+            entityType={'Data-Source'}
+            disableSharing={true}
+            stixDomainObject={dataSource}
+            PopoverComponent={<DataSourcePopover id={dataSource.id} />}
           />
-          <Route
-            path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
-            render={(routeProps: any) => (
-              <DataSourceKnowledgeComponent
-                {...routeProps}
-                data={dataSource}
-                enableReferences={settings.platform_enable_reference?.includes(
-                  'Data-Source',
-                )}
+          <Box
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
+                )
+                  ? `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/techniques/data_sources/${dataSource.id}`}
+                value={`/dashboard/techniques/data_sources/${dataSource.id}`}
+                label={t('Overview')}
               />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/data_sources/:dataSourceId/files"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Data-Source'}
-                  disableSharing={true}
-                  stixDomainObject={dataSource}
-                  PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+              <Tab
+                component={Link}
+                to={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
+                value={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
+                label={t('Data')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
+                value={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
+                label={t('History')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/techniques/data_sources/:dataSourceId"
+              render={() => <DataSource data={dataSource} />}
+            />
+            <Route
+              path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
+              render={(routeProps: any) => (
+                <DataSourceKnowledgeComponent
+                  {...routeProps}
+                  data={dataSource}
+                  enableReferences={settings.platform_enable_reference?.includes(
+                    'Data-Source',
+                  )}
                 />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/techniques/data_sources/:dataSourceId/files"
+              render={(routeProps: any) => (
                 <FileManager
                   {...routeProps}
                   id={dataSourceId}
@@ -107,32 +154,24 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/data_sources/:dataSourceId/history"
-            render={(routeProps: any) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Data-Source'}
-                  disableSharing={true}
-                  stixDomainObject={dataSource}
-                  PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/techniques/data_sources/:dataSourceId/history"
+              render={(routeProps: any) => (
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={dataSourceId}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
-    </div>
+    </>
   );
 };
 
@@ -143,14 +182,14 @@ const RootDataSource = () => {
   });
   return (
     <>
-            {queryRef && (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootDataSourceComponent
             queryRef={queryRef}
             dataSourceId={dataSourceId}
           />
         </React.Suspense>
-            )}
+      )}
     </>
   );
 };

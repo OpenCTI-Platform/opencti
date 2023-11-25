@@ -3,25 +3,18 @@ import PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
-});
-
 class CourseOfActionKnowledgeComponent extends Component {
   render() {
-    const { classes, courseOfAction } = this.props;
+    const { courseOfAction } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <StixDomainObjectHeader
-          entityType={'Course-Of-Action'}
+          entityType="Course-Of-Action"
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
           isOpenctiAlias={true}
@@ -38,7 +31,7 @@ class CourseOfActionKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -62,8 +55,4 @@ const CourseOfActionKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CourseOfActionKnowledge);
+export default compose(inject18n, withRouter)(CourseOfActionKnowledge);

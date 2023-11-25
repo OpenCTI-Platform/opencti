@@ -32,45 +32,31 @@ const TopMenuTechniques = () => {
   return (
     <div>
       {!useIsHiddenEntity('Attack-Pattern') && (
-          <Button
-            component={Link}
-            to="/dashboard/techniques/attack_patterns"
-            variant={
-              location.pathname.includes(
-                '/dashboard/techniques/attack_patterns',
-              )
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname.includes(
-                '/dashboard/techniques/attack_patterns',
-              )
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-          >
-            <LockPattern className={classes.icon} fontSize="small" />
-            {t('Attack patterns')}
-          </Button>
+        <Button
+          component={Link}
+          to="/dashboard/techniques/attack_patterns"
+          variant={
+            location.pathname.includes('/dashboard/techniques/attack_patterns')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          classes={{ root: classes.button }}
+        >
+          <LockPattern className={classes.icon} fontSize="small" />
+          {t('Attack patterns')}
+        </Button>
       )}
       {!useIsHiddenEntity('Narrative') && (
         <Button
           component={Link}
           to="/dashboard/techniques/narratives"
           variant={
-            location.pathname === '/dashboard/techniques/narratives'
+            location.pathname.includes('/dashboard/techniques/narratives')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/techniques/narratives'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
@@ -82,16 +68,13 @@ const TopMenuTechniques = () => {
           component={Link}
           to="/dashboard/techniques/courses_of_action"
           variant={
-            location.pathname === '/dashboard/techniques/courses_of_action'
+            location.pathname.includes(
+              '/dashboard/techniques/courses_of_action',
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/techniques/courses_of_action'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <ProgressWrench className={classes.icon} fontSize="small" />
@@ -103,16 +86,11 @@ const TopMenuTechniques = () => {
           component={Link}
           to="/dashboard/techniques/data_components"
           variant={
-            location.pathname === '/dashboard/techniques/data_components'
+            location.pathname.includes('/dashboard/techniques/data_components')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/techniques/data_components'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <SourceOutlined className={classes.icon} fontSize="small" />
@@ -124,16 +102,11 @@ const TopMenuTechniques = () => {
           component={Link}
           to="/dashboard/techniques/data_sources"
           variant={
-            location.pathname === '/dashboard/techniques/data_sources'
+            location.pathname.includes('/dashboard/techniques/data_sources')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/techniques/data_sources'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <StreamOutlined className={classes.icon} fontSize="small" />

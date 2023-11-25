@@ -11,13 +11,14 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
+import CountryEditionContainer, {
+  countryEditionQuery,
+} from './CountryEditionContainer';
 
 const CountryPopoverDeletionMutation = graphql`
   mutation CountryPopoverDeletionMutation($id: ID!) {
@@ -107,9 +108,7 @@ const CountryPopover = ({ id }: { id: string }) => {
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <CountryEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

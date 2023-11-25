@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import CityEditionContainer, { cityEditionQuery } from './CityEditionContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
@@ -116,9 +115,7 @@ const CityPopover = ({ id }: { id: string }) => {
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <CityEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

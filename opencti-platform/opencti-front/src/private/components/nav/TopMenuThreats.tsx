@@ -42,11 +42,6 @@ const TopMenuThreats = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/threat_actors_group')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <AccountMultipleOutline className={classes.icon} fontSize="small" />
@@ -65,13 +60,6 @@ const TopMenuThreats = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes(
-              '/dashboard/threats/threat_actors_individual',
-            )
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <LaptopAccount className={classes.icon} fontSize="small" />
@@ -88,11 +76,6 @@ const TopMenuThreats = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/intrusion_sets')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <DiamondOutline className={classes.icon} fontSize="small" />
@@ -109,11 +92,6 @@ const TopMenuThreats = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/campaigns')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <ChessKnight className={classes.icon} fontSize="small" />

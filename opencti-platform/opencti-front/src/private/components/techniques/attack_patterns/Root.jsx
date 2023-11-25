@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import * as R from 'ramda';
 import {
   QueryRenderer,
   requestSubscription,
@@ -16,6 +20,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -77,6 +82,8 @@ class RootAttackPattern extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { attackPatternId },
       },
@@ -108,65 +115,116 @@ class RootAttackPattern extends Component {
           render={({ props }) => {
             if (props) {
               if (props.attackPattern) {
+                const { attackPattern } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId"
-                      render={(routeProps) => (
-                        <AttackPattern
-                          {...routeProps}
-                          attackPattern={props.attackPattern}
-                        />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="AttackPattern"
+                      disableSharing={true}
+                      stixDomainObject={props.attackPattern}
+                      PopoverComponent={<AttackPatternPopover />}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
+                          )
+                            ? `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
-                      render={(routeProps) => (
-                        <AttackPatternKnowledge
-                          {...routeProps}
-                          attackPattern={props.attackPattern}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
+                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Attack-Pattern'}
-                            stixDomainObject={props.attackPattern}
-                            PopoverComponent={<AttackPatternPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
+                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
+                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
+                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId"
+                        render={(routeProps) => (
+                          <AttackPattern
+                            {...routeProps}
+                            attackPattern={props.attackPattern}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
+                        render={(routeProps) => (
+                          <AttackPatternKnowledge
+                            {...routeProps}
+                            attackPattern={props.attackPattern}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.attackPattern
                             }
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Attack-Pattern'}
-                            stixDomainObject={props.attackPattern}
-                            PopoverComponent={<AttackPatternPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={attackPatternId}
@@ -174,26 +232,20 @@ class RootAttackPattern extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.attackPattern}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.attackPattern}
-                            PopoverComponent={<AttackPatternPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={attackPatternId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -211,4 +263,4 @@ RootAttackPattern.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootAttackPattern);
+export default R.compose(inject18n, withRouter)(RootAttackPattern);

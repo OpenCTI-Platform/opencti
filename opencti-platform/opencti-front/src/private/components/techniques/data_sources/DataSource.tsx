@@ -20,9 +20,6 @@ const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
   },
-  container: {
-    margin: 0,
-  },
 }));
 
 const dataSourceFragment = graphql`
@@ -90,7 +87,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
   const classes = useStyles();
   const dataSource = useFragment(dataSourceFragment, data);
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType={'Data-Source'}
         disableSharing={true}
@@ -135,7 +132,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataSourceEdition dataSourceId={dataSource.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

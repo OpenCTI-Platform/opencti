@@ -25,7 +25,7 @@ const ThemeLight = (
       dark: '#c62828',
     },
     success: { main: '#03A847' },
-    primary: { main: primary || '#007fff' },
+    primary: { main: primary || '#0066ff' },
     secondary: { main: secondary || '#d81b60' },
     chip: { main: '#000000' },
     ee: {
@@ -33,9 +33,9 @@ const ThemeLight = (
       background: hexToRGB(EE_COLOR, 0.3),
     },
     background: {
-      default: background || '#ffffff',
-      paper: paper || '#f3f6f9',
-      nav: nav || '#f9feff',
+      default: background || '#f3f6f9',
+      paper: paper || '#ffffff',
+      nav: nav || '#ffffff',
       accent: accent || '#d3eaff',
       shadow: 'rgba(0, 0, 0, .05)',
     },
@@ -54,7 +54,7 @@ const ThemeLight = (
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#007fff',
+      color: primary || '#0066ff',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -68,7 +68,7 @@ const ThemeLight = (
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#007fff',
+      color: primary || '#0066ff',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -89,7 +89,7 @@ const ThemeLight = (
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || '#007fff',
+      color: primary || '#0066ff',
     },
     subtitle2: {
       fontWeight: 400,
@@ -162,7 +162,7 @@ const ThemeLight = (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || '#007fff',
+            color: primary || '#0066ff',
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
@@ -227,11 +227,11 @@ const ThemeLight = (
               borderBottom: '2px solid #000000 !important',
             },
             '&:focus': {
-              borderBottom: `2px solid ${primary || '#007fff'} !important`,
+              borderBottom: `2px solid ${primary || '#0066ff'} !important`,
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || '#007fff'} !important`,
+            color: `${primary || '#0066ff'} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || '#c0dfff'} !important`,

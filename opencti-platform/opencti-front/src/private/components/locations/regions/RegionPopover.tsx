@@ -12,13 +12,14 @@ import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
+import RegionEditionContainer, {
+  regionEditionQuery,
+} from './RegionEditionContainer';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -116,9 +117,7 @@ const RegionPopover = ({ id }: { id: string }) => {
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <RegionEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
