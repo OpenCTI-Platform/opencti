@@ -9,7 +9,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 
 const useStyles = makeStyles(() => ({
   container: {
-    margin: 0,
+    marginTop: 10,
   },
 }));
 

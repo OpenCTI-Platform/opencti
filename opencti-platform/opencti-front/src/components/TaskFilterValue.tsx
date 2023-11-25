@@ -3,7 +3,9 @@ import React from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import FilterIconButtonContent, {
+  filterIconButtonContentQuery,
+} from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
@@ -21,19 +23,26 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TaskFilterValue = ({ filters, queryRef }:
-{
-  filters: FilterGroup,
-  queryRef: PreloadedQuery<FilterIconButtonContentQuery>,
+const TaskFilterValue = ({
+  filters,
+  queryRef,
+}: {
+  filters: FilterGroup;
+  queryRef: PreloadedQuery<FilterIconButtonContentQuery>;
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(filterIconButtonContentQuery, queryRef);
-  const filtersRepresentativesMap = new Map((filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]));
+  const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
+    filterIconButtonContentQuery,
+    queryRef,
+  );
+  const filtersRepresentativesMap = new Map(
+    (filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]),
+  );
   const globalFilterMode = t(filters.mode.toUpperCase());
   return (
     <>
-      {filters.filters.map((currentFilter) => {
+      {(filters.filters ?? []).map((currentFilter) => {
         const label = `${truncate(
           currentFilter.key.startsWith('rel_')
             ? t(
@@ -44,41 +53,45 @@ const TaskFilterValue = ({ filters, queryRef }:
             : t(`filter_${currentFilter.key}`),
           20,
         )}`;
-        const isOperatorNil = ['nil', 'not_nil'].includes(currentFilter.operator);
+        const isOperatorNil = ['nil', 'not_nil'].includes(
+          currentFilter.operator,
+        );
         return (
           <span key={currentFilter.key}>
             <Chip
               classes={{ root: classes.filter }}
               label={
                 <div>
-                  <strong>{label}</strong>: {isOperatorNil
-                    ? <span>{t('No value')}</span>
-                    : currentFilter.values.map(
-                      (o) => {
-                        const localFilterMode = t(currentFilter.mode.toUpperCase());
-                        return (
-                      <span key={o}>
-                        <FilterIconButtonContent
-                          filterKey={currentFilter.key}
-                          id={o}
-                          value={filtersRepresentativesMap.get(o)}
-                        ></FilterIconButtonContent>
-                        {R.last(currentFilter.values) !== o
-                          && (<code>{localFilterMode}</code>)
-                        }{' '}
-                      </span>
-                        );
-                      },
-                    )}
+                  <strong>{label}</strong>:{' '}
+                  {isOperatorNil ? (
+                    <span>{t('No value')}</span>
+                  ) : (
+                    currentFilter.values.map((o) => {
+                      const localFilterMode = t(
+                        currentFilter.mode.toUpperCase(),
+                      );
+                      return (
+                        <span key={o}>
+                          <FilterIconButtonContent
+                            filterKey={currentFilter.key}
+                            id={o}
+                            value={filtersRepresentativesMap.get(o)}
+                          ></FilterIconButtonContent>
+                          {R.last(currentFilter.values) !== o && (
+                            <code>{localFilterMode}</code>
+                          )}{' '}
+                        </span>
+                      );
+                    })
+                  )}
                 </div>
               }
             />
-            {R.last(filters.filters)?.key
-              !== currentFilter.key && (
-                <Chip
-                  classes={{ root: classes.operator }}
-                  label={globalFilterMode}
-                />
+            {R.last(filters.filters)?.key !== currentFilter.key && (
+              <Chip
+                classes={{ root: classes.operator }}
+                label={globalFilterMode}
+              />
             )}
           </span>
         );

@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import InfrastructureDetails from './InfrastructureDetails';
 import InfrastructureEdition from './InfrastructureEdition';
-import InfrastructurePopover from './InfrastructurePopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -17,9 +15,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -85,17 +80,18 @@ const infrastructureFragment = graphql`
   }
 `;
 
-const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) => {
+const Infrastructure = ({
+  data,
+}: {
+  data: Infrastructure_infrastructure$key;
+}) => {
   const classes = useStyles();
-  const infrastructureData = useFragment<Infrastructure_infrastructure$key>(infrastructureFragment, data);
-
+  const infrastructureData = useFragment<Infrastructure_infrastructure$key>(
+    infrastructureFragment,
+    data,
+  );
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Infrastructure'}
-        stixDomainObject={infrastructureData}
-        PopoverComponent={<InfrastructurePopover id={infrastructureData.id}/>}
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -124,7 +120,9 @@ const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) =
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={infrastructureData.id} />
+          <StixCoreObjectLatestHistory
+            stixCoreObjectId={infrastructureData.id}
+          />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
@@ -136,7 +134,7 @@ const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) =
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <InfrastructureEdition infrastructureId={infrastructureData.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

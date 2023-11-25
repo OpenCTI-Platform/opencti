@@ -166,6 +166,12 @@ class RootEvent extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/events/${event.id}/sightings`}
+                          value={`/dashboard/entities/events/${event.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/events/${event.id}/files`}
                           value={`/dashboard/entities/events/${event.id}/files`}
                           label={t('Data')}

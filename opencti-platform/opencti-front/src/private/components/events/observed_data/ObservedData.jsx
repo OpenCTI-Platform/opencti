@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
-import ContainerHeader from '../../common/containers/ContainerHeader';
 import ObservedDataDetails from './ObservedDataDetails';
 import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -14,14 +11,10 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import ObservedDataPopover from './ObservedDataPopover';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -31,11 +24,7 @@ class ObservedDataComponent extends Component {
   render() {
     const { classes, observedData } = this.props;
     return (
-      <div className={classes.container}>
-        <ContainerHeader
-          container={observedData}
-          PopoverComponent={<ObservedDataPopover />}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -76,7 +65,7 @@ class ObservedDataComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataEdition observedDataId={observedData.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -84,7 +73,6 @@ class ObservedDataComponent extends Component {
 ObservedDataComponent.propTypes = {
   observedData: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const ObservedData = createFragmentContainer(ObservedDataComponent, {
@@ -148,4 +136,4 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ObservedData);
+export default withStyles(styles)(ObservedData);

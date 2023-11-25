@@ -5,23 +5,13 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import IncidentPopover from './IncidentPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 import { IncidentKnowledge_incident$key } from './__generated__/IncidentKnowledge_incident.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const IncidentKnowledgeFragment = graphql`
   fragment IncidentKnowledge_incident on Incident {
@@ -38,21 +28,13 @@ const IncidentKnowledge = ({
 }: {
   incidentData: IncidentKnowledge_incident$key;
 }) => {
-  const classes = useStyles();
-
   const incident = useFragment<IncidentKnowledge_incident$key>(
     IncidentKnowledgeFragment,
     incidentData,
   );
   const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
-
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Incident'}
-        stixDomainObject={incident}
-        PopoverComponent={IncidentPopover}
-      />
+    <>
       <Switch>
         <Route
           exact
@@ -247,7 +229,7 @@ const IncidentKnowledge = ({
           )}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

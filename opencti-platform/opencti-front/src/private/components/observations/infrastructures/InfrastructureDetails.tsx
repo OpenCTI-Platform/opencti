@@ -85,9 +85,22 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     {
       attribute: 'entity_type',
       filters: {
-        entity_type: [{ id: 'Stix-Cyber-Observable' }],
-        elementId: [{ id: data.id }],
-        relationship_type: [{ id: 'consists-of' }],
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: 'Stix-Cyber-Observable',
+          },
+          {
+            key: 'elementId',
+            values: data.id,
+          },
+          {
+            key: 'relationship_type',
+            values: 'consists-of',
+          },
+        ],
+        filterGroups: [],
       },
     },
   ];

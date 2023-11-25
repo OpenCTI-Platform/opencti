@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -17,6 +21,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import FileManager from '../../common/files/FileManager';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -77,6 +82,8 @@ class RootStixCyberObservable extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { observableId },
       },
@@ -90,53 +97,103 @@ class RootStixCyberObservable extends Component {
           render={({ props }) => {
             if (props) {
               if (props.stixCyberObservable) {
+                const { stixCyberObservable } = props;
                 return (
-                  <div>
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId"
-                      render={(routeProps) => (
-                        <StixCyberObservable
-                          {...routeProps}
-                          stixCyberObservable={props.stixCyberObservable}
-                        />
-                      )}
+                  <>
+                    <StixCyberObservableHeader
+                      stixCyberObservable={stixCyberObservable}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/knowledge"
-                      render={(routeProps) => (
-                        <StixCyberObservableKnowledge
-                          {...routeProps}
-                          stixCyberObservable={props.stixCyberObservable}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`,
+                          )
+                            ? `/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`}
+                          label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/analyses`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/sightings`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/files`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/history`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId"
+                        render={(routeProps) => (
+                          <StixCyberObservable
+                            {...routeProps}
                             stixCyberObservable={props.stixCyberObservable}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/knowledge"
+                        render={(routeProps) => (
+                          <StixCyberObservableKnowledge
+                            {...routeProps}
+                            stixCyberObservable={props.stixCyberObservable}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.stixCyberObservable
                             }
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
-                            stixCyberObservable={props.stixCyberObservable}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
                             {...routeProps}
                             entityId={observableId}
@@ -154,17 +211,12 @@ class RootStixCyberObservable extends Component {
                               'System',
                             ]}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
-                            stixCyberObservable={props.stixCyberObservable}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={observableId}
@@ -172,55 +224,40 @@ class RootStixCyberObservable extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.stixCyberObservable}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
-                            stixCyberObservable={props.stixCyberObservable}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={observableId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
-                            stixCyberObservable={props.stixCyberObservable}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
+                        render={(routeProps) => (
                           <StixCoreRelationship
                             entityId={observableId}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/observables/:observableId/knowledge/sightings/:sightingId"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixCyberObservableHeader
-                            stixCyberObservable={props.stixCyberObservable}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/observables/:observableId/knowledge/sightings/:sightingId"
+                        render={(routeProps) => (
                           <StixSightingRelationship
                             entityId={observableId}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </div>
+                        )}
+                      />
+                    </Switch>
+                  </>
                 );
               }
               return <ErrorNotFound />;
@@ -238,4 +275,4 @@ RootStixCyberObservable.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootStixCyberObservable);
+export default R.compose(inject18n, withRouter)(RootStixCyberObservable);

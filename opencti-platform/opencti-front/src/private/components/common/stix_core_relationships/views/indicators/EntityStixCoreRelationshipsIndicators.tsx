@@ -29,11 +29,9 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   defaultStopTime,
 }) => {
   const classes = useStyles();
-
   const relationshipTypes = ['indicates'];
   const entityTypes = ['Indicator'];
   const LOCAL_STORAGE_KEY = `relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
-
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
     LOCAL_STORAGE_KEY,
     {
@@ -45,7 +43,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
     },
   );
   const { view } = localStorage.viewStorage;
-
   return (
     <ExportContextProvider>
       <div className={classes.container}>

@@ -115,14 +115,12 @@ const ReportDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = report.relatedContainers.edges.length > 5;
-
   const relatedContainers = R.take(
     expanded ? 200 : 5,
     report.relatedContainers.edges,
   ).filter(
     (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
   );
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>

@@ -16,6 +16,7 @@ export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_TO_FILTER = 'toId';
 export const INSTANCE_FILTER = 'elementId';
+export const INSTANCE_TYPE_FILTER = 'elementType';
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
@@ -47,6 +48,7 @@ export const RULE_FILTER = 'rule';
 export const specialFilterKeys = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
+  INSTANCE_TYPE_FILTER, // element type involved in audit logging
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator

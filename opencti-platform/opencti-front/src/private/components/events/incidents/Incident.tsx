@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
-import IncidentPopover from './IncidentPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -17,9 +15,6 @@ import { Incident_incident$key } from './__generated__/Incident_incident.graphql
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -113,13 +108,7 @@ const Incident = ({
     incidentData,
   );
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Incident'}
-        stixDomainObject={incident}
-        PopoverComponent={IncidentPopover}
-        enableQuickSubscription
-      />
+    <>
       <Grid
         container={true}
         spacing={3}
@@ -162,7 +151,7 @@ const Incident = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IncidentEdition incidentId={incident.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

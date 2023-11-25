@@ -1,26 +1,12 @@
 import React from 'react';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
-import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableEntities';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-});
-
-const StixCyberObservableKnowledge = (props) => {
-  const { stixCyberObservable, classes } = props;
+const StixCyberObservableKnowledgeComponent = (props) => {
+  const { stixCyberObservable } = props;
   return (
-    <div className={classes.container}>
-      <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
+    <>
       <div style={{ marginTop: 20 }}>
         <StixCyberObservableNestedEntities
           entityId={stixCyberObservable.id}
@@ -32,12 +18,12 @@ const StixCyberObservableKnowledge = (props) => {
           entityId={stixCyberObservable.id}
         />
       </div>
-    </div>
+    </>
   );
 };
 
-const StixCyberObservableKnowledgeFragment = createFragmentContainer(
-  StixCyberObservableKnowledge,
+const StixCyberObservableKnowledge = createFragmentContainer(
+  StixCyberObservableKnowledgeComponent,
   {
     stixCyberObservable: graphql`
       fragment StixCyberObservableKnowledge_stixCyberObservable on StixCyberObservable {
@@ -50,7 +36,4 @@ const StixCyberObservableKnowledgeFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableKnowledgeFragment);
+export default StixCyberObservableKnowledge;

@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -18,6 +22,7 @@ import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -77,61 +82,105 @@ class RootIndicator extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { indicatorId },
       },
     } = this.props;
     return (
-      <div>
+      <>
         <QueryRenderer
           query={indicatorQuery}
           variables={{ id: indicatorId, relationship_type: 'indicates' }}
           render={({ props }) => {
             if (props) {
               if (props.indicator) {
+                const { indicator } = props;
                 return (
-                  <div>
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId"
-                      render={(routeProps) => (
-                        <Indicator
-                          {...routeProps}
-                          indicator={props.indicator}
-                        />
-                      )}
+                  <>
+                    <StixDomainObjectHeader
+                      entityType="Indicator"
+                      stixDomainObject={indicator}
+                      PopoverComponent={<IndicatorPopover />}
+                      noAliases={true}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Indicator'}
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/observations/indicators/${indicator.id}/knowledge`,
+                          )
+                            ? `/dashboard/observations/indicators/${indicator.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}`}
+                          value={`/dashboard/observations/indicators/${indicator.id}`}
+                          label={t('Overview')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
+                          label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/analyses`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/sightings`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/files`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/history`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId"
+                        render={(routeProps) => (
+                          <Indicator {...routeProps} indicator={indicator} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.indicator
-                            }
+                            stixDomainObjectOrStixCoreRelationship={indicator}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Indicator'}
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
                             {...routeProps}
                             entityId={indicatorId}
@@ -146,20 +195,12 @@ class RootIndicator extends Component {
                               'System',
                             ]}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Indicator'}
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={indicatorId}
@@ -167,80 +208,50 @@ class RootIndicator extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.indicator}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Indicator'}
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={indicatorId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/knowledge"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Indicator'}
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/knowledge"
+                        render={(routeProps) => (
                           <IndicatorEntities
                             {...routeProps}
                             indicatorId={indicatorId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
+                        render={(routeProps) => (
                           <StixCoreRelationship
                             entityId={indicatorId}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/indicators/:indicatorId/knowledge/sightings/:sightingId"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.indicator}
-                            PopoverComponent={<IndicatorPopover />}
-                            noAliases={true}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/observations/indicators/:indicatorId/knowledge/sightings/:sightingId"
+                        render={(routeProps) => (
                           <StixSightingRelationship
                             entityId={indicatorId}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </div>
+                        )}
+                      />
+                    </Switch>
+                  </>
                 );
               }
               return <ErrorNotFound />;
@@ -248,7 +259,7 @@ class RootIndicator extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -258,4 +269,4 @@ RootIndicator.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootIndicator);
+export default R.compose(inject18n, withRouter)(RootIndicator);

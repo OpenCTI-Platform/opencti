@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
@@ -14,13 +12,9 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCyberObservableOverview from './StixCyberObservableOverview';
-import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -28,13 +22,9 @@ const styles = () => ({
 
 class StixCyberObservableComponent extends Component {
   render() {
-    const { classes, stixCyberObservable, isArtifact } = this.props;
+    const { classes, stixCyberObservable } = this.props;
     return (
-      <div className={classes.container}>
-        <StixCyberObservableHeader
-          stixCyberObservable={stixCyberObservable}
-          isArtifact={isArtifact}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -83,7 +73,7 @@ class StixCyberObservableComponent extends Component {
             stixCyberObservableId={stixCyberObservable.id}
           />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -91,8 +81,6 @@ class StixCyberObservableComponent extends Component {
 StixCyberObservableComponent.propTypes = {
   stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  isArtifact: PropTypes.bool,
 };
 
 const StixCyberObservable = createFragmentContainer(
@@ -147,4 +135,4 @@ const StixCyberObservable = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservable);
+export default withStyles(styles)(StixCyberObservable);

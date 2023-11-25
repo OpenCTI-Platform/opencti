@@ -170,6 +170,12 @@ class RootSector extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                          value={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/sectors/${sector.id}/files`}
                           value={`/dashboard/entities/sectors/${sector.id}/files`}
                           label={t('Data')}

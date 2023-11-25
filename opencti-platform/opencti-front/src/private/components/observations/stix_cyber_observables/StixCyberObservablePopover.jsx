@@ -12,21 +12,17 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -39,11 +35,6 @@ const styles = (theme) => ({
     padding: 0,
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const StixCyberObservablePopoverDeletionMutation = graphql`
   mutation StixCyberObservablePopoverDeletionMutation($id: ID!) {
@@ -112,7 +103,7 @@ class StixCyberObservablePopover extends Component {
   render() {
     const { classes, t, stixCyberObservableId } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
@@ -183,11 +174,11 @@ class StixCyberObservablePopover extends Component {
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <div />;
             }}
           />
         </Drawer>
-      </div>
+      </>
     );
   }
 }

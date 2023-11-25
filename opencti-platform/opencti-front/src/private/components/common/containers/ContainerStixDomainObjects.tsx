@@ -1,18 +1,13 @@
 import React from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import {
-  ContainerStixDomainObjectLine_node$data,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
+import { ContainerStixDomainObjectLine_node$data } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectLineDummy } from '@components/common/containers/ContainerStixDomainObjectLine';
-import {
-  ContainerStixDomainObjects_container$key,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
+import { ContainerStixDomainObjects_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixDomainObjectsLines, {
   containerStixDomainObjectsLinesQuery,
@@ -25,44 +20,43 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: '20px 0 0 0',
-    padding: '0 260px 90px 0',
-  },
-}));
-
 const ContainerStixDomainObjectsFragment = graphql`
-            fragment ContainerStixDomainObjects_container on Container {
-                id
-                ... on Report {
-                    name
-                }
-                ... on Grouping {
-                    name
-                }
-                ... on Note {
-                    attribute_abstract
-                    content
-                }
-                ... on Opinion {
-                    opinion
-                }
-                ... on ObservedData {
-                    name
-                    first_observed
-                    last_observed
-                }
-                ...ContainerHeader_container
-            }
-  `;
+  fragment ContainerStixDomainObjects_container on Container {
+    id
+    ... on Report {
+      name
+    }
+    ... on Grouping {
+      name
+    }
+    ... on Note {
+      attribute_abstract
+      content
+    }
+    ... on Opinion {
+      opinion
+    }
+    ... on ObservedData {
+      name
+      first_observed
+      last_observed
+    }
+    ...ContainerHeader_container
+  }
+`;
 
-const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDomainObjects_container$key }) => {
-  const classes = useStyles();
+const ContainerStixDomainObjects = ({
+  container,
+}: {
+  container: ContainerStixDomainObjects_container$key;
+}) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const containerData = useFragment(ContainerStixDomainObjectsFragment, container);
+  const containerData = useFragment(
+    ContainerStixDomainObjectsFragment,
+    container,
+  );
   const LOCAL_STORAGE_KEY = `container-${containerData.id}-stixDomainObjects`;
   const {
     viewStorage,
@@ -88,11 +82,10 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
     openExports,
     types,
   } = viewStorage;
-
   const finalPaginationOptions = {
     ...paginationOptions,
     id: containerData.id,
-    types: (types && types.length > 0) ? types : ['Stix-Domain-Object'],
+    types: types && types.length > 0 ? types : ['Stix-Domain-Object'],
   };
   const exportFilters = {
     mode: filters?.mode ?? 'and',
@@ -104,10 +97,13 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
       },
       {
         key: 'entity_type',
-        values: (types && types.length > 0) ? R.map((n) => ({ id: n, value: n }), types) : [],
+        values:
+          types && types.length > 0
+            ? R.map((n) => ({ id: n, value: n }), types)
+            : [],
         operator: 'eq',
       },
-      ...filters?.filters ?? [],
+      ...(filters?.filters ?? []),
     ],
     filterGroups: filters?.filterGroups ?? [],
   };
@@ -127,16 +123,13 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
       },
       {
         key: 'entity_type',
-        values: (types && types.length > 0)
-          ? types
-          : ['Stix-Domain-Object'],
+        values: types && types.length > 0 ? types : ['Stix-Domain-Object'],
         operator: 'eq',
       },
-      ...filters?.filters ?? [],
+      ...(filters?.filters ?? []),
     ],
     filterGroups: filters?.filterGroups ?? [],
   };
-
   const {
     selectedElements,
     deSelectedElements,
@@ -150,7 +143,6 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
     containerStixDomainObjectsLinesQuery,
     finalPaginationOptions,
   );
-
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     entity_type: {
@@ -189,84 +181,84 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
       isSortable: isRuntimeSort,
     },
   };
-
   return (
-      <div className={classes.container}>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          iconExtension={true}
-          exportEntityType="Stix-Domain-Object"
-          exportContext={`of-container-${containerData.id}`}
-          filters={filters}
-          availableFilterKeys={[
-            'objectLabel',
-            'objectMarking',
-            'created_at',
-            'createdBy',
-          ]}
-          keyword={searchTerm}
-          secondaryAction={true}
-          numberOfElements={numberOfElements}
-          paginationOptions={exportPaginationOptions}
+    <ListLines
+      sortBy={sortBy}
+      orderAsc={orderAsc}
+      dataColumns={dataColumns}
+      handleSort={storageHelpers.handleSort}
+      handleSearch={storageHelpers.handleSearch}
+      handleAddFilter={storageHelpers.handleAddFilter}
+      handleRemoveFilter={storageHelpers.handleRemoveFilter}
+      handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+      handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+      handleToggleExports={storageHelpers.handleToggleExports}
+      openExports={openExports}
+      handleToggleSelectAll={handleToggleSelectAll}
+      selectAll={selectAll}
+      iconExtension={true}
+      exportEntityType="Stix-Domain-Object"
+      exportContext={`of-container-${containerData.id}`}
+      filters={filters}
+      availableFilterKeys={[
+        'objectLabel',
+        'objectMarking',
+        'created_at',
+        'createdBy',
+      ]}
+      keyword={searchTerm}
+      secondaryAction={true}
+      numberOfElements={numberOfElements}
+      paginationOptions={exportPaginationOptions}
+    >
+      {queryRef && (
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((idx) => (
+                  <ContainerStixDomainObjectLineDummy
+                    key={idx}
+                    dataColumns={dataColumns}
+                  />
+                ))}
+            </>
+          }
         >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((idx) => (
-                      <ContainerStixDomainObjectLineDummy key={idx} dataColumns={dataColumns}/>
-                    ))}
-                </>
-              }
-            >
-              <ContainerStixDomainObjectsLines
-                queryRef={queryRef}
-                paginationOptions={finalPaginationOptions}
-                dataColumns={dataColumns}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                onTypesChange={storageHelpers.handleToggleTypes}
-                openExports={openExports}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-              />
-              <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                filters={backgroundTaskFilters}
-                search={searchTerm}
-                handleClearSelectedElements={handleClearSelectedElements}
-                variant="large"
-                container={containerData}
-                warning={true}
-              />
-              <StixDomainObjectsRightBar
-                types={types}
-                handleToggle={storageHelpers.handleToggleTypes}
-                handleClear={storageHelpers.handleClearTypes}
-                openExports={openExports}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-      </div>
+          <ContainerStixDomainObjectsLines
+            queryRef={queryRef}
+            paginationOptions={finalPaginationOptions}
+            dataColumns={dataColumns}
+            setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+            onTypesChange={storageHelpers.handleToggleTypes}
+            openExports={openExports}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            onToggleEntity={onToggleEntity}
+            selectAll={selectAll}
+          />
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            filters={backgroundTaskFilters}
+            search={searchTerm}
+            handleClearSelectedElements={handleClearSelectedElements}
+            variant="large"
+            container={containerData}
+            warning={true}
+          />
+          <StixDomainObjectsRightBar
+            types={types}
+            handleToggle={storageHelpers.handleToggleTypes}
+            handleClear={storageHelpers.handleClearTypes}
+            openExports={openExports}
+          />
+        </React.Suspense>
+      )}
+    </ListLines>
   );
 };
 

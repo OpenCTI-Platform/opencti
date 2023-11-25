@@ -38,13 +38,7 @@ import TopMenuOpinion from './TopMenuOpinion';
 import TopMenuGrouping from './TopMenuGrouping';
 import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
-import TopMenuIncident from './TopMenuIncident';
-import TopMenuObservedData from './TopMenuObservedData';
 import TopMenuObservations from './TopMenuObservations';
-import TopMenuIndicator from './TopMenuIndicator';
-import TopMenuInfrastructure from './TopMenuInfrastructure';
-import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
-import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuEntities from './TopMenuEntities';
@@ -172,26 +166,7 @@ const routes = {
     <TopMenuExternalReference id={id} />
   ),
   '/dashboard/analyses': () => <TopMenuAnalyses />,
-  // EVENTS
-  '/dashboard/events/sightings/': () => <TopMenuEvents />,
-  '/dashboard/events/observed_data/': (id: string) => (
-    <TopMenuObservedData id={id} />
-  ),
-  '/dashboard/events/incidents/': (id: string) => <TopMenuIncident id={id} />,
   '/dashboard/events': () => <TopMenuEvents />,
-  // OBSERVATIONS
-  '/dashboard/observations/indicators/': (id: string) => (
-    <TopMenuIndicator id={id} />
-  ),
-  '/dashboard/observations/infrastructures/': (id: string) => (
-    <TopMenuInfrastructure id={id} />
-  ),
-  '/dashboard/observations/observables/': (id: string) => (
-    <TopMenuStixCyberObservable id={id} />
-  ),
-  '/dashboard/observations/artifacts/': (id: string) => (
-    <TopMenuArtifact id={id} />
-  ),
   '/dashboard/observations': () => <TopMenuObservations />,
   '/dashboard/threats': () => <TopMenuThreats />,
   '/dashboard/arsenal': () => <TopMenuArsenal />,

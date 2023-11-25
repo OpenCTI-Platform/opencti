@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArchiveOutline, HexagonOutline, ServerNetwork, ShieldSearch } from 'mdi-material-ui';
+import {
+  ArchiveOutline,
+  HexagonOutline,
+  ServerNetwork,
+  ShieldSearch,
+} from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
@@ -29,45 +34,35 @@ const TopMenuObservations = () => {
     <div>
       {!useIsHiddenEntity('Stix-Cyber-Observable') && (
         <Button
-        component={Link}
-        to="/dashboard/observations/observables"
-        variant={
-          location.pathname.includes('/dashboard/observations/observables')
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname.includes('/dashboard/observations/observables')
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <HexagonOutline className={classes.icon} fontSize="small" />
-        {t('Observables')}
-      </Button>
+          component={Link}
+          to="/dashboard/observations/observables"
+          variant={
+            location.pathname.includes('/dashboard/observations/observables')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          classes={{ root: classes.button }}
+        >
+          <HexagonOutline className={classes.icon} fontSize="small" />
+          {t('Observables')}
+        </Button>
       )}
       {!useIsHiddenEntity('Artifact') && (
-      <Button
-        component={Link}
-        to="/dashboard/observations/artifacts"
-        variant={
-          location.pathname.includes('/dashboard/observations/artifacts')
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname.includes('/dashboard/observations/artifacts')
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <ArchiveOutline className={classes.icon} fontSize="small" />
-        {t('Artifacts')}
-      </Button>
+        <Button
+          component={Link}
+          to="/dashboard/observations/artifacts"
+          variant={
+            location.pathname.includes('/dashboard/observations/artifacts')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          classes={{ root: classes.button }}
+        >
+          <ArchiveOutline className={classes.icon} fontSize="small" />
+          {t('Artifacts')}
+        </Button>
       )}
       {!useIsHiddenEntity('Indicator') && (
         <Button
@@ -79,11 +74,6 @@ const TopMenuObservations = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/observations/indicators')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <ShieldSearch className={classes.icon} fontSize="small" />
@@ -102,13 +92,6 @@ const TopMenuObservations = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes(
-              '/dashboard/observations/infrastructures',
-            )
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <ServerNetwork className={classes.icon} fontSize="small" />

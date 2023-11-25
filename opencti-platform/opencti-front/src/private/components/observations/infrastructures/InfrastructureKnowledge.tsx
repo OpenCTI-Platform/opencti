@@ -5,12 +5,9 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import InfrastructurePopover from './InfrastructurePopover';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -21,13 +18,6 @@ import EntityStixCoreRelationshipsStixCyberObservable
 import {
   InfrastructureKnowledge_infrastructure$key,
 } from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const infrastructureKnowledgeFragment = graphql`
   fragment InfrastructureKnowledge_infrastructure on Infrastructure {
@@ -40,19 +30,13 @@ const infrastructureKnowledgeFragment = graphql`
 `;
 
 const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: InfrastructureKnowledge_infrastructure$key }) => {
-  const classes = useStyles();
   const infrastructureData = useFragment<InfrastructureKnowledge_infrastructure$key>(
     infrastructureKnowledgeFragment,
     infrastructure,
   );
   const link = `/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`;
   return (
-    <div className={classes.container}>
-      <StixDomainObjectHeader
-        entityType={'Infrastructure'}
-        stixDomainObject={infrastructureData}
-        PopoverComponent={<InfrastructurePopover id={infrastructureData.id} />}
-      />
+    <>
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
         availableSections={[
@@ -336,7 +320,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           />
         )}
       />
-    </div>
+    </>
   );
 };
 

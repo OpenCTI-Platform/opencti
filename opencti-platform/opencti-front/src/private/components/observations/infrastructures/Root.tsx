@@ -3,9 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, useParams, Switch } from 'react-router-dom';
+import { Route, Redirect, useParams, Switch, Link } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { useLocation } from 'react-router-dom-v5-compat';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -18,6 +22,7 @@ import { RootInfrastructureSubscription } from './__generated__/RootInfrastructu
 import { RootInfrastructureQuery } from './__generated__/RootInfrastructureQuery.graphql';
 import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useFormatter } from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -59,66 +64,117 @@ const infrastructureQuery = graphql`
 `;
 
 const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootInfrastructureSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootInfrastructureSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: infrastructureId },
     }),
     [infrastructureId],
   );
+  const location = useLocation();
+  const { t } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   return (
     <>
       {infrastructure ? (
-        <Switch>
-          <Route
-            exact
-            path="/dashboard/observations/infrastructures/:infrastructureId"
-            render={() => <Infrastructure data={infrastructure} />}
+        <div
+          style={{
+            paddingRight: location.pathname.includes(
+              `/dashboard/observations/infrastructures/${data.id}/knowledge`,
+            )
+              ? 200
+              : 0,
+          }}
+        >
+          <StixDomainObjectHeader
+            entityType="Infrastructure"
+            stixDomainObject={infrastructure}
+            PopoverComponent={InfrastructurePopover}
+            enableQuickSubscription={true}
           />
-          <Route
-            exact
-            path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-            render={() => (
-              <Redirect
-                to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
+          <Box
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+          >
+            <Tabs
+              value={
+                location.pathname.includes(
+                  `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`,
+                )
+                  ? `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`
+                  : location.pathname
+              }
+            >
+              <Tab
+                component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}`}
+                label={t('Overview')}
               />
-            )}
-          />
-          <Route
-            path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-            render={() => (
-              <InfrastructureKnowledge infrastructure={infrastructure} />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/observations/infrastructures/:infrastructureId/analyses"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Infrastructure'}
-                  stixDomainObject={infrastructure}
-                  PopoverComponent={InfrastructurePopover}
+              <Tab
+                component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
+                label={t('Knowledge')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
+                label={t('Analyses')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
+                label={t('Data')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
+                label={t('History')}
+              />
+            </Tabs>
+          </Box>
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/observations/infrastructures/:infrastructureId"
+              render={() => <Infrastructure data={infrastructure} />}
+            />
+            <Route
+              exact
+              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
                 />
+              )}
+            />
+            <Route
+              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
+              render={() => (
+                <InfrastructureKnowledge infrastructure={infrastructure} />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/observations/infrastructures/:infrastructureId/analyses"
+              render={(routeProps) => (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/observations/infrastructures/:infrastructureId/files"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  stixDomainObject={infrastructure}
-                  PopoverComponent={InfrastructurePopover}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/observations/infrastructures/:infrastructureId/files"
+              render={(routeProps) => (
                 <FileManager
                   {...routeProps}
                   id={infrastructureId}
@@ -126,28 +182,20 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
                 />
-              </React.Fragment>
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/observations/infrastructures/:infrastructureId/history"
-            render={(routeProps) => (
-              <React.Fragment>
-                <StixDomainObjectHeader
-                  entityType={'Infrastructure'}
-                  disableSharing={true}
-                  stixDomainObject={infrastructure}
-                  PopoverComponent={InfrastructurePopover}
-                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/observations/infrastructures/:infrastructureId/history"
+              render={(routeProps) => (
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={infrastructureId}
                 />
-              </React.Fragment>
-            )}
-          />
-        </Switch>
+              )}
+            />
+          </Switch>
+        </div>
       ) : (
         <ErrorNotFound />
       )}
@@ -157,12 +205,18 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
 
 const RootInfrastructure = () => {
   const { infrastructureId } = useParams() as { infrastructureId: string };
-  const queryRef = useQueryLoading<RootInfrastructureQuery>(infrastructureQuery, { id: infrastructureId });
+  const queryRef = useQueryLoading<RootInfrastructureQuery>(
+    infrastructureQuery,
+    { id: infrastructureId },
+  );
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootInfrastructureComponent queryRef={queryRef} infrastructureId={infrastructureId} />
+          <RootInfrastructureComponent
+            queryRef={queryRef}
+            infrastructureId={infrastructureId}
+          />
         </React.Suspense>
       )}
     </>

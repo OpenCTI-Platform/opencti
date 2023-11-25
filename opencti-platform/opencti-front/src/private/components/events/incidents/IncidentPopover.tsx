@@ -8,25 +8,19 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../components/i18n';
-import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import IncidentEditionContainer, {
+  IncidentEditionQuery,
+} from './IncidentEditionContainer';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const IncidentPopoverDeletionMutation = graphql`
   mutation IncidentPopoverDeletionMutation($id: ID!) {
@@ -37,14 +31,10 @@ const IncidentPopoverDeletionMutation = graphql`
 `;
 
 const IncidentPopover = ({ id }: { id: string }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-
   const [commit] = useMutation(IncidentPopoverDeletionMutation);
   const queryRef = useQueryLoading<IncidentEditionContainerQuery>(
     IncidentEditionQuery,
@@ -53,20 +43,16 @@ const IncidentPopover = ({ id }: { id: string }) => {
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(undefined);
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
-
   const {
     deleting,
     handleOpenDelete,
@@ -74,7 +60,6 @@ const IncidentPopover = ({ id }: { id: string }) => {
     handleCloseDelete,
     setDeleting,
   } = useDeletion({ handleClose });
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -88,9 +73,8 @@ const IncidentPopover = ({ id }: { id: string }) => {
       },
     });
   };
-
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -127,9 +111,7 @@ const IncidentPopover = ({ id }: { id: string }) => {
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <IncidentEditionContainer
             queryRef={queryRef}
             handleClose={handleCloseEdit}
@@ -137,8 +119,8 @@ const IncidentPopover = ({ id }: { id: string }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
-//
+
 export default IncidentPopover;

@@ -9,22 +9,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import InfrastructureEditionContainer, { infrastructureEditionContainerQuery } from './InfrastructureEditionContainer';
+import InfrastructureEditionContainer, {
+  infrastructureEditionContainerQuery,
+} from './InfrastructureEditionContainer';
 import Transition from '../../../../components/Transition';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const InfrastructurePopoverDeletionMutation = graphql`
   mutation InfrastructurePopoverDeletionMutation($id: ID!) {
@@ -36,33 +30,25 @@ const InfrastructurePopoverDeletionMutation = graphql`
 
 const InfrastructurePopover = ({ id }: { id: string }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-
   const [commit] = useMutation(InfrastructurePopoverDeletionMutation);
   const queryRef = useQueryLoading<InfrastructureEditionContainerQuery>(
     infrastructureEditionContainerQuery,
     { id },
   );
-
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => setAnchorEl(null);
-
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
   };
-
   const handleCloseDelete = () => setDisplayDelete(false);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -76,14 +62,12 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
       },
     });
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -92,18 +76,10 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -119,25 +95,16 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<div />}>
           <InfrastructureEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
@@ -145,7 +112,7 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
           />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

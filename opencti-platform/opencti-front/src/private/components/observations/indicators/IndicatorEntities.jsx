@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
@@ -12,13 +9,6 @@ import IndicatorEntitiesLines, {
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-
-const styles = () => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
-});
 
 class IndicatorEntities extends Component {
   constructor(props) {
@@ -116,14 +106,8 @@ class IndicatorEntities extends Component {
   }
 
   render() {
-    const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const {
-      indicatorId,
-      relationshipType,
-      classes,
-      defaultStartTime,
-      defaultStopTime,
-    } = this.props;
+    const { sortBy, orderAsc, searchTerm } = this.state;
+    const { indicatorId, relationshipType, defaultStartTime, defaultStopTime } = this.props;
     const paginationOptions = {
       fromId: indicatorId,
       relationship_type: relationshipType || 'stix-core-relationship',
@@ -132,38 +116,34 @@ class IndicatorEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
-        <UserContext.Consumer>
-          {({ platformModuleHelpers }) => (
-            <>
-              {view === 'lines'
-                ? this.renderLines(platformModuleHelpers, paginationOptions)
-                : ''}
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <StixCoreRelationshipCreationFromEntity
-                  paginationOptions={paginationOptions}
-                  entityId={indicatorId}
-                  isRelationReversed={false}
-                  targetStixDomainObjectTypes={[
-                    'Threat-Actor',
-                    'Intrusion-Set',
-                    'Campaign',
-                    'Incident',
-                    'Malware',
-                    'Infrastructure',
-                    'Tool',
-                    'Vulnerability',
-                    'Attack-Pattern',
-                    'Indicator',
-                  ]}
-                  defaultStartTime={defaultStartTime}
-                  defaultStopTime={defaultStopTime}
-                />
-              </Security>
-            </>
-          )}
-        </UserContext.Consumer>
-      </div>
+      <UserContext.Consumer>
+        {({ platformModuleHelpers }) => (
+          <>
+            {this.renderLines(platformModuleHelpers, paginationOptions)}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreRelationshipCreationFromEntity
+                paginationOptions={paginationOptions}
+                entityId={indicatorId}
+                isRelationReversed={false}
+                targetStixDomainObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Infrastructure',
+                  'Tool',
+                  'Vulnerability',
+                  'Attack-Pattern',
+                  'Indicator',
+                ]}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
+              />
+            </Security>
+          </>
+        )}
+      </UserContext.Consumer>
     );
   }
 }
@@ -171,11 +151,8 @@ class IndicatorEntities extends Component {
 IndicatorEntities.propTypes = {
   indicatorId: PropTypes.string,
   relationshipType: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  history: PropTypes.object,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(IndicatorEntities);
+export default IndicatorEntities;

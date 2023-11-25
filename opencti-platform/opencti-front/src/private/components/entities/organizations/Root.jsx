@@ -213,6 +213,12 @@ class RootOrganization extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/sightings`}
+                          value={`/dashboard/entities/organizations/${organization.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/organizations/${organization.id}/files`}
                           value={`/dashboard/entities/organizations/${organization.id}/files`}
                           label={t('Data')}

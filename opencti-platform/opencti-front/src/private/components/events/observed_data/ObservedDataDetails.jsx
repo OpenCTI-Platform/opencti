@@ -26,9 +26,22 @@ class ObservedDataDetailsComponent extends Component {
       {
         attribute: 'entity_type',
         filters: {
-          entity_type: [{ id: 'Stix-Core-Object' }],
-          elementId: [{ id: observedData.id }],
-          relationship_type: [{ id: 'object' }],
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              values: 'Stix-Core-Object',
+            },
+            {
+              key: 'elementId',
+              values: observedData.id,
+            },
+            {
+              key: 'relationship_type',
+              values: 'object',
+            },
+          ],
+          filterGroups: [],
         },
       },
     ];

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
 import Security from '../../../../utils/Security';
@@ -14,14 +12,9 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -31,13 +24,7 @@ class IndicatorComponent extends Component {
   render() {
     const { classes, indicator } = this.props;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Indicator'}
-          stixDomainObject={indicator}
-          PopoverComponent={<IndicatorPopover />}
-          noAliases={true}
-        />
+      <>
         <Grid
           container={true}
           spacing={3}
@@ -79,7 +66,7 @@ class IndicatorComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorEdition indicatorId={indicator.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -152,4 +139,4 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Indicator);
+export default withStyles(styles)(Indicator);

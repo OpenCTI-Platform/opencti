@@ -27,7 +27,7 @@ const TopMenuEvents = () => {
   const { t } = useFormatter();
 
   return (
-    <div>
+    <>
       {!useIsHiddenEntity('Incident') && (
         <Button
           component={Link}
@@ -38,11 +38,6 @@ const TopMenuEvents = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/events/incidents')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <Fire className={classes.icon} fontSize="small" />
@@ -50,25 +45,20 @@ const TopMenuEvents = () => {
         </Button>
       )}
       {!useIsHiddenEntity('stix-sighting-relationship') && (
-      <Button
-        component={Link}
-        to="/dashboard/events/sightings"
-        variant={
-          location.pathname.includes('/dashboard/events/sightings')
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname.includes('/dashboard/events/sightings')
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <VisibilityOutlined className={classes.icon} fontSize="small" />
-        {t('Sightings')}
-      </Button>
+        <Button
+          component={Link}
+          to="/dashboard/events/sightings"
+          variant={
+            location.pathname.includes('/dashboard/events/sightings')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          classes={{ root: classes.button }}
+        >
+          <VisibilityOutlined className={classes.icon} fontSize="small" />
+          {t('Sightings')}
+        </Button>
       )}
       {!useIsHiddenEntity('Observed-Data') && (
         <Button
@@ -80,18 +70,13 @@ const TopMenuEvents = () => {
               : 'text'
           }
           size="small"
-          color={
-            location.pathname.includes('/dashboard/events/observed_data')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <WifiTetheringOutlined className={classes.icon} fontSize="small" />
           {t('Observed datas')}
         </Button>
       )}
-    </div>
+    </>
   );
 };
 

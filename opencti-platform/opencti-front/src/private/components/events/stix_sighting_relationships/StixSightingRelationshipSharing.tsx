@@ -19,8 +19,11 @@ import { StixSightingRelationshipSharingQuery$data } from './__generated__/StixS
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import Transition from '../../../../components/Transition';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -102,12 +105,16 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipSharing: FunctionComponent<ContainerHeaderSharedProps> = ({ elementId, disabled }) => {
+const StixSightingRelationshipSharing: FunctionComponent<
+ContainerHeaderSharedProps
+> = ({ elementId, disabled }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const userIsOrganizationEditor = useGranted([
+    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  ]);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return <div style={{ marginTop: -20 }} />;
@@ -157,7 +164,7 @@ const StixSightingRelationshipSharing: FunctionComponent<ContainerHeaderSharedPr
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Organizations sharing')}
         </Typography>
-        <EETooltip title='Share with an organization'>
+        <EETooltip title="Share with an organization">
           <IconButton
             color={isEnterpriseEdition ? 'warning' : 'ee'}
             aria-label="Label"
@@ -194,6 +201,7 @@ const StixSightingRelationshipSharing: FunctionComponent<ContainerHeaderSharedPr
               open={displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}
+              TransitionComponent={Transition}
             >
               <DialogTitle>{t('Share with an organization')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>

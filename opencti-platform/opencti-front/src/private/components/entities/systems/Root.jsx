@@ -208,6 +208,12 @@ class RootSystem extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/sightings`}
+                          value={`/dashboard/entities/systems/${system.id}/sightings`}
+                          label={t('Sightings')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/systems/${system.id}/files`}
                           value={`/dashboard/entities/systems/${system.id}/files`}
                           label={t('Data')}
