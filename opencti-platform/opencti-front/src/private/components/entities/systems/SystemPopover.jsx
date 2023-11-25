@@ -18,7 +18,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { systemEditionQuery } from './SystemEdition';
 import SystemEditionContainer from './SystemEditionContainer';
-import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
@@ -160,7 +159,7 @@ class SystemPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
       </div>

@@ -1,38 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import ToolPopover from './ToolPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class ToolKnowledgeComponent extends Component {
   render() {
-    const { classes, tool } = this.props;
+    const { tool } = this.props;
     const link = `/dashboard/arsenal/tools/${tool.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Tool'}
-          stixDomainObject={tool}
-          PopoverComponent={<ToolPopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -229,7 +214,7 @@ class ToolKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -250,8 +235,4 @@ const ToolKnowledge = createFragmentContainer(ToolKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ToolKnowledge);
+export default R.compose(inject18n, withRouter)(ToolKnowledge);

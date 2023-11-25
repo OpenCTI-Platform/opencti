@@ -47,9 +47,6 @@ import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
 import TopMenuArsenal from './TopMenuArsenal';
-import TopMenuMalware from './TopMenuMalware';
-import TopMenuTool from './TopMenuTool';
-import TopMenuVulnerability from './TopMenuVulnerability';
 import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
 import TopMenuSystem from './TopMenuSystem';
@@ -63,7 +60,6 @@ import Security from '../../../utils/Security';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
-import TopMenuChannel from './TopMenuChannel';
 import TopMenuEvent from './TopMenuEvent';
 import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
@@ -204,13 +200,6 @@ const routes = {
   ),
   '/dashboard/observations': () => <TopMenuObservations />,
   '/dashboard/threats': () => <TopMenuThreats />,
-  // ARSENAL
-  '/dashboard/arsenal/malwares/': (id: string) => <TopMenuMalware id={id} />,
-  '/dashboard/arsenal/tools/': (id: string) => <TopMenuTool id={id} />,
-  '/dashboard/arsenal/channels/': (id: string) => <TopMenuChannel id={id} />,
-  '/dashboard/arsenal/vulnerabilities/': (id: string) => (
-    <TopMenuVulnerability id={id} />
-  ),
   '/dashboard/arsenal': () => <TopMenuArsenal />,
   // ENTITIES
   '/dashboard/entities/sectors/': (id: string) => <TopMenuSector id={id} />,

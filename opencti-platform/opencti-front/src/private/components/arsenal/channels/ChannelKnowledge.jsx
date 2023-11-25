@@ -3,36 +3,21 @@ import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import ChannelPopover from './ChannelPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
-
 class ChannelKnowledgeComponent extends Component {
   render() {
-    const { classes, channel } = this.props;
+    const { channel } = this.props;
     const link = `/dashboard/arsenal/channels/${channel.id}/knowledge`;
     return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Channel'}
-          stixDomainObject={channel}
-          PopoverComponent={<ChannelPopover />}
-        />
+      <>
         <Switch>
           <Route
             exact
@@ -246,7 +231,7 @@ class ChannelKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
@@ -267,8 +252,4 @@ const ChannelKnowledge = createFragmentContainer(ChannelKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ChannelKnowledge);
+export default compose(inject18n, withRouter)(ChannelKnowledge);

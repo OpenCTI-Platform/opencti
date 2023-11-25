@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -22,6 +26,7 @@ import {
 } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -110,6 +115,8 @@ class RootSystem extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { systemId },
       },
@@ -117,7 +124,7 @@ class RootSystem extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/entities/systems/:systemId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -144,116 +151,155 @@ class RootSystem extends Component {
           render={({ props }) => {
             if (props) {
               if (props.system) {
+                const { system } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId"
-                      render={(routeProps) => (
-                        <System
-                          {...routeProps}
-                          system={props.system}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
-                        />
-                      )}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/threats/campaigns/${system.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="System"
+                      disableSharing={true}
+                      stixDomainObject={system}
+                      isOpenctiAlias={true}
+                      enableQuickSubscription={true}
+                      PopoverComponent={<SystemPopover />}
+                      onViewAs={this.handleChangeViewAs.bind(this)}
+                      viewAs={viewAs}
                     />
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/entities/systems/${system.id}/knowledge`,
+                          )
+                            ? `/dashboard/entities/systems/${system.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}`}
+                          value={`/dashboard/entities/systems/${system.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/entities/systems/:systemId/knowledge"
-                      render={(routeProps) => (
-                        <SystemKnowledge
-                          {...routeProps}
-                          system={props.system}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/knowledge`}
+                          value={`/dashboard/entities/systems/${system.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId/analyses"
-                      render={(routeProps) => (
-                        <SystemAnalysis
-                          {...routeProps}
-                          system={props.system}
-                          viewAs={viewAs}
-                          onViewAs={this.handleChangeViewAs.bind(this)}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/analyses`}
+                          value={`/dashboard/entities/systems/${system.id}/analyses`}
+                          label={t('Analyses')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId/sightings"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'System'}
-                            disableSharing={true}
-                            stixDomainObject={props.system}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SystemPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/files`}
+                          value={`/dashboard/entities/systems/${system.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/history`}
+                          value={`/dashboard/entities/systems/${system.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId"
+                        render={(routeProps) => (
+                          <System
+                            {...routeProps}
+                            system={system}
+                            viewAs={viewAs}
                           />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/entities/systems/:systemId/knowledge"
+                        render={(routeProps) => (
+                          <SystemKnowledge
+                            {...routeProps}
+                            system={system}
+                            viewAs={viewAs}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId/analyses"
+                        render={(routeProps) => (
+                          <SystemAnalysis
+                            {...routeProps}
+                            system={system}
+                            viewAs={viewAs}
+                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId/sightings"
+                        render={(routeProps) => (
                           <EntityStixSightingRelationships
-                            entityId={props.system.id}
+                            entityId={system.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                             {...routeProps}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'System'}
-                            disableSharing={true}
-                            stixDomainObject={props.system}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SystemPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={systemId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.system}
+                            entity={system}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/entities/systems/:systemId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'System'}
-                            disableSharing={true}
-                            stixDomainObject={props.system}
-                            isOpenctiAlias={true}
-                            PopoverComponent={<SystemPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/entities/systems/:systemId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={systemId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -261,7 +307,7 @@ class RootSystem extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -271,4 +317,4 @@ RootSystem.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootSystem);
+export default R.compose(inject18n, withRouter)(RootSystem);

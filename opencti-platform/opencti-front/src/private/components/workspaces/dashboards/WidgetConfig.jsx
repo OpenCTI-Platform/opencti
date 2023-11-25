@@ -499,7 +499,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         const dataFilters = data[filterName];
-        const filter = findFilterFromKey(dataFilters.filters ?? [], key, op);
+        const filter = findFilterFromKey(dataFilters?.filters ?? [], key, op);
         if (filter) {
           const newValues = isUniqFilter(key)
             ? [id]
@@ -511,9 +511,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             mode: 'or',
           };
           const newBaseFilters = {
-            ...dataFilters,
+            ...(dataFilters ?? []),
             filters: [
-              ...(dataFilters.filters ?? []).filter(
+              ...(dataFilters?.filters ?? []).filter(
                 (f) => f.key !== key || f.operator !== op,
               ), // remove filter with k as key
               newFilterElement, // add new filter
@@ -531,8 +531,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           mode: 'or',
         };
         const newBaseFilters = {
-          ...dataFilters,
-          filters: [...(dataFilters.filters ?? []), newFilterElement], // add new filter
+          ...(dataFilters ?? []),
+          filters: [...(dataFilters?.filters ?? []), newFilterElement], // add new filter
         };
         return {
           ...data,
@@ -548,8 +548,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       if (n === i) {
         const dataFilters = data[filterName];
         const newFilters = {
-          ...dataFilters,
-          filters: (dataFilters.filters ?? []).filter(
+          ...(dataFilters ?? []),
+          filters: (dataFilters?.filters ?? []).filter(
             (f) => f.key !== key || f.operator !== op,
           ),
         };
@@ -568,12 +568,12 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       if (n === i) {
         const filters = data[filterName];
         const filterIndex = findFilterIndexFromKey(
-          filters.filters ?? [],
+          filters?.filters ?? [],
           localFilter.key,
           localFilter.operator,
         );
         if (filterIndex !== null) {
-          const newFiltersContent = [...(filters.filters || [])];
+          const newFiltersContent = [...(filters?.filters ?? [])];
           newFiltersContent[filterIndex] = {
             ...localFilter,
             mode: localFilter.mode === 'and' ? 'or' : 'and',

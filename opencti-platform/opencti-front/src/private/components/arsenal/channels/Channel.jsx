@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
 import ChannelDetails from './ChannelDetails';
 import ChannelEdition from './ChannelEdition';
-import ChannelPopover from './ChannelPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -29,11 +25,6 @@ class ChannelComponent extends Component {
     const { classes, channel } = this.props;
     return (
       <>
-        <StixDomainObjectHeader
-          entityType="Channel"
-          stixDomainObject={channel}
-          PopoverComponent={<ChannelPopover />}
-        />
         <Grid
           container={true}
           spacing={3}
@@ -145,4 +136,4 @@ const Channel = createFragmentContainer(ChannelComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Channel);
+export default withStyles(styles)(Channel);

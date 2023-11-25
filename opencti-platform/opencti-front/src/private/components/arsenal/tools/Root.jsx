@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
   QueryRenderer,
   requestSubscription,
@@ -16,6 +20,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import inject18n from '../../../../components/i18n';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -79,13 +84,15 @@ class RootTool extends Component {
 
   render() {
     const {
+      t,
+      location,
       match: {
         params: { toolId },
       },
     } = this.props;
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -109,60 +116,108 @@ class RootTool extends Component {
           render={({ props }) => {
             if (props) {
               if (props.tool) {
+                const { tool } = props;
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId"
-                      render={(routeProps) => (
-                        <Tool
-                          {...routeProps}
-                          tool={props.tool}
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/arsenal/tools/${tool.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
+                    <StixDomainObjectHeader
+                      entityType="Tool"
+                      stixDomainObject={tool}
+                      PopoverComponent={<ToolPopover />}
+                      enableQuickSubscription={true}
+                    />
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={
+                          location.pathname.includes(
+                            `/dashboard/arsenal/tools/${tool.id}/knowledge`,
+                          )
+                            ? `/dashboard/arsenal/tools/${tool.id}/knowledge`
+                            : location.pathname
+                        }
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}`}
+                          value={`/dashboard/arsenal/tools/${tool.id}`}
+                          label={t('Overview')}
                         />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                          value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                          label={t('Knowledge')}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/arsenal/tools/:toolId/knowledge"
-                      render={(routeProps) => (
-                        <ToolKnowledge {...routeProps} tool={props.tool} />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId/analyses"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Tool'}
-                            stixDomainObject={props.tool}
-                            PopoverComponent={<ToolPopover />}
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}/analyses`}
+                          value={`/dashboard/arsenal/tools/${tool.id}/analyses`}
+                          label={t('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}/files`}
+                          value={`/dashboard/arsenal/tools/${tool.id}/files`}
+                          label={t('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}/history`}
+                          value={`/dashboard/arsenal/tools/${tool.id}/history`}
+                          label={t('History')}
+                        />
+                      </Tabs>
+                    </Box>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/arsenal/tools/:toolId"
+                        render={(routeProps) => (
+                          <Tool {...routeProps} tool={props.tool} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/arsenal/tools/:toolId/knowledge"
+                        render={() => (
+                          <Redirect
+                            to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                           />
+                        )}
+                      />
+                      <Route
+                        path="/dashboard/arsenal/tools/:toolId/knowledge"
+                        render={(routeProps) => (
+                          <ToolKnowledge {...routeProps} tool={props.tool} />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/arsenal/tools/:toolId/analyses"
+                        render={(routeProps) => (
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={props.tool}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Tool'}
-                            stixDomainObject={props.tool}
-                            PopoverComponent={<ToolPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/arsenal/tools/:toolId/files"
+                        render={(routeProps) => (
                           <FileManager
                             {...routeProps}
                             id={toolId}
@@ -170,27 +225,20 @@ class RootTool extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.tool}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Tool'}
-                            stixDomainObject={props.tool}
-                            PopoverComponent={<ToolPopover />}
-                          />
+                        )}
+                      />
+                      <Route
+                        exact
+                        path="/dashboard/arsenal/tools/:toolId/history"
+                        render={(routeProps) => (
                           <StixCoreObjectHistory
                             {...routeProps}
                             stixCoreObjectId={toolId}
                           />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
+                        )}
+                      />
+                    </Switch>
+                  </div>
                 );
               }
               return <ErrorNotFound />;
@@ -198,7 +246,7 @@ class RootTool extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }
@@ -208,4 +256,4 @@ RootTool.propTypes = {
   match: PropTypes.object,
 };
 
-export default withRouter(RootTool);
+export default R.compose(inject18n, withRouter)(RootTool);

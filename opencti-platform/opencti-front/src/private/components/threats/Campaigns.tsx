@@ -34,7 +34,6 @@ const Campaigns = () => {
       view: 'cards',
     },
   );
-
   const queryRef = useQueryLoading<CampaignsCardsPaginationQuery>(
     campaignsCardsQuery,
     paginationOptions,

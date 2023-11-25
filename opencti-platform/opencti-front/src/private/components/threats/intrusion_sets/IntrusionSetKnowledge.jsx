@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -317,4 +315,4 @@ const IntrusionSetKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withRouter)(IntrusionSetKnowledge);
+export default withRouter(IntrusionSetKnowledge);

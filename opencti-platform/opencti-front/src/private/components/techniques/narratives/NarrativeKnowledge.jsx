@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -212,4 +210,4 @@ const NarrativeKnowledge = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withRouter)(NarrativeKnowledge);
+export default withRouter(NarrativeKnowledge);

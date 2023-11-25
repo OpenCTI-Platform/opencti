@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
-import ToolPopover from './ToolPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -87,12 +85,6 @@ const ToolComponent = ({ tool }: { tool: Tool_tool$key }) => {
   const classes = useStyles();
   return (
     <>
-      <StixDomainObjectHeader
-        entityType={'Tool'}
-        stixDomainObject={toolData}
-        PopoverComponent={<ToolPopover />}
-        enableQuickSubscription
-      />
       <Grid
         container={true}
         spacing={3}

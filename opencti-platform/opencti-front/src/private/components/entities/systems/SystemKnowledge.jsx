@@ -1,44 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import SystemPopover from './SystemPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: 0,
-  },
-});
-
 class SystemKnowledgeComponent extends Component {
   render() {
-    const { classes, system, viewAs, onViewAs } = this.props;
+    const { system, viewAs } = this.props;
     const link = `/dashboard/entities/systems/${system.id}/knowledge`;
     return (
-      <div
-        className={classes.container}
-        style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
-      >
-        <StixDomainObjectHeader
-          entityType={'System'}
-          disableSharing={true}
-          stixDomainObject={system}
-          isOpenctiAlias={true}
-          PopoverComponent={<SystemPopover />}
-          onViewAs={onViewAs.bind(this)}
-          viewAs={viewAs}
-        />
+      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
         <Switch>
           <Route
             exact
@@ -278,7 +254,6 @@ SystemKnowledgeComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   viewAs: PropTypes.string,
-  onViewAs: PropTypes.func,
 };
 
 const SystemKnowledge = createFragmentContainer(SystemKnowledgeComponent, {
@@ -291,8 +266,4 @@ const SystemKnowledge = createFragmentContainer(SystemKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(SystemKnowledge);
+export default withRouter(SystemKnowledge);

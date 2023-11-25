@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { BugReportOutlined, SurroundSoundOutlined, WebAssetOutlined } from '@mui/icons-material';
+import {
+  BugReportOutlined,
+  SurroundSoundOutlined,
+  WebAssetOutlined,
+} from '@mui/icons-material';
 import { Biohazard } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -33,16 +37,11 @@ const TopMenuArsenal = () => {
           component={Link}
           to="/dashboard/arsenal/malwares"
           variant={
-            location.pathname === '/dashboard/arsenal/malwares'
+            location.pathname.includes('/dashboard/arsenal/malwares')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/malwares'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <Biohazard className={classes.icon} fontSize="small" />
@@ -54,22 +53,14 @@ const TopMenuArsenal = () => {
           component={Link}
           to="/dashboard/arsenal/channels"
           variant={
-            location.pathname === '/dashboard/arsenal/channels'
+            location.pathname.includes('/dashboard/arsenal/channels')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/channels'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
-          <SurroundSoundOutlined
-            className={classes.icon}
-            fontSize="small"
-          />
+          <SurroundSoundOutlined className={classes.icon} fontSize="small" />
           {t('Channels')}
         </Button>
       )}
@@ -78,16 +69,11 @@ const TopMenuArsenal = () => {
           component={Link}
           to="/dashboard/arsenal/tools"
           variant={
-            location.pathname === '/dashboard/arsenal/tools'
+            location.pathname.includes('/dashboard/arsenal/tools')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/tools'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <WebAssetOutlined className={classes.icon} fontSize="small" />
@@ -99,16 +85,11 @@ const TopMenuArsenal = () => {
           component={Link}
           to="/dashboard/arsenal/vulnerabilities"
           variant={
-            location.pathname === '/dashboard/arsenal/vulnerabilities'
+            location.pathname.includes('/dashboard/arsenal/vulnerabilities')
               ? 'contained'
               : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/arsenal/vulnerabilities'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           <BugReportOutlined className={classes.icon} fontSize="small" />
