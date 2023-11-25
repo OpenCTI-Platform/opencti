@@ -65,10 +65,12 @@ const AuditLineFragment = graphql`
     }
     raw_data
     context_data {
-      id
+      entity_id
       entity_type
       entity_name
       message
+      from_id
+      to_id
     }
   }
 `;

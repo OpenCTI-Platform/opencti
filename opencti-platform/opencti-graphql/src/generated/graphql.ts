@@ -3652,11 +3652,11 @@ export enum ContainersOrdering {
 export type ContextData = {
   __typename?: 'ContextData';
   commit?: Maybe<Scalars['String']['output']>;
+  entity_id?: Maybe<Scalars['String']['output']>;
   entity_name?: Maybe<Scalars['String']['output']>;
   entity_type?: Maybe<Scalars['String']['output']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']['output']>;
-  id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   to_id?: Maybe<Scalars['String']['output']>;
 };
@@ -29706,11 +29706,11 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
   commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

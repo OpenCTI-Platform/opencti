@@ -95,7 +95,7 @@ const auditsListQuery = graphql`
             name
           }
           context_data {
-            id
+            entity_id
             entity_type
             entity_name
             message
@@ -212,7 +212,7 @@ const AuditsList = ({
                         audit.context_data?.entity_type === 'Workspace'
                           ? audit.context_data?.workspace_type
                           : audit.context_data?.entity_type,
-                      )}/${audit.context_data?.id}`
+                      )}/${audit.context_data?.entity_id}`
                       : undefined;
                     return (
                       <ListItem

@@ -414,7 +414,7 @@ type LogEdge {
 }
 
 type ContextData {
-  id: String
+  entity_id: String
   entity_name: String
   entity_type: String
   from_id: String

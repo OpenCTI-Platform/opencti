@@ -26,6 +26,7 @@ const logResolvers = {
   },
   Log: {
     user: (log, _, context) => creatorLoader.load(log.applicant_id || log.user_id, context, context.user),
+    context_data: (log, _) => (log.context_data?.id ? { ...log.context_data, entity_id: log.context_data.id } : log.context_data),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
     context_uri: (log, _, __) => (log.context_data.id ? `/dashboard/id/${log.context_data.id}` : undefined),
     event_status: (log, _, __) => log.event_status ?? 'success',

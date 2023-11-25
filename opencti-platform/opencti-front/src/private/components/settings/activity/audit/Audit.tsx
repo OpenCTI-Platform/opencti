@@ -78,7 +78,7 @@ export const AuditCSVQuery = graphql`
             name
           }
           context_data {
-            id
+            entity_id
             entity_type
             entity_name
             message
@@ -177,7 +177,7 @@ const Audit = () => {
             context_uri: node.context_uri,
             user_id: node.user?.id ?? 'undefined',
             user_name: node.user?.name ?? 'undefined',
-            context_data_id: node.context_data?.id ?? 'undefined',
+            context_data_id: node.context_data?.entity_id ?? 'undefined',
             context_data_entity_type:
               node.context_data?.entity_type ?? 'undefined',
             context_data_entity_name:
