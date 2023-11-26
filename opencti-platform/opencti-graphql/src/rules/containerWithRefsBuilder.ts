@@ -89,7 +89,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     }
     // endregion
     if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
-      const updatedReport = R.clone(report);
+      const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
       const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetIds.includes(o));
       const createdTargetIds = createdTargets.map((c) => c.standard_id);
@@ -202,7 +202,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     if (entityType === containerType) {
       const report = data as StixReport;
       const previousPatch = event.context.reverse_patch;
-      const previousData = jsonpatch.applyPatch<StixReport>(R.clone(report), previousPatch).newDocument;
+      const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
       const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];
       // AddedRefs are ids not includes in previous data

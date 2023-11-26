@@ -25,6 +25,10 @@
       "logs_max_files": 7,
       "logs_directory": "./logs"
     },
+    "event_loop_logs": {
+      "enabled": false,
+      "max_time": 1000
+    },
     "graphql": {
       "armor_enabled": false,
       "playground": {

@@ -69,6 +69,7 @@
     "axios": "1.6.1",
     "axios-cookiejar-support": "4.0.7",
     "bcryptjs": "2.4.3",
+    "blocked-at": "1.2.0",
     "bluebird": "3.7.2",
     "body-parser": "1.20.2",
     "canonicalize": "2.0.0",

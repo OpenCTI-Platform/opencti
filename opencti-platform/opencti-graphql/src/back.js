@@ -1,4 +1,5 @@
 import 'source-map-support/register';
+import blocked from 'blocked-at';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { Resource } from '@opentelemetry/resources';
@@ -12,7 +13,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import './modules/index';
 // endregion
 import { platformStart } from './boot';
-import { ENABLED_METRICS, ENABLED_TRACING } from './config/conf';
+import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_METRICS, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 import { meterManager, meterProvider } from './config/tracing';
 
@@ -56,7 +57,18 @@ if (ENABLED_METRICS) {
   // Register metrics
   meterManager.registerMetrics();
 }
-
+// ------- Event loop monitoring
+if (ENABLED_EVENT_LOOP_MONITORING) {
+  const threshold = nconf.get('app:event_loop_logs:max_time') ?? 1000; // No more than 1 sec by default
+  blocked((time, stack) => {
+    // For now, we only check for blocking outside graphql executeFields resolvers
+    // TODO Remove after official release of graphQL 17 and resolvers adaptations
+    const stackValue = stack.join();
+    if (stackValue.indexOf('executeFields') === -1) {
+      logApp.warn('[OPENCTI-MONITORING] Event loop blocking warning', { time, trace: stackValue });
+    }
+  }, { threshold });
+}
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
 platformStart();

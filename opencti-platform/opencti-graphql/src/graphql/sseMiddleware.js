@@ -570,7 +570,7 @@ const createSseMiddleware = () => {
               if (!isInferredData || (isInferredData && withInferences)) {
                 const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
-                  const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
+                  const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
                   const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
