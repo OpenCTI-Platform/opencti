@@ -5286,13 +5286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"als-cpu-usage@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "als-cpu-usage@npm:0.1.0"
-  checksum: f5dbaf7ddbca2a1f4a1707f8086d66a0b9d5ff6010eb6197ccd2b91dfdf32f0f9609ab94ef7d2f6ec9f3c936cdf109eb5a042bd8570fbcb34e7a9d748f82c89d
-  languageName: node
-  linkType: hard
-
 "amqplib@npm:0.10.3":
   version: 0.10.3
   resolution: "amqplib@npm:0.10.3"
@@ -6104,7 +6097,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blocked-at@npm:^1.2.0":
+"blocked-at@npm:1.2.0":
   version: 1.2.0
   resolution: "blocked-at@npm:1.2.0"
   checksum: 7780737b1ceab0747d27b55469bd80b353ac394c5e40ce0882849da15a0e7178f0bc51ddc2d29e4858358080623fb4f37cb979e8dcab3a1ab3fd6c59cc31c272
@@ -11220,7 +11213,6 @@ __metadata:
     "@typescript-eslint/parser": 6.7.5
     "@vitest/coverage-istanbul": 0.34.6
     ajv: 8.12.0
-    als-cpu-usage: ^0.1.0
     amqplib: 0.10.3
     antlr4: 4.13.1
     apollo-errors: 1.9.0
@@ -11232,7 +11224,7 @@ __metadata:
     axios: 1.6.1
     axios-cookiejar-support: 4.0.7
     bcryptjs: 2.4.3
-    blocked-at: ^1.2.0
+    blocked-at: 1.2.0
     bluebird: 3.7.2
     body-parser: 1.20.2
     canonicalize: 2.0.0
