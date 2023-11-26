@@ -77,7 +77,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
       // Previous markings must be kept to ensure data visibility restrictions
-      const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), updateEvent.context.reverse_patch);
+      const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);
       const previousMarkingRefs = (previous.object_marking_refs ?? [])
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o));

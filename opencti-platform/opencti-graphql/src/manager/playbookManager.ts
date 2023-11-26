@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Operation } from 'fast-json-patch';
@@ -136,7 +135,7 @@ export const playbookExecutor = async ({
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
   if (nextStep.component.is_internal || isExternalCallback) {
     let execution: PlaybookExecution;
-    const baseBundle = R.clone(isExternalCallback ? previousStepBundle : bundle);
+    const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
     try {
       execution = await nextStep.component.executor({
         executionId,

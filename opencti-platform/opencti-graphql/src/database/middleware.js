@@ -963,7 +963,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       if (isObjectAttribute(key) && object_path) {
         const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` });
         const patch = pointers.map((p) => ({ op: operation, path: p, value }));
-        const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
@@ -972,7 +972,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       if (isObjectAttribute(key)) {
         const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` }).reverse();
         const patch = pointers.map((p) => ({ op: operation, path: p }));
-        const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
@@ -981,7 +981,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
       const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
       const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
-      const patchedInstance = jsonpatch.applyPatch(R.clone(instance), patch).newDocument;
+      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
       finalVal = patchedInstance[key];
     } else { // Replace general
       finalVal = value;
@@ -2942,7 +2942,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       }
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
       const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
-      const instance = R.clone(previous);
+      const instance = { ...previous };
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
       let inputs;
       if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
@@ -3361,7 +3361,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       }
       const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
-      const instance = R.clone(previous);
+      const instance = structuredClone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, element.entity_type);
       let inputs;
       if (isSingleRelationsRef(instance.entity_type, element.entity_type)) {

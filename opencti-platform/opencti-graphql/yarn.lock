@@ -6097,6 +6097,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"blocked-at@npm:1.2.0":
+  version: 1.2.0
+  resolution: "blocked-at@npm:1.2.0"
+  checksum: 7780737b1ceab0747d27b55469bd80b353ac394c5e40ce0882849da15a0e7178f0bc51ddc2d29e4858358080623fb4f37cb979e8dcab3a1ab3fd6c59cc31c272
+  languageName: node
+  linkType: hard
+
 "bluebird@npm:3.7.2":
   version: 3.7.2
   resolution: "bluebird@npm:3.7.2"
@@ -11217,6 +11224,7 @@ __metadata:
     axios: 1.6.1
     axios-cookiejar-support: 4.0.7
     bcryptjs: 2.4.3
+    blocked-at: 1.2.0
     bluebird: 3.7.2
     body-parser: 1.20.2
     canonicalize: 2.0.0

@@ -225,7 +225,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
         const updateEvent = event as UpdateEvent;
         const internalId = updateEvent.data.extensions[STIX_EXT_OCTI].id;
         const previousPatch = updateEvent.context.reverse_patch;
-        const previousStix = jsonpatch.applyPatch<StixCoreObject>(R.clone(data), previousPatch).newDocument;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>(structuredClone(data), previousPatch).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values

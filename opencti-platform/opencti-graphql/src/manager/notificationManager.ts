@@ -449,7 +449,7 @@ export const buildTargetEvents = async (
   const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
-    const { newDocument: previous } = jsonpatch.applyPatch(R.clone(data), updatePatch.reverse_patch);
+    const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
