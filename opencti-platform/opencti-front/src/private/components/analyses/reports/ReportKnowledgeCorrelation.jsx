@@ -1113,7 +1113,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
                           {
                             selected: theme.palette.secondary.main,
                             inferred: theme.palette.warning.main,
-                            disabled: theme.palette.grey[600],
+                            disabled: theme.palette.background.paper,
                           },
                           node,
                           node.color,
@@ -1244,19 +1244,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(
-          types: [
-            "Threat-Actor"
-            "Intrusion-Set"
-            "Campaign"
-            "Incident"
-            "Malware"
-            "Tool"
-            "Vulnerability"
-            "Stix-Cyber-Observable"
-            "Indicator"
-          ]
-        ) {
+        objects {
           edges {
             node {
               ... on BasicObject {
@@ -1284,7 +1272,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                     }
                   }
                 }
-                reports {
+                reports(first: 20) {
                   edges {
                     node {
                       id
@@ -1393,7 +1381,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                reports {
+                reports(first: 20) {
                   edges {
                     node {
                       id

@@ -150,7 +150,7 @@ class StixCoreRelationshipInference extends Component {
             {
               selected: theme.palette.secondary.main,
               inferred: theme.palette.warning.main,
-              disabled: theme.palette.grey[600],
+              disabled: theme.palette.background.paper,
             },
             node,
             node.color,

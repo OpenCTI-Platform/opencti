@@ -59,6 +59,7 @@ import {
 } from './Time';
 import { isDateStringNone, isNone } from '../components/i18n';
 import { fileUri } from '../relay/environment';
+import { isNotEmptyField } from './utils';
 
 const genImage = (src) => {
   const img = new Image();
@@ -476,6 +477,9 @@ export const defaultSecondaryValue = (n) => {
 
 export const computeTimeRangeInterval = (objects) => {
   const filteredDates = objects
+    .filter(
+      (o) => o.parent_types && o.parent_types.includes('basic-relationship'),
+    )
     .filter((o) => {
       const n = defaultDate(o);
       return !R.isNil(n) && !isDateStringNone(n);
@@ -498,7 +502,7 @@ export const computeTimeRangeValues = (interval, objects) => {
   const elementsDates = R.map(
     (n) => timestamp(defaultDate(n)),
     R.filter(
-      (n) => n.parent_types && !n.parent_types.includes('basic-relationship'),
+      (n) => n.parent_types && n.parent_types.includes('basic-relationship'),
       objects,
     ),
   );
@@ -521,52 +525,36 @@ export const computeTimeRangeValues = (interval, objects) => {
   );
 };
 
-export const applyNodeFilters = (
+const computeFilteredNodesIds = (
   nodesData,
   stixCoreObjectsTypes = [],
   markedBy = [],
   createdBy = [],
-  excludedStixCoreObjectsTypes = [],
-  interval = [],
-  keyword = '',
-) => {
-  const filterByKeyword = (n) => keyword === ''
-    || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-      !== -1
-    || (defaultSecondaryValue(n) || '')
-      .toLowerCase()
-      .indexOf(keyword.toLowerCase()) !== -1
-    || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  return R.pipe(
-    R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
-    R.filter((n) => !R.includes(n.entity_type, stixCoreObjectsTypes)),
-    R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
-    R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
-    R.map((n) => (filterByKeyword(n) ? n : { ...n, disabled: true })),
-    R.map((n) => (interval.length === 0
-      || isNone(n.defaultDate)
-      || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1])
-      ? n
-      : { ...n, disabled: true })),
-  )(nodesData);
-};
+  filteredTargetIds = [],
+) => nodesData
+  .filter(
+    (n) => stixCoreObjectsTypes.includes(n.entity_type)
+        || R.any((m) => R.includes(m.id, markedBy), n.markedBy)
+        || createdBy.includes(n.createdBy.id)
+        || filteredTargetIds.includes(n.id),
+  )
+  .map((n) => n.id);
 
-export const applyLinkFilters = (
+const computeFilteredLinks = (
   linksData,
   markedBy = [],
   createdBy = [],
   interval = [],
-) => {
-  return R.pipe(
-    R.filter((n) => R.any((m) => !R.includes(m.id, markedBy), n.markedBy)),
-    R.filter((n) => !R.includes(n.createdBy.id, createdBy)),
-    R.map((n) => (interval.length === 0
-      || isNone(n.defaultDate)
-      || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1])
-      ? n
-      : { ...n, disabled: true })),
-  )(linksData);
-};
+) => linksData.filter(
+  (n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)
+      || createdBy.includes(n.createdBy.id)
+      || (isNotEmptyField(n.defaultDate)
+        && interval.length > 0
+        && ((isNotEmptyField(n.start_time) && n.start_time < interval[0])
+          || (isNotEmptyField(n.stop_time) && n.stop_time > interval[1])
+          || n.defaultDate < interval[0]
+          || n.defaultDate > interval[1])),
+);
 
 export const applyFilters = (
   graphData,
@@ -575,29 +563,31 @@ export const applyFilters = (
   createdBy = [],
   excludedStixCoreObjectsTypes = [],
   interval = [],
-  keyword = '',
 ) => {
-  const nodes = applyNodeFilters(
-    graphData.nodes,
-    stixCoreObjectsTypes,
-    markedBy,
-    createdBy,
-    excludedStixCoreObjectsTypes,
-    interval,
-    keyword,
-  );
-  const filteredLinks = applyLinkFilters(
+  const filteredLinks = computeFilteredLinks(
     graphData.links,
     markedBy,
     createdBy,
     interval,
   );
-  const nodeIds = R.map((n) => n.id, nodes);
-  const links = R.pipe(
-    R.filter(
-      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
-    ),
-  )(filteredLinks);
+  const filteredLinkIds = filteredLinks.map((n) => n.id);
+  const filteredTargetIds = filteredLinks.map((n) => n.target_id);
+  const filteredNodesIds = computeFilteredNodesIds(
+    graphData.nodes,
+    stixCoreObjectsTypes,
+    markedBy,
+    createdBy,
+    filteredTargetIds,
+  );
+  const nodes = graphData.nodes
+    .filter((n) => !excludedStixCoreObjectsTypes.includes(n.entity_type))
+    .map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
+  const nodeIds = nodes.map((n) => n.id);
+  const links = graphData.links
+    .filter(
+      (n) => nodeIds.includes(n.source_id) && nodeIds.includes(n.target_id),
+    )
+    .map((n) => R.assoc('disabled', filteredLinkIds.includes(n.id), n));
   return {
     nodes,
     links,
@@ -639,63 +629,63 @@ export const buildCorrelationData = (
       markedBy: objectMarking,
     };
   }, originalObjects);
-  const filteredObjects = applyNodeFilters(
-    R.filter((o) => o && o.id && o.entity_type && o.reports, objects),
+  const thisReportOriginalNodes = R.filter(
+    (o) => o && o.id && o.entity_type && o.reports,
+    objects,
+  );
+  const filteredNodesIds = computeFilteredNodesIds(
+    thisReportOriginalNodes,
     filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
-    [],
-    filterAdjust.selectedTimeRangeInterval,
   );
+  const thisReportNodes = thisReportOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
   const thisReportLinkNodes = R.filter(
     (n) => n.reports && n.parent_types && n.reports.edges.length > 1,
-    filteredObjects,
+    thisReportNodes,
   );
-  const relatedReportNodes = applyNodeFilters(
-    R.pipe(
-      R.map((n) => n.reports.edges),
-      R.flatten,
-      R.map((n) => {
-        let { objectMarking } = n.node;
-        if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
-          objectMarking = [
-            {
-              node: {
-                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                definition: t('None'),
-                definition_type: t('None'),
-              },
+  const relatedReportOriginalNodes = R.pipe(
+    R.map((n) => n.reports.edges),
+    R.flatten,
+    R.map((n) => {
+      let { objectMarking } = n.node;
+      if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+        objectMarking = [
+          {
+            node: {
+              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+              definition: t('None'),
+              definition_type: t('None'),
             },
-          ];
-        } else {
-          objectMarking = R.map((m) => m.node, objectMarking.edges);
-        }
-        let { createdBy } = n.node;
-        if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
-          createdBy = {
-            id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
-            name: t('None'),
-          };
-        }
-        return {
-          ...n.node,
-          objectMarking,
-          createdBy,
-          markedBy: objectMarking,
+          },
+        ];
+      } else {
+        objectMarking = R.map((m) => m.node, objectMarking.edges);
+      }
+      let { createdBy } = n.node;
+      if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+        createdBy = {
+          id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+          name: t('None'),
         };
-      }),
-      R.uniqBy(R.prop('id')),
-      R.map((n) => (n.defaultDate
-        ? { ...n }
-        : { ...n, defaultDate: jsDate(defaultDate(n)) })),
-    )(thisReportLinkNodes),
+      }
+      return {
+        ...n.node,
+        objectMarking,
+        createdBy,
+        markedBy: objectMarking,
+      };
+    }),
+    R.uniqBy(R.prop('id')),
+    R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+  )(thisReportLinkNodes);
+  const relatedReportFilteredNodeIds = computeFilteredNodesIds(
+    relatedReportOriginalNodes,
     filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
-    [],
-    filterAdjust.selectedTimeRangeInterval,
-    filterAdjust.keyword,
   );
+  const relatedReportNodes = relatedReportOriginalNodes.map((n) => R.assoc('disabled', relatedReportFilteredNodeIds.includes(n.id), n));
   const links = R.pipe(
     R.map((n) => R.map(
       (e) => ({
@@ -731,6 +721,7 @@ export const buildCorrelationData = (
   const nodes = R.pipe(
     R.map((n) => ({
       id: n.id,
+      disabled: n.disabled,
       val: graphLevel[n.entity_type] || graphLevel.Unknown,
       name: defaultValue(n, true),
       defaultDate: jsDate(defaultDate(n)),
@@ -791,70 +782,70 @@ export const buildCaseCorrelationData = (
       markedBy: objectMarking,
     };
   }, originalObjects);
-  const filteredObjects = applyNodeFilters(
-    R.filter((o) => o && o.id && o.entity_type && o.cases, objects),
-    [...filterAdjust.stixCoreObjectsTypes, ...['Case', 'cased-in']],
+  const thisCaseOriginalNodes = R.filter(
+    (o) => o && o.id && o.entity_type && o.cases,
+    objects,
+  );
+  const filteredNodesIds = computeFilteredNodesIds(
+    thisCaseOriginalNodes,
+    filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
-    [],
-    filterAdjust.selectedTimeRangeInterval,
   );
+  const thisCaseNodes = thisCaseOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
   const thisCaseLinkNodes = R.filter(
     (n) => n.cases && n.parent_types && n.cases.edges.length > 1,
-    filteredObjects,
+    thisCaseNodes,
   );
-  const relatedCaseNodes = applyNodeFilters(
-    R.pipe(
-      R.map((n) => n.cases.edges),
-      R.flatten,
-      R.map((n) => {
-        let { objectMarking } = n.node;
-        if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
-          objectMarking = [
-            {
-              node: {
-                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-                definition: t('None'),
-                definition_type: t('None'),
-              },
+  const relatedCaseOriginalNodes = R.pipe(
+    R.map((n) => n.cases.edges),
+    R.flatten,
+    R.map((n) => {
+      let { objectMarking } = n.node;
+      if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+        objectMarking = [
+          {
+            node: {
+              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+              definition: t('None'),
+              definition_type: t('None'),
             },
-          ];
-        } else {
-          objectMarking = R.map((m) => m.node, objectMarking.edges);
-        }
-        let { createdBy } = n.node;
-        if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
-          createdBy = {
-            id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
-            name: t('None'),
-          };
-        }
-        return {
-          ...n.node,
-          objectMarking,
-          createdBy,
-          markedBy: objectMarking,
+          },
+        ];
+      } else {
+        objectMarking = R.map((m) => m.node, objectMarking.edges);
+      }
+      let { createdBy } = n.node;
+      if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+        createdBy = {
+          id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+          name: t('None'),
         };
-      }),
-      R.uniqBy(R.prop('id')),
-      R.map((n) => (n.defaultDate
-        ? { ...n }
-        : { ...n, defaultDate: jsDate(defaultDate(n)) })),
-    )(thisCaseLinkNodes),
-    [...filterAdjust.stixCoreObjectsTypes, ...['Case', 'cased-in']],
+      }
+      return {
+        ...n.node,
+        objectMarking,
+        createdBy,
+        markedBy: objectMarking,
+      };
+    }),
+    R.uniqBy(R.prop('id')),
+    R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+  )(thisCaseLinkNodes);
+  const relatedCaseFilteredNodeIds = computeFilteredNodesIds(
+    relatedCaseOriginalNodes,
+    filterAdjust.stixCoreObjectsTypes,
     filterAdjust.markedBy,
     filterAdjust.createdBy,
-    [],
-    filterAdjust.selectedTimeRangeInterval,
-    filterAdjust.keyword,
   );
+  const relatedCaseNodes = relatedCaseOriginalNodes.map((n) => R.assoc('disabled', relatedCaseFilteredNodeIds.includes(n.id), n));
   const links = R.pipe(
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
         parent_types: ['basic-relationship', 'stix-meta-relationship'],
         entity_type: 'basic-relationship',
-        relationship_type: 'caseed-in',
+        relationship_type: 'reported-in',
         source: n.id,
         target: e.id,
         label: '',
@@ -926,6 +917,7 @@ export const buildGraphData = (objects, graphData, t) => {
     R.uniqBy(R.prop('id')),
     R.map((n) => ({
       id: n.id,
+      disabled: false,
       parent_types: n.parent_types,
       entity_type: n.entity_type,
       relationship_type: n.relationship_type,
@@ -974,6 +966,7 @@ export const buildGraphData = (objects, graphData, t) => {
     R.map((n) => [
       {
         id: n.id,
+        disabled: false,
         parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
@@ -1007,6 +1000,7 @@ export const buildGraphData = (objects, graphData, t) => {
       },
       {
         id: n.id,
+        disabled: false,
         parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
@@ -1086,6 +1080,7 @@ export const buildGraphData = (objects, graphData, t) => {
 
       return {
         id: n.id,
+        disabled: false,
         val:
           graphLevel[
             n.parent_types.includes('basic-relationship')
@@ -1193,10 +1188,6 @@ export const nodePaint = (
     ctx.lineWidth = 0.8;
     ctx.strokeStyle = colors.inferred;
     ctx.stroke();
-  } else if (disabled) {
-    ctx.lineWidth = 0.8;
-    ctx.strokeStyle = colors.disabled;
-    ctx.stroke();
   }
 
   const size = 8;
@@ -1211,7 +1202,7 @@ export const nodePaint = (
     ctx.beginPath();
     ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
     ctx.lineWidth = 0.4;
-    ctx.strokeStyle = disabled ? colors.disabled : color;
+    ctx.strokeStyle = color;
     ctx.stroke();
     ctx.fillStyle = colors.numbersBackground;
     ctx.fill();
@@ -1240,7 +1231,7 @@ export const nodeAreaPaint = ({ name, x, y }, color, ctx) => {
 export const linkPaint = (link, ctx, color) => {
   const start = link.source;
   const end = link.target;
-  if (typeof start !== 'object' || typeof end !== 'object') return;
+  if (link.disabled || typeof start !== 'object' || typeof end !== 'object') return;
   const textPos = Object.assign(
     ...['x', 'y'].map((c) => ({
       [c]: start[c] + (end[c] - start[c]) / 2,

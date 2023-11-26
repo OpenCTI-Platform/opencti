@@ -57,13 +57,11 @@ const useStyles = makeStyles({
     position: 'absolute',
     top: 50,
     right: 0,
-    zIndex: 2000,
   },
   containerGraph: {
     position: 'absolute',
     top: 50,
     right: 0,
-    zIndex: 2000,
   },
   title: {
     float: 'left',

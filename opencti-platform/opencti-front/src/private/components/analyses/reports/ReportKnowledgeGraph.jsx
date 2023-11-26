@@ -23,6 +23,8 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
+  defaultSecondaryValue,
+  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -47,6 +49,7 @@ import {
 import ReportPopover from './ReportPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -1334,18 +1337,23 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.setState({
-      keyword,
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        [],
-        this.state.selectedTimeRangeInterval,
-        keyword,
-      ),
-    });
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+        || (defaultSecondaryValue(n) || '')
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      R.map(
+        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
+        this.state.graphData.nodes,
+      );
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   render() {
@@ -1614,7 +1622,7 @@ class ReportKnowledgeGraphComponent extends Component {
                         {
                           selected: theme.palette.secondary.main,
                           inferred: theme.palette.warning.main,
-                          disabled: theme.palette.grey[600],
+                          disabled: theme.palette.background.paper,
                         },
                         node,
                         node.color,
@@ -1641,7 +1649,7 @@ class ReportKnowledgeGraphComponent extends Component {
                           return theme.palette.warning.main;
                         }
                         if (link.disabled) {
-                          return theme.palette.action.disabled;
+                          return theme.palette.background.paper;
                         }
                         return theme.palette.primary.main;
                       }}

@@ -668,6 +668,7 @@ class ReportKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
                         size="large"
+                        disabled={stixCoreObjectsTypes.length === 0}
                       >
                         <Badge
                           badgeContent={currentStixCoreObjectsTypes.length}

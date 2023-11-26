@@ -21,6 +21,8 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
+  defaultSecondaryValue,
+  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -37,6 +39,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';
 import { hexToRGB } from '../../../../utils/Colors';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -789,25 +792,23 @@ class IncidentKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    const filterAdjust = {
-      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
-      markedBy: this.state.markedBy,
-      createdBy: this.state.createdBy,
-      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
-      keyword,
-    };
-    this.setState(
-      {
-        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
-        graphData: buildCaseCorrelationData(
-          this.graphObjects,
-          decodeGraphData(this.props.caseData.x_opencti_graph_data),
-          this.props.t,
-          filterAdjust,
-        ),
-      },
-      () => this.saveParameters(false),
-    );
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+        || (defaultSecondaryValue(n) || '')
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      R.map(
+        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
+        this.state.graphData.nodes,
+      );
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   render() {
@@ -1111,7 +1112,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
                           {
                             selected: theme.palette.secondary.main,
                             inferred: theme.palette.warning.main,
-                            disabled: theme.palette.grey[600],
+                            disabled: theme.palette.background.paper,
                           },
                           node,
                           node.color,
@@ -1241,19 +1242,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(
-          types: [
-            "Threat-Actor"
-            "Intrusion-Set"
-            "Campaign"
-            "Incident"
-            "Malware"
-            "Tool"
-            "Vulnerability"
-            "Stix-Cyber-Observable"
-            "Indicator"
-          ]
-        ) {
+        objects {
           edges {
             node {
               ... on BasicObject {
@@ -1281,7 +1270,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                     }
                   }
                 }
-                cases {
+                cases(first: 20) {
                   edges {
                     node {
                       id
@@ -1389,7 +1378,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                cases {
+                cases(first: 20) {
                   edges {
                     node {
                       id

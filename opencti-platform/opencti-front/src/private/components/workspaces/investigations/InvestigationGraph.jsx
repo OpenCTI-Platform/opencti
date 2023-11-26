@@ -25,6 +25,8 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
+  defaultSecondaryValue,
+  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -42,6 +44,7 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -1952,18 +1955,23 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.setState({
-      keyword,
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        [],
-        this.state.selectedTimeRangeInterval,
-        keyword,
-      ),
-    });
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+        || (defaultSecondaryValue(n) || '')
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      R.map(
+        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
+        this.state.graphData.nodes,
+      );
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   handleOpenExpandElements() {
@@ -2258,7 +2266,7 @@ class InvestigationGraphComponent extends Component {
                             inferred: theme.palette.warning.main,
                             numbersBackground: theme.palette.background.default,
                             numberText: theme.palette.text.secondary,
-                            disabled: theme.palette.grey[600],
+                            disabled: theme.palette.background.paper,
                           },
                           node,
                           node.color,
@@ -2276,10 +2284,18 @@ class InvestigationGraphComponent extends Component {
                       linkCanvasObjectMode={() => 'after'}
                       linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
                       }
-                      linkColor={(link) => (this.selectedLinks.has(link)
-                        ? theme.palette.secondary.main
-                        : theme.palette.primary.main)
-                      }
+                      linkColor={(link) => {
+                        if (this.selectedLinks.has(link)) {
+                          return theme.palette.secondary.main;
+                        }
+                        if (link.isNestedInferred) {
+                          return theme.palette.warning.main;
+                        }
+                        if (link.disabled) {
+                          return theme.palette.background.paper;
+                        }
+                        return theme.palette.primary.main;
+                      }}
                       linkDirectionalArrowLength={3}
                       linkDirectionalArrowRelPos={0.99}
                       onNodeClick={this.handleNodeClick.bind(this)}

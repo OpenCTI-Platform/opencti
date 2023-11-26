@@ -7,18 +7,27 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   initialFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import CaseRftPopover from './CaseRftPopover';
-import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
-import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
-import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
+import CaseRftKnowledgeGraph, {
+  caseRftKnowledgeGraphQuery,
+} from './CaseRftKnowledgeGraph';
+import CaseRftKnowledgeTimeLine, {
+  caseRftKnowledgeTimeLineQuery,
+} from './CaseRftKnowledgeTimeLine';
+import CaseRftKnowledgeCorrelation, {
+  caseRftKnowledgeCorrelationQuery,
+} from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
@@ -184,7 +193,12 @@ class CaseRftKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    const newFilters = constructHandleAddFilter(
+      this.state.timeLineFilters,
+      key,
+      id,
+      op,
+    );
     this.setState(
       {
         timeLineFilters: newFilters,
@@ -194,11 +208,12 @@ class CaseRftKnowledgeComponent extends Component {
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
-    this.setState(
-      { timeLineFilters: newFilters },
-      () => this.saveView(),
+    const newFilters = constructHandleRemoveFilter(
+      this.state.timeLineFilters,
+      key,
+      op,
     );
+    this.setState({ timeLineFilters: newFilters }, () => this.saveView());
   }
 
   handleTimeLineSearch(value) {
@@ -226,8 +241,8 @@ class CaseRftKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
-      .length > 0
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))
+      ?.values.length > 0
       ? []
       : defaultTypes;
     let orderBy = 'created_at';
@@ -276,7 +291,12 @@ class CaseRftKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -318,7 +338,12 @@ class CaseRftKnowledgeComponent extends Component {
                       />
                     );
                   }
-                  return <Loader />;
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
                 }}
               />
             </>
@@ -337,7 +362,12 @@ class CaseRftKnowledgeComponent extends Component {
                     <CaseRftKnowledgeCorrelation caseData={props.caseRft} />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -375,7 +405,12 @@ class CaseRftKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}

@@ -5,7 +5,9 @@ import makeStyles from '@mui/styles/makeStyles';
 const useStyles = makeStyles(() => ({
   container: {
     width: '100vh',
+    minWidth: '100vh',
     height: 'calc(100vh-180px)',
+    minHeight: 'calc(100vh-180px)',
     padding: '0 0 0 180px',
   },
   containerInElement: {
@@ -41,23 +43,47 @@ export enum LoaderVariant {
   inElement = 'inElement',
 }
 
-interface LoaderProps { variant?: LoaderVariant, withRightPadding?: boolean }
+interface LoaderProps {
+  variant?: LoaderVariant;
+  withRightPadding?: boolean;
+  withTopMargin?: boolean;
+}
 
 const Loader: FunctionComponent<LoaderProps> = ({
   variant = LoaderVariant.container,
   withRightPadding = false,
+  withTopMargin = false,
 }) => {
   const classes = useStyles();
   return (
     <div
-      className={variant === 'inElement' ? classes.containerInElement : classes.container}
-      style={variant === 'inElement' ? { paddingRight: withRightPadding ? 200 : 0 } : {}}
+      className={
+        variant === 'inElement' ? classes.containerInElement : classes.container
+      }
+      style={
+        variant === 'inElement'
+          ? {
+            paddingRight: withRightPadding ? 200 : 0,
+            marginTop: withTopMargin ? 200 : 0,
+          }
+          : {}
+      }
     >
       <div
-        className={variant === 'inElement' ? classes.loaderInElement : classes.loader}
-        style={variant !== 'inElement' ? { paddingRight: withRightPadding ? 100 : 0 } : {}}
+        className={
+          variant === 'inElement' ? classes.loaderInElement : classes.loader
+        }
+        style={
+          variant !== 'inElement'
+            ? { paddingRight: withRightPadding ? 100 : 0 }
+            : {}
+        }
       >
-        <CircularProgress size={variant === 'inElement' ? 40 : 80} thickness={1} className={classes.loaderCircle}/>
+        <CircularProgress
+          size={variant === 'inElement' ? 40 : 80}
+          thickness={1}
+          className={classes.loaderCircle}
+        />
       </div>
     </div>
   );

@@ -7,20 +7,31 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   initialFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import CaseRfiPopover from './CaseRfiPopover';
-import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
-import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
-import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
+import CaseRfiKnowledgeGraph, {
+  caseRfiKnowledgeGraphQuery,
+} from './CaseRfiKnowledgeGraph';
+import CaseRfiKnowledgeTimeLine, {
+  caseRfiKnowledgeTimeLineQuery,
+} from './CaseRfiKnowledgeTimeLine';
+import CaseRfiKnowledgeCorrelation, {
+  caseRfiKnowledgeCorrelationQuery,
+} from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
+import ContainerContent, {
+  containerContentQuery,
+} from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({
@@ -185,7 +196,12 @@ class CaseRfiKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    const newFilters = constructHandleAddFilter(
+      this.state.timeLineFilters,
+      key,
+      id,
+      op,
+    );
     this.setState(
       {
         timeLineFilters: newFilters,
@@ -195,11 +211,12 @@ class CaseRfiKnowledgeComponent extends Component {
   }
 
   handleRemoveTimeLineFilter(key, op = 'eq') {
-    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
-    this.setState(
-      { timeLineFilters: newFilters },
-      () => this.saveView(),
+    const newFilters = constructHandleRemoveFilter(
+      this.state.timeLineFilters,
+      key,
+      op,
     );
+    this.setState({ timeLineFilters: newFilters }, () => this.saveView());
   }
 
   handleTimeLineSearch(value) {
@@ -227,8 +244,8 @@ class CaseRfiKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
-      .length > 0
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))
+      ?.values.length > 0
       ? []
       : defaultTypes;
     let orderBy = 'created_at';
@@ -277,7 +294,12 @@ class CaseRfiKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -293,7 +315,12 @@ class CaseRfiKnowledgeComponent extends Component {
                 if (props && props.container) {
                   return <ContainerContent containerData={props.container} />;
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -335,7 +362,12 @@ class CaseRfiKnowledgeComponent extends Component {
                       />
                     );
                   }
-                  return <Loader />;
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
                 }}
               />
             </>
@@ -354,7 +386,12 @@ class CaseRfiKnowledgeComponent extends Component {
                     <CaseRfiKnowledgeCorrelation caseData={props.caseRfi} />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -392,7 +429,12 @@ class CaseRfiKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}

@@ -13,7 +13,7 @@ import ReportKnowledgeGraph, {
 import ReportKnowledgeCorrelation, {
   reportKnowledgeCorrelationQuery,
 } from './ReportKnowledgeCorrelation';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
@@ -290,7 +290,12 @@ class ReportKnowledgeComponent extends Component {
                     <ReportKnowledgeGraph report={props.report} mode={mode} />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -306,7 +311,12 @@ class ReportKnowledgeComponent extends Component {
                 if (props && props.container) {
                   return <ContainerContent containerData={props.container} />;
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -348,7 +358,12 @@ class ReportKnowledgeComponent extends Component {
                       />
                     );
                   }
-                  return <Loader />;
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
                 }}
               />
             </>

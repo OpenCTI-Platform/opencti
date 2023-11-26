@@ -165,7 +165,7 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.observableTypes === 'string') {
     finalParams.observableTypes = finalParams.observableTypes
       ? split(',', finalParams.observableTypes)
-      : '';
+      : [];
   }
   if (typeof finalParams.filters === 'string') {
     finalParams.filters = finalParams.filters
@@ -183,17 +183,17 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.stixCoreObjectsTypes === 'string') {
     finalParams.stixCoreObjectsTypes = finalParams.stixCoreObjectsTypes
       ? split(',', finalParams.stixCoreObjectsTypes)
-      : '';
+      : [];
   }
   if (typeof finalParams.markedBy === 'string') {
     finalParams.markedBy = finalParams.markedBy
       ? split(',', finalParams.markedBy)
-      : '';
+      : [];
   }
   if (typeof finalParams.createdBy === 'string') {
     finalParams.createdBy = finalParams.createdBy
       ? split(',', finalParams.createdBy)
-      : '';
+      : [];
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

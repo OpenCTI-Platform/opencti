@@ -13,7 +13,7 @@ import GroupingKnowledgeGraph, {
 import GroupingKnowledgeCorrelation, {
   groupingKnowledgeCorrelationQuery,
 } from './GroupingKnowledgeCorrelation';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
@@ -197,7 +197,12 @@ class GroupingKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -213,7 +218,12 @@ class GroupingKnowledgeComponent extends Component {
                 if (props && props.container) {
                   return <ContainerContent containerData={props.container} />;
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -231,7 +241,12 @@ class GroupingKnowledgeComponent extends Component {
                     <GroupingKnowledgeCorrelation grouping={props.grouping} />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -269,7 +284,12 @@ class GroupingKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}

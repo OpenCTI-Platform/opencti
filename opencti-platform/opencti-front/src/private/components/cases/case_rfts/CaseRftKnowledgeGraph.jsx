@@ -23,6 +23,8 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
+  defaultSecondaryValue,
+  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -47,6 +49,7 @@ import {
 import CaseRftPopover from './CaseRftPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -1351,18 +1354,23 @@ class CaseRftKnowledgeGraphComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.setState({
-      keyword,
-      graphData: applyFilters(
-        this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
-        [],
-        this.state.selectedTimeRangeInterval,
-        keyword,
-      ),
-    });
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+        || (defaultSecondaryValue(n) || '')
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      R.map(
+        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
+        this.state.graphData.nodes,
+      );
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   render() {
@@ -1631,7 +1639,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
                         {
                           selected: theme.palette.secondary.main,
                           inferred: theme.palette.warning.main,
-                          disabled: theme.palette.grey[600],
+                          disabled: theme.palette.background.paper,
                         },
                         node,
                         node.color,
@@ -1651,12 +1659,16 @@ class CaseRftKnowledgeGraphComponent extends Component {
                         : null)
                       }
                       linkColor={(link) => {
-                        // eslint-disable-next-line no-nested-ternary
-                        return this.selectedLinks.has(link)
-                          ? theme.palette.secondary.main
-                          : link.isNestedInferred
-                            ? theme.palette.warning.main
-                            : theme.palette.primary.main;
+                        if (this.selectedLinks.has(link)) {
+                          return theme.palette.secondary.main;
+                        }
+                        if (link.isNestedInferred) {
+                          return theme.palette.warning.main;
+                        }
+                        if (link.disabled) {
+                          return theme.palette.background.paper;
+                        }
+                        return theme.palette.primary.main;
                       }}
                       linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)
                       }

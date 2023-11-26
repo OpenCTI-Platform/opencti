@@ -21,6 +21,8 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
+  defaultSecondaryValue,
+  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -37,6 +39,7 @@ import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -852,25 +855,23 @@ class GroupingKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    const filterAdjust = {
-      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
-      markedBy: this.state.markedBy,
-      createdBy: this.state.createdBy,
-      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
-      keyword,
-    };
-    this.setState(
-      {
-        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
-        graphData: buildCorrelationData(
-          this.graphObjects,
-          decodeGraphData(this.props.grouping.x_opencti_graph_data),
-          this.props.t,
-          filterAdjust,
-        ),
-      },
-      () => this.saveParameters(false),
-    );
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    if (isNotEmptyField(keyword)) {
+      const filterByKeyword = (n) => keyword === ''
+        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1
+        || (defaultSecondaryValue(n) || '')
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
+          !== -1;
+      R.map(
+        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
+        this.state.graphData.nodes,
+      );
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
   }
 
   render() {
@@ -1297,19 +1298,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects(
-          types: [
-            "Threat-Actor"
-            "Intrusion-Set"
-            "Campaign"
-            "Incident"
-            "Malware"
-            "Tool"
-            "Vulnerability"
-            "Stix-Cyber-Observable"
-            "Indicator"
-          ]
-        ) {
+        objects {
           edges {
             node {
               ... on BasicObject {
@@ -1337,7 +1326,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                     }
                   }
                 }
-                groupings {
+                groupings(first: 20) {
                   edges {
                     node {
                       id
@@ -1449,7 +1438,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                groupings {
+                groupings(first: 20) {
                   edges {
                     node {
                       id

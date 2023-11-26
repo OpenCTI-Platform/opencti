@@ -667,6 +667,7 @@ class IncidentKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
                         size="large"
+                        disabled={stixCoreObjectsTypes.length === 0}
                       >
                         <Badge
                           badgeContent={currentStixCoreObjectsTypes.length}
@@ -727,6 +728,7 @@ class IncidentKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenMarkedBy.bind(this)}
                         size="large"
+                        disabled={markedBy.length === 0}
                       >
                         <Badge
                           badgeContent={currentMarkedBy.length}
@@ -785,6 +787,7 @@ class IncidentKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenCreatedBy.bind(this)}
                         size="large"
+                        disabled={createdBy.length === 0}
                       >
                         <Badge
                           badgeContent={currentCreatedBy.length}
