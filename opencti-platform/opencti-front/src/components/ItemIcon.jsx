@@ -27,6 +27,7 @@ import {
   ReviewsOutlined,
   RouterOutlined,
   SettingsOutlined,
+  SettingsApplicationsOutlined,
   ShortTextOutlined,
   SourceOutlined,
   SpeakerNotesOutlined,
@@ -348,6 +349,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'notification':
       return (
         <NotificationsOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'managerconfiguration':
+      return (
+        <SettingsApplicationsOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'observable':
     case 'stix-cyber-observable':

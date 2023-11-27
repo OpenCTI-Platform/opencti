@@ -19,13 +19,14 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
+import { ClearOutlined, PauseOutlined, PlayArrowOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
+import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
 import {
   FileIndexingMonitoringQuery,
 } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { interval } from 'rxjs';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
@@ -42,12 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: 20,
     borderRadius: 6,
   },
-  button: {
-    marginLeft: theme.spacing(2),
-    marginTop: theme.spacing(2),
-  },
   count: {
-    marginTop: 10,
     fontSize: 30,
     color: theme.palette.primary.main,
     textAlign: 'center',
@@ -59,6 +55,25 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     fontWeight: 500,
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  },
+  countContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-around;',
+  },
+  progress: {
+    borderRadius: 5,
+    height: 10,
+    width: '100%',
   },
 }));
 
@@ -72,11 +87,11 @@ const fileIndexingMonitoringQuery = graphql`
 `;
 
 interface FileIndexingMonitoringComponentProps {
-  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>
+  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>;
   refetch: () => void;
-  managerConfigurationId: string | undefined
-  isStarted: boolean
-  totalFiles: number | undefined
+  managerConfigurationId: string | undefined;
+  isStarted: boolean;
+  totalFiles: number;
 }
 
 const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringComponentProps> = ({
@@ -90,18 +105,32 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   const classes = useStyles();
 
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery, queryRef);
-  const indexedFiles = indexedFilesMetrics?.globalCount;
-  const volumeIndexed = indexedFilesMetrics?.globalSize;
+  const indexedFiles = indexedFilesMetrics?.globalCount ?? 0;
+  const volumeIndexed = indexedFilesMetrics?.globalSize ?? 0;
 
-  const [commit] = useMutation(fileIndexingConfigurationFieldPatch);
+  const [commitManagerRunning] = useMutation(fileIndexingConfigurationFieldPatch);
   const updateManagerRunning = (running: boolean) => {
-    commit({
+    commitManagerRunning({
       variables: {
         id: managerConfigurationId,
         input: { key: 'manager_running', value: running },
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess(`File indexing successfully ${running ? 'started' : 'paused'}`);
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
+  };
+
+  const [commitManagerReset] = useMutation(fileIndexingResetMutation);
+  const resetManager = () => {
+    commitManagerReset({
+      variables: {},
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('File indexing successfully reset');
+        refetch();
       },
       onError: (error) => {
         handleError(error);
@@ -124,67 +153,99 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   const handlePause = () => {
     updateManagerRunning(false);
   };
+  const handleReset = () => {
+    handlePause();
+    resetManager();
+  };
 
   return (
     <div>
       <Typography variant="h4" gutterBottom={true}>
         {t('Indexing information')}
       </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={4}>
-              {isStarted ? (
-                <Button
-                  startIcon={<PauseOutlined />}
-                  aria-label="Pause"
-                  onClick={handlePause}
-                  size="large"
-                  color="warning"
-                  variant="contained"
-                  classes={{ root: classes.button }}
-                >
-                  {t('Pause')}
-                </Button>
-              ) : (
-                <Button
-                  startIcon={<PlayArrowOutlined />}
-                  aria-label="Start"
-                  onClick={handleStart}
-                  size="large"
-                  color="success"
-                  variant="contained"
-                  classes={{ root: classes.button }}
-                >
-                  {t('Start')}
-                </Button>
-              )}
-                </Grid>
-                <Grid item={true} xs={4}>
-                  <div className={classes.count}>
-                      {indexedFiles} / {totalFiles}
-                  </div>
-                  <div className={classes.countText}>
-                      {t('Files indexed')}
-                  </div>
-                </Grid>
-                <Grid item={true} xs={4}>
-                  <div className={classes.count}>
-                      {indexedFiles ? n(volumeIndexed) : 0}
-                  </div>
-                  <div className={classes.countText}>
-                      {t('Volume indexed')}
-                  </div>
-                </Grid>
-            </Grid>
-        </Paper>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={4}>
+            <div className={classes.buttonsContainer}>
+            {isStarted ? (
+              <Button
+                startIcon={<PauseOutlined />}
+                aria-label="Pause"
+                onClick={handlePause}
+                size="large"
+                color="warning"
+                variant="contained"
+              >
+                {t('Pause')}
+              </Button>
+            ) : (
+              <Button
+                startIcon={<PlayArrowOutlined />}
+                aria-label="Start"
+                onClick={handleStart}
+                size="large"
+                color="success"
+                variant="contained"
+              >
+                {t('Start')}
+              </Button>
+            )}
+            {indexedFiles > 0 && (
+              <Button
+                startIcon={<ClearOutlined />}
+                aria-label="Reset"
+                onClick={handleReset}
+                size="large"
+                color="error"
+                variant="contained"
+              >
+                {t('Reset')}
+              </Button>
+            )}
+            </div>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {indexedFiles} / {totalFiles}
+              </div>
+              <div className={classes.countText}>
+                {t('Files indexed')}
+              </div>
+            </div>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <div className={classes.countContainer}>
+              <div className={classes.count}>
+                {indexedFiles ? n(volumeIndexed) : 0}
+              </div>
+              <div className={classes.countText}>
+                {t('Volume indexed')}
+              </div>
+            </div>
+          </Grid>
+        </Grid>
+        {isStarted && (
+          <div style={{ paddingTop: 30 }}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Progress')}
+            </Typography>
+            <LinearProgress
+              classes={{ root: classes.progress }}
+              variant="determinate"
+              value={indexedFiles > 0 ? Math.round((indexedFiles / totalFiles) * 100) : 0}
+            />
+          </div>
+        )}
+      </Paper>
     </div>
   );
 };
 
 interface FileIndexingMonitoringProps {
-  managerConfigurationId: string | undefined
-  isStarted: boolean
-  totalFiles: number | undefined
+  managerConfigurationId: string | undefined;
+  isStarted: boolean;
+  totalFiles: number;
 }
 
 const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
@@ -198,21 +259,21 @@ const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = (
   }, [queryRef]);
 
   return (
-      <>
-        {queryRef ? (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-              <FileIndexingMonitoringComponent
-                  queryRef={queryRef}
-                  refetch={refetch}
-                  managerConfigurationId={managerConfigurationId}
-                  isStarted={isStarted}
-                  totalFiles={totalFiles}
-              />
-            </React.Suspense>
-        ) : (
-            <Loader variant={LoaderVariant.container} />
-        )}
-      </>
+    <>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <FileIndexingMonitoringComponent
+            queryRef={queryRef}
+            refetch={refetch}
+            managerConfigurationId={managerConfigurationId}
+            isStarted={isStarted}
+            totalFiles={totalFiles}
+          />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.container} />
+      )}
+    </>
   );
 };
 

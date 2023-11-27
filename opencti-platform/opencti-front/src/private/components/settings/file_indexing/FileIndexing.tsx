@@ -14,34 +14,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent, useEffect } from 'react';
-import Grid from '@mui/material/Grid';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import FileIndexingRequirements
-  from '@components/settings/file_indexing/FileIndexingRequirements';
-import FileIndexingConfiguration from '@components/settings/file_indexing/FileIndexingConfiguration';
-import FileIndexingMonitoring
-  from '@components/settings/file_indexing/FileIndexingMonitoring';
-import {
-  FileIndexingConfigurationQuery,
-} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
+import FileIndexingRequirements from '@components/settings/file_indexing/FileIndexingRequirements';
+import FileIndexingConfigurationAndMonitoring from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 
 const fileIndexingConfigurationQuery = graphql`
-  query FileIndexingConfigurationQuery($managerId: String!, $mimeTypes: [String!], $maxFileSize: Float, $excludedPaths: [String!]) {
+  query FileIndexingConfigurationQuery($managerId: String!) {
     managerConfigurationByManagerId(managerId: $managerId) {
       id
       manager_id
       manager_running
       last_run_start_date
       last_run_end_date
-    }
-    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths) {
-      globalCount
-      globalSize
+      manager_setting
     }
   }
 `;
@@ -55,12 +46,19 @@ export const fileIndexingConfigurationFieldPatch = graphql`
       id
       manager_id
       manager_running
+      manager_setting
     }
   }
 `;
 
+export const fileIndexingResetMutation = graphql`
+  mutation FileIndexingResetMutation {
+    resetFileIndexing
+  }
+`;
+
 interface FileIndexingComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
+  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>;
 }
 
 const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
@@ -70,66 +68,43 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
 
-  const { filesMetrics, managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
-  const isStarted = managerConfigurationByManagerId?.manager_running || false;
-  const managerConfigurationId = managerConfigurationByManagerId?.id;
-  const totalFiles = filesMetrics?.globalCount;
-  const dataToIndex = filesMetrics?.globalSize;
+  const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
 
   return (
     <div>
       {!isEnterpriseEdition && (
         <EnterpriseEdition feature={'File indexing'} />
       )}
-      <FileIndexingRequirements
-        isModuleWarning={isModuleWarning}
-      />
-        {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingConfiguration
-               totalFiles={totalFiles}
-               dataToIndex={dataToIndex}
-             />
-            </Grid>
-            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-             <FileIndexingMonitoring
-               totalFiles={totalFiles}
-               isStarted={isStarted}
-               managerConfigurationId={managerConfigurationId}
-             />
-            </Grid>
-          </Grid>
-        )}
+      {isModuleWarning && (
+        <FileIndexingRequirements
+          isModuleWarning={isModuleWarning}
+        />
+      )}
+      {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
+       <FileIndexingConfigurationAndMonitoring managerConfiguration={managerConfigurationByManagerId} />
+      )}
     </div>
   );
 };
 
 const FileIndexing = () => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
-  // TODO MVP2 : get from configuration
-  const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
   const queryArgs = {
     managerId: FILE_INDEX_MANAGER,
-    mimeTypes: defaultMimeTypes,
-    maxFileSize: 5242880,
-    excludedPaths: ['import/global'],
   };
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
   }, []);
   return (
-      <>
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-            <FileIndexingComponent
-              queryRef={queryRef}
-            />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.container} />
-        )}
-      </>
+    <>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <FileIndexingComponent queryRef={queryRef} />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.container} />
+      )}
+    </>
   );
 };
 export default FileIndexing;

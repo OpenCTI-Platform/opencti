@@ -800,9 +800,16 @@ type IndexedFileConnection {
   edges: [IndexedFileEdge]
 }
 
+type MetricsByMimeType {
+  mimeType: String!
+  count: Int!
+  size: Float!
+}
+
 type FilesMetrics {
   globalCount: Int!
   globalSize: Float!
+  metricsByMimeType: [MetricsByMimeType!]
 }
 
 type OpenCtiFile {
@@ -10869,7 +10876,7 @@ type Query {
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
-  filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!]): FilesMetrics @auth(for: [SETTINGS])
+  filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!], includedPaths: [String!]): FilesMetrics @auth(for: [SETTINGS])
   indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES
@@ -12437,6 +12444,7 @@ type Mutation {
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  resetFileIndexing: Boolean @auth(for: [SETTINGS])
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])

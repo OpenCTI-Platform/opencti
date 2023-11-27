@@ -8,6 +8,7 @@ const convertManagerConfigurationToStix = (instance: StoreEntityManagerConfigura
     ...stixObject,
     manager_id: instance.manager_id,
     manager_running: instance.manager_running,
+    manager_setting: instance.manager_setting,
     last_run_end_date: instance.last_run_end_date,
     last_run_start_date: instance.last_run_start_date,
     extensions: {

@@ -4,6 +4,7 @@ import {
   deleteImport,
   filesMetrics,
   indexedFilesMetrics,
+  resetFileIndexing,
   searchIndexedFiles,
   uploadImport,
   uploadPending
@@ -42,6 +43,7 @@ const fileResolvers = {
     },
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
+    resetFileIndexing: (_, __, context) => resetFileIndexing(context, context.user),
   },
 };
 

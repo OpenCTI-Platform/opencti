@@ -8,6 +8,7 @@ import {
   type BasicStoreEntityManagerConfiguration,
   ENTITY_TYPE_MANAGER_CONFIGURATION
 } from './managerConfiguration-types';
+import { getAllDefaultManagerConfigurations, getDefaultManagerConfiguration } from './managerConfiguration-utils';
 import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -42,10 +43,17 @@ export const managerConfigurationEditField = async (context: AuthContext, user: 
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.manager_id}\``,
-    context_data: { id, entity_type: element.manager_id, input }
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for manager configuration \`${element.manager_id}\``,
+    context_data: { id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
+};
+
+export const managerConfigurationResetSetting = async (context: AuthContext, user: AuthUser, id: string) => {
+  const managerConfiguration = await findById(context, user, id);
+  const patch = { manager_setting: getDefaultManagerConfiguration(managerConfiguration.manager_id) };
+  const updatedManagerConfiguration = await patchAttribute(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION, patch);
+  await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updatedManagerConfiguration, user);
 };
 
 export const getManagerConfigurationFromCache = async (context: AuthContext, user: AuthUser, managerId: string): Promise<BasicStoreEntityManagerConfiguration | undefined> => {
@@ -68,23 +76,19 @@ export const updateManagerConfigurationLastRun = async (
 const addManagerConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  managerConfiguration: { manager_id: string, manager_running: boolean }
+  managerConfiguration: { manager_id: string, manager_running: boolean, manager_setting: any }
 ) => {
   const createdManagerConfiguration = await createEntity(context, user, managerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION);
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].ADDED_TOPIC, createdManagerConfiguration, user);
 };
 
-export const initiManagerConfigurations = async (context: AuthContext, user: AuthUser) => {
+export const initManagerConfigurations = async (context: AuthContext, user: AuthUser) => {
   const managerConfigurations = await listAllEntities<BasicStoreEntityManagerConfiguration>(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION], { connectionFormat: false });
-  const managers = ['FILE_INDEX_MANAGER'];
-  for (let index = 0; index < managers.length; index += 1) {
-    const managerId = managers[index];
-    const managerConfigurationExist = managerConfigurations.some((m) => m.manager_id === managerId);
+  const allManagerConfigurations = getAllDefaultManagerConfigurations();
+  for (let index = 0; index < allManagerConfigurations.length; index += 1) {
+    const managerConfiguration = { ...allManagerConfigurations[index] };
+    const managerConfigurationExist = managerConfigurations.some((m) => m.manager_id === managerConfiguration.manager_id);
     if (!managerConfigurationExist) {
-      const managerConfiguration = {
-        manager_id: managerId,
-        manager_running: false,
-      };
       await addManagerConfiguration(context, user, managerConfiguration);
     }
   }

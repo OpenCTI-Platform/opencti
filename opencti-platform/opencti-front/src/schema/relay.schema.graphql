@@ -848,9 +848,16 @@ type IndexedFileConnection {
   edges: [IndexedFileEdge]
 }
 
+type MetricsByMimeType {
+  mimeType: String!
+  count: Int!
+  size: Float!
+}
+
 type FilesMetrics {
   globalCount: Int!
   globalSize: Float!
+  metricsByMimeType: [MetricsByMimeType!]
 }
 
 type OpenCtiFile {
@@ -7110,7 +7117,7 @@ type Query {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
-  filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!]): FilesMetrics
+  filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!], includedPaths: [String!]): FilesMetrics
   indexedFilesMetrics: FilesMetrics
   settings: Settings!
   group(id: String!): Group
@@ -7832,6 +7839,7 @@ type Mutation {
   uploadImport(file: Upload!): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
+  resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
   synchronizerStart(id: ID!): Synchronizer
@@ -10143,6 +10151,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   manager_running: Boolean
   last_run_start_date: DateTime
   last_run_end_date: DateTime
+  manager_setting: JSON
 }
 
 enum NotifierOrdering {

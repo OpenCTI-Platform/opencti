@@ -193,6 +193,10 @@ export const searchEngineVersion = async () => {
   return { platform: searchPlatform, version: searchVersion, engine: localEngine };
 };
 
+export const isElkEngine = () => {
+  return engine instanceof ElkClient;
+};
+
 export const searchEngineInit = async () => {
   // Select the correct engine
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
@@ -547,6 +551,7 @@ const elCreateIndexTemplate = async (index) => {
       }
     };
   }
+  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
   await engine.indices.putIndexTemplate({
     name: index,
     create: false,
@@ -631,6 +636,9 @@ const elCreateIndexTemplate = async (index) => {
               type: 'date',
             },
             indexed_at: {
+              type: 'date',
+            },
+            uploaded_at: {
               type: 'date',
             },
             first_seen: {
@@ -720,9 +728,12 @@ const elCreateIndexTemplate = async (index) => {
             connections: {
               type: 'nested',
             },
+            manager_setting: {
+              type: flattenedType,
+            },
             context_data: {
               properties: {
-                input: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+                input: { type: flattenedType },
               },
             }
           },
@@ -2336,7 +2347,7 @@ export const elSearchFiles = async (context, user, options = {}) => {
     });
 };
 
-export const elDeleteFilesByIds = async (context, user, fileIds) => {
+export const elDeleteFilesByIds = async (fileIds) => {
   if (!fileIds) {
     return;
   }
@@ -2349,6 +2360,20 @@ export const elDeleteFilesByIds = async (context, user, fileIds) => {
     body: { query },
   }).catch((err) => {
     throw DatabaseError('[SEARCH] Error deleting files by ids', { error: err });
+  });
+};
+
+export const elDeleteAllFiles = async () => {
+  await elRawDeleteByQuery({
+    index: READ_INDEX_FILES,
+    refresh: true,
+    body: {
+      query: {
+        match_all: {},
+      }
+    },
+  }).catch((err) => {
+    throw DatabaseError('[SEARCH] Error deleting all files ', { error: err });
   });
 };
 // end index and search files

@@ -9,7 +9,7 @@ import { internalLoadById } from '../database/middleware-loader';
 export const up = async (next) => {
   const context = executionContext('migration');
   logApp.info('[MIGRATION] Starting 1652125339035-files_database.js');
-  const files = await rawFilesListing(context, SYSTEM_USER, '/', true);
+  const files = await rawFilesListing(context, SYSTEM_USER, '/', { recursive: true });
   const imports = files.filter((f) => f.id.startsWith('import/'));
   logApp.info(`[MIGRATION] Migrating ${imports.length} files references`);
   const importGroups = R.groupBy((i) => i.metaData.entity_id, imports);

@@ -23,7 +23,7 @@ const indexFile = async (fileName, mimetype, documentId) => {
     file_data: fileContent,
     entity_id: '',
     name: fileName,
-    uploaded_at: '',
+    uploaded_at: file.lastModified,
   };
 
   // index file content

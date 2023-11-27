@@ -1,6 +1,10 @@
 import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findByManagerId, managerConfigurationEditField } from './managerConfiguration-domain';
+import {
+  findById,
+  findByManagerId,
+  managerConfigurationEditField
+} from './managerConfiguration-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';

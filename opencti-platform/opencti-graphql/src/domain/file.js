@@ -4,7 +4,7 @@ import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport }
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { elSearchFiles, getStats } from '../database/engine';
+import { elDeleteAllFiles, elSearchFiles, getStats } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { READ_INDEX_FILES } from '../database/utils';
 import {
@@ -13,7 +13,13 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
+import {
+  getManagerConfigurationFromCache,
+  managerConfigurationEditField
+} from '../modules/managerConfiguration/managerConfiguration-domain';
+import { FunctionalError } from '../config/errors';
 
+// region File indexing
 export const filesMetrics = async (context, user, args) => {
   const { excludedPaths = [] } = args;
   const finalExcludedPaths = ['import/pending/', ...excludedPaths]; // always exclude pending
@@ -22,9 +28,22 @@ export const filesMetrics = async (context, user, args) => {
     excludedPaths: finalExcludedPaths,
   };
   const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
+  const metricsByMimeType = [];
+  const filesWithMimeType = files.filter((f) => f.mimeType !== null);
+  const filesByMimetype = R.groupBy((f) => f.mimeType, filesWithMimeType);
+  const mimeTypesGroups = Object.keys(filesByMimetype);
+  for (let index = 0; index < mimeTypesGroups.length; index += 1) {
+    const mimeType = mimeTypesGroups[index];
+    metricsByMimeType.push({
+      mimeType,
+      count: filesByMimetype[mimeType].length,
+      size: R.sum(filesByMimetype[mimeType].map((file) => file.Size)),
+    });
+  }
   return {
     globalCount: files.length,
-    globalSize: R.sum(files.map((file) => file.size)),
+    globalSize: R.sum(files.map((file) => file.Size)),
+    metricsByMimeType,
   };
 };
 
@@ -39,6 +58,25 @@ export const indexedFilesMetrics = async () => {
 export const searchIndexedFiles = async (context, user, args) => {
   return elSearchFiles(context, context.user, args);
 };
+
+export const resetFileIndexing = async (context, user) => {
+  const managerConfiguration = await getManagerConfigurationFromCache(context, user, 'FILE_INDEX_MANAGER');
+  if (!managerConfiguration) {
+    throw FunctionalError('No manager configuration found');
+  }
+  await managerConfigurationEditField(context, user, managerConfiguration.id, [{ key: 'manager_running', value: [false] }]);
+  await elDeleteAllFiles();
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'Reset file indexing',
+  });
+  return true;
+};
+
+// endregion
 
 // region import / upload
 export const askJobImport = async (context, user, args) => {

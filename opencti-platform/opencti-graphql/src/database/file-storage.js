@@ -103,7 +103,7 @@ export const deleteFile = async (context, user, id) => {
   // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
     logApp.info(`[FILE STORAGE] delete file ${id} in index`);
-    await elDeleteFilesByIds(context, user, [id])
+    await elDeleteFilesByIds([id])
       .catch((databaseError) => {
         logApp.error('[FILE STORAGE] Error deleting file in index', { databaseError });
       });
@@ -198,9 +198,10 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-export const rawFilesListing = async (context, user, directory, recursive = false, opts = {}) => {
-  const { modifiedSince, excludedPaths = [] } = opts;
-  const storageObjects = [];
+const simpleFilesListing = async (directory, opts = {}) => {
+  const { recursive = false } = opts;
+  const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [] } = opts;
+  const objects = [];
   const requestParams = {
     Bucket: bucketName,
     Prefix: directory || undefined,
@@ -210,7 +211,7 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
   while (truncated) {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-      storageObjects.push(...(response.Contents ?? []));
+      objects.push(...(response.Contents ?? []));
       truncated = response.IsTruncated;
       if (truncated) {
         requestParams.ContinuationToken = response.NextContinuationToken;
@@ -220,14 +221,27 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
       truncated = false;
     }
   }
+  const storageObjects = objects.map((obj) => {
+    return {
+      ...obj,
+      mimeType: mime.lookup(obj.Key) || null,
+    };
+  });
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
-        && (!modifiedSince || obj.LastModified > modifiedSince)
-        && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
+      && (!mimeTypes?.length || !obj.mimeType || mimeTypes.includes(obj.mimeType))
+      && (!modifiedSince || obj.LastModified > modifiedSince)
+      && (!maxFileSize || maxFileSize >= obj.Size)
+      && (!includedPaths?.length || includedPaths.some((includedPath) => obj.Key.startsWith(includedPath)))
+      && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
   });
-  // TODO limit loadFile : sort by LastModified and get the first 50 ? => waiting for performance test
+  return filteredObjects;
+};
+
+export const rawFilesListing = async (context, user, directory, opts = {}) => {
+  const storageObjects = await simpleFilesListing(directory, opts);
   // Load file metadata with 5 // call maximum
-  return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  return BluePromise.map(storageObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
@@ -353,24 +367,24 @@ export const filesListing = async (context, user, first, path, entity = null, pr
 
 export const fileListingForIndexing = async (context, user, path, opts = {}) => {
   const fileListingForIndexingFn = async () => {
-    let files = await rawFilesListing(context, user, path, true, opts);
-    const { mimeTypes, maxFileSize } = opts;
-    if (mimeTypes?.length > 0) {
-      files = files.filter((file) => {
-        return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
-      });
-    }
-    if (maxFileSize) {
-      files = files.filter((file) => {
-        return maxFileSize >= (file.size || 0);
-      });
-    }
-    return files.sort((a, b) => a.lastModified - b.lastModified);
+    const files = await simpleFilesListing(path, { ...opts, recursive: true });
+    return files.sort((a, b) => a.LastModified - b.LastModified);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
     [SemanticAttributes.DB_NAME]: 'storage_engine',
     [SemanticAttributes.DB_OPERATION]: 'listing',
   }, fileListingForIndexingFn);
+};
+
+export const loadFilesForIndexing = (user, files, opts = {}) => {
+  let filesObjects = BluePromise.map(files, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  const { mimeTypes } = opts;
+  if (mimeTypes?.length > 0) {
+    filesObjects = filesObjects.filter((file) => {
+      return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
+    });
+  }
+  return filesObjects;
 };
 
 export const deleteAllFiles = async (context, user, path) => {

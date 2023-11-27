@@ -963,7 +963,7 @@ const Settings = () => {
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
                         {modules.map((module) => {
-                          const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER'].includes(module.id);
+                          const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
                           let status = module.enable;
                           if (!isEnterpriseEdition && isEeModule) {
                             status = 'ee';

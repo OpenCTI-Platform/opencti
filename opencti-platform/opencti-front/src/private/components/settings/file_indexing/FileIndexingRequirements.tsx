@@ -11,7 +11,7 @@ const useStyles = makeStyles(() => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: 20,
+    padding: '20px 20px 0',
     borderRadius: 6,
   },
   gridContainer: {
@@ -20,7 +20,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FileIndexingRequirementsProps {
-  isModuleWarning: boolean
+  isModuleWarning: boolean;
 }
 
 const FileIndexingRequirements: FunctionComponent<FileIndexingRequirementsProps> = ({
@@ -39,17 +39,17 @@ const FileIndexingRequirements: FunctionComponent<FileIndexingRequirementsProps>
             severity={isModuleWarning ? 'warning' : 'info'}
             variant="outlined"
             style={{ position: 'relative' }}
-            >
+          >
             {t('File indexing needs one of these requirements')}:
             <ul>
-                <li>Elasticsearch &gt;= 8.4</li>
-                <li>Elasticsearch &lt; 8.4 with ingest-attachment plugin</li>
-                <li>OpenSearch with ingest-attachment plugin</li>
-              </ul>
+              <li>Elasticsearch &gt;= 8.4</li>
+              <li>Elasticsearch &lt; 8.4 with ingest-attachment plugin</li>
+              <li>OpenSearch with ingest-attachment plugin</li>
+            </ul>
           </Alert>
         </Paper>
+      </Grid>
     </Grid>
-</Grid>
   );
 };
 
