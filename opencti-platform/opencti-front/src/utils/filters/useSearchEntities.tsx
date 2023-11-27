@@ -640,15 +640,7 @@ const useSearchEntities = ({
               type: 'Label',
               color: n?.node.color,
             }));
-            unionSetEntities(filterKey, [
-              {
-                label: t('No label'),
-                value: null,
-                type: 'Label',
-                color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-              },
-              ...objectLabelEntities,
-            ]);
+            unionSetEntities(filterKey, objectLabelEntities);
           });
         break;
       case 'x_opencti_base_score':
