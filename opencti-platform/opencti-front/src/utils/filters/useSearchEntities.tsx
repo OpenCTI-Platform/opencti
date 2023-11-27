@@ -588,17 +588,17 @@ const useSearchEntities = ({
             unionSetEntities(filterKey, elementIdEntities);
           });
         break;
-      case 'containers':
+      case 'containers': {
+        const filters = [];
+        if (searchContext?.elementId) filters.push({ key: 'objects', values: [searchContext?.elementId] });
+        if (availableEntityTypes) filters.push({ key: 'types', values: availableEntityTypes });
         fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
           filters: {
             mode: 'and',
+            filters,
             filterGroups: [],
-            filters: [
-              { key: 'objects', values: searchContext?.elementId ?? [] },
-              { key: 'entity_type', values: availableEntityTypes ?? [] },
-            ],
           },
         })
           .toPromise()
@@ -616,6 +616,7 @@ const useSearchEntities = ({
             unionSetEntities('containers', containerEntities);
           });
         break;
+      }
       case 'objectMarking':
       case 'contextObjectMarking':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
@@ -970,12 +971,12 @@ const useSearchEntities = ({
           filters: {
             mode: 'and',
             filterGroups: [],
-            filters: [
+            filters: isNotEmptyField(entityType) ? [
               {
                 key: 'type',
-                values: isNotEmptyField(entityType) ? [entityType] : [],
+                values: [entityType],
               },
-            ],
+            ] : [],
           },
         })
           .toPromise()
