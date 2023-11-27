@@ -18,7 +18,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -246,7 +246,7 @@ const RetentionCreation = (props) => {
                 />
               </div>
               <div className="clearfix" />
-              {filters
+              {isFilterGroupNotEmpty(filters)
                 && <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}

@@ -25,6 +25,7 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
+import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {
@@ -148,7 +149,7 @@ class ListCards extends Component {
           >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
-          {filters
+          {isFilterGroupNotEmpty(filters)
             && <FilterIconButton
               filters={filters}
               handleRemoveFilter={handleRemoveFilter}

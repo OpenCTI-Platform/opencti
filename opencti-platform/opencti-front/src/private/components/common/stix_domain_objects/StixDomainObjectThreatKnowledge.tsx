@@ -43,7 +43,12 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
-import { findFilterFromKey, initialFilterGroup, removeFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  findFilterFromKey,
+  initialFilterGroup,
+  isFilterGroupNotEmpty,
+  removeFilter,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -436,7 +441,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           >
             <SettingsOutlined />
           </IconButton>
-          {filters
+          {isFilterGroupNotEmpty(filters)
             && <FilterIconButton
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}

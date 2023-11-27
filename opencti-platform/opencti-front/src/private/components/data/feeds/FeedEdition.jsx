@@ -35,7 +35,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
+  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -483,15 +483,16 @@ const FeedEditionContainer = (props) => {
                       />
                     </div>
                     <div className="clearfix" />
-                    <FilterIconButton
-                      filters={filters}
-                      handleRemoveFilter={handleRemoveFilter}
-                      handleSwitchLocalMode={handleSwitchLocalMode}
-                      handleSwitchGlobalMode={handleSwitchGlobalMode}
-                      classNameNumber={2}
-                      styleNumber={2}
-                      redirection
-                    />
+                    {isFilterGroupNotEmpty(filters)
+                      && <FilterIconButton
+                        filters={filters}
+                        handleRemoveFilter={handleRemoveFilter}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        handleSwitchGlobalMode={handleSwitchGlobalMode}
+                        classNameNumber={2}
+                        styleNumber={2}
+                        redirection
+                    />}
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>
                         {Object.keys(feedAttributes).map((i) => (

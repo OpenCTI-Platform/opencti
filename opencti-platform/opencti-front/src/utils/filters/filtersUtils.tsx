@@ -144,7 +144,7 @@ export const entityTypesFilters = [
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 
-export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
+export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined | null) => {
   return (
     filterGroup
     && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0)
@@ -521,7 +521,7 @@ export const constructHandleAddFilter = (
     };
 };
 
-// remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
+// remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
 export const constructHandleRemoveFilter = (
   filters: FilterGroup | undefined | null,
