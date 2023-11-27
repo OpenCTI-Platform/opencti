@@ -21,7 +21,7 @@ import {
   CloseOutlined,
   MoveToInboxOutlined,
   LockPersonOutlined,
-  ContentCopyOutlined, Delete,
+  Delete, ContentCopyOutlined,
 } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
