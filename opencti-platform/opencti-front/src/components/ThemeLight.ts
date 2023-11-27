@@ -34,6 +34,7 @@ const ThemeLight = (
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
+      contrastText: '#ffffff',
     },
     background: {
       default: background || '#f3f6f9',

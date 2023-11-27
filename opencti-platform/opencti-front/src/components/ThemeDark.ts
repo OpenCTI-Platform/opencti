@@ -34,6 +34,7 @@ const ThemeDark = (
     chip: { main: '#ffffff' },
     ee: {
       main: EE_COLOR,
+      contrastText: '#ffffff',
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },

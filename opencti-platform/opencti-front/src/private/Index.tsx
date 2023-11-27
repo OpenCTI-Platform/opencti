@@ -32,14 +32,14 @@ import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../components/Theme';
-import { RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
+import { RootSettings$data } from './__generated__/RootSettings.graphql';
 
 const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
 interface IndexProps {
-  settings: RootPrivateQuery$data['settings']
+  settings: RootSettings$data
 }
 
 const Index = ({ settings }: IndexProps) => {

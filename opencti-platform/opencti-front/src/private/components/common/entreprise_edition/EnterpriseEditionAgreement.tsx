@@ -17,6 +17,7 @@ const EnterpriseEditionAgreementMutationFieldPatch = graphql`
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         id
+        ...RootSettings
       }
     }
   }
@@ -44,9 +45,6 @@ EnterpriseEditionAgreementProps
           key: 'enterprise_edition',
           value: now(),
         },
-      },
-      onCompleted: () => {
-        window.location.reload();
       },
     });
     onClose();

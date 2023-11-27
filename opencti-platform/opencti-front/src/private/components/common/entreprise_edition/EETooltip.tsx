@@ -26,18 +26,12 @@ const EETooltip = ({
   }
   return (
     <>
-      <Tooltip
-        title={t(
-          'You need to activate OpenCTI enterprise edition to use this feature.',
-        )}
-      >
-        <span
-          onClick={(e) => {
-            setFeedbackCreation(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
+      <Tooltip title={title ? t(title) : undefined}>
+        <span onClick={(e) => {
+          setFeedbackCreation(true);
+          e.preventDefault();
+          e.stopPropagation();
+        }}>
           {children}
         </span>
       </Tooltip>

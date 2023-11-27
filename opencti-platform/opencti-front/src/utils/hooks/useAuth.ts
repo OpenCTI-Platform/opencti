@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQuery.graphql';
 import { ModuleHelper } from '../platformModulesHelper';
+import { RootSettings$data } from '../../private/__generated__/RootSettings.graphql';
 
 export interface BannerSettings {
   bannerLevel?: string | null;
@@ -13,7 +14,7 @@ export interface BannerSettings {
 
 export interface UserContextType {
   me: RootPrivateQuery$data['me'] | undefined;
-  settings: RootPrivateQuery$data['settings'] | undefined;
+  settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;

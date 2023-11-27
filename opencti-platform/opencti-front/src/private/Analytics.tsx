@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import googleAnalytics from '@analytics/google-analytics';
-import { RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import { isNotEmptyField } from '../utils/utils';
+import { RootSettings$data } from './__generated__/RootSettings.graphql';
 
-const generateAnalyticsConfig = (settings: RootPrivateQuery$data['settings']) => {
+const generateAnalyticsConfig = (settings: RootSettings$data) => {
   const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
   const googleMeasurement = settings.analytics_google_analytics_v4;
   return {

@@ -1,6 +1,6 @@
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
@@ -10,11 +10,47 @@ import { UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
-import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
+import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
+import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
+
+const rootSettingsFragment = graphql`
+  fragment RootSettings on Settings {
+    id
+    platform_demo
+    platform_banner_text
+    platform_user_statuses {
+      status
+      message
+    }
+    platform_banner_level
+    platform_map_tile_server_dark
+    platform_map_tile_server_light
+    platform_theme
+    platform_whitemark
+    platform_session_idle_timeout
+    platform_session_timeout
+    platform_feature_flags {
+      id
+      enable
+    }
+    platform_modules {
+      id
+      enable
+      running
+      warning
+    }
+    enterprise_edition
+    ...AppThemeProvider_settings
+    ...AppIntlProvider_settings
+    ...PasswordPolicies
+    ...Policies
+    analytics_google_analytics_v4
+  }
+`;
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -62,36 +98,7 @@ const rootPrivateQuery = graphql`
       }
     }
     settings {
-      id
-      platform_demo
-      platform_banner_text
-      platform_user_statuses {
-        status
-        message
-      }
-      platform_banner_level
-      platform_map_tile_server_dark
-      platform_map_tile_server_light
-      platform_theme
-      platform_whitemark
-      platform_session_idle_timeout
-      platform_session_timeout
-      platform_feature_flags {
-        id
-        enable
-      }
-      platform_modules {
-        id
-        enable
-        running
-        warning
-      }
-      enterprise_edition
-      ...AppThemeProvider_settings
-      ...AppIntlProvider_settings
-      ...PasswordPolicies
-      ...Policies
-      analytics_google_analytics_v4
+      ...RootSettings
     }
     about {
       version
@@ -142,7 +149,7 @@ const rootPrivateQuery = graphql`
   }
 `;
 
-const computeBannerSettings = (settings: RootPrivateQuery$data['settings']) => {
+const computeBannerSettings = (settings: RootSettings$data) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
   const isBannerActivated = isNotEmptyField(bannerLevel) && isNotEmptyField(bannerText);
@@ -170,7 +177,8 @@ interface RootComponentProps {
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
-  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSROs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
+  const { me, settings: settingsFragment, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSROs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
+  const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
@@ -182,7 +190,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
-  const platformAnalyticsConfiguration = generateAnalyticsConfig(queryData.settings);
+  const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
   return (
     <UserContext.Provider
       value={{
