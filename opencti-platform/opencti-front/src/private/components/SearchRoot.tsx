@@ -10,6 +10,7 @@ import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import useAuth from '../../utils/hooks/useAuth';
 import { useFormatter } from '../../components/i18n';
+import { decodeSearchKeyword } from '../../utils/SearchUtils';
 
 const SearchRoot = () => {
   const {
@@ -18,12 +19,7 @@ const SearchRoot = () => {
   const { t } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
-  let searchTerm = '';
-  try {
-    searchTerm = decodeURIComponent(keyword || '');
-  } catch (e) {
-    // Do nothing
-  }
+  const searchTerm = decodeSearchKeyword(keyword);
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
   const fileSearchEnabled = isFileIndexManagerEnable();
 

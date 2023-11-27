@@ -5,8 +5,7 @@ import {
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
-import Typography from '@mui/material/Typography';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -16,16 +15,17 @@ import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
 import useAuth from '../../../utils/hooks/useAuth';
+import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
 
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFiles = () => {
+  const { fd } = useFormatter();
+  const history = useHistory();
+  const {
+    platformModuleHelpers: { isFileIndexManagerEnable },
+  } = useAuth();
   const { keyword } = useParams() as { keyword: string };
-  let search = '';
-  try {
-    search = decodeURIComponent(keyword || '');
-  } catch (e) {
-    // Do nothing
-  }
+  const searchTerm = decodeSearchKeyword(keyword);
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -48,12 +48,13 @@ const SearchIndexedFiles = () => {
 
   const queryRef = useQueryLoading<SearchIndexedFilesLinesPaginationQuery>(
     searchIndexedFilesLinesQuery,
-    { ...paginationOptions, search },
+    { ...paginationOptions, search: searchTerm },
   );
-  const { fd, t } = useFormatter();
-  const {
-    platformModuleHelpers: { isFileIndexManagerEnable },
-  } = useAuth();
+
+  const handleSearch = (searchKeyword: string) => {
+    handleSearchByKeyword(searchKeyword, 'files', history);
+  };
+
   const fileSearchEnabled = isFileIndexManagerEnable();
 
   const renderLines = () => {
@@ -127,8 +128,10 @@ const SearchIndexedFiles = () => {
           orderAsc={orderAsc}
           dataColumns={dataColumns}
           handleSort={storageHelpers.handleSort}
+          handleSearch={handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          keyword={searchTerm}
           disableCards={true}
           secondaryAction={true}
           paginationOptions={paginationOptions}
@@ -153,13 +156,6 @@ const SearchIndexedFiles = () => {
   return (
     <ExportContextProvider>
       <div>
-        <Typography
-          variant="h6"
-          gutterBottom={true}
-          style={{ margin: '-5px 20px 0 0', float: 'left' }}
-        >
-          {t('Search in files')}
-        </Typography>
         {fileSearchEnabled && renderLines()}
       </div>
     </ExportContextProvider>

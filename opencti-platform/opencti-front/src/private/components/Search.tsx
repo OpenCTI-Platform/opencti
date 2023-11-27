@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
 import {
   SearchStixCoreObjectLine_node$data,
@@ -8,7 +7,7 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
@@ -17,8 +16,8 @@ import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
-import { useFormatter } from '../../components/i18n';
 import { initialFilterGroup } from '../../utils/filters/filtersUtils';
+import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 
 const LOCAL_STORAGE_KEY = 'search';
 
@@ -26,14 +25,9 @@ const Search = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { t } = useFormatter();
+  const history = useHistory();
   const { keyword } = useParams() as { keyword: string };
-  let searchTerm = '';
-  try {
-    searchTerm = decodeURIComponent(keyword || '');
-  } catch (e) {
-    // Do nothing
-  }
+  const searchTerm = decodeSearchKeyword(keyword);
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -64,6 +58,10 @@ const Search = () => {
     searchStixCoreObjectsLinesQuery,
     { ...paginationOptions, search: searchTerm },
   );
+
+  const handleSearch = (searchKeyword: string) => {
+    handleSearchByKeyword(searchKeyword, 'knowledge', history);
+  };
 
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -117,6 +115,7 @@ const Search = () => {
               orderAsc={orderAsc}
               dataColumns={dataColumns}
               handleSort={storageHelpers.handleSort}
+              handleSearch={handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
               handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
@@ -129,6 +128,7 @@ const Search = () => {
               selectAll={selectAll}
               disableCards={true}
               filters={filters}
+              keyword={searchTerm}
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               iconExtension={true}
@@ -186,13 +186,6 @@ const Search = () => {
   return (
       <ExportContextProvider>
         <div>
-          <Typography
-            variant="h6"
-            gutterBottom={true}
-            style={{ margin: '-5px 20px 0 0', float: 'left' }}
-          >
-            {t('Search for an entity')}
-          </Typography>
           {renderLines()}
         </div>
       </ExportContextProvider>
