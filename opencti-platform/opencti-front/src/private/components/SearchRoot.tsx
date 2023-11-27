@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { useFormatter } from '../../components/i18n';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
@@ -45,7 +46,7 @@ const SearchRoot = () => {
               component={Link}
               to={`/dashboard/search/files/${keyword ?? ''}`}
               value='files'
-              label={t('Files search')}
+              label={<div>{t('Files search')}<EEChip /></div>}
             />
           </Tabs>
         </Box>
