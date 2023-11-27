@@ -51,7 +51,8 @@ export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 
-// list of the special filtering keys (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
+// list of the special filtering keys
+// (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
 export const specialFilterKeys = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
@@ -70,6 +71,22 @@ export const specialFilterKeys = [
   CONTEXT_CREATED_BY_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
+  MEMBERS_USER_FILTER,
+  MEMBERS_GROUP_FILTER,
+  MEMBERS_ORGANIZATION_FILTER,
+  RULE_FILTER, // for inference engine rules
+  'source_reliability', // reliability of the author
+];
+
+export const specialFilterKeysWithResolvedRepresentative = [
+  SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
+  INSTANCE_FILTER, // element involved in a relationship with the entity
+  `rel_${RELATION_OBJECT}`,
+  CREATOR_FILTER, // technical creator
+  RELATION_FROM_FILTER, // nested relation for the from of a relationship
+  RELATION_TO_FILTER, // nested relation for the to of a relationship
+  CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
+  IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
