@@ -968,16 +968,12 @@ const useSearchEntities = ({
       case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
           first: 500,
-          filters: {
+          filters: isNotEmptyField(entityType) ? {
             mode: 'and',
             filterGroups: [],
-            filters: isNotEmptyField(entityType) ? [
-              {
-                key: 'type',
-                values: [entityType],
-              },
-            ] : [],
-          },
+            filters: [{ key: 'type', values: [entityType] },
+            ],
+          } : undefined,
         })
           .toPromise()
           .then((data) => {
