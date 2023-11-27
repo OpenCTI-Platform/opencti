@@ -101,7 +101,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
       ) || [],
   };
-  console.log('displayedFilters', displayedFilters);
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     { filters: displayedFilters as unknown as GqlFilterGroup },
