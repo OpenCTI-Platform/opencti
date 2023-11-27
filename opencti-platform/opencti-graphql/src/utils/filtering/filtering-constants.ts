@@ -78,7 +78,8 @@ export const specialFilterKeys = [
   'source_reliability', // reliability of the author
 ];
 
-export const specialFilterKeysWithResolvedRepresentative = [
+// list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
+export const filterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
   `rel_${RELATION_OBJECT}`,
@@ -91,4 +92,5 @@ export const specialFilterKeysWithResolvedRepresentative = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
+  WORKFLOW_FILTER,
 ];
