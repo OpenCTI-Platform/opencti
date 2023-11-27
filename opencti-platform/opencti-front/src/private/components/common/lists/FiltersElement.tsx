@@ -62,7 +62,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         if (key === 'valid_from') {
           return [{ key, operator: 'gt' }];
         }
-        return [{ key: `${key}_gt`, operator: 'gt' }, { key: `${key}_lt`, operator: 'lt' }];
+        return [{ key, operator: 'gt' }, { key, operator: 'lt' }];
       }
       return { key, operator: undefined };
     })
@@ -83,11 +83,11 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
           </Grid>
         )}
         {displayedFilters
-          .map((filter) => {
+          .map((filter, index) => {
             const filterKey = filter.key;
             if (dateFilters.includes(filterKey)) {
               return (
-                <Grid key={filterKey} item={true} xs={6}>
+                <Grid key={`${filter.key}_${filter.operator}_${index}`} item={true} xs={6}>
                   <FilterDate
                     defaultHandleAddFilter={defaultHandleAddFilter}
                     filterKey={filterKey}
