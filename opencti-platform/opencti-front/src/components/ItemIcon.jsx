@@ -96,6 +96,9 @@ import {
   SourceFork,
   SourcePull,
   Target,
+  AccountCashOutline,
+  HandCoinOutline,
+  CashMultiple,
 } from 'mdi-material-ui';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
@@ -390,7 +393,6 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'windows-registry-key':
     case 'windows-registry-value-type':
     case 'cryptographic-key':
-    case 'cryptocurrency-wallet':
     case 'hostname':
     case 'text':
     case 'user-agent':
@@ -401,6 +403,12 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'tracking-number':
     case 'media-content':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
+    case 'financial-account':
+      return <AccountCashOutline style={style} fontSize={fontSize} role="img" />;
+    case 'financial-asset':
+      return <CashMultiple style={style} fontSize={fontSize} role="img" />;
+    case 'financial-transaction':
+      return <HandCoinOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
     case 'sighting':
       return (

@@ -33,6 +33,8 @@ import {
   INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
+  INPUT_TRANSACTION_FROM,
+  INPUT_TRANSACTION_TO,
   INPUT_VALUES,
   RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
@@ -71,15 +73,16 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_BANK_ACCOUNT,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
-  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_ASSET,
+  ENTITY_FINANCIAL_TRANSACTION,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -683,23 +686,6 @@ const convertAutonomousSystemToStix = (instance: StoreCyberObservable, type: str
     rir: instance.rir,
   };
 };
-const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptocurrencyWallet => {
-  assertType(ENTITY_CRYPTOGRAPHIC_WALLET, type);
-  const stixCyberObject = buildStixCyberObservable(instance);
-  return {
-    ...stixCyberObject,
-    value: instance.value,
-    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-    external_references: buildExternalReferences(instance),
-    extensions: {
-      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
-      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
-    }
-  };
-};
 const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixCryptographicKey => {
   assertType(ENTITY_CRYPTOGRAPHIC_KEY, type);
   const stixCyberObject = buildStixCyberObservable(instance);
@@ -942,25 +928,6 @@ const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.St
     }
   };
 };
-const convertBankAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixBankAccount => {
-  assertType(ENTITY_BANK_ACCOUNT, type);
-  const stixCyberObject = buildStixCyberObservable(instance);
-  return {
-    ...stixCyberObject,
-    iban: instance.iban,
-    bic: instance.bic,
-    account_number: instance.account_number,
-    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-    external_references: buildExternalReferences(instance),
-    extensions: {
-      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
-      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
-    }
-  };
-};
 const convertCredentialToStix = (instance: StoreCyberObservable, type: string): SCO.StixCredential => {
   assertType(ENTITY_CREDENTIAL, type);
   const stixCyberObject = buildStixCyberObservable(instance);
@@ -1023,6 +990,66 @@ const convertMediaContentToStix = (instance: StoreCyberObservable, type: string)
     media_category: instance.media_category,
     url: instance.url,
     publication_date: convertToStixDate(instance.publication_date),
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertFinancialAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixFinancialAccount => {
+  assertType(ENTITY_FINANCIAL_ACCOUNT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    account_number: instance.value,
+    bic_number: instance.bic,
+    iban_number: instance.iban,
+    account_type: instance.account_type,
+    account_status: instance.account_status,
+    currency_code: instance.currency_code,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertFinancialAssetToStix = (instance: StoreCyberObservable, type: string): SCO.StixFinancialAsset => {
+  assertType(ENTITY_FINANCIAL_ASSET, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    name: instance.name,
+    asset_type: instance.asset_type,
+    asset_value: instance.asset_value,
+    currency_code: instance.currency_code,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertFinancialTransactionToStix = (instance: StoreCyberObservable, type: string): SCO.StixFinancialTransaction => {
+  assertType(ENTITY_FINANCIAL_TRANSACTION, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    from_ref: instance[INPUT_TRANSACTION_FROM]?.standard_id,
+    to_refs: (instance[INPUT_TRANSACTION_TO] ?? []).map((m) => m.standard_id),
+    transaction_date: convertToStixDate(instance.transaction_date),
+    transaction_value: instance.transaction_value,
+    currency_code: instance.currency_code,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
@@ -1460,17 +1487,11 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (ENTITY_AUTONOMOUS_SYSTEM === type) {
       return convertAutonomousSystemToStix(cyber, type);
     }
-    if (ENTITY_BANK_ACCOUNT === type) {
-      return convertBankAccountToStix(cyber, type);
-    }
     if (ENTITY_CREDENTIAL === type) {
       return convertCredentialToStix(cyber, type);
     }
     if (ENTITY_TRACKING_NUMBER === type) {
       return convertTrackingNumberToStix(cyber, type);
-    }
-    if (ENTITY_CRYPTOGRAPHIC_WALLET === type) {
-      return convertCryptocurrencyWalletToStix(cyber, type);
     }
     if (ENTITY_CRYPTOGRAPHIC_KEY === type) {
       return convertCryptographicKeyToStix(cyber, type);
@@ -1486,6 +1507,15 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_EMAIL_MESSAGE === type) {
       return convertEmailMessageToStix(cyber, type);
+    }
+    if (ENTITY_FINANCIAL_ACCOUNT === type) {
+      return convertFinancialAccountToStix(cyber, type);
+    }
+    if (ENTITY_FINANCIAL_ASSET === type) {
+      return convertFinancialAssetToStix(cyber, type);
+    }
+    if (ENTITY_FINANCIAL_TRANSACTION === type) {
+      return convertFinancialTransactionToStix(cyber, type);
     }
     if (ENTITY_HASHED_OBSERVABLE_STIX_FILE === type) {
       return convertFileToStix(cyber, type);

@@ -117,16 +117,17 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'attribute_key', dst: 'key' }, { src: 'values' }], // key, values
     // Added types
     [C.ENTITY_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
-    [C.ENTITY_CRYPTOGRAPHIC_WALLET]: [{ src: 'value' }],
     [C.ENTITY_HOSTNAME]: [{ src: 'value' }],
     [C.ENTITY_USER_AGENT]: [{ src: 'value' }],
     [C.ENTITY_TEXT]: [{ src: 'value' }],
-    [C.ENTITY_BANK_ACCOUNT]: [{ src: 'iban' }],
     [C.ENTITY_PHONE_NUMBER]: [{ src: 'value' }],
     [C.ENTITY_CREDENTIAL]: [{ src: 'value' }],
     [C.ENTITY_TRACKING_NUMBER]: [{ src: 'value' }],
     [C.ENTITY_PAYMENT_CARD]: [{ src: 'card_number' }],
     [C.ENTITY_MEDIA_CONTENT]: [{ src: 'url' }],
+    [C.ENTITY_FINANCIAL_ACCOUNT]: [{ src: 'account_number' }, { src: 'account_type' }],
+    [C.ENTITY_FINANCIAL_ASSET]: [],
+    [C.ENTITY_FINANCIAL_TRANSACTION]: [],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL

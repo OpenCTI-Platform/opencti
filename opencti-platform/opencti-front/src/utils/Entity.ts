@@ -115,13 +115,11 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
     case 'Cryptographic-Key':
-    case 'Cryptocurrency-Wallet':
     case 'Hostname':
     case 'Text':
     case 'Credential':
     case 'Tracking-Number':
     case 'User-Agent':
-    case 'Bank-Account':
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':
@@ -282,6 +280,24 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         stixCyberObservable.content
         || stixCyberObservable.title
         || stixCyberObservable.url
+        || 'Unknown'
+      );
+    case 'Financial-Account'.toLowerCase():
+      return (
+        stixCyberObservable.iban_number
+        || stixCyberObservable.iban
+        || stixCyberObservable.account_number
+        || 'Unknown'
+      );
+    case 'Financial-Asset'.toLowerCase():
+      return (
+        stixCyberObservable.name
+        || stixCyberObservable.asset_type
+        || 'Unknown'
+      );
+    case 'Financial-Transaction'.toLowerCase():
+      return (
+        stixCyberObservable.transaction_date
         || 'Unknown'
       );
     default:

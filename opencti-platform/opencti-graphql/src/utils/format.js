@@ -3,9 +3,11 @@ import { extendMoment } from 'moment-range';
 import * as R from 'ramda';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_BANK_ACCOUNT,
   ENTITY_DIRECTORY,
   ENTITY_EMAIL_MESSAGE,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_ASSET,
+  ENTITY_FINANCIAL_TRANSACTION,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -147,8 +149,6 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
-    case ENTITY_BANK_ACCOUNT:
-      return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
     case ENTITY_PAYMENT_CARD:
       return stixCyberObservable.card_number || stixCyberObservable.holder_name || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
@@ -157,6 +157,12 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case ENTITY_MEDIA_CONTENT:
       return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
+    case ENTITY_FINANCIAL_ACCOUNT:
+      return stixCyberObservable.iban_number || stixCyberObservable.account_number || 'Unknown';
+    case ENTITY_FINANCIAL_ASSET:
+      return stixCyberObservable.name || stixCyberObservable.asset_type || 'Unknown';
+    case ENTITY_FINANCIAL_TRANSACTION:
+      return stixCyberObservable.transaction_date || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }

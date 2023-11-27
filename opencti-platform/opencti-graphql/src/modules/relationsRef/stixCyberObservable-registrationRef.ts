@@ -45,6 +45,8 @@ import {
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_TRANSACTION,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -97,6 +99,10 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_ADDR, [
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MIME_PART_TYPE, [
   buildRelationRef(bodyRaw, (_: string, toType: string) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType))
+]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_FINANCIAL_TRANSACTION, [
+  buildRelationRef(from, (_: string, toType: string) => ENTITY_FINANCIAL_ACCOUNT === toType),
+  buildRelationRef(to, (_: string, toType: string) => ENTITY_FINANCIAL_ACCOUNT === toType),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
   buildRelationRef(contains, (_: string, toType: string) => getParentTypes(toType).includes(ABSTRACT_STIX_CYBER_OBSERVABLE)),
