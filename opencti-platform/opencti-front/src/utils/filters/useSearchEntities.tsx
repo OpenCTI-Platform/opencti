@@ -10,11 +10,11 @@ import {
   identitySearchIdentitiesSearchQuery,
 } from '../../private/components/common/identities/IdentitySearch';
 import {
-  stixDomainObjectsLinesSearchQuery
+  stixDomainObjectsLinesSearchQuery,
 } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
 import {
-  killChainPhasesLinesSearchQuery
+  killChainPhasesLinesSearchQuery,
 } from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
@@ -27,34 +27,34 @@ import {
   objectAssigneeFieldMembersSearchQuery,
 } from '../../private/components/common/form/ObjectAssigneeField';
 import {
-  IdentitySearchIdentitiesSearchQuery$data
+  IdentitySearchIdentitiesSearchQuery$data,
 } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import {
-  IdentitySearchCreatorsSearchQuery$data
+  IdentitySearchCreatorsSearchQuery$data,
 } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import {
-  ObjectAssigneeFieldAssigneesSearchQuery$data
+  ObjectAssigneeFieldAssigneesSearchQuery$data,
 } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
 import {
-  StixDomainObjectsLinesSearchQuery$data
+  StixDomainObjectsLinesSearchQuery$data,
 } from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
 import {
-  useSearchEntitiesStixCoreObjectsSearchQuery$data
+  useSearchEntitiesStixCoreObjectsSearchQuery$data,
 } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import {
-  MarkingDefinitionsLinesSearchQuery$data
+  MarkingDefinitionsLinesSearchQuery$data,
 } from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import {
-  KillChainPhasesLinesSearchQuery$data
+  KillChainPhasesLinesSearchQuery$data,
 } from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
 import {
-  LabelsQuerySearchQuery$data
+  LabelsQuerySearchQuery$data,
 } from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
 import {
-  AttributesQuerySearchQuery$data
+  AttributesQuerySearchQuery$data,
 } from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
 import {
-  StatusFieldStatusesSearchQuery$data
+  StatusFieldStatusesSearchQuery$data,
 } from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
@@ -62,20 +62,20 @@ import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 import { buildScaleFilters } from '../hooks/useScale';
 import {
-  ObjectAssigneeFieldMembersSearchQuery$data
+  ObjectAssigneeFieldMembersSearchQuery$data,
 } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import {
-  ObjectParticipantFieldParticipantsSearchQuery$data
+  ObjectParticipantFieldParticipantsSearchQuery$data,
 } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import {
-  objectParticipantFieldParticipantsSearchQuery
+  objectParticipantFieldParticipantsSearchQuery,
 } from '../../private/components/common/form/ObjectParticipantField';
 import {
-  useSearchEntitiesStixCoreObjectsContainersSearchQuery$data
+  useSearchEntitiesStixCoreObjectsContainersSearchQuery$data,
 } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { isNotEmptyField } from '../utils';
 import {
-  useSearchEntitiesSchemaSCOSearchQuery$data
+  useSearchEntitiesSchemaSCOSearchQuery$data,
 } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
@@ -321,7 +321,6 @@ const useSearchEntities = ({
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
   const { schema } = useAuth();
-  const theme = useTheme() as Theme;
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
