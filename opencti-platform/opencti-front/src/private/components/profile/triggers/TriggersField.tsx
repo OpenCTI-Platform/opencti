@@ -110,6 +110,7 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
     }
     fetchQuery(triggersQueriesKnowledgeSearchQuery, {
       search: event && event.target.value,
+      includeAuthorities: !!recipientId,
       filters: {
         mode: 'and',
         filters: filtersContent,
