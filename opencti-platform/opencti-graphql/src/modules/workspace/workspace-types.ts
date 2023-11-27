@@ -45,3 +45,95 @@ export interface StixWorkspace extends StixDomainObject {
   };
 }
 // endregion
+
+export type Configuration = WidgetConfiguration | DashboardConfiguration;
+
+export interface DashboardConfiguration {
+  name: string;
+  manifest: string;
+}
+export interface WidgetConfiguration {
+  type: string;
+  perspective: string;
+  dataSelection: [
+    {
+      label: string;
+      attribute: string;
+      date_attribute: string;
+      perspective: string;
+      isTo: boolean;
+      filters: {
+        key: string;
+        values: string[];
+        operator: string;
+        mode: string;
+      }[];
+      dynamicFrom: {
+        mode: string;
+        filters: {
+          key: string;
+          values: string[];
+          operator: string;
+          mode: string;
+        }[];
+        filterGroups: {
+          mode: string;
+          filters: {
+            key: string;
+            values: string[];
+            operator: string;
+            mode: string;
+          }[];
+          filterGroups: {
+            mode: string;
+            filters: {
+              key: string;
+              values: string[];
+              operator: string;
+              mode: string;
+            }[];
+          }[];
+        }[];
+      };
+      dynamicTo: {
+        mode: string;
+        filters: {
+          key: string;
+          values: string[];
+          operator: string;
+          mode: string;
+        }[];
+        filterGroups: {
+          mode: string;
+          filters: {
+            key: string;
+            values: string[];
+            operator: string;
+            mode: string;
+          }[];
+          filterGroups: {
+            mode: string;
+            filters: {
+              key: string;
+              values: string[];
+              operator: string;
+              mode: string;
+            }[];
+          }[];
+        }[];
+      };
+    },
+  ];
+  parameters: {
+    title: string
+  };
+  layout: {
+    w: number;
+    h: number;
+    x: number;
+    y: number;
+    i: string;
+    moved: boolean;
+    static: boolean;
+  };
+}

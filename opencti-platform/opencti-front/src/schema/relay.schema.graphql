@@ -8084,7 +8084,7 @@ type Mutation {
   workspaceContextPatch(id: ID!, input: EditContext!): Workspace
   workspaceContextClean(id: ID!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
-  workspaceImportWidget(id: ID!, input: ImportConfigurationInput!): Workspace
+  workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis

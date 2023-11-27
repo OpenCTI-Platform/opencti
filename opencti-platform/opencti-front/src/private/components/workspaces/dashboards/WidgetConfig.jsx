@@ -69,8 +69,8 @@ import {
   initialFilterGroup, isFilterGroupNotEmpty,
   isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
-import { capitalizeFirstLetter } from '../../../../utils/String';
-import { QueryRenderer } from '../../../../relay/environment';
+import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
+import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -372,7 +372,7 @@ const workspaceImportWidgetMutation = graphql`
     $id: ID!
     $input: ImportConfigurationInput!
   ) {
-    workspaceImportWidget(id: $id, input: $input) {
+    workspaceWidgetConfigurationImport(id: $id, input: $input) {
       manifest
       ...Dashboard_workspace
     }

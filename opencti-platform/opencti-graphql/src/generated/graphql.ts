@@ -12211,7 +12211,7 @@ export type Mutation = {
   workspaceDuplicate?: Maybe<Workspace>;
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
-  workspaceImportWidget?: Maybe<Workspace>;
+  workspaceWidgetConfigurationImport?: Maybe<Workspace>;
 };
 
 
@@ -13915,7 +13915,7 @@ export type MutationWorkspaceFieldPatchArgs = {
 };
 
 
-export type MutationWorkspaceImportWidgetArgs = {
+export type MutationWorkspaceWidgetConfigurationImportArgs = {
   id: Scalars['ID']['input'];
   input: ImportConfigurationInput;
 };
@@ -32810,7 +32810,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workspaceDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceDuplicateArgs, 'input'>>;
   workspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
   workspaceFieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceFieldPatchArgs, 'id' | 'input'>>;
-  workspaceImportWidget?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceImportWidgetArgs, 'id' | 'input'>>;
+  workspaceWidgetConfigurationImport?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceWidgetConfigurationImportArgs, 'id' | 'input'>>;
 }>;
 
 export type MutexResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutex'] = ResolversParentTypes['Mutex']> = ResolversObject<{
