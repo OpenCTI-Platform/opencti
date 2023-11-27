@@ -4,8 +4,9 @@ export const triggersQueriesKnowledgeSearchQuery = graphql`
   query TriggersQueriesSearchKnowledgeQuery(
     $search: String
     $filters: FilterGroup
+    $includeAuthorities: Boolean
   ) {
-    triggersKnowledge(search: $search, filters: $filters) {
+    triggersKnowledge(search: $search, filters: $filters, includeAuthorities: $includeAuthorities) {
       edges {
         node {
           id
