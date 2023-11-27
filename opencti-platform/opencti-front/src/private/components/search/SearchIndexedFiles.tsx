@@ -6,6 +6,7 @@ import {
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import { useHistory, useParams } from 'react-router-dom';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -16,9 +17,10 @@ import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
 import useAuth from '../../../utils/hooks/useAuth';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'view-files';
-const SearchIndexedFiles = () => {
+const SearchIndexedFilesComponent = () => {
   const { fd } = useFormatter();
   const history = useHistory();
   const {
@@ -159,6 +161,18 @@ const SearchIndexedFiles = () => {
         {fileSearchEnabled && renderLines()}
       </div>
     </ExportContextProvider>
+  );
+};
+
+const SearchIndexedFiles = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
+  if (!isEnterpriseEdition) {
+    return (
+      <EnterpriseEdition feature={'File indexing'} />
+    );
+  }
+  return (
+    <SearchIndexedFilesComponent />
   );
 };
 

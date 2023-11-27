@@ -8,20 +8,15 @@ import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import ExportContextProvider from '../../utils/ExportContextProvider';
-import useAuth from '../../utils/hooks/useAuth';
 import { useFormatter } from '../../components/i18n';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 
 const SearchRoot = () => {
-  const {
-    platformModuleHelpers: { isFileIndexManagerEnable },
-  } = useAuth();
   const { t } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
-  const fileSearchEnabled = isFileIndexManagerEnable();
 
   return (
     <ExportContextProvider>
@@ -46,14 +41,12 @@ const SearchRoot = () => {
               value='knowledge'
               label={t('Knowledge search')}
             />
-            {fileSearchEnabled && (
-              <Tab
-                component={Link}
-                to={`/dashboard/search/files/${keyword ?? ''}`}
-                value='files'
-                label={t('Files search')}
-              />
-            )}
+            <Tab
+              component={Link}
+              to={`/dashboard/search/files/${keyword ?? ''}`}
+              value='files'
+              label={t('Files search')}
+            />
           </Tabs>
         </Box>
         <Switch>
