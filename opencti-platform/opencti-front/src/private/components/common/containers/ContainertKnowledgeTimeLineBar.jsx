@@ -14,6 +14,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   bottomNav: {
@@ -153,7 +154,7 @@ const ContentKnowledgeTimeLineBar = ({
               />
             </div>
             <div style={{ paddingTop: 3 }}>
-              {timeLineFilters && <FilterIconButton
+              {isFilterGroupNotEmpty(timeLineFilters) && <FilterIconButton
                 filters={timeLineFilters}
                 handleRemoveFilter={handleRemoveTimeLineFilter}
                 classNameNumber={1}

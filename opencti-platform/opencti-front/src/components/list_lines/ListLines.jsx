@@ -50,6 +50,7 @@ import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
 import Transition from '../Transition';
+import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   container: {
@@ -259,7 +260,7 @@ class ListLines extends Component {
               && !noFilters
               && <div style={{ height: 38 }}> &nbsp; </div>
             }
-            {filters
+            {isFilterGroupNotEmpty(filters)
               && <FilterIconButton
                 availableFilterKeys={availableFilterKeys}
                 filters={filters}

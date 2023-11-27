@@ -75,18 +75,17 @@ const Indicators = () => {
   const observableTypes = findFilterFromKey(filters?.filters ?? [], 'x_opencti_main_observable_type')?.values ?? [];
   const handleToggleIndicatorType = (type: string) => {
     if (patternTypes.includes(type)) {
-      storageHelpers.handleRemoveFilter('pattern_type', type);
+      storageHelpers.handleRemoveFilter('pattern_type', 'eq', type);
     } else {
-      storageHelpers.handleAddFilter('pattern_type', type, type);
+      storageHelpers.handleAddFilter('pattern_type', type);
     }
   };
   const handleToggleObservableType = (type: string) => {
     if (observableTypes.includes(type)) {
-      storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', type);
+      storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', 'eq', type);
     } else {
       storageHelpers.handleAddFilter(
         'x_opencti_main_observable_type',
-        type,
         type,
       );
     }
@@ -191,7 +190,7 @@ const Indicators = () => {
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <IndicatorLineDummyComponent
                         key={idx}
                         dataColumns={dataColumns}

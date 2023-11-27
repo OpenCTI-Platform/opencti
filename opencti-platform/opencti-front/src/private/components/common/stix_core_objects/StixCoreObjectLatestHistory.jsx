@@ -65,7 +65,7 @@ class StixCoreObjectLatestHistory extends Component {
               >
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem dense={true} divider={true} button={false}>
+                    <ListItem key={`latest_history_skel_${i}`} dense={true} divider={true} button={false}>
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
                       </ListItemIcon>

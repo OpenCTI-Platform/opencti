@@ -17,7 +17,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  initialFilterGroup, isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -229,15 +229,16 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
             />
           </div>
           <div className="clearfix" />
-          <FilterIconButton
-            filters={filters}
-            classNameNumber={2}
-            styleNumber={2}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            redirection
-          />
+          {isFilterGroupNotEmpty(filters)
+            && <FilterIconButton
+              filters={filters}
+              classNameNumber={2}
+              styleNumber={2}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              redirection
+          />}
         </Form>
       )}
     </Formik>

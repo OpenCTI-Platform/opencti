@@ -85,6 +85,7 @@ export const EqFilters = [
   'objectAssignee',
   'objectParticipant',
   'killChainPhases',
+  'x_opencti_reliability',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
@@ -143,7 +144,7 @@ export const entityTypesFilters = [
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 
-export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined) => {
+export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined | null) => {
   return (
     filterGroup
     && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0)
@@ -447,8 +448,11 @@ export const removeFilter = (
   return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
-// remove from filter all keys not listed in availableFilterKeys
-// if filter ends up empty, return undefined
+/**
+ * remove from filter all keys not listed in availableFilterKeys
+ * if filter ends up empty, return undefined
+ * Note: This function is not recursive, it only filters the first level filters
+ */
 export const cleanFilters = (
   filters: FilterGroup | undefined,
   availableFilterKeys: string[],
@@ -517,7 +521,7 @@ export const constructHandleAddFilter = (
     };
 };
 
-// remove a filter (k, id, op) in a filterGroup smartly, for usage in forms
+// remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
 export const constructHandleRemoveFilter = (
   filters: FilterGroup | undefined | null,

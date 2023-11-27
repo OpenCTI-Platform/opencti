@@ -15,7 +15,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { initialFilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -238,7 +238,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={defaultHandleAddFilter}
           />
-          {filters && (
+          {isFilterGroupNotEmpty(filters) && (
             <FilterIconButton
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}

@@ -17,7 +17,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
   Filter,
-  filtersAfterSwitchLocalMode,
+  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
@@ -258,7 +258,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
                 />
               </div>
               <div className="clearfix" />
-              {filters
+              {filters && isFilterGroupNotEmpty(filters)
                 && <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}

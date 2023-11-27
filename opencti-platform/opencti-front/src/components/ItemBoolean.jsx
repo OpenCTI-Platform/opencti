@@ -99,7 +99,7 @@ const ItemBoolean = (props) => {
 
 ItemBoolean.propTypes = {
   classes: PropTypes.object.isRequired,
-  status: PropTypes.oneOf([PropTypes.bool, PropTypes.string]),
+  status: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   label: PropTypes.string,
   neutralLabel: PropTypes.string,
   variant: PropTypes.string,

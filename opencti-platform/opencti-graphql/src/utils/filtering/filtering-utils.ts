@@ -189,9 +189,10 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
       const convertedFilterKeys = filterKeys
-        .map((key) => specialFilterKeysConvertor.get(key) ?? key) // 1. convert special keys
-        .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // 2. fetch eventual ref database names
-        .map(([key, databaseName]) => (databaseName ? buildRefRelationKey(databaseName) : key)); // 3. convert databaseName if exists or keep initial key if not
+        .map((key) => specialFilterKeysConvertor.get(key) ?? key) //  convert special keys
+        .map((key) => (STIX_CORE_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key) : key)) // convert relation keys -> rel_X or keep key
+        .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // fetch eventual ref database names
+        .map(([key, databaseName]) => (databaseName ? buildRefRelationKey(databaseName) : key)); // convert databaseName if exists or keep initial key if not
       newFiltersContent.push({ ...f, key: convertedFilterKeys });
     });
     return {

@@ -26,7 +26,7 @@ import {
   constructHandleRemoveFilter,
   Filter,
   FilterGroup,
-  filtersAfterSwitchLocalMode,
+  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
@@ -243,7 +243,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       />
       <NotifierField name="notifiers" onChange={setFieldValue} />
       {renderActivityTrigger(values, setFieldValue)}
-      {filters
+      {isFilterGroupNotEmpty(filters)
         && <FilterIconButton
           filters={filters}
           handleRemoveFilter={handleRemoveFilter}

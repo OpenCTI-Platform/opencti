@@ -51,7 +51,7 @@ export interface LocalStorage {
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
-  handleRemoveFilter: (key: string, id?: string, op?: string) => void;
+  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleSwitchFilter: HandleAddFilter;
@@ -304,7 +304,7 @@ export const usePaginationLocalStorage = <U>(
           const filter = findFilterFromKey(viewStorage.filters.filters, k, op);
           if (filter) {
             const values = filter.values.filter((val) => val !== id);
-            if (values && values.length > 0) {
+            if (values && values.length > 0) { // values is not empty: only remove 'id' from 'values'
               const newFilterElement = {
                 key: k,
                 values,
@@ -316,7 +316,19 @@ export const usePaginationLocalStorage = <U>(
                 filters: [
                   ...viewStorage.filters.filters
                     .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
-                  newFilterElement, // keep value=id
+                  newFilterElement, // remove value=id
+                ],
+              };
+              setValue((c) => ({
+                ...c,
+                filters: newBaseFilters,
+              }));
+            } else { // values is empty: remove the filter with key=k and operator=op
+              const newBaseFilters = {
+                ...viewStorage.filters,
+                filters: [
+                  ...viewStorage.filters.filters
+                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                 ],
               };
               setValue((c) => ({

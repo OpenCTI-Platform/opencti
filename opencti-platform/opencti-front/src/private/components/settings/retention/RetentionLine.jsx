@@ -13,7 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -66,7 +66,7 @@ class RetentionLineComponent extends Component {
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              {filters ? (
+              {isFilterGroupNotEmpty(filters) ? (
                 <FilterIconButton
                   filters={filters}
                   dataColumns={dataColumns}

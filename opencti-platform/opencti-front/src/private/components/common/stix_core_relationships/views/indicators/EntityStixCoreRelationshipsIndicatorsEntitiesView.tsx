@@ -14,12 +14,9 @@ import { DataColumns, PaginationOptions } from '../../../../../../components/lis
 import {
   StixDomainObjectIndicatorsLinesQuery$data,
 } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
-import {
-  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
-} from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { addFilter, cleanFilters } from '../../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, FilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -112,10 +109,15 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 
   const paginationFilters = addFilter(cleanedFilters, 'indicates', entityId);
 
-  const toolBarFilters = {
+  const toolBarFilters: FilterGroup = {
     ...cleanedFilters,
-    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
-    indicates: [{ id: entityId, value: entityId }],
+    mode: 'and',
+    filters: [
+      ...(cleanedFilters?.filters ?? []),
+      { key: 'entity_type', values: ['Indicator'], mode: 'or', operator: 'eq' },
+      { key: 'indicates', values: [entityId], mode: 'or', operator: 'eq' },
+    ],
+    filterGroups: (cleanedFilters?.filterGroups ?? []),
   };
 
   const paginationOptions = {
@@ -123,7 +125,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: paginationFilters,
-  } as unknown as Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>; // Because of FilterMode
+  };
 
   const {
     numberOfSelectedElements,
@@ -137,86 +139,86 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 
   const finalView = currentView || view;
   return (
-        <>
-          <ListLines
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={dataColumns}
-            handleSort={storageHelpers.handleSort}
-            handleSearch={storageHelpers.handleSearch}
-            handleAddFilter={storageHelpers.handleAddFilter}
-            handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-            handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-            handleChangeView={storageHelpers.handleChangeView}
-            onToggleEntity={onToggleEntity}
-            handleToggleSelectAll={handleToggleSelectAll}
-            paginationOptions={paginationOptions}
-            selectAll={selectAll}
-            keyword={searchTerm}
-            displayImport
-            handleToggleExports={storageHelpers.handleToggleExports}
-            openExports={openExports}
-            exportEntityType={'Stix-Core-Object'}
-            iconExtension
-            filters={cleanedFilters}
-            availableFilterKeys={availableFilterKeys}
-            exportContext={`of-entity-${entityId}`}
-            numberOfElements={numberOfElements}
-            disableCards
-            enableEntitiesView
-            enableContextualView={enableContextualView}
-            noPadding
-            currentView={finalView}
-          >
-            <QueryRenderer
-              query={stixDomainObjectIndicatorsLinesQuery}
-              variables={{ count: 25, ...paginationOptions }}
-              render={({ props }: { props: StixDomainObjectIndicatorsLinesQuery$data }) => (
-                <StixDomainObjectIndicatorsLines
-                  data={props}
-                  paginationOptions={paginationOptions}
-                  entityId={entityId}
-                  dataColumns={dataColumns}
-                  initialLoading={props === null}
-                  setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  onToggleEntity={onToggleEntity}
-                  selectAll={selectAll}
-                />
-              )}
+    <>
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={storageHelpers.handleSort}
+        handleSearch={storageHelpers.handleSearch}
+        handleAddFilter={storageHelpers.handleAddFilter}
+        handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+        handleChangeView={storageHelpers.handleChangeView}
+        onToggleEntity={onToggleEntity}
+        handleToggleSelectAll={handleToggleSelectAll}
+        paginationOptions={paginationOptions}
+        selectAll={selectAll}
+        keyword={searchTerm}
+        displayImport
+        handleToggleExports={storageHelpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType={'Stix-Core-Object'}
+        iconExtension
+        filters={cleanedFilters}
+        availableFilterKeys={availableFilterKeys}
+        exportContext={`of-entity-${entityId}`}
+        numberOfElements={numberOfElements}
+        disableCards
+        enableEntitiesView
+        enableContextualView={enableContextualView}
+        noPadding
+        currentView={finalView}
+      >
+        <QueryRenderer
+          query={stixDomainObjectIndicatorsLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }: { props: StixDomainObjectIndicatorsLinesQuery$data }) => (
+            <StixDomainObjectIndicatorsLines
+              data={props}
+              paginationOptions={paginationOptions}
+              entityId={entityId}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
             />
-          </ListLines>
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            filters={toolBarFilters}
-            search={searchTerm}
-            handleClearSelectedElements={handleClearSelectedElements}
-            variant="medium"
-            warning={true}
-            warningMessage={t(
-              'Be careful, you are about to delete the selected entities (not the relationships!).',
-            )}
-          />
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={entityId}
-            isRelationReversed={isRelationReversed}
-            targetStixDomainObjectTypes={['Indicator']}
-            allowedRelationshipTypes={relationshipTypes}
-            paginationOptions={paginationOptions}
-            openExports={openExports}
-            paddingRight={220}
-            connectionKey="Pagination_indicators"
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
-          </Security>
-        </>
+          )}
+        />
+      </ListLines>
+      <ToolBar
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        numberOfSelectedElements={numberOfSelectedElements}
+        selectAll={selectAll}
+        filters={toolBarFilters}
+        search={searchTerm}
+        handleClearSelectedElements={handleClearSelectedElements}
+        variant="medium"
+        warning={true}
+        warningMessage={t(
+          'Be careful, you are about to delete the selected entities (not the relationships!).',
+        )}
+      />
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <StixCoreRelationshipCreationFromEntity
+        entityId={entityId}
+        isRelationReversed={isRelationReversed}
+        targetStixDomainObjectTypes={['Indicator']}
+        allowedRelationshipTypes={relationshipTypes}
+        paginationOptions={paginationOptions}
+        openExports={openExports}
+        paddingRight={220}
+        connectionKey="Pagination_indicators"
+        defaultStartTime={defaultStartTime}
+        defaultStopTime={defaultStopTime}
+      />
+      </Security>
+    </>
   );
 };
 export default EntityStixCoreRelationshipsIndicatorsEntitiesView;

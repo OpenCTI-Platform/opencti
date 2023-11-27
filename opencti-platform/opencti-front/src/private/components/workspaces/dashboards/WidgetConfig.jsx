@@ -63,7 +63,7 @@ import {
   findFilterFromKey,
   findFilterIndexFromKey,
   findFiltersFromKeys,
-  initialFilterGroup,
+  initialFilterGroup, isFilterGroupNotEmpty,
   isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter } from '../../../../utils/String';
@@ -904,7 +904,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   />
                 </div>
                 <div className="clearfix" />
-                {dataSelection[i]?.filters && (
+                {isFilterGroupNotEmpty(dataSelection[i]?.filters) && (
                   <FilterIconButton
                     filters={dataSelection[i].filters}
                     handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)
@@ -917,7 +917,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     styleNumber={2}
                   />
                 )}
-                {dataSelection[i].dynamicFrom && (
+                {isFilterGroupNotEmpty(dataSelection[i].dynamicFrom) && (
                   <FilterIconButton
                     filters={dataSelection[i].dynamicFrom}
                     handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)
@@ -931,7 +931,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     chipColor={'warning'}
                   />
                 )}
-                {dataSelection[i].dynamicTo && (
+                {isFilterGroupNotEmpty(dataSelection[i].dynamicTo) && (
                   <FilterIconButton
                     filters={dataSelection[i].dynamicTo}
                     handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)

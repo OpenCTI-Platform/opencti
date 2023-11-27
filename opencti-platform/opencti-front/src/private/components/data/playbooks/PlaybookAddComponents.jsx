@@ -27,7 +27,8 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
+  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -98,7 +99,7 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
-  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(currentConfig?.filters));
+  const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : initialFilterGroup);
 
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
@@ -478,15 +479,16 @@ const PlaybookAddComponentsContent = ({
                           />
                         </div>
                         <div className="clearfix" />
-                        <FilterIconButton
-                          filters={filters}
-                          handleRemoveFilter={handleRemoveFilter}
-                          handleSwitchGlobalMode={handleSwitchGlobalMode}
-                          handleSwitchLocalMode={handleSwitchLocalMode}
-                          classNameNumber={2}
-                          styleNumber={2}
-                          redirection
-                        />
+                        {isFilterGroupNotEmpty(filters)
+                          && <FilterIconButton
+                            filters={filters}
+                            handleRemoveFilter={handleRemoveFilter}
+                            handleSwitchGlobalMode={handleSwitchGlobalMode}
+                            handleSwitchLocalMode={handleSwitchLocalMode}
+                            classNameNumber={2}
+                            styleNumber={2}
+                            redirection
+                        />}
                         <div className="clearfix" />
                       </div>
                     );
