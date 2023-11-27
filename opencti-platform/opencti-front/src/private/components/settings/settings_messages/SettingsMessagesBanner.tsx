@@ -13,12 +13,11 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
-import useLocalStorage, {
-  MessageFromLocalStorage,
-} from '../../../../utils/hooks/useLocalStorage';
+import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
 import { SettingsMessagesBannerSubscription } from './__generated__/SettingsMessagesBannerSubscription.graphql';
+import { MessageFromLocalStorage } from '../../../../utils/filters/filters.model';
 
 export const settingsMessagesQuery = graphql`
   query SettingsMessagesBannerQuery {

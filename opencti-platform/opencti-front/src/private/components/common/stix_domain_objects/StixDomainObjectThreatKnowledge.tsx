@@ -94,42 +94,42 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
-  query StixDomainObjectThreatKnowledgeReportsNumberQuery(
-    $objectId: String
-    $endDate: DateTime
-  ) {
-    reportsNumber(objectId: $objectId, endDate: $endDate) {
-      total
-      count
+    query StixDomainObjectThreatKnowledgeReportsNumberQuery(
+        $objectId: String
+        $endDate: DateTime
+    ) {
+        reportsNumber(objectId: $objectId, endDate: $endDate) {
+            total
+            count
+        }
     }
-  }
 `;
 
 const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
-  query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
-    $elementId: [String]
-    $elementWithTargetTypes: [String]
-    $relationship_type: [String]
-    $fromId: [String]
-    $fromTypes: [String]
-    $toId: [String]
-    $toTypes: [String]
-    $endDate: DateTime
-  ) {
-    stixCoreRelationshipsNumber(
-      elementId: $elementId
-      elementWithTargetTypes: $elementWithTargetTypes
-      relationship_type: $relationship_type
-      fromId: $fromId
-      fromTypes: $fromTypes
-      toId: $toId
-      toTypes: $toTypes
-      endDate: $endDate
+    query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
+        $elementId: [String]
+        $elementWithTargetTypes: [String]
+        $relationship_type: [String]
+        $fromId: [String]
+        $fromTypes: [String]
+        $toId: [String]
+        $toTypes: [String]
+        $endDate: DateTime
     ) {
-      total
-      count
+        stixCoreRelationshipsNumber(
+            elementId: $elementId
+            elementWithTargetTypes: $elementWithTargetTypes
+            relationship_type: $relationship_type
+            fromId: $fromId
+            fromTypes: $fromTypes
+            toId: $toId
+            toTypes: $toTypes
+            endDate: $endDate
+        ) {
+            total
+            count
+        }
     }
-  }
 `;
 
 interface StixDomainObjectThreatKnowledgeProps {
@@ -423,6 +423,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         <Tab label={t('Global kill chain')} value="killchain" />
         <div className={classes.filters}>
           <Filters
+              helpers={helpers}
             availableFilterKeys={[
               'entity_type',
               'objectMarking',
@@ -443,6 +444,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           </IconButton>
           {isFilterGroupNotEmpty(filters)
             && <FilterIconButton
+                  helpers={helpers}
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}
               classNameNumber={8}

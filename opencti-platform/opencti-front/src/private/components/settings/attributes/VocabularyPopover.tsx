@@ -18,7 +18,7 @@ import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hoo
 import Transition from '../../../../components/Transition';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import { LocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { LocalStorage } from '../../../../utils/filters/filters.model';
 
 const useStyles = makeStyles(() => ({
   container: {

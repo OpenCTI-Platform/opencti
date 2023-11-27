@@ -64,16 +64,16 @@ const styles = (theme) => ({
 });
 
 const taxiiCollectionMutationFieldPatch = graphql`
-  mutation TaxiiCollectionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
-    taxiiCollectionEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...TaxiiCollectionEdition_taxiiCollection
-      }
+    mutation TaxiiCollectionEditionFieldPatchMutation(
+        $id: ID!
+        $input: [EditInput]!
+    ) {
+        taxiiCollectionEdit(id: $id) {
+            fieldPatch(input: $input) {
+                ...TaxiiCollectionEdition_taxiiCollection
+            }
+        }
     }
-  }
 `;
 
 const taxiiCollectionValidation = (t) => Yup.object().shape({
@@ -295,18 +295,18 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
   TaxiiCollectionEditionContainer,
   {
     taxiiCollection: graphql`
-      fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
-        id
-        name
-        description
-        filters
-        taxii_public
-        authorized_members {
-          id
-          name
-        }
-      }
-    `,
+            fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
+                id
+                name
+                description
+                filters
+                taxii_public
+                authorized_members {
+                    id
+                    name
+                }
+            }
+        `,
   },
 );
 

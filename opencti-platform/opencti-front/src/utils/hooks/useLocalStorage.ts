@@ -1,64 +1,29 @@
 import * as R from 'ramda';
-import {Dispatch, SetStateAction, SyntheticEvent, useState} from 'react';
-import {v4 as uuid} from 'uuid';
-import {OrderMode, PaginationOptions} from '../../components/list_lines';
-import {Filter, FilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter} from '../filters/filtersUtils';
-import {isEmptyField, isNotEmptyField, removeEmptyFields} from '../utils';
-import {MESSAGING$} from '../../relay/environment';
+import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
+import { v4 as uuid } from 'uuid';
+import { OrderMode, PaginationOptions } from '../../components/list_lines';
+import { Filter, FilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
+import { MESSAGING$ } from '../../relay/environment';
 import {
   handleAddFilterWithEmptyValue,
-  handleAddRepresentationFilter, handleAddSingleValueFilter, handleChangeOperatorFilters,
+  handleAddRepresentationFilter,
+  handleAddSingleValueFilter,
+  handleChangeOperatorFilters,
   handleRemoveFilter,
   handleRemoveRepresentationFilter, handleSwitchLocalMode,
 } from '../filters/filters.localStorage.util';
-import {setFilterHelpers} from '../filters/FiltersHelpers.util';
-
-export interface MessageFromLocalStorage {
-  id: string;
-  message: string;
-  activated: boolean;
-  dismissible: boolean;
-  updated_at: Date;
-  dismiss: boolean;
-  color: string;
-}
-
-export interface LocalStorage {
-  numberOfElements?: {
-    number: number | string;
-    symbol: string;
-    original?: number;
-  };
-  filters?: FilterGroup;
-  id?: string;
-  searchTerm?: string;
-  category?: string;
-  toId?: string;
-  sortBy?: string;
-  orderAsc?: boolean;
-  openExports?: boolean;
-  count?: number;
-  types?: string[];
-  view?: string;
-  zoom?: Record<string, unknown>;
-  redirectionMode?: string;
-  selectAll?: boolean;
-  selectedElements?: Record<string, unknown>;
-  deSelectedElements?: Record<string, unknown>;
-  messages?: MessageFromLocalStorage[];
-  timeField?: string;
-  dashboard?: string;
-}
+import { LocalStorage } from '../filters/filters.model';
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
-    handleRemoveFilter: (key: string, op?: string, id?: string) => void;
+  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
   handleRemoveFilterNew: (id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
   handleAddRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddSingleValueFilter: (id: string, valueId: string) => void;
+  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleSwitchFilter: HandleAddFilter;
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
@@ -78,11 +43,11 @@ export interface UseLocalStorageHelpers {
 }
 
 const localStorageToPaginationOptions = (
-  {searchTerm, filters, sortBy, orderAsc, ...props}: LocalStorage,
+  { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
   additionalFilters?: Filter[],
 ): PaginationOptions => {
   // Remove only display options, not query linked
-  const localOptions = {...props};
+  const localOptions = { ...props };
   delete localOptions.redirectionMode;
   delete localOptions.openExports;
   delete localOptions.selectAll;
@@ -93,7 +58,7 @@ const localStorageToPaginationOptions = (
   delete localOptions.view;
   delete localOptions.zoom;
   // Rebuild some pagination options
-  const basePagination: PaginationOptions = {...localOptions};
+  const basePagination: PaginationOptions = { ...localOptions };
   if (searchTerm) {
     basePagination.search = searchTerm;
   }
@@ -251,7 +216,7 @@ const useLocalStorage = (
       // Values from uri must be prioritized on initial loading
       // Localstorage must be rewritten to ensure consistency
       if (isNotEmptyField(finalParams)) {
-        const initialState = {...value, ...finalParams};
+        const initialState = { ...value, ...finalParams };
         window.localStorage.setItem(key, JSON.stringify(initialState));
         return initialState;
       }
@@ -306,13 +271,13 @@ export const usePaginationLocalStorage = <U>(
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
   const paginationOptions = localStorageToPaginationOptions(
-    {count: 25, ...viewStorage},
+    { count: 25, ...viewStorage },
     additionalFilters,
   );
   const helpers: UseLocalStorageHelpers = {
-    handleSearch: (value: string) => setValue((c) => ({...c, searchTerm: value})),
+    handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterNew: (id?: string) => {
-      handleRemoveFilter({viewStorage, setValue, id});
+      handleRemoveFilter({ viewStorage, setValue, id });
     },
     handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
       if (viewStorage.filters) {
@@ -376,7 +341,7 @@ export const usePaginationLocalStorage = <U>(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (!R.equals(viewStorage[field], value)) {
-        setValue((c) => ({...c, [field]: value}));
+        setValue((c) => ({ ...c, [field]: value }));
       }
     },
     handleAddFilter: (
@@ -444,13 +409,13 @@ export const usePaginationLocalStorage = <U>(
       id: string,
       valueId: string,
     ) => {
-      handleRemoveRepresentationFilter({viewStorage, setValue, id, valueId});
+      handleRemoveRepresentationFilter({ viewStorage, setValue, id, valueId });
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
-      handleAddRepresentationFilter({viewStorage, setValue, id, valueId});
+      handleAddRepresentationFilter({ viewStorage, setValue, id, valueId });
     },
-    handleAddSingleValueFilter: (id: string, valueId: string) => {
-      handleAddSingleValueFilter({viewStorage, setValue, id, valueId});
+    handleAddSingleValueFilter: (id: string, valueId?: string) => {
+      handleAddSingleValueFilter({ viewStorage, setValue, id, valueId });
     },
     handleSwitchFilter: (
       k: string,
@@ -510,10 +475,10 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      handleSwitchLocalMode({viewStorage, setValue, filter});
+      handleSwitchLocalMode({ viewStorage, setValue, filter });
     },
-    handleChangeView: (value: string) => setValue((c) => ({...c, view: value})),
-    handleToggleExports: () => setValue((c) => ({...c, openExports: !c.openExports})),
+    handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
+    handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
     handleSetNumberOfElements: (nbElements: {
       number?: number | string;
       symbol?: string;
@@ -521,14 +486,14 @@ export const usePaginationLocalStorage = <U>(
     }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         setValue((c) => {
-          const {number, symbol, original} = nbElements;
+          const { number, symbol, original } = nbElements;
           return {
             ...c,
             numberOfElements: {
               ...c.numberOfElements,
-              ...(number ? {number} : {number: 0}),
-              ...(symbol ? {symbol} : {symbol: ''}),
-              ...(original ? {original} : {original: 0}),
+              ...(number ? { number } : { number: 0 }),
+              ...(symbol ? { symbol } : { symbol: '' }),
+              ...(original ? { original } : { original: 0 }),
             },
           };
         });
@@ -537,14 +502,14 @@ export const usePaginationLocalStorage = <U>(
     handleToggleTypes: (type: string) => {
       if (viewStorage.types?.includes(type)) {
         const newTypes = viewStorage.types.filter((t) => t !== type);
-        setValue((c) => ({...c, types: newTypes}));
+        setValue((c) => ({ ...c, types: newTypes }));
       } else {
         const newTypes = viewStorage.types ? [...viewStorage.types, type] : [type];
-        setValue((c) => ({...c, types: newTypes}));
+        setValue((c) => ({ ...c, types: newTypes }));
       }
     },
     handleClearTypes: () => {
-      setValue((c) => ({...c, types: []}));
+      setValue((c) => ({ ...c, types: [] }));
     },
     handleClearAllFilters: (filters?: Filter[]) => {
       setValue((c) => ({
@@ -557,18 +522,19 @@ export const usePaginationLocalStorage = <U>(
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      handleAddFilterWithEmptyValue({viewStorage, setValue, filter});
+      handleAddFilterWithEmptyValue({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      handleChangeOperatorFilters({viewStorage, setValue, id, operator});
+      handleChangeOperatorFilters({ viewStorage, setValue, id, operator });
     },
   };
-  setFilterHelpers(helpers);
-  const removeEmptyFilter = paginationOptions.filters ? [...paginationOptions?.filters?.filters.filter((f) => (f.values.length > 0))] : [];
+
+  // eslint-disable-next-line no-unsafe-optional-chaining
+  const removeEmptyFilter = paginationOptions?.filters ? [...paginationOptions?.filters?.filters.filter((f) => (f.values.length > 0))] : [];
   const filters = removeEmptyFilter && removeEmptyFilter.length > 0 ? {
     ...paginationOptions.filters,
     filters: removeEmptyFilter.map((filter) => {
-      const removeIdFromFilter = {...filter};
+      const removeIdFromFilter = { ...filter };
       delete removeIdFromFilter.id;
       return removeIdFromFilter;
     }),

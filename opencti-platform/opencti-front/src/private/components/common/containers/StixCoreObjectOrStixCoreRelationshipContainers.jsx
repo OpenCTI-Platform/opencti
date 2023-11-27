@@ -9,7 +9,8 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import SearchInput from '../../../../components/SearchInput';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
@@ -66,7 +67,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   }
   if (
     stixDomainObjectOrStixCoreRelationship
-    && stixDomainObjectOrStixCoreRelationship.id
+        && stixDomainObjectOrStixCoreRelationship.id
   ) {
     additionalFilters.push({
       key: 'objects',
@@ -159,59 +160,60 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       exportContext = `of-entity-${authorId}`;
     }
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={defaultHandleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        handleChangeView={helpers.handleChangeView}
-        openExports={openExports}
-        noPadding={typeof onChangeOpenExports === 'function'}
-        exportEntityType="Container"
-        exportContext={exportContext}
-        keyword={searchTerm}
-        handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)
-        }
-        redirectionMode={redirectionMode}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        disableCards={true}
-        enableGraph={true}
-        availableFilterKeys={[
-          'report_types',
-          'container_type',
-          'confidence',
-          'x_opencti_workflow_id',
-          'objectLabel',
-          'createdBy',
-          'objectMarking',
-          'created',
-          'entity_type',
-        ]}
-      >
-        <QueryRenderer
-          query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
-          variables={paginationOptions}
-          render={({ props }) => (
-            <StixCoreObjectOrStixCoreRelationshipContainersLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={defaultHandleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              redirectionMode={redirectionMode}
-            />
-          )}
-        />
-      </ListLines>
+            <ListLines
+                helpers={helpers}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={dataColumns}
+                handleSort={helpers.handleSort}
+                handleSearch={helpers.handleSearch}
+                handleAddFilter={defaultHandleAddFilter}
+                handleRemoveFilter={helpers.handleRemoveFilter}
+                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                handleToggleExports={helpers.handleToggleExports}
+                handleChangeView={helpers.handleChangeView}
+                openExports={openExports}
+                noPadding={typeof onChangeOpenExports === 'function'}
+                exportEntityType="Container"
+                exportContext={exportContext}
+                keyword={searchTerm}
+                handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)
+                }
+                redirectionMode={redirectionMode}
+                filters={filters}
+                paginationOptions={paginationOptions}
+                numberOfElements={numberOfElements}
+                disableCards={true}
+                enableGraph={true}
+                availableFilterKeys={[
+                  'report_types',
+                  'container_type',
+                  'confidence',
+                  'x_opencti_workflow_id',
+                  'objectLabel',
+                  'createdBy',
+                  'objectMarking',
+                  'created',
+                  'entity_type',
+                ]}
+            >
+                <QueryRenderer
+                    query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
+                    variables={paginationOptions}
+                    render={({ props }) => (
+                        <StixCoreObjectOrStixCoreRelationshipContainersLines
+                            data={props}
+                            paginationOptions={paginationOptions}
+                            dataColumns={dataColumns}
+                            initialLoading={props === null}
+                            onLabelClick={defaultHandleAddFilter}
+                            setNumberOfElements={helpers.handleSetNumberOfElements}
+                            redirectionMode={redirectionMode}
+                        />
+                    )}
+                />
+            </ListLines>
     );
   };
 
@@ -235,11 +237,13 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             />
           </div>
           <Filters
+              helpers={helpers}
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={defaultHandleAddFilter}
           />
           {isFilterGroupNotEmpty(filters) && (
             <FilterIconButton
+                helpers={helpers}
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}
               className={5}
@@ -309,12 +313,12 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   };
 
   return (
-    <div
-      className={view === 'lines' ? classes.container : classes.containerGraph}
-    >
-      {view === 'lines' ? renderLines() : ''}
-      {view === 'graph' ? renderGraph() : ''}
-    </div>
+        <div
+            className={view === 'lines' ? classes.container : classes.containerGraph}
+        >
+            {view === 'lines' ? renderLines() : ''}
+            {view === 'graph' ? renderGraph() : ''}
+        </div>
   );
 };
 

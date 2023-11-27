@@ -219,6 +219,7 @@ const Audit = () => {
         </Alert>
       )}
       <ListLines
+          helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

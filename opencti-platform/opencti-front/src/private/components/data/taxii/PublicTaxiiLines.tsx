@@ -89,12 +89,12 @@ const dataColumns: DataColumns = {
     width: '20%',
     isSortable: false,
     render: (node, { t, classes }) => (
-      <Chip
-        classes={{ root: classes.chipInList }}
-        color={'success'}
-        variant="outlined"
-        label={t('Started')}
-      />
+            <Chip
+                classes={{ root: classes.chipInList }}
+                color={'success'}
+                variant="outlined"
+                label={t('Started')}
+            />
     ),
   },
   filters: {
@@ -128,46 +128,46 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
     copyToClipboard(t, `${window.location.origin}/taxii2/root/collections/${collection.id}`);
   };
   return (
-    <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <DatabaseExportOutline />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                {value.render?.(collection, { t, classes })}
-              </div>
-            ))}
-          </div>
-        }
-      />
-      <ListItemSecondaryAction>
-        <Tooltip
-          title={t(
-            'Copy uri to clipboard for your Taxii client',
-          )}
-        >
+        <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
+            <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <DatabaseExportOutline/>
+            </ListItemIcon>
+            <ListItemText
+                primary={
+                    <div>
+                        {Object.values(dataColumns).map((value) => (
+                            <div
+                                key={value.label}
+                                className={classes.bodyItem}
+                                style={{ width: value.width }}
+                            >
+                                {value.render?.(collection, { t, classes })}
+                            </div>
+                        ))}
+                    </div>
+                }
+            />
+            <ListItemSecondaryAction>
+                <Tooltip
+                    title={t(
+                      'Copy uri to clipboard for your Taxii client',
+                    )}
+                >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
-              <ContentCopy />
+              <ContentCopy/>
             </IconButton>
           </span>
-        </Tooltip>
-        <Tooltip title={t('Access stream directly in your browser')}>
+                </Tooltip>
+                <Tooltip title={t('Access stream directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
-              <OpenInNew />
+              <OpenInNew/>
             </IconButton>
           </span>
-        </Tooltip>
-      </ListItemSecondaryAction>
-    </ListItem>
+                </Tooltip>
+            </ListItemSecondaryAction>
+        </ListItem>
   );
 };
 
@@ -175,35 +175,37 @@ const PublicTaxiiLines = () => {
   const { taxiiCollections } = usePreloadedQuery<PublicTaxiiLinesQuery>(publicTaxiiLinesQuery, queryRef);
   const { t } = useFormatter();
   return taxiiCollections && taxiiCollections.edges.length > 0 ? (
-    <>
-      <Typography variant="h2" gutterBottom={true}>
-        {t('Public Taxii collections')}
-      </Typography>
-      <ListLines dataColumns={dataColumns} secondaryAction={true}>
-        <ListLinesContent
-          isLoading={() => {}}
-          hasNext={() => {}}
-          dataColumns={dataColumns}
-          dataList={taxiiCollections.edges}
-          LineComponent={PublicTaxiiLine}
-          DummyLineComponent={<TaxiiLineDummy />}
-        />
-      </ListLines>
-    </>
+        <>
+            <Typography variant="h2" gutterBottom={true}>
+                {t('Public Taxii collections')}
+            </Typography>
+            <ListLines dataColumns={dataColumns} secondaryAction={true}>
+                <ListLinesContent
+                    isLoading={() => {
+                    }}
+                    hasNext={() => {
+                    }}
+                    dataColumns={dataColumns}
+                    dataList={taxiiCollections.edges}
+                    LineComponent={PublicTaxiiLine}
+                    DummyLineComponent={<TaxiiLineDummy/>}
+                />
+            </ListLines>
+        </>
   ) : (
-    <>
-      <Typography variant="h2" gutterBottom={true}>
-        {t('Public Taxii collections')}
-      </Typography>
-      <Typography
-        variant="h5"
-        gutterBottom={true}
-        color={'error'}
-        style={{ marginTop: 20, marginBottom: 40 }}
-      >
-        {t('No available public taxii collections on this platform')}
-      </Typography>
-    </>
+        <>
+            <Typography variant="h2" gutterBottom={true}>
+                {t('Public Taxii collections')}
+            </Typography>
+            <Typography
+                variant="h5"
+                gutterBottom={true}
+                color={'error'}
+                style={{ marginTop: 20, marginBottom: 40 }}
+            >
+                {t('No available public taxii collections on this platform')}
+            </Typography>
+        </>
   );
 };
 

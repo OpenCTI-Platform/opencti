@@ -155,104 +155,105 @@ const StixCyberObservables: FunctionComponent = () => {
     const finalType = (types && types.length > 0) ? types : 'Stix-Cyber-Observable';
     const toolBarFilters = filtersWithEntityType(filters, finalType);
     return (
-      <>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={buildColumns()}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportEntityType="Stix-Cyber-Observable"
-          availableEntityTypes={['Stix-Cyber-Observable']}
-          exportContext={null}
-          keyword={searchTerm}
-          filters={filters}
-          iconExtension={true}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          noDirectFilters={true}
-          availableFilterKeys={[
-            'entity_type',
-            'objectLabel',
-            'objectMarking',
-            'created_at',
-            'x_opencti_score',
-            'createdBy',
-            'sightedBy',
-            'creator_id',
-          ]}
-        >
-          <QueryRenderer
-            query={stixCyberObservablesLinesQuery}
-            variables={paginationOptions}
-            render={({
-              props,
-            }: {
-              props: StixCyberObservablesLinesPaginationQuery$data;
-            }) => (
-              <StixCyberObservablesLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={buildColumns()}
-                initialLoading={props === null}
-                onLabelClick={helpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={helpers.handleSetNumberOfElements}
-              />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={toolBarFilters}
-          search={searchTerm}
-          handleClearSelectedElements={handleClearSelectedElements}
-          variant="large"
-          handleCopy={handleCopy}
-        />
-      </>
+            <>
+                <ListLines
+                    helpers={helpers}
+                    sortBy={sortBy}
+                    orderAsc={orderAsc}
+                    dataColumns={buildColumns()}
+                    handleSort={helpers.handleSort}
+                    handleSearch={helpers.handleSearch}
+                    handleAddFilter={helpers.handleAddFilter}
+                    handleRemoveFilter={helpers.handleRemoveFilter}
+                    handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+                    handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                    handleToggleExports={helpers.handleToggleExports}
+                    openExports={openExports}
+                    handleToggleSelectAll={handleToggleSelectAll}
+                    selectAll={selectAll}
+                    exportEntityType="Stix-Cyber-Observable"
+                    availableEntityTypes={['Stix-Cyber-Observable']}
+                    exportContext={null}
+                    keyword={searchTerm}
+                    filters={filters}
+                    iconExtension={true}
+                    paginationOptions={paginationOptions}
+                    numberOfElements={numberOfElements}
+                    noDirectFilters={true}
+                    availableFilterKeys={[
+                      'entity_type',
+                      'objectLabel',
+                      'objectMarking',
+                      'created_at',
+                      'x_opencti_score',
+                      'createdBy',
+                      'sightedBy',
+                      'creator_id',
+                    ]}
+                >
+                    <QueryRenderer
+                        query={stixCyberObservablesLinesQuery}
+                        variables={paginationOptions}
+                        render={({
+                          props,
+                        }: {
+                          props: StixCyberObservablesLinesPaginationQuery$data;
+                        }) => (
+                            <StixCyberObservablesLines
+                                data={props}
+                                paginationOptions={paginationOptions}
+                                dataColumns={buildColumns()}
+                                initialLoading={props === null}
+                                onLabelClick={helpers.handleAddFilter}
+                                selectedElements={selectedElements}
+                                deSelectedElements={deSelectedElements}
+                                onToggleEntity={onToggleEntity}
+                                selectAll={selectAll}
+                                setNumberOfElements={helpers.handleSetNumberOfElements}
+                            />
+                        )}
+                    />
+                </ListLines>
+                <ToolBar
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    numberOfSelectedElements={numberOfSelectedElements}
+                    selectAll={selectAll}
+                    filters={toolBarFilters}
+                    search={searchTerm}
+                    handleClearSelectedElements={handleClearSelectedElements}
+                    variant="large"
+                    handleCopy={handleCopy}
+                />
+            </>
     );
   };
 
   return (
-    <ExportContextProvider>
-      <div>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableCreation
-            paginationKey="Pagination_stixCyberObservables"
-            paginationOptions={paginationOptions}
-            contextual={false}
-            open={false}
-            handleClose={undefined}
-            type={undefined}
-            display={undefined}
-            speeddial={false}
-            inputValue={undefined}
-          />
-        </Security>
+        <ExportContextProvider>
+            <div>
+                {renderLines()}
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <StixCyberObservableCreation
+                        paginationKey="Pagination_stixCyberObservables"
+                        paginationOptions={paginationOptions}
+                        contextual={false}
+                        open={false}
+                        handleClose={undefined}
+                        type={undefined}
+                        display={undefined}
+                        speeddial={false}
+                        inputValue={undefined}
+                    />
+                </Security>
 
-        {/* <StixCyberObservablesRightBar */}
-        {/*  types={types} */}
-        {/*  handleToggle={handleToggle} */}
-        {/*  handleClear={handleClear} */}
-        {/* /> */}
-      </div>
-    </ExportContextProvider>
+                {/* <StixCyberObservablesRightBar */}
+                {/*  types={types} */}
+                {/*  handleToggle={handleToggle} */}
+                {/*  handleClear={handleClear} */}
+                {/* /> */}
+            </div>
+        </ExportContextProvider>
   );
 };
 

@@ -64,40 +64,41 @@ const IngestionTaxii = () => {
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
-      </Alert>
+            <Alert severity="info">
+                {t(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+            </Alert>
     );
   }
   return (
-    <div className={classes.container}>
-      <IngestionMenu />
-      <ListLines
-        sortBy={viewStorage.sortBy}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={viewStorage.searchTerm}
-      >
-        <QueryRenderer
-          query={IngestionTaxiiLinesQuery}
-          variables={{ count: 200, ...paginationOptions }}
-          render={({ props }) => (
-            <IngestionTaxiiLines
-              data={props}
-              paginationOptions={paginationOptions}
-              refetchPaginationOptions={{ count: 200, ...paginationOptions }}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
-          )}
-        />
-      </ListLines>
-      <IngestionTaxiiCreation paginationOptions={paginationOptions} />
-    </div>
+        <div className={classes.container}>
+            <IngestionMenu/>
+            <ListLines
+                helpers={storageHelpers}
+                sortBy={viewStorage.sortBy}
+                orderAsc={viewStorage.orderAsc}
+                dataColumns={dataColumns}
+                handleSort={storageHelpers.handleSort}
+                handleSearch={storageHelpers.handleSearch}
+                displayImport={false}
+                secondaryAction={true}
+                keyword={viewStorage.searchTerm}
+            >
+                <QueryRenderer
+                    query={IngestionTaxiiLinesQuery}
+                    variables={{ count: 200, ...paginationOptions }}
+                    render={({ props }) => (
+                        <IngestionTaxiiLines
+                            data={props}
+                            paginationOptions={paginationOptions}
+                            refetchPaginationOptions={{ count: 200, ...paginationOptions }}
+                            dataColumns={dataColumns}
+                            initialLoading={props === null}
+                        />
+                    )}
+                />
+            </ListLines>
+            <IngestionTaxiiCreation paginationOptions={paginationOptions}/>
+        </div>
   );
 };
 

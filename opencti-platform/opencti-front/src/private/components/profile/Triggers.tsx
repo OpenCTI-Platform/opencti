@@ -61,59 +61,60 @@ const Triggers: FunctionComponent = () => {
       paginationOptions,
     );
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchFilter={helpers.handleSwitchFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'trigger_type',
-          'instance_trigger',
-          'created',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array.from(Array(20).keys()).map((idx) => (
-                  <TriggerLineDummy
-                    key={`TriggerLineDummy-${idx}`}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-              </>
-            }
-          >
-            <TriggersLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              bypassEditionRestriction={false}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+            <ListLines
+                helpers={helpers}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={dataColumns}
+                handleSort={helpers.handleSort}
+                handleSearch={helpers.handleSearch}
+                handleAddFilter={helpers.handleAddFilter}
+                handleRemoveFilter={helpers.handleRemoveFilter}
+                handleSwitchFilter={helpers.handleSwitchFilter}
+                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                keyword={searchTerm}
+                filters={filters}
+                paginationOptions={paginationOptions}
+                numberOfElements={numberOfElements}
+                availableFilterKeys={[
+                  'trigger_type',
+                  'instance_trigger',
+                  'created',
+                ]}
+            >
+                {queryRef && (
+                    <React.Suspense
+                        fallback={
+                            <>
+                                {Array.from(Array(20).keys()).map((idx) => (
+                                    <TriggerLineDummy
+                                        key={`TriggerLineDummy-${idx}`}
+                                        dataColumns={dataColumns}
+                                    />
+                                ))}
+                            </>
+                        }
+                    >
+                        <TriggersLines
+                            queryRef={queryRef}
+                            paginationOptions={paginationOptions}
+                            dataColumns={dataColumns}
+                            onLabelClick={helpers.handleAddFilter}
+                            setNumberOfElements={helpers.handleSetNumberOfElements}
+                            bypassEditionRestriction={false}
+                        />
+                    </React.Suspense>
+                )}
+            </ListLines>
     );
   };
 
   return (
-    <div>
-      {renderLines()}
-      <TriggerCreation paginationOptions={paginationOptions} />
-    </div>
+        <div>
+            {renderLines()}
+            <TriggerCreation paginationOptions={paginationOptions}/>
+        </div>
   );
 };
 

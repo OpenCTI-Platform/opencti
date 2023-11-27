@@ -1,16 +1,15 @@
 import Button from '@mui/material/Button';
-import {FilterListOffOutlined, FilterListOutlined} from '@mui/icons-material';
+import { FilterListOffOutlined, FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
-import {RayEndArrow, RayStartArrow} from 'mdi-material-ui';
+import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import {useFormatter} from '../../../../components/i18n';
-import {directFilters, getDefaultFilterObject} from '../../../../utils/filters/filtersUtils';
-import {getFilterHelpers} from '../../../../utils/filters/FiltersHelpers.util';
+import { useFormatter } from '../../../../components/i18n';
+import { directFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -20,18 +19,19 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ListFilters = ({
-                       size,
-                       fontSize,
-                       handleOpenFilters,
-                       handleCloseFilters,
-                       open,
-                       anchorEl,
-                       availableFilterKeys,
-                       filterElement,
-                       variant,
-                       type,
-                     }) => {
-  const {t} = useFormatter();
+  size,
+  fontSize,
+  handleOpenFilters,
+  handleCloseFilters,
+  open,
+  anchorEl,
+  availableFilterKeys,
+  filterElement,
+  variant,
+  type,
+  helpers,
+}) => {
+  const { t } = useFormatter();
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'}/>;
@@ -48,12 +48,12 @@ const ListFilters = ({
   }
   const handleClearFilters = () => {
     const dFilter = availableFilterKeys.filter((n) => directFilters.includes(n));
-    getFilterHelpers()?.handleClearAllFilters(
+    helpers.handleClearAllFilters(
       dFilter.map((key) => getDefaultFilterObject(key)),
     );
   };
   const handleChange = (value) => {
-    getFilterHelpers().handleAddFilterWithEmptyValue(getDefaultFilterObject(value));
+    helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value));
   };
   return (
     <>
@@ -79,7 +79,7 @@ const ListFilters = ({
                 label: t(`filter_${opt}`),
               }))
               .sort((a, b) => a.label.localeCompare(b.label))}
-            sx={{width: 200}}
+            sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {
               handleChange(selectOptionValue.value);
@@ -110,10 +110,10 @@ const ListFilters = ({
             </IconButton>
           </Tooltip>
         </>
-      
+
       )}
       <Popover
-        classes={{paper: classes.container}}
+        classes={{ paper: classes.container }}
         open={open}
         anchorEl={anchorEl}
         onClose={handleCloseFilters}

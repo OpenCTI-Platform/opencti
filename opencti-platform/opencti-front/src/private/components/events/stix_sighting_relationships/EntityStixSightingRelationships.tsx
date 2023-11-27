@@ -113,6 +113,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     return (
       <>
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

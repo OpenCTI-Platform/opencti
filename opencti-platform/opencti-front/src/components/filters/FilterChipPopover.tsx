@@ -10,14 +10,15 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getFilterHelpers } from '../../utils/filters/FiltersHelpers.util';
 import { getOptions, getUseSearch } from '../../utils/filters/SearchEntities.util';
+import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
   open: boolean;
   params: FilterChipsParameter;
   filters: Filter[];
+  helpers?: UseLocalStorageHelpers
 }
 
 export interface FilterChipsParameter {
@@ -38,7 +39,12 @@ const OperatorKeyValues: {
   lte: 'Lower than/ Equals',
 };
 
-export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({ params, handleClose, open, filters }) => {
+export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
+  params,
+  handleClose, open,
+  filters,
+  helpers,
+}) => {
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
@@ -60,20 +66,20 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({ para
   const optionValues: OptionValue[] = getOptions(filterKey, entities);
   const handleChange = (checked: boolean, value: string) => {
     if (checked) {
-      getFilterHelpers()?.handleAddRepresentationFilter(filter?.id ?? '', value);
+      helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
     } else {
-      getFilterHelpers()?.handleRemoveRepresentationFilter(filter?.id ?? '', value);
+      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', value);
     }
   };
 
   const handleChangeOperator = (event: SelectChangeEvent) => {
-    getFilterHelpers()?.handleChangeOperatorFilters(filter?.id ?? '', event.target.value);
+    helpers?.handleChangeOperatorFilters(filter?.id ?? '', event.target.value);
   };
   const handleDateChange = (
     _: string,
     value: string,
   ) => {
-    getFilterHelpers()?.handleAddSingleValueFilter(filter?.id ?? '', value);
+    helpers?.handleAddSingleValueFilter(filter?.id ?? '', value);
   };
 
   const isSpecificFilter = (fKey: string) => {
@@ -87,13 +93,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({ para
     label={t(`filter_${filterKey}`)}
     type="number"
     defaultValue={filterValues[0]}
+    autoFocus={true}
     onKeyDown={(event) => {
       if (event.key === 'Enter') {
-        getFilterHelpers()?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
+        helpers?.handleAddSingleValueFilter(filter?.id ?? '', (event.target as HTMLInputElement).value);
       }
-    }}
+    }
+    }
     onBlur={(event) => {
-      getFilterHelpers()?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
+      helpers?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
     }
     }
   />;
@@ -138,7 +146,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({ para
         onChange={handleChangeOperator}
       >
         {
-          getAvailableOperatorForFilter(filterKey).map((value) => <MenuItem
+          getAvailableOperatorForFilter(filterKey).map((value) => <MenuItem key={value}
             value={value}>{OperatorKeyValues[value]}</MenuItem>)
         }
       </Select>
@@ -170,6 +178,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({ para
                     variant="outlined"
                     size="small"
                     fullWidth={true}
+                    autoFocus={true}
                     onFocus={(event) => searchEntities(
                       filterKey,
                       cacheEntities,

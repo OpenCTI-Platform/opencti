@@ -107,6 +107,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
     const toolBarFilters = filtersWithEntityType(filters, 'Feedback');
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

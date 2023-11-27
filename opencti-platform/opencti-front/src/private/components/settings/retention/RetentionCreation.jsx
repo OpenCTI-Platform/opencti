@@ -71,17 +71,17 @@ const styles = (theme) => ({
 });
 
 const RetentionCreationMutation = graphql`
-  mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
-    retentionRuleAdd(input: $input) {
-      ...RetentionLine_node
+    mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
+        retentionRuleAdd(input: $input) {
+            ...RetentionLine_node
+        }
     }
-  }
 `;
 
 const RetentionCheckMutation = graphql`
-  mutation RetentionCreationCheckMutation($input: RetentionRuleAddInput!) {
-    retentionRuleCheck(input: $input)
-  }
+    mutation RetentionCreationCheckMutation($input: RetentionRuleAddInput!) {
+        retentionRuleCheck(input: $input)
+    }
 `;
 
 const RetentionCreationValidation = (t) => Yup.object().shape({

@@ -28,6 +28,7 @@ interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   currentView: string
   enableContextualView: boolean,
 }
+
 const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsIndicatorsEntitiesViewProps> = ({
   entityId,
   relationshipTypes,
@@ -141,6 +142,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   return (
     <>
       <ListLines
+          helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

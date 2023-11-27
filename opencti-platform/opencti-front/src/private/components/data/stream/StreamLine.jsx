@@ -18,7 +18,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+    <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -170,88 +170,88 @@ class StreamDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
+            <ListItem classes={{ root: classes.item }} divider={true}>
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width={30}
+                        height={30}
+                    />
+                </ListItemIcon>
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width={30}
+                        height={30}
+                    />
+                </ListItemIcon>
+                <ListItemText
+                    primary={
+                        <div>
+                            <div
+                                className={classes.bodyItem}
+                                style={{ width: dataColumns.name.width }}
+                            >
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    width="90%"
+                                    height="100%"
+                                />
+                            </div>
+                            <div
+                                className={classes.bodyItem}
+                                style={{ width: dataColumns.description.width }}
+                            >
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    width="90%"
+                                    height="100%"
+                                />
+                            </div>
+                            <div
+                                className={classes.bodyItem}
+                                style={{ width: dataColumns.filters.width }}
+                            >
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    width="90%"
+                                    height="100%"
+                                />
+                            </div>
+                            <div
+                                className={classes.bodyItem}
+                                style={{ width: dataColumns.stream_public.width }}
+                            >
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    width="90%"
+                                    height="100%"
+                                />
+                            </div>
+                            <div
+                                className={classes.bodyItem}
+                                style={{ width: dataColumns.stream_live.width }}
+                            >
+                                <Skeleton
+                                    animation="wave"
+                                    variant="rectangular"
+                                    width="90%"
+                                    height="100%"
+                                />
+                            </div>
+                        </div>
+                    }
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stream_public.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stream_live.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-            </div>
-          }
-        />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
-      </ListItem>
+                <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+                    <MoreVert/>
+                </ListItemSecondaryAction>
+            </ListItem>
     );
   }
 }

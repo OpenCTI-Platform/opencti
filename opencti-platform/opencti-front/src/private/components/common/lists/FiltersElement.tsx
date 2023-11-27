@@ -31,12 +31,12 @@ export interface FiltersElementProps {
   noDirectFilters?: boolean;
   setInputValues: (value: {
     key: string,
-    values: (string | Date)[],
+    values: (string)[],
     operator?: string
   }[]) => void;
   inputValues: {
     key: string,
-    values: (string | Date)[],
+    values: (string)[],
     operator?: string
   }[];
   defaultHandleAddFilter: HandleAddFilter;

@@ -52,42 +52,43 @@ const CsvMappers = () => {
       isSortable: false,
       render: (data: CsvMapperLine_csvMapper$data) => {
         return data.errors === null ? (
-          <CheckCircleOutlined fontSize="small" color="success" />
+                    <CheckCircleOutlined fontSize="small" color="success"/>
         ) : (
-          <CancelOutlined fontSize="small" color="error" />
+                    <CancelOutlined fontSize="small" color="error"/>
         );
       },
     },
   };
   return (
-    <div className={classes.container}>
-      <ProcessingMenu />
-      <ListLines
-        sortBy={viewStorage.sortBy}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={viewStorage.searchTerm}
-      >
-        {queryRef && (
-          <>
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <CsvMapperLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
+        <div className={classes.container}>
+            <ProcessingMenu/>
+            <ListLines
+                helpers={helpers}
+                sortBy={viewStorage.sortBy}
+                orderAsc={viewStorage.orderAsc}
                 dataColumns={dataColumns}
-              />
-            </React.Suspense>
-          </>
-        )}
-      </ListLines>
-      <CsvMapperCreationContainer paginationOptions={paginationOptions} />
-    </div>
+                handleSort={helpers.handleSort}
+                handleSearch={helpers.handleSearch}
+                displayImport={false}
+                secondaryAction={true}
+                keyword={viewStorage.searchTerm}
+            >
+                {queryRef && (
+                    <>
+                        <React.Suspense
+                            fallback={<Loader variant={LoaderVariant.inElement}/>}
+                        >
+                            <CsvMapperLines
+                                queryRef={queryRef}
+                                paginationOptions={paginationOptions}
+                                dataColumns={dataColumns}
+                            />
+                        </React.Suspense>
+                    </>
+                )}
+            </ListLines>
+            <CsvMapperCreationContainer paginationOptions={paginationOptions}/>
+        </div>
   );
 };
 

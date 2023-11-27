@@ -149,6 +149,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     return (
       <>
         <ListLines
+          helpers={storageHelpers}
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}

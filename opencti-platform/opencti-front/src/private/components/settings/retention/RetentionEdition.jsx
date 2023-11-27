@@ -60,19 +60,19 @@ const styles = (theme) => ({
 });
 
 const retentionMutationFieldPatch = graphql`
-  mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    retentionRuleEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...RetentionEdition_retentionRule
-      }
+    mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+        retentionRuleEdit(id: $id) {
+            fieldPatch(input: $input) {
+                ...RetentionEdition_retentionRule
+            }
+        }
     }
-  }
 `;
 
 const RetentionCheckMutation = graphql`
-  mutation RetentionEditionCheckMutation($input: RetentionRuleAddInput!) {
-    retentionRuleCheck(input: $input)
-  }
+    mutation RetentionEditionCheckMutation($input: RetentionRuleAddInput!) {
+        retentionRuleCheck(input: $input)
+    }
 `;
 
 const retentionValidation = (t) => Yup.object().shape({
@@ -277,13 +277,13 @@ const RetentionEditionFragment = createFragmentContainer(
   RetentionEditionContainer,
   {
     retentionRule: graphql`
-      fragment RetentionEdition_retentionRule on RetentionRule {
-        id
-        name
-        max_retention
-        filters
-      }
-    `,
+            fragment RetentionEdition_retentionRule on RetentionRule {
+                id
+                name
+                max_retention
+                filters
+            }
+        `,
   },
 );
 

@@ -12,6 +12,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from './Loader';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
+import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
 
 interface FilterIconButtonProps {
   availableFilterKeys?: string[];
@@ -25,6 +26,7 @@ interface FilterIconButtonProps {
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
+  helpers?: UseLocalStorageHelpers;
 }
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
@@ -37,19 +39,20 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   disabledPossible,
   redirection,
   chipColor,
+  helpers,
 }) => {
   const displayedFilters = {
     ...filters,
     filters:
-      filters.filters.filter(
-        (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
-      ) || [],
+            filters.filters.filter(
+              (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
+            ) || [],
   };
   const parsedQueryFilters: FilterGroup = {
     ...filters,
     filters: filters.filters
       .filter((currentFilter) => !availableFilterKeys
-        || availableFilterKeys?.some((k) => currentFilter.key === k))
+                || availableFilterKeys?.some((k) => currentFilter.key === k))
       .map((filter) => {
         const removeIdFromFilter = { ...filter };
         delete removeIdFromFilter.id;
@@ -61,23 +64,24 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     { filters: parsedQueryFilters as unknown as GqlFilterGroup },
   );
   return (
-    <>
-      {filtersRepresentativesQueryRef && (
-        <React.Suspense fallback={<Loader/>}>
-          <FilterIconButtonContainer
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            styleNumber={styleNumber}
-            chipColor={chipColor}
-            disabledPossible={disabledPossible}
-            redirection={redirection}
-            filters={displayedFilters}
-            filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
-          ></FilterIconButtonContainer>
-        </React.Suspense>)
-      }
-    </>
+        <>
+            {filtersRepresentativesQueryRef && (
+                <React.Suspense fallback={<Loader/>}>
+                    <FilterIconButtonContainer
+                        handleRemoveFilter={handleRemoveFilter}
+                        handleSwitchGlobalMode={handleSwitchGlobalMode}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        styleNumber={styleNumber}
+                        chipColor={chipColor}
+                        disabledPossible={disabledPossible}
+                        redirection={redirection}
+                        filters={displayedFilters}
+                        filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
+                        helpers={helpers}
+                    ></FilterIconButtonContainer>
+                </React.Suspense>)
+            }
+        </>
   );
 };
 

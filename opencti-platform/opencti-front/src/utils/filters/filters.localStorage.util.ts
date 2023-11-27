@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Filter, FilterGroup } from './filtersUtils';
-import { LocalStorage } from '../hooks/useLocalStorage';
+import { LocalStorage } from './filters.model';
 
 type FiltersLocalStorageUtilProps<U> = {
   viewStorage: LocalStorage,
@@ -68,7 +68,7 @@ export const handleAddRepresentationFilter = ({ viewStorage, setValue, id, value
 
 export const handleAddSingleValueFilter = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  valueId?: string
 }>) => {
   if (valueId) {
     updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [valueId] } : f));

@@ -80,29 +80,29 @@ class Taxii extends Component {
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={searchTerm}
-      >
-        <QueryRenderer
-          query={TaxiiLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <TaxiiLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
-          )}
-        />
-      </ListLines>
+            <ListLines
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={dataColumns}
+                handleSort={this.handleSort.bind(this)}
+                handleSearch={this.handleSearch.bind(this)}
+                displayImport={false}
+                secondaryAction={true}
+                keyword={searchTerm}
+            >
+                <QueryRenderer
+                    query={TaxiiLinesQuery}
+                    variables={{ count: 25, ...paginationOptions }}
+                    render={({ props }) => (
+                        <TaxiiLines
+                            data={props}
+                            paginationOptions={paginationOptions}
+                            dataColumns={dataColumns}
+                            initialLoading={props === null}
+                        />
+                    )}
+                />
+            </ListLines>
     );
   }
 
@@ -115,11 +115,11 @@ class Taxii extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
-        <SharingMenu />
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <TaxiiCollectionCreation paginationOptions={paginationOptions} />
-      </div>
+            <div className={classes.container}>
+                <SharingMenu/>
+                {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+                <TaxiiCollectionCreation paginationOptions={paginationOptions}/>
+            </div>
     );
   }
 }

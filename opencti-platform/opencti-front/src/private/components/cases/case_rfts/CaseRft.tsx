@@ -104,6 +104,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
                   </Typography>
                   <Paper classes={{ root: classes.paper }} variant="outlined">
                     <ListLines
+                      helpers={helpers}
                       sortBy={sortBy}
                       orderAsc={orderAsc}
                       handleSort={helpers.handleSort}
