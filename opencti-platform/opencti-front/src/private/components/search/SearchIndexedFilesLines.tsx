@@ -9,7 +9,7 @@ import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../components/list_lines';
-import SearchIndexedFileLine from './SearchIndexedFileLine';
+import { SearchIndexedFileLine, SearchIndexedFileLineDummy } from './SearchIndexedFileLine';
 
 const nbOfRowsToLoad = 50;
 
@@ -93,6 +93,7 @@ const SearchIndexedFilesLines: FunctionComponent<SearchIndexedFilesLinesProps> =
         data?.indexedFiles?.pageInfo?.globalCount ?? nbOfRowsToLoad
       }
       LineComponent={SearchIndexedFileLine}
+      DummyLineComponent={SearchIndexedFileLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       onLabelClick={onLabelClick}

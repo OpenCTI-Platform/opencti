@@ -6,10 +6,11 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { OpenInNewOutlined } from '@mui/icons-material';
+import { MoreVertOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
 import { DataColumns } from '../../../components/list_lines';
 import { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -25,6 +26,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+  },
+  itemIconDisabled: {
+    color: theme.palette.grey?.[700],
   },
   bodyItem: {
     height: 20,
@@ -98,7 +102,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   );
 };
 
-const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineComponent, {
+export const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineComponent, {
   node: graphql`
       fragment SearchIndexedFileLine_node on IndexedFile {
         id
@@ -132,4 +136,40 @@ const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineCompo
   `,
 });
 
-export default SearchIndexedFileLine;
+export const SearchIndexedFileLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
+  const classes = useStyles();
+  return (
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <MoreVertOutlined />
+      </ListItemSecondaryAction>
+    </ListItem>
+  );
+};

@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import { BoundaryRoute, NoMatch } from '@components/Error';
-import Search from './components/Search';
+import SearchRoot from '@components/SearchRoot';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
@@ -97,12 +97,9 @@ const Index = ({ settings }: IndexProps) => {
           />
           <Switch>
             <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-            <BoundaryRoute exact path="/dashboard/search" component={Search} />
-            <BoundaryRoute
-              exact
-              path="/dashboard/search/:keyword"
-              component={Search}
-            />
+            <BoundaryRoute exact path="/dashboard/search" component={SearchRoot} />
+            <BoundaryRoute exact path="/dashboard/search/:scope" component={SearchRoot} />
+            <BoundaryRoute exact path="/dashboard/search/:scope/:keyword" component={SearchRoot} />
             <BoundaryRoute
               exact
               path="/dashboard/id/:id"

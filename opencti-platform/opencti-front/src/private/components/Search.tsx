@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { KeyboardDoubleArrowDownOutlined } from '@mui/icons-material';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
 import {
@@ -10,9 +9,6 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
-import Button from '@mui/material/Button';
-import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
-import TopBar from './nav/TopBar';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
@@ -28,7 +24,7 @@ const LOCAL_STORAGE_KEY = 'search';
 
 const Search = () => {
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable, isFileIndexManagerEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { t } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
@@ -38,7 +34,6 @@ const Search = () => {
   } catch (e) {
     // Do nothing
   }
-  const fileSearchEnabled = isFileIndexManagerEnable();
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -69,10 +64,6 @@ const Search = () => {
     searchStixCoreObjectsLinesQuery,
     { ...paginationOptions, search: searchTerm },
   );
-  const [searchOpen, setSearchOpen] = useState(false);
-  const handleSearchIndexFiles = () => {
-    setSearchOpen(true);
-  };
 
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -195,26 +186,14 @@ const Search = () => {
   return (
       <ExportContextProvider>
         <div>
-          <TopBar keyword={searchTerm} />
           <Typography
-            variant="h1"
+            variant="h6"
             gutterBottom={true}
             style={{ margin: '-5px 20px 0 0', float: 'left' }}
           >
             {t('Search for an entity')}
           </Typography>
           {renderLines()}
-          {fileSearchEnabled && searchTerm && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Button
-                size="small"
-                onClick={handleSearchIndexFiles}
-              >
-                <KeyboardDoubleArrowDownOutlined /> {t('Extend this search to indexed files')} <KeyboardDoubleArrowDownOutlined />
-              </Button>
-            </div>
-          )}
-          { searchOpen ? (<SearchIndexedFiles search={searchTerm}/>) : ('')}
         </div>
       </ExportContextProvider>
   );

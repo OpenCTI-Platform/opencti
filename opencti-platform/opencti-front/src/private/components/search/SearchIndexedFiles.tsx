@@ -1,10 +1,12 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import SearchIndexedFilesLines, { searchIndexedFilesLinesQuery } from '@components/search/SearchIndexedFilesLines';
 import {
   SearchIndexedFilesLinesPaginationQuery,
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
+import Typography from '@mui/material/Typography';
+import { useParams } from 'react-router-dom';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -13,12 +15,17 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
+import useAuth from '../../../utils/hooks/useAuth';
 
-interface SearchIndexedFilesProps {
-  search: string;
-}
 const LOCAL_STORAGE_KEY = 'view-files';
-const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ search }) => {
+const SearchIndexedFiles = () => {
+  const { keyword } = useParams() as { keyword: string };
+  let search = '';
+  try {
+    search = decodeURIComponent(keyword || '');
+  } catch (e) {
+    // Do nothing
+  }
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -43,7 +50,11 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
     searchIndexedFilesLinesQuery,
     { ...paginationOptions, search },
   );
-  const { fd } = useFormatter();
+  const { fd, t } = useFormatter();
+  const {
+    platformModuleHelpers: { isFileIndexManagerEnable },
+  } = useAuth();
+  const fileSearchEnabled = isFileIndexManagerEnable();
 
   const renderLines = () => {
     const dataColumns = {
@@ -141,7 +152,16 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
   };
   return (
     <ExportContextProvider>
-      {renderLines()}
+      <div>
+        <Typography
+          variant="h6"
+          gutterBottom={true}
+          style={{ margin: '-5px 20px 0 0', float: 'left' }}
+        >
+          {t('Search in files')}
+        </Typography>
+        {fileSearchEnabled && renderLines()}
+      </div>
     </ExportContextProvider>
   );
 };
