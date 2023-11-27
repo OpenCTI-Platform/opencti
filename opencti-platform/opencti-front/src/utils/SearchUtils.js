@@ -3,7 +3,7 @@ export const handleSearchByKeyword = (searchKeyword, searchScope, history) => {
     // With need to double encode because of react router.
     // Waiting for history 5.0 integrated to react router.
     const encodeKey = encodeURIComponent(encodeURIComponent(searchKeyword));
-    history.push(`/dashboard/search/knowledge/${encodeKey}`);
+    history.push(`/dashboard/search/${searchScope}/${encodeKey}`);
   }
 };
 
