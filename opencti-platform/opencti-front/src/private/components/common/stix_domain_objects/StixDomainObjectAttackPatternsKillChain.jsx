@@ -30,7 +30,7 @@ import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRel
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
-import { isFilterGroupNotEmpty } from "../../../../utils/filters/filtersUtils";
+import { isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   container: {

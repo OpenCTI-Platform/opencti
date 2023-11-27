@@ -3,71 +3,71 @@ import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { markingDefinitionsLinesSearchQuery } from '@components/settings/marking_definitions/MarkingDefinitionsLines';
-import { fetchQuery } from '../../relay/environment';
 import {
   identitySearchCreatorsSearchQuery,
   identitySearchIdentitiesSearchQuery,
-} from '../../private/components/common/identities/IdentitySearch';
+} from '@components/common/identities/IdentitySearch';
 import {
   stixDomainObjectsLinesSearchQuery,
-} from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
-import { defaultValue } from '../Graph';
+} from '@components/common/stix_domain_objects/StixDomainObjectsLines';
 import {
   killChainPhasesLinesSearchQuery,
-} from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
-import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
-import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
-import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
-import { useFormatter } from '../../components/i18n';
-import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
-import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
+} from '@components/settings/kill_chain_phases/KillChainPhasesLines';
+import { labelsSearchQuery } from '@components/settings/LabelsQuery';
+import { attributesSearchQuery } from '@components/settings/AttributesQuery';
+import { statusFieldStatusesSearchQuery } from '@components/common/form/StatusField';
+import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
 import {
   objectAssigneeFieldAssigneesSearchQuery,
   objectAssigneeFieldMembersSearchQuery,
-} from '../../private/components/common/form/ObjectAssigneeField';
+} from '@components/common/form/ObjectAssigneeField';
 import {
   IdentitySearchIdentitiesSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
+} from '@components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import {
   IdentitySearchCreatorsSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
+} from '@components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import {
   ObjectAssigneeFieldAssigneesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
+} from '@components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
 import {
   StixDomainObjectsLinesSearchQuery$data,
-} from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
+import {
+  MarkingDefinitionsLinesSearchQuery$data,
+} from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import {
+  KillChainPhasesLinesSearchQuery$data,
+} from '@components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
+import {
+  LabelsQuerySearchQuery$data,
+} from '@components/settings/__generated__/LabelsQuerySearchQuery.graphql';
+import {
+  AttributesQuerySearchQuery$data,
+} from '@components/settings/__generated__/AttributesQuerySearchQuery.graphql';
+import {
+  StatusFieldStatusesSearchQuery$data,
+} from '@components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
+import { VocabularyQuery$data } from '@components/settings/__generated__/VocabularyQuery.graphql';
+import {
+  ObjectAssigneeFieldMembersSearchQuery$data,
+} from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
+import {
+  ObjectParticipantFieldParticipantsSearchQuery$data,
+} from '@components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
+import {
+  objectParticipantFieldParticipantsSearchQuery,
+} from '@components/common/form/ObjectParticipantField';
+import { buildScaleFilters } from '../hooks/useScale';
+import useAuth from '../hooks/useAuth';
 import {
   useSearchEntitiesStixCoreObjectsSearchQuery$data,
 } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
-import {
-  MarkingDefinitionsLinesSearchQuery$data,
-} from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
-import {
-  KillChainPhasesLinesSearchQuery$data,
-} from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
-import {
-  LabelsQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
-import {
-  AttributesQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
-import {
-  StatusFieldStatusesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
-import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
+import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
+import { useFormatter } from '../../components/i18n';
+import { defaultValue } from '../Graph';
+import { fetchQuery } from '../../relay/environment';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
-import useAuth from '../hooks/useAuth';
-import { buildScaleFilters } from '../hooks/useScale';
-import {
-  ObjectAssigneeFieldMembersSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
-import {
-  ObjectParticipantFieldParticipantsSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
-import {
-  objectParticipantFieldParticipantsSearchQuery,
-} from '../../private/components/common/form/ObjectParticipantField';
 import {
   useSearchEntitiesStixCoreObjectsContainersSearchQuery$data,
 } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
