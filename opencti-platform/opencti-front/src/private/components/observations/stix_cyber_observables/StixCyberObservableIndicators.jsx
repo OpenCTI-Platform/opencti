@@ -196,7 +196,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
         <List style={{ marginTop: -15 }}>
           {filter(
             (n) => !includes(n.node.id, this.state.deleted),
-            stixCyberObservable.indicators.edges,
+            stixCyberObservable.indicators?.edges ?? [],
           ).map((indicatorEdge) => (
             <ListItem
               key={indicatorEdge.node.id}
@@ -280,7 +280,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
           open={displayCreate}
           handleClose={this.handleCloseCreate.bind(this)}
           stixCyberObservable={stixCyberObservable}
-          stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
+          stixCyberObservableIndicators={stixCyberObservable.indicators?.edges ?? []}
           indicatorParams={this.indicatorParams}
         />
       </div>

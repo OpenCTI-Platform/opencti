@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_FINANCIAL_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import {
   BUILT_IN_DECAY_RULE_IP_URL,
   type DecayRuleConfiguration,
@@ -291,7 +291,7 @@ describe('DecayRule resolver standard behavior', () => {
         description: 'Indicator that does not match any decay rule',
         pattern: "[file:hashes.'SHA-256' = 'ea4c2f895f7b1c46aa8de559e7a6d8201b49437332d6d5e859052276db50c6c4']",
         pattern_type: 'stix',
-        x_opencti_main_observable_type: ENTITY_BANK_ACCOUNT,
+        x_opencti_main_observable_type: ENTITY_FINANCIAL_ACCOUNT,
       },
     };
 
