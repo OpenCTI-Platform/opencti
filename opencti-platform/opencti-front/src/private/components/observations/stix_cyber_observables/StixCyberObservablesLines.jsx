@@ -76,8 +76,8 @@ StixCyberObservablesLines.propTypes = {
 };
 
 export const stixCyberObservablesLinesSubTypesQuery = graphql`
-  query StixCyberObservablesLinesSubTypesQuery($type: String!) {
-    subTypes(type: $type) {
+  query StixCyberObservablesLinesSubTypesQuery($type: String!, $search: String) {
+    subTypes(type: $type, search: $search) {
       edges {
         node {
           id

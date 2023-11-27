@@ -82,6 +82,8 @@ export const INPUT_CHILD = 'processChild';
 export const INPUT_BODY_MULTIPART = 'bodyMultipart';
 export const INPUT_VALUES = 'winRegValues';
 export const INPUT_SERVICE_DLL = 'serviceDlls';
+export const INPUT_TRANSACTION_FROM = 'transactionFrom';
+export const INPUT_TRANSACTION_TO = 'transactionTo';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
 export const RELATION_SAMPLE = 'sample';

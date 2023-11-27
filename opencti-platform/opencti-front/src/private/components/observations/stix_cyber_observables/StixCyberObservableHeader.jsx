@@ -38,6 +38,7 @@ const StixCyberObservableHeaderComponent = ({
         variant="h1"
         gutterBottom={true}
         classes={{ root: classes.title }}
+        data-testid="observable-title"
       >
         {truncate(stixCyberObservable.observable_value, 50)}
       </Typography>
