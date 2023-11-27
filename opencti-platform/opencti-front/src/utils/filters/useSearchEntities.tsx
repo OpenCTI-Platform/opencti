@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { useTheme } from '@mui/styles';
 import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -58,7 +57,6 @@ import {
 } from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
-import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 import { buildScaleFilters } from '../hooks/useScale';
 import {
