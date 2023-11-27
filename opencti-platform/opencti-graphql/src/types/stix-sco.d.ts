@@ -167,22 +167,6 @@ export interface StixFile extends StixCyberObject {
   };
 }
 
-// Custom object extension - Cryptocurrency Wallet
-// value
-export interface StixCryptocurrencyWallet extends StixCyberObject {
-  value: string;
-  description: string;
-  score: number;
-  labels: Array<string>;
-  created_by_ref: StixId | undefined,
-  object_marking_refs: Array<StixId>;
-  external_references: Array<StixInternalExternalReference>;
-  extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
-  }
-}
-
 // Simple custom object extension
 // Custom object extension - Cryptographic Key
 // value
@@ -245,24 +229,6 @@ export interface StixUserAgent extends StixCyberObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
     [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
-}
-
-// Custom object extension - Bank Account
-// iban, bic, number
-export interface StixBankAccount extends StixCyberObject {
-  iban: string;
-  bic: string;
-  account_number: string;
-  description: string;
-  score: number;
-  labels: Array<string>;
-  created_by_ref: StixId | undefined,
-  object_marking_refs: Array<StixId>;
-  external_references: Array<StixInternalExternalReference>;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
   }
 }
 
@@ -599,6 +565,63 @@ export interface StixMediaContent extends StixCyberObject {
   created_by_ref: StixId | undefined,
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - Financial Account
+// value
+export interface StixFinancialAccount extends StixCyberObject {
+  account_number: string;
+  bic_number: string;
+  iban_number: string;
+  account_type: string;
+  account_status: string;
+  currency_code: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - Financial Asset
+// value
+export interface StixFinancialAsset extends StixCyberObject {
+  name: string;
+  asset_type: string;
+  asset_value: number;
+  currency_code: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - Financial Transaction
+// value
+export interface StixFinancialTransaction extends StixCyberObject {
+  transaction_date: StixDate;
+  transaction_value: number;
+  currency_code: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  from_ref: StixId | undefined; // optional
+  to_refs: Array<StixId>; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
     [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }

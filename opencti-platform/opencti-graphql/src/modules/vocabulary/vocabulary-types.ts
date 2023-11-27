@@ -14,7 +14,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
-import { ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
+import { ENTITY_FINANCIAL_ACCOUNT, ENTITY_FINANCIAL_ASSET, ENTITY_FINANCIAL_TRANSACTION, ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
@@ -111,6 +111,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  currency_code_ov: {
+    description: 'An open vocabulary of Currency Codes',
+    entity_types: [ENTITY_FINANCIAL_ACCOUNT, ENTITY_FINANCIAL_ASSET, ENTITY_FINANCIAL_TRANSACTION],
+    fields: [{
+      key: 'currency_code',
+      required: false,
+      multiple: false,
+    }]
+  },
   // E
   event_type_ov: {
     entity_types: [ENTITY_TYPE_EVENT],
@@ -118,6 +127,34 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'event_types',
       required: false,
       multiple: true,
+    }]
+  },
+  // F
+  financial_account_status_ov: {
+    description: 'An open vocabulary of Financial Account statuses',
+    entity_types: [ENTITY_FINANCIAL_ACCOUNT],
+    fields: [{
+      key: 'account_status',
+      required: false,
+      multiple: false,
+    }]
+  },
+  financial_account_type_ov: {
+    description: 'An open vocabulary of Financial Account types',
+    entity_types: [ENTITY_FINANCIAL_ACCOUNT],
+    fields: [{
+      key: 'account_type',
+      required: false,
+      multiple: false,
+    }]
+  },
+  financial_asset_type_ov: {
+    description: 'An open vocabulary of Financial Asset types',
+    entity_types: [ENTITY_FINANCIAL_ASSET],
+    fields: [{
+      key: 'asset_type',
+      required: false,
+      multiple: false,
     }]
   },
   // G

@@ -27,15 +27,16 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TY
 import type * as SMO from '../types/stix-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_BANK_ACCOUNT,
   ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
-  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_ASSET,
+  ENTITY_FINANCIAL_TRANSACTION,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -184,10 +185,6 @@ export const extractStixRepresentative = (
     const autonomous = stix as SCO.StixAutonomousSystem;
     return autonomous.name ?? autonomous.number ?? 'unknown';
   }
-  if (entityType === ENTITY_BANK_ACCOUNT) {
-    const bankAccount = stix as SCO.StixBankAccount;
-    return bankAccount.iban ?? bankAccount.account_number ?? 'Unknown';
-  }
   if (entityType === ENTITY_CREDENTIAL) {
     return (stix as SCO.StixCredential).value ?? 'Unknown';
   }
@@ -196,9 +193,6 @@ export const extractStixRepresentative = (
   }
   if (entityType === ENTITY_CRYPTOGRAPHIC_KEY) {
     return (stix as SCO.StixCryptographicKey).value ?? 'Unknown';
-  }
-  if (entityType === ENTITY_CRYPTOGRAPHIC_WALLET) {
-    return (stix as SCO.StixCryptocurrencyWallet).value ?? 'Unknown';
   }
   if (entityType === ENTITY_DIRECTORY) {
     return (stix as SCO.StixDirectory).path ?? 'Unknown';
@@ -212,6 +206,16 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_EMAIL_MESSAGE) {
     const email = stix as SCO.StixEmailMessage;
     return email.body ?? email.subject ?? 'Unknown';
+  }
+  if (entityType === ENTITY_FINANCIAL_ACCOUNT) {
+    return (stix as SCO.StixFinancialAccount).account_number ?? 'Unknown';
+  }
+  if (entityType === ENTITY_FINANCIAL_ASSET) {
+    return (stix as SCO.StixFinancialAsset).name ?? 'Unknown';
+  }
+  if (entityType === ENTITY_FINANCIAL_TRANSACTION) {
+    return (stix as SCO.StixFinancialTransaction).transaction_value.toString()
+      ?? 'Unknown';
   }
   if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
     const file = stix as SCO.StixFile;
