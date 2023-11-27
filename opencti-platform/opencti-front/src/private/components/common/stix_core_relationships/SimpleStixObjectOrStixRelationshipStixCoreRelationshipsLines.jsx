@@ -45,11 +45,11 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
         {data.stixCoreRelationships.edges.length > 0 ? (
           <List>
             {data.stixCoreRelationships.edges.map(
-              (stixCoreRelationshipEdge) => {
+              (stixCoreRelationshipEdge, index) => {
                 const stixCoreRelationship = stixCoreRelationshipEdge.node;
                 return (
                   <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine
-                    key={stixCoreRelationship.id}
+                    key={`${stixObjectOrStixRelationshipId}_${index}`}
                     dataColumns={dataColumns}
                     entityId={stixObjectOrStixRelationshipId}
                     entityLink={stixObjectOrStixRelationshipLink}

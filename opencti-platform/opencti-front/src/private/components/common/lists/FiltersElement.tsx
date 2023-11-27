@@ -62,7 +62,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         if (key === 'valid_from') {
           return [{ key, operator: 'gt' }];
         }
-        return [{ key, operator: 'gt' }, { key, operator: 'lt' }];
+        return [{ key: `${key}_gt`, operator: 'gt' }, { key: `${key}_lt`, operator: 'lt' }];
       }
       return { key, operator: undefined };
     })
