@@ -85,6 +85,7 @@ export const EqFilters = [
   'objectAssignee',
   'objectParticipant',
   'killChainPhases',
+  'x_opencti_reliability',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
