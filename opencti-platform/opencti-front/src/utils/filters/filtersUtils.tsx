@@ -447,8 +447,11 @@ export const removeFilter = (
   return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
-// remove from filter all keys not listed in availableFilterKeys
-// if filter ends up empty, return undefined
+/**
+ * remove from filter all keys not listed in availableFilterKeys
+ * if filter ends up empty, return undefined
+ * Note: This function is not recursive, it only filters the first level filters
+ */
 export const cleanFilters = (
   filters: FilterGroup | undefined,
   availableFilterKeys: string[],
