@@ -10,7 +10,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
-import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
+import { createWork, deleteWorkForFile, deleteWorkForSource, loadExportWorksAsProgressFiles } from '../domain/work';
 import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
@@ -387,11 +387,20 @@ export const loadFilesForIndexing = (user, files, opts = {}) => {
   return filesObjects;
 };
 
-export const deleteAllFiles = async (context, user, path) => {
-  const files = await rawFilesListing(context, user, path);
-  const inExport = await loadExportWorksAsProgressFiles(context, user, path);
-  const allFiles = R.concat(inExport, files);
-  const ids = allFiles.map((file) => file.id);
+export const deleteAllObjectFiles = async (context, user, element) => {
+  const importPath = `import/${element.entity_type}/${element.internal_id}/`;
+  const importFilesPromise = simpleFilesListing(importPath);
+  const importWorkPromise = deleteWorkForSource(importPath);
+  const exportPath = `export/${element.entity_type}/${element.internal_id}/`;
+  const exportFilesPromise = simpleFilesListing(exportPath);
+  const exportWorkPromise = deleteWorkForSource(exportPath);
+  const [importFiles, exportFiles, _, __] = await Promise.all([
+    importFilesPromise,
+    exportFilesPromise,
+    importWorkPromise,
+    exportWorkPromise
+  ]);
+  const ids = [...importFiles, ...exportFiles].map((file) => file.Key);
   return deleteFiles(context, user, ids);
 };
 

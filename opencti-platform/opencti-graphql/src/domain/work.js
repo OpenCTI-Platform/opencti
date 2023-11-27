@@ -1,6 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elUpdate, } from '../database/engine';
+import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import {
@@ -13,7 +13,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObjec
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
-import { AlreadyDeletedError } from '../config/errors';
+import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const workToExportFile = (work) => {
@@ -144,6 +144,25 @@ export const deleteWorkForFile = async (context, user, fileId) => {
     await deleteWorksRaw(works);
   }
   return true;
+};
+
+export const deleteWorkForSource = async (sourceId) => {
+  await elRawDeleteByQuery({
+    index: READ_INDEX_HISTORY,
+    refresh: true,
+    body: {
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: ENTITY_TYPE_WORK } } },
+            { term: { 'event_source_id.keyword': { value: sourceId } } }
+          ],
+        }
+      }
+    },
+  }).catch((err) => {
+    throw DatabaseError('[SEARCH] Error deleting all works ', { sourceId, error: err });
+  });
 };
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
