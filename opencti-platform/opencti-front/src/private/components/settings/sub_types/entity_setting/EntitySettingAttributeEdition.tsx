@@ -57,7 +57,7 @@ const entitySettingAttributeEditionPatch = graphql`
 `;
 
 const entitySettingAttributeEditionMembersQuery = graphql`
-  query EntitySettingAttributeEditionMembersQuery($filters: [MembersFiltering]) {
+  query EntitySettingAttributeEditionMembersQuery($filters: FilterGroup) {
     members(filters: $filters) {
       edges {
         node {
@@ -132,8 +132,12 @@ const EntitySettingAttributeEdition = ({
         // query is used only for one particular case.
         const data = (await fetchQuery(entitySettingAttributeEditionMembersQuery, {
           filters: {
-            key: 'id',
-            values: defaultAuthorizedMembers.map((m) => m.id),
+            mode: 'and',
+            filters: [{
+              key: 'ids',
+              values: defaultAuthorizedMembers.map((m) => m.id),
+            }],
+            filterGroups: [],
           },
         }).toPromise()) as EntitySettingAttributeEditionMembersQuery$data;
         setMembersData(data);

@@ -22,6 +22,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
+import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -42,6 +43,13 @@ const feedbackQuery = graphql`
     feedback(id: $id) {
       id
       name
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
       x_opencti_graph_data
       ...Feedback_case
       ...FileImportViewer_entity
@@ -55,6 +63,23 @@ const feedbackQuery = graphql`
     }
     connectorsForImport {
       ...FileManager_connectorsImport
+    }
+  }
+`;
+
+// Mutation to edit authorized members of a feedback
+const feedbackAuthorizedMembersMutation = graphql`
+  mutation RootFeedbackAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    feedbackEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -87,6 +112,9 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       paddingRight = 350;
     }
   }
+
+  const canManage = feedbackData.currentUserAccessRight === 'admin';
+
   return (
     <>
       {feedbackData ? (
@@ -95,7 +123,11 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
             enableSuggestions={false}
-            disableSharing={true}
+            disableSharing
+            enableQuickSubscription
+            enableManageAuthorizedMembers={canManage}
+            authorizedMembersMutation={feedbackAuthorizedMembersMutation}
+            authorizedMembers={authorizedMembersToOptions(feedbackData.authorized_members)}
           />
           <Box
             sx={{

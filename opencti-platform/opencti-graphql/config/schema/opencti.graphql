@@ -66,17 +66,6 @@ enum MemberType {
   Group
   Organization
 }
-enum MembersFilter {
-  id
-  name
-  entity_type
-}
-input MembersFiltering {
-  key: [MembersFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
 
 ### RELAY
 
@@ -10910,7 +10899,7 @@ type Query {
   members(
     first: Int,
     search: String,
-    filters: [MembersFiltering],
+    filters: FilterGroup,
     filterMode: FilterMode,
     entityTypes: [MemberType!]
   ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])

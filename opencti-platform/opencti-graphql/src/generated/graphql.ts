@@ -6720,7 +6720,7 @@ export enum FeedOrdering {
 
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Feedback';
-  authorizedMembers?: Maybe<Array<MemberAccess>>;
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -6935,7 +6935,6 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
 };
 
 export type FeedbackAddInput = {
-  authorizedMembers?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -11873,19 +11872,6 @@ export enum MemberType {
   Organization = 'Organization',
   User = 'User'
 }
-
-export enum MembersFilter {
-  EntityType = 'entity_type',
-  Id = 'id',
-  Name = 'name'
-}
-
-export type MembersFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<MembersFilter>;
-  operator?: InputMaybe<Scalars['String']['input']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
 
 export type MessagesStats = {
   __typename?: 'MessagesStats';
@@ -18077,7 +18063,7 @@ export type QueryMarkingDefinitionsArgs = {
 export type QueryMembersArgs = {
   entityTypes?: InputMaybe<Array<MemberType>>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<MembersFiltering>>>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -27545,8 +27531,6 @@ export type ResolversTypes = ResolversObject<{
   MemberConnection: ResolverTypeWrapper<MemberConnection>;
   MemberEdge: ResolverTypeWrapper<MemberEdge>;
   MemberType: MemberType;
-  MembersFilter: MembersFilter;
-  MembersFiltering: MembersFiltering;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   Module: ResolverTypeWrapper<Module>;
@@ -28231,7 +28215,6 @@ export type ResolversParentTypes = ResolversObject<{
   MemberAccessInput: MemberAccessInput;
   MemberConnection: MemberConnection;
   MemberEdge: MemberEdge;
-  MembersFiltering: MembersFiltering;
   MessagesStats: MessagesStats;
   MetricsByMimeType: MetricsByMimeType;
   Module: Module;
@@ -30746,7 +30729,7 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = ResolversObject<{
-  authorizedMembers?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FeedbackCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

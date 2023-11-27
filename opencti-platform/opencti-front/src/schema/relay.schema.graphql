@@ -39,6 +39,7 @@ enum Capabilities {
   KNOWLEDGE_KNPARTICIPATE
   KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -7129,7 +7130,7 @@ type Query {
   creators(entityTypes: [String!]): CreatorConnection
   assignees(entityTypes: [String!]): AssigneeConnection
   participants(entityTypes: [String!]): ParticipantConnection
-  members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection
+  members(first: Int, search: String, filters: FilterGroup, filterMode: FilterMode, entityTypes: [MemberType!]): MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
   role(id: String!): Role
@@ -8071,6 +8072,7 @@ type Mutation {
   caseRftDelete(id: ID!): ID
   feedbackAdd(input: FeedbackAddInput!): Feedback
   feedbackDelete(id: ID!): ID
+  feedbackEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): Feedback
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
@@ -9851,6 +9853,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   tasks: TaskConnection!
   objectParticipant: ParticipantConnection
   rating: Int
+  authorized_members: [MemberAccess!]
+  currentUserAccessRight: String
 }
 
 enum FeedbacksOrdering {
