@@ -8469,7 +8469,7 @@ export type ImportConfigurationInput = {
 };
 
 export type ImportWidgetInput = {
-  dashboardManifest: Scalars['String']['input'];
+  dashboardManifest?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
 };
 

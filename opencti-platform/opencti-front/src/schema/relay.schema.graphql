@@ -10034,7 +10034,7 @@ input ImportConfigurationInput {
 
 input ImportWidgetInput {
   file: Upload!
-  dashboardManifest: String!
+  dashboardManifest: String
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

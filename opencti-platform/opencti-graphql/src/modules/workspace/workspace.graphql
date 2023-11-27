@@ -89,7 +89,7 @@ input ImportConfigurationInput {
 
 input ImportWidgetInput {
     file: Upload!
-    dashboardManifest: String!
+    dashboardManifest: String
 }
 
 type Mutation {

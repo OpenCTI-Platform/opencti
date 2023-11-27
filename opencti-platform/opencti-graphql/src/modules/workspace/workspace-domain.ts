@@ -1,7 +1,6 @@
-import * as R from "ramda";
-import type {FileHandle} from "fs/promises";
-import { v4 as uuidv4 } from "uuid";
-import {v4 as uuidv4} from 'uuid';
+import * as R from 'ramda';
+import type { FileHandle } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import {
   createEntity,
   deleteElementById,
@@ -9,15 +8,15 @@ import {
   paginateAllThings,
   patchAttribute,
   updateAttribute,
-} from "../../database/middleware";
-import {listEntitiesPaginated, storeLoadById,
-} from "../../database/middleware-loader";
-import {BUS_TOPICS} from "../../config/conf";
-import {delEditContext, notify, setEditContext} from "../../database/redis";
-import {type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE,
-} from "./workspace-types";
-import {FunctionalError} from "../../config/errors";
-import type {AuthContext, AuthUser} from "../../types/user";
+} from '../../database/middleware';
+import { listEntitiesPaginated, storeLoadById,
+} from '../../database/middleware-loader';
+import { BUS_TOPICS } from '../../config/conf';
+import { delEditContext, notify, setEditContext } from '../../database/redis';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE,
+} from './workspace-types';
+import { FunctionalError } from '../../config/errors';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
@@ -29,7 +28,7 @@ import type {
   WorkspaceAddInput,
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
-} from "../../generated/graphql";
+} from '../../generated/graphql';
 import {
   getUserAccessRight,
   isValidMemberAccessRight,
@@ -39,9 +38,9 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { buildPagination, fromBase64, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, toBase64 } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { streamToString } from '../../database/file-storage';
+import { extractContentFrom } from '../../utils/fileToContent';
 
 export const findById = (
   context: AuthContext,
@@ -78,13 +77,13 @@ export const editAuthorizedMembers = async (
   // validate input (validate access right) and remove duplicates
   const filteredInput = input.filter((value, index, array) => {
     return (
-      isValidMemberAccessRight(value.access_right) &&
-      array.findIndex((e) => e.id === value.id) === index
+      isValidMemberAccessRight(value.access_right)
+      && array.findIndex((e) => e.id === value.id) === index
     );
   });
   const hasValidAdmin = await containsValidAdmin(context, filteredInput, ['EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE']);
   if (!hasValidAdmin) {
-    throw FunctionalError("Workspace should have at least one admin");
+    throw FunctionalError('Workspace should have at least one admin');
   }
   const authorizedMembersInput = filteredInput.map((e) => {
     return { id: e.id, access_right: e.access_right };
@@ -138,9 +137,8 @@ const checkInvestigatedEntitiesInputs = async (
 ): Promise<void> => {
   const addedOrReplacedInvestigatedEntitiesIds = inputs
     .filter(
-      ({ key, operation }) =>
-        key === "investigated_entities_ids" &&
-        (operation === "add" || operation === "replace"),
+      ({ key, operation }) => key === 'investigated_entities_ids'
+        && (operation === 'add' || operation === 'replace'),
     )
     .flatMap(({ value }) => value) as string[];
   const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
@@ -155,7 +153,7 @@ const checkInvestigatedEntitiesInputs = async (
     entities.map((entity) => entity.id),
   );
   if (missingEntitiesIds.length > 0) {
-    throw FunctionalError("Invalid ids specified", { ids: missingEntitiesIds });
+    throw FunctionalError('Invalid ids specified', { ids: missingEntitiesIds });
   }
 };
 
@@ -191,9 +189,9 @@ export const addWorkspace = async (
   );
   await publishUserAction({
     user,
-    event_type: "mutation",
-    event_scope: "create",
-    event_access: "extended",
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
     message: `creates ${created.type} workspace \`${created.name}\``,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input },
   });
@@ -213,9 +211,9 @@ export const workspaceDelete = async (
   );
   await publishUserAction({
     user,
-    event_type: "mutation",
-    event_scope: "delete",
-    event_access: "administration",
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes ${deleted.type} workspace \`${deleted.name}\``,
     context_data: {
       id: workspaceId,
@@ -268,23 +266,22 @@ export const workspaceEditContext = async (
 ) => {
   await setEditContext(user, workspaceId, input);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then(
-    (workspaceToReturn) =>
-      notify(
-        BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
-        workspaceToReturn,
-        user,
-      ),
+    (workspaceToReturn) => notify(
+      BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
+      workspaceToReturn,
+      user,
+    ),
   );
 };
 
 const configurationImportTypeValidation = new Map<string, string>();
 configurationImportTypeValidation.set(
-  "dashboard",
-  "Invalid type. Please import OpenCTI dashboard-type only",
+  'dashboard',
+  'Invalid type. Please import OpenCTI dashboard-type only',
 );
 configurationImportTypeValidation.set(
-  "widget",
-  "Invalid type. Please import OpenCTI widget-type only",
+  'widget',
+  'Invalid type. Please import OpenCTI widget-type only',
 );
 
 export const checkConfigurationImport = (type: string, parsedData: any) => {
@@ -294,7 +291,7 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
     });
   }
 
-  const MINIMAL_COMPATIBLE_VERSION = "5.12.0";
+  const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
   const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
     const [major, minor, patch] = openCtiVersion.split('.').map((number) => parseInt(number, 10));
     const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10));
@@ -314,12 +311,9 @@ export const checkWidgetConfigurationImport = (parsedData: any) => {
   const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
   const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
     const [major, minor, patch] = openCtiVersion
-      .split(".")
+      .split('.')
       .map((number) => parseInt(number, 10));
-    const [openCtiMajor, openCtiMinor, openCtiPatch] =
-      MINIMAL_COMPATIBLE_VERSION.split(".").map((number) =>
-        parseInt(number, 10),
-      );
+    const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10),);
     return (
       major >= openCtiMajor && minor >= openCtiMinor && patch >= openCtiPatch
     );
@@ -377,7 +371,7 @@ export const workspaceConfigurationImport = async (
     manifest: parsedData.configuration.manifest,
     authorized_members: authorizedMembers,
   };
-  checkConfigurationImport("dashboard", mappedData);
+  checkConfigurationImport('dashboard', mappedData);
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
   const workspaceId = importWorkspaceCreation.id;
   await publishUserAction({
@@ -407,9 +401,9 @@ export const duplicateWorkspace = async (
   );
   await publishUserAction({
     user,
-    event_type: "mutation",
-    event_scope: "create",
-    event_access: "extended",
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
     message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input },
   });
@@ -478,18 +472,18 @@ type Configuration = WidgetConfiguration | DashboardConfiguration;
 async function importWidgetConfiguration(
   input: ImportConfigurationInput,
   mappedData:
-    {
-      type: string;
-      openCTI_version: string;
-      configuration: Configuration;
-    },
+  {
+    type: string;
+    openCTI_version: string;
+    configuration: Configuration;
+  },
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
 ) {
   const importedWidgetId = uuidv4();
   const dashboardManifestObjects = JSON.parse(
-    fromBase64(input.dashboardManifest) || "",
+    fromBase64(input.dashboardManifest) || '',
   );
   const updatedObjects = {
     ...dashboardManifestObjects,
@@ -507,13 +501,13 @@ async function importWidgetConfiguration(
     user,
     workspaceId,
     ENTITY_TYPE_WORKSPACE,
-    [{ key: "manifest", value: [updatedManifest] }],
+    [{ key: 'manifest', value: [updatedManifest] }],
   );
   await publishUserAction({
     user,
-    event_type: "mutation",
-    event_scope: "create",
-    event_access: "extended",
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
     message: `import widget (id : ${importedWidgetId}) in workspace (id : ${workspaceId})`,
     context_data: {
       id: workspaceId,
@@ -535,13 +529,13 @@ export const importConfiguration = async (
   const mappedData = mapFromType(input.importType, parsedData);
   checkConfigurationImport(input.importType, mappedData);
 
-  if(input.importType === 'widget') {
-    return await importWidgetConfiguration(
-        input,
-        mappedData,
-        context,
-        user,
-        workspaceId,
+  if (input.importType === 'widget') {
+    return importWidgetConfiguration(
+      input,
+      mappedData,
+      context,
+      user,
+      workspaceId,
     );
   }
 
@@ -564,11 +558,11 @@ export const importWidget = async (
     openCTI_version: parsedData.openCTI_version,
     widget: parsedData.configuration,
   };
-  checkConfigurationImport("widget", mappedData);
+  checkConfigurationImport('widget', mappedData);
 
   const importedWidgetId = uuidv4();
   const dashboardManifestObjects = JSON.parse(
-    fromBase64(input.dashboardManifest) || "",
+    fromBase64(input.dashboardManifest) || '',
   );
   const updatedObjects = {
     ...dashboardManifestObjects,
@@ -583,13 +577,13 @@ export const importWidget = async (
     user,
     workspaceId,
     ENTITY_TYPE_WORKSPACE,
-    [{ key: "manifest", value: [updatedManifest] }],
+    [{ key: 'manifest', value: [updatedManifest] }],
   );
   await publishUserAction({
     user,
-    event_type: "mutation",
-    event_scope: "create",
-    event_access: "extended",
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
     message: `import widget (id : ${importedWidgetId}) in workspace (id : ${workspaceId})`,
     context_data: {
       id: workspaceId,
