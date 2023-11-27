@@ -190,7 +190,7 @@ const Indicators = () => {
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <IndicatorLineDummyComponent
                         key={idx}
                         dataColumns={dataColumns}
