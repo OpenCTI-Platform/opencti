@@ -1,5 +1,10 @@
 import { dissoc, propOr } from 'ramda';
-import { createRelation, deleteElementById, updateAttribute } from '../database/middleware';
+import {
+  deleteElementById,
+  storeLoadByIdWithRefs,
+  updateAttribute,
+  updateAttributeFromLoadedWithRefs
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
@@ -11,7 +16,12 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
+import {
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+  UPDATE_OPERATION_ADD
+} from '../database/utils';
+import { utcDate } from '../utils/format';
 
 // Query
 
@@ -48,14 +58,21 @@ export const isDatable = (entityType, relationshipType) => {
 };
 
 // Mutation
-
 export const addStixRefRelationship = async (context, user, stixRefRelationship) => {
   if (!isStixRefRelationship(stixRefRelationship.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${stixRefRelationship.relationship_type}.`);
   }
-  return createRelation(context, user, stixRefRelationship).then((relationData) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relationData, user);
-  });
+  const from = await storeLoadByIdWithRefs(context, user, stixRefRelationship.fromId);
+  const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelationship.relationship_type);
+  const inputs = [{ key: refInputName, value: [stixRefRelationship.toId], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
+  const isMultiple = schemaRelationsRefDefinition.isMultipleDatabaseName(from.entity_type, stixRefRelationship.relationship_type);
+  if (!isMultiple) {
+    const createdRelationship = element[refInputName].i_relation;
+    return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, createdRelationship, user);
+  }
+  const relations = element[refInputName].map((o) => o.i_relation).sort((a, b) => utcDate(a.created_at).diff(utcDate(b.created_at)));
+  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relations[0], user);
 };
 export const stixRefRelationshipEditField = async (context, user, stixRefRelationshipId, input) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
