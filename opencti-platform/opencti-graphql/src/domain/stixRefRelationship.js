@@ -21,7 +21,6 @@ import {
   READ_INDEX_STIX_META_RELATIONSHIPS,
   UPDATE_OPERATION_ADD
 } from '../database/utils';
-import { utcDate } from '../utils/format';
 
 // Query
 
@@ -65,14 +64,17 @@ export const addStixRefRelationship = async (context, user, stixRefRelationship)
   const from = await storeLoadByIdWithRefs(context, user, stixRefRelationship.fromId);
   const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelationship.relationship_type);
   const inputs = [{ key: refInputName, value: [stixRefRelationship.toId], operation: UPDATE_OPERATION_ADD }];
-  const { element } = await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
-  const isMultiple = schemaRelationsRefDefinition.isMultipleDatabaseName(from.entity_type, stixRefRelationship.relationship_type);
-  if (!isMultiple) {
-    const createdRelationship = element[refInputName].i_relation;
-    return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, createdRelationship, user);
-  }
-  const relations = element[refInputName].map((o) => o.i_relation).sort((a, b) => utcDate(a.created_at).diff(utcDate(b.created_at)));
-  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relations[0], user);
+  await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
+  const opts = {
+    first: 1,
+    connectionFormat: false,
+    fromId: stixRefRelationship.fromId,
+    toId: stixRefRelationship.toId,
+    orderBy: 'created_at',
+    orderMode: 'desc'
+  };
+  const lastCreatedRef = await listRelations(context, user, stixRefRelationship.relationship_type, opts);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, lastCreatedRef[0], user);
 };
 export const stixRefRelationshipEditField = async (context, user, stixRefRelationshipId, input) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
