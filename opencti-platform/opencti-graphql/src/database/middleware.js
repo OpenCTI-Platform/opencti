@@ -180,7 +180,7 @@ import {
   utcDate,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
-import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
+import { deleteAllObjectFiles, storeFileConverter, upload } from './file-storage';
 import {
   BYPASS_REFERENCE,
   executionContext,
@@ -3389,9 +3389,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       // Start by deleting external files
-      const importDeletePromise = deleteAllFiles(context, user, `import/${element.entity_type}/${element.internal_id}/`);
-      const exportDeletePromise = deleteAllFiles(context, user, `export/${element.entity_type}/${element.internal_id}/`);
-      await Promise.all([importDeletePromise, exportDeletePromise]);
+      await deleteAllObjectFiles(context, user, element);
       // Delete all linked elements
       const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdsWithRefs);
       // Publish event in the stream
