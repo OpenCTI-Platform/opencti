@@ -126,7 +126,7 @@ const WorkspaceHeader = ({
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
-  const tags = workspace && workspace.tags ? workspace.tags : [];
+  const tags = workspace.tags ? workspace.tags : [];
 
   const handleOpenTag = () => {
     setOpenTag(!openTag);
