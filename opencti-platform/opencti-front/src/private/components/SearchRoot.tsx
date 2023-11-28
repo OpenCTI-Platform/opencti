@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import { Link, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Switch, useParams } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
@@ -79,6 +79,7 @@ const SearchRoot = () => {
               <SearchIndexedFiles {...routeProps} />
             )}
           />
+          <Redirect to="/dashboard/search/knowledge" />
         </Switch>
       </div>
     </ExportContextProvider>
