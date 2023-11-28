@@ -167,6 +167,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
+  authorized_members?: Array<AuthorizedMember>;
 }
 
 interface StoreCommon {

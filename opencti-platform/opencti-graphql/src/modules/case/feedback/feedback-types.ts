@@ -1,7 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
-import type { AuthorizedMember } from '../../../utils/access';
 
 export const ENTITY_TYPE_CONTAINER_FEEDBACK = 'Feedback';
 
@@ -11,7 +10,6 @@ export interface BasicStoreEntityFeedback extends BasicStoreEntity {
   content: string,
   content_mapping: string,
   rating: number,
-  authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>,
 }
 
@@ -21,7 +19,6 @@ export interface StoreEntityFeedback extends StoreEntity {
   content: string,
   content_mapping: string,
   rating: number,
-  authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>,
 }
 
@@ -31,7 +28,6 @@ export interface StixFeedback extends StixDomainObject {
   content: string,
   content_mapping: string,
   rating: number,
-  authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>,
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

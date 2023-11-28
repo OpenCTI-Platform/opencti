@@ -2,6 +2,7 @@ import { v4, v5 } from 'uuid';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
 import type { StixRelation, StixSighting } from './stix-sro';
 import type { StixInternalExternalReference } from './stix-smo';
+import { AuthorizedMember } from '../utils/access';
 
 export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;
@@ -45,6 +46,7 @@ interface StixOpenctiExtension {
   assignee_ids: string[];
   participant_ids: string[];
   creator_ids: string[];
+  authorized_members: Array<AuthorizedMember> | undefined;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

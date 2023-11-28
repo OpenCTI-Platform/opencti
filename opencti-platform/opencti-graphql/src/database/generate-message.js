@@ -82,6 +82,8 @@ export const generateUpdateMessage = (entityType, inputs) => {
           message = values.map((val) => truncate(extractEntityRepresentativeName(val))).join(', ');
         } else if (key === creators.name) {
           message = 'itself'; // Creator special case
+        } else if (key === 'authorized_members') {
+          message = value.map(({ id, access_right }) => `${id} (${access_right})`).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {
