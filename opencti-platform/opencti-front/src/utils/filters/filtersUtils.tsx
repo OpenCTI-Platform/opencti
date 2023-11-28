@@ -236,7 +236,7 @@ export const filtersWithEntityType = (
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
-  if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) {
+  if (value && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))) {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }
