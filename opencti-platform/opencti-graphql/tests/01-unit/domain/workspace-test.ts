@@ -5,7 +5,9 @@ import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
 import type { FileUpload } from 'graphql-upload/Upload.mjs';
 import { streamToString } from '../../../src/database/file-storage';
-import { checkConfigurationImport } from '../../../src/modules/workspace/workspace-domain';
+import {
+  checkConfigurationImport,
+} from '../../../src/modules/workspace/workspace-domain';
 
 describe('workspace', () => {
   it('should verify import version compatibility, given invalid version', () => {
@@ -27,7 +29,7 @@ describe('workspace', () => {
           createReadStream: () => file,
           encoding: 'utf8',
         } as unknown as FileUpload;
-        upload.promise = new Promise((executor) => executor(fileUpload));
+        upload.promise = new Promise((executor) => { executor(fileUpload); });
         upload.file = fileUpload;
         const readStream = fileUpload.createReadStream();
         const fileContent = await streamToString(readStream);
@@ -52,13 +54,13 @@ describe('workspace', () => {
       createReadStream: () => file,
       encoding: 'utf8',
     } as unknown as FileUpload;
-    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
     upload.file = fileUpload;
     const readStream = fileUpload.createReadStream();
     const fileContent = await streamToString(readStream);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkConfigurationImport('dashboard', parsedData),).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
+    expect(() => checkConfigurationImport('dashboard', parsedData)).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
   });
 
   it('should verify import version compatibility, given valid import', async () => {
@@ -75,7 +77,7 @@ describe('workspace', () => {
       createReadStream: () => file,
       encoding: 'utf8',
     } as unknown as FileUpload;
-    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
     upload.file = fileUpload;
     const readStream = fileUpload.createReadStream();
     const fileContent = await streamToString(readStream);

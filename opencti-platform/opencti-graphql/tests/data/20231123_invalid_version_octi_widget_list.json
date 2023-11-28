@@ -1,0 +1,32 @@
+{
+  "openCTI_version": "5.10.0",
+  "type": "widget",
+  "configuration": {
+    "type": "list",
+    "perspective": "entities",
+    "dataSelection": [
+      {
+        "label": "",
+        "attribute": "entity_type",
+        "date_attribute": "created_at",
+        "perspective": "entities",
+        "isTo": true,
+        "filters": {},
+        "dynamicFrom": {},
+        "dynamicTo": {}
+      }
+    ],
+    "parameters": {
+      "title": "Entity List"
+    },
+    "layout": {
+      "w": 5,
+      "h": 8,
+      "x": 0,
+      "y": 0,
+      "i": "89d81abc-ea27-4b75-9f6d-0d7efc2c8e84",
+      "moved": false,
+      "static": false
+    }
+  }
+}
