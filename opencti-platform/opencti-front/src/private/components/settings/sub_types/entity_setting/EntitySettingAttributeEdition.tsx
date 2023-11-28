@@ -144,7 +144,7 @@ const EntitySettingAttributeEdition = ({
       };
       fetchMembers();
     }
-  }, []);
+  }, [attribute]);
 
   const isBoolean = (defaultValues: string | boolean | Option) => {
     return typeof defaultValues === 'boolean';

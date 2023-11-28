@@ -2319,6 +2319,7 @@ const i18n = {
       info_authorizedmembers_workspace: 'El panel y las investigaciones siempre se someten a restricción de acceso. Sólo su creador tiene acceso a ellos de forma predeterminada. Puedes agregar accesos específicos para que usuarios, grupos y organizaciones los compartan. Nota: Los paneles y las investigaciones no se envían a las capas de control de acceso compartido de definiciones de marcado y organización.',
       info_authorizedmembers_knowledge_on: 'Al activar la Restricción de Acceso, se negará todo acceso a esta Entidad a todos los usuarios de la plataforma, independientemente de sus capacidades globales y definiciones de marcado. Luego, podrás agregar accesos específicos a la entidad para usuarios, grupos u organizaciones. Esos accesos específicos son una capa adicional de control de acceso. Por lo tanto, los usuarios seguirán necesitando capacidades y marcas adecuadas para acceder a la Entidad.',
       info_authorizedmembers_knowledge_off: 'Al desactivar la Restricción de acceso, se eliminarán los accesos específicos que usted creó y se eliminará la Restricción de acceso para esta Entidad. Pero la Entidad seguirá estando cubierta por la Definición de Marcado y el intercambio de Organización.',
+      'Update the attribute': 'Actualizar el atributo',
     },
     'fr-fr': {
       // Titles
@@ -4643,6 +4644,7 @@ const i18n = {
       'I would like to use a EE feature ...':
         "J'aimerais utiliser une fonctionnalité ({feature}) sous Enterprise Edition qui n'est pas activée.\nJ'aimerais savoir si il est possible d'activer EE.",
       'Organization sharing': 'Partage dans les organisations',
+      'Update the attribute': 'Mettre à jour l\'attribut\n',
     },
     'ja-jp': {
       // Titles
@@ -6869,6 +6871,7 @@ const i18n = {
       'I would like to use a EE feature ...':
         'EE 機能 ({feature}) を使用したいのですが、EE がアクティブ化されていません。\nEEの有効化について相談したいと思います。',
       'Organization sharing': '組織の共有',
+      'Update the attribute': '属性を更新する',
     },
     'zh-cn': {
       // Titles
@@ -8985,6 +8988,7 @@ const i18n = {
       'I would like to use a EE feature ...':
         '我想使用 EE 功能 ({feature})，但我沒有啟動 EE。\n我想和您討論一下啟動EE的問題。',
       'Organization sharing': '組織共享',
+      'Update the attribute': '更新属性',
     },
     'en-us': {
       gt: 'Greater than',

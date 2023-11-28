@@ -113,7 +113,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     }
   }
 
-  const canManage = feedbackData.currentUserAccessRight === 'admin';
+  const canManage = feedbackData?.currentUserAccessRight === 'admin';
 
   return (
     <>

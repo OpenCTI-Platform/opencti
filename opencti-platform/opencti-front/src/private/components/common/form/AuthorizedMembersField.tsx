@@ -19,6 +19,7 @@ import {
   AccessRight,
   ALL_MEMBERS_AUTHORIZED_CONFIG,
   AuthorizedMemberOption,
+  Creator,
   CREATOR_AUTHORIZED_CONFIG,
 } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/SwitchField';
@@ -41,7 +42,7 @@ export const isGenericOption = (memberId: string) => {
 export type AuthorizedMembersFieldValue = AuthorizedMemberOption[] | null;
 
 interface AuthorizedMembersFieldProps extends FieldProps<AuthorizedMembersFieldValue> {
-  ownerId?: string
+  owner?: Creator
   showAllMembersLine?: boolean
   showCreatorLine?: boolean
   canDeactivate?: boolean
@@ -70,7 +71,7 @@ const formikSchema = Yup.object().shape({
 const AuthorizedMembersField = ({
   form,
   field,
-  ownerId,
+  owner,
   showAllMembersLine = false,
   showCreatorLine = false,
   canDeactivate = false,
@@ -135,6 +136,7 @@ const AuthorizedMembersField = ({
    *
    * @param val False if it should not apply authorized member accesses.
    * @param resetForm Internal Formik helpers to reset inputs.
+   * @param setField Internal Formik helpers to set a specific field.
    */
   const changeApplyAccesses = (
     val: boolean,
@@ -159,6 +161,13 @@ const AuthorizedMembersField = ({
         accessRight: 'admin',
       }]);
       setField('creatorAccessRight', 'admin');
+    } else if (owner) {
+      setFieldValue(name, [{
+        label: owner.name,
+        type: owner.entity_type,
+        value: owner.id,
+        accessRight: 'admin',
+      }]);
     } else {
       setFieldValue(name, []);
     }
@@ -336,7 +345,7 @@ const AuthorizedMembersField = ({
                       authorizedMember={allMembersOption}
                       name="allAccessRight"
                       accessRights={accessRights}
-                      ownerId={ownerId}
+                      ownerId={owner?.id}
                       onChange={changeAllMembersAccess}
                     />
                   )}
@@ -345,7 +354,7 @@ const AuthorizedMembersField = ({
                       authorizedMember={creatorOption}
                       name="creatorAccessRight"
                       accessRights={accessRights}
-                      ownerId={ownerId}
+                      ownerId={owner?.id}
                       onChange={changeCreatorAccess}
                     />
                   )}
@@ -370,7 +379,7 @@ const AuthorizedMembersField = ({
                         authorizedMember={authorizedMember}
                         name={`${name}[${index}].accessRight`}
                         accessRights={accessRights}
-                        ownerId={ownerId}
+                        ownerId={owner?.id}
                         onRemove={() => arrayHelpers.remove(index)}
                       />
                     ) : null))}

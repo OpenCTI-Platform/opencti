@@ -901,7 +901,7 @@ const ContainerHeader = (props) => {
           >
             <FormAuthorizedMembersDialog
               id={container.id}
-              ownerId={container.creators?.[0].id}
+              owner={container.creators?.[0]}
               authorizedMembers={authorizedMembers}
               mutation={authorizedMembersMutation}
             />

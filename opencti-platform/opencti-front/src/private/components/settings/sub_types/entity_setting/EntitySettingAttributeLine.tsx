@@ -7,6 +7,7 @@ import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -32,9 +33,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  itemEE: {
-    color: theme.palette.ee.main,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -90,12 +88,16 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         divider={true}
         classes={{ root: classes.item }}
         onClick={() => !needEE && handleOpenUpdate()}
-        disabled={needEE}
-        sx={{
-          '&.Mui-disabled': {
-            opacity: 1,
-          },
-        }}
+        disableRipple={needEE}
+        sx={needEE
+          ? {
+            '&:hover': {
+              cursor: 'default',
+              backgroundColor: 'transparent',
+            },
+          }
+          : {}
+        }
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {attribute.name === INPUT_AUTHORIZED_MEMBERS
@@ -107,18 +109,16 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
           }
         </ListItemIcon>
         <ListItemText
-          classes={{
-            root: needEE ? classes.itemEE : undefined,
-          }}
           primary={
             <div>
-              {Object.values(dataColumns ?? {}).map((value) => (
+              {Object.values(dataColumns ?? {}).map((value, i) => (
                 <div
                   key={value.label}
                   className={classes.bodyItem}
                   style={{ width: value.width }}
                 >
                   {value.render?.(attribute)}
+                  {needEE && i === 0 && <EEChip />}
                 </div>
               ))}
             </div>

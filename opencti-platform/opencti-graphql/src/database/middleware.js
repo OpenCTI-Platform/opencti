@@ -2099,7 +2099,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = generateUpdateMessage(updatedInstance.entity_type, updatedInputs);
+      const message = await generateUpdateMessage(context, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2968,7 +2968,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         // Generate the new version of the from
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
-      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -3389,7 +3389,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,

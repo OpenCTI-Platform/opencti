@@ -8,7 +8,7 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
+import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { Theme } from '../../../../components/Theme';
@@ -23,14 +23,14 @@ interface FormAuthorizedMembersDialogProps {
   id: string
   mutation: GraphQLTaggedNode
   authorizedMembers?: AuthorizedMemberOption[]
-  ownerId?: string
+  owner?: Creator
 }
 
 const FormAuthorizedMembersDialog = ({
   id,
   mutation,
   authorizedMembers,
-  ownerId,
+  owner,
 }: FormAuthorizedMembersDialogProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -85,7 +85,7 @@ const FormAuthorizedMembersDialog = ({
         open={open}
         handleClose={() => setOpen(false)}
         onSubmit={onSubmit}
-        ownerId={ownerId}
+        owner={owner}
         canDeactivate
       />
     </>

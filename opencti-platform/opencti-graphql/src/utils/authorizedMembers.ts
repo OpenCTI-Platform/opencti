@@ -20,7 +20,7 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 export const getAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity & { authorized_members: Array<AuthorizedMember> }
+  entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
   let authorizedMembers: MemberAccess[] = [];
   if (isEmptyField(entity.authorized_members)) {
@@ -29,7 +29,7 @@ export const getAuthorizedMembers = async (
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
     return authorizedMembers; // return empty if user doesn't have the right access_right
   }
-  const membersIds = entity.authorized_members.map((e) => e.id);
+  const membersIds = (entity.authorized_members ?? []).map((e) => e.id);
   const args = {
     connectionFormat: false,
     first: 100,
@@ -40,7 +40,7 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = entity.authorized_members.map((am) => {
+  authorizedMembers = (entity.authorized_members ?? []).map((am) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === am.id) as BasicStoreEntity;
     return { id: am.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: am.access_right };
   });

@@ -200,12 +200,12 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'no_dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_HISTORY]: [
-    { name: 'context_data', type: 'json', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'event_scope', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'event_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'group_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'organization_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'context_data', type: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'event_scope', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'event_type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'user_id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'group_ids', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    { name: 'organization_ids', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
   ],
 };
 

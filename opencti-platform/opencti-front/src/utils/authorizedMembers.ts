@@ -27,6 +27,12 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly name: string;
 }> | null;
 
+export type Creator = {
+  readonly id: string;
+  readonly name: string;
+  readonly entity_type: string;
+};
+
 /**
  * Transform data into format used by Formik field.
  *

@@ -9,6 +9,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
+import { Creator } from '../../../../utils/authorizedMembers';
 
 export interface FormAuthorizedMembersInputs {
   authorizedMembers: AuthorizedMembersFieldValue;
@@ -22,7 +23,7 @@ interface FormAuthorizedMembersProps {
     values: FormAuthorizedMembersInputs,
     helpers: FormikHelpers<FormAuthorizedMembersInputs>
   ) => void
-  ownerId?: string
+  owner?: Creator
   canDeactivate?: boolean
 }
 
@@ -31,7 +32,7 @@ const FormAuthorizedMembers = ({
   handleClose,
   existingAccessRules,
   onSubmit,
-  ownerId,
+  owner,
   canDeactivate,
 }: FormAuthorizedMembersProps) => {
   const { t } = useFormatter();
@@ -68,7 +69,7 @@ const FormAuthorizedMembers = ({
               <Field
                 name="authorizedMembers"
                 component={AuthorizedMembersField}
-                ownerId={ownerId}
+                owner={owner}
                 showAllMembersLine
                 canDeactivate={canDeactivate}
               />

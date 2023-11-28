@@ -108,7 +108,7 @@ WorkspaceManageAccessDialogProps
       open={open}
       handleClose={handleClose}
       onSubmit={onSubmitForm}
-      ownerId={owner?.id}
+      owner={owner ?? undefined}
     />
   );
 };
