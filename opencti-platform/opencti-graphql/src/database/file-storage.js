@@ -198,6 +198,15 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
+const guessMimeType = (fileId) => {
+  const mimeType = mime.lookup(fileId) || null;
+  const fileName = fileId.includes('/') ? R.last(fileId.split('/')) : fileId;
+  if (!mimeType && fileName === 'pdf_report') {
+    return 'application/pdf';
+  }
+  return mimeType;
+};
+
 const simpleFilesListing = async (directory, opts = {}) => {
   const { recursive = false } = opts;
   const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [] } = opts;
@@ -224,12 +233,12 @@ const simpleFilesListing = async (directory, opts = {}) => {
   const storageObjects = objects.map((obj) => {
     return {
       ...obj,
-      mimeType: mime.lookup(obj.Key) || null,
+      mimeType: guessMimeType(obj.Key),
     };
   });
   const filteredObjects = storageObjects.filter((obj) => {
     return !isFileObjectExcluded(obj.Key)
-      && (!mimeTypes?.length || !obj.mimeType || mimeTypes.includes(obj.mimeType))
+      && (!mimeTypes?.length || mimeTypes.includes(obj.mimeType))
       && (!modifiedSince || obj.LastModified > modifiedSince)
       && (!maxFileSize || maxFileSize >= obj.Size)
       && (!includedPaths?.length || includedPaths.some((includedPath) => obj.Key.startsWith(includedPath)))
