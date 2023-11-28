@@ -6,26 +6,16 @@ import { distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ID_INTERNAL } from '../../../src/schema/general';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 
 // test queries involving dynamic filters
 
-const LIST_QUERY = gql`
+const REPORT_LIST_QUERY = gql`
     query reports(
-        $first: Int
-        $after: ID
-        $orderBy: ReportsOrdering
-        $orderMode: OrderingMode
         $filters: FilterGroup
-        $search: String
     ) {
         reports(
-            first: $first
-            after: $after
-            orderBy: $orderBy
-            orderMode: $orderMode
             filters: $filters
-            search: $search
         ) {
             edges {
                 node {
@@ -44,6 +34,23 @@ const LIST_QUERY = gql`
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+`;
+
+const LIST_QUERY = gql`
+    query globalSearch(
+        $filters: FilterGroup
+    ) {
+        globalSearch(
+            filters: $filters
+        ) {
+            edges {
+                node {
+                    id
+                    entity_type
                 }
             }
         }
@@ -186,7 +193,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
   it('should list reports according to filters', async () => {
     let queryResult;
     // --- 01. No result --- //
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -202,7 +209,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(0);
     // --- 02. No filters --- //
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -212,10 +219,10 @@ describe('Complex filters combinations, behavior tested on reports', () => {
         },
       } });
     expect(queryResult.data.reports.edges.length).toEqual(5); // the 4 reports created + the report in DATA-TEST-STIX2_v2.json
-    queryResult = await queryAsAdmin({ query: LIST_QUERY });
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY });
     expect(queryResult.data.reports.edges.length).toEqual(5);
     // --- 03. one filter --- //
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -234,7 +241,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports created + the report in DATA-TEST-STIX2_v2.json
     // --- 04. filters with different operators --- //
     // (report_types = threat-report) AND (report_types != internal-report)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -261,7 +268,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 05. filters with different modes for the main filter group --- //
     // (published after 20/09/2023) OR (published before 30/12/2021)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -288,7 +295,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // (published after 20/09/2023) AND (published before 30/12/2021)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -313,7 +320,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(0);
     // --- 06. filters with different modes between the values of a filter --- //
     // (report_types = internal-report OR threat-report)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -331,7 +338,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the reports created + the report in DATA-TEST-STIX2_v2.json
     // (report_types = internal-report AND threat-report)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -351,7 +358,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
     // --- 07. filters and filter groups --- //
     // (report_types = threat-report AND published before 30/12/2021)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -377,7 +384,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     //  (published before 20/09/2023) AND (report_types = threat-report OR objects malwareXX)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -416,7 +423,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 20/09/2023)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -468,7 +475,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     //            )
     //        ]
     //    ]
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -534,7 +541,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     // [(confidence > 25) AND (marking = marking2)]
     // OR
     // [(confidence <= 10) AND (report_types = threat-report OR marking = marking1))]
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -597,7 +604,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
     // --- 10. filter with 'nil' operator --- //
     // test for 'nil': objectMarking is empty
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -616,7 +623,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(1);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
     // test for 'not_nil': objectMarking is not empty
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -653,7 +660,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
     // --- 12. Multi keys --- //
     // (name = Report1) OR (description = Report1)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 10,
         filters: {
@@ -672,6 +679,142 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    // --- 13. combinations of operators and modes with entity_type filter (test the correct injection of parent types) --- //
+    // (entity_type = Malware OR Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              values: [ENTITY_TYPE_MALWARE, 'Software'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
+    // (entity_type = Malware) OR (entity_type = Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              values: [ENTITY_TYPE_MALWARE],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [
+            {
+              mode: 'or',
+              filters: [
+                {
+                  key: 'entity_type',
+                  operator: 'eq',
+                  values: ['Software'],
+                  mode: 'or',
+                }
+              ],
+              filterGroups: [],
+            }
+          ],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
+    // (entity_type = Malware AND Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              values: [ENTITY_TYPE_MALWARE, 'Software'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    // (entity_type = Malware) AND (entity_type = Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              values: [ENTITY_TYPE_MALWARE],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [
+                {
+                  key: 'entity_type',
+                  operator: 'eq',
+                  values: ['Software'],
+                  mode: 'and',
+                }
+              ],
+              filterGroups: [],
+            }
+          ],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    // (entity_type != Malware OR != Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'not_eq',
+              values: [ENTITY_TYPE_MALWARE, 'Software'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    const entitiesNumber = queryResult.data.globalSearch.edges.length; // all the entities
+    // (entity_type != Malware AND != Software)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'not_eq',
+              values: [ENTITY_TYPE_MALWARE, 'Software'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data.globalSearch.edges.length; // all the entities except Malwares and Softwares
+    expect(entitiesNumber - entitiesNumberWithoutMalwaresAndSoftware).toEqual(3); // 2 malwares + 1 software
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`

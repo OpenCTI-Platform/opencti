@@ -90,6 +90,7 @@ import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { IDS_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { FilterMode } from '../generated/graphql';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1442,7 +1443,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  // 00. Handle reliability
+  // 01. Handle reliability
   // in case we want to filter by source reliability (reliability of author)
   // we need to find all authors filtered by reliability and filter on these authors
   const sourceReliabilityFilter = arrayKeys.find((k) => k === 'source_reliability');
@@ -1467,16 +1468,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       authors.forEach((author) => values.push(author.internal_id));
     }
   }
-  // 01. Handle special keys
-  // In case of entity_type filters, we also look by default in the parent_types property.
-  let validKeys = arrayKeys;
-  if (arrayKeys.includes(TYPE_FILTER)) {
-    validKeys.push('parent_types');
-  }
-  if (arrayKeys.includes(IDS_FILTER)) {
-    validKeys.push(ID_INTERNAL, ID_STANDARD, IDS_STIX);
-  }
-  validKeys = R.uniq(validKeys);
+  const validKeys = arrayKeys;
   // 02. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
   // TODO Add connections like filters to have native fromId, toId filters handling.
@@ -1647,6 +1639,55 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   return null;
 };
 
+// complete the filters to be able to handle correctly special filter keys in the query builder
+const completeSpecialFilterKeys = (inputFilters) => {
+  const { filters = [], filterGroups = [] } = inputFilters;
+  const finalFilters = [];
+  const finalFilterGroups = [];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const filterGroup = filterGroups[index];
+    finalFilterGroups.push(completeSpecialFilterKeys(filterGroup));
+  }
+  for (let index = 0; index < filters.length; index += 1) {
+    const filter = filters[index];
+    const { key, mode = 'or', operator = 'eq' } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.includes(TYPE_FILTER)) { // add parent_types checking
+      const orBetweenTypeAndParent = mode === 'and';
+      if (orBetweenTypeAndParent) {
+        finalFilterGroups.push({
+          mode: operator === 'not_eq' ? 'and' : 'or',
+          filters: [
+            {
+              ...filter,
+              key: ['parent_types'],
+            },
+            {
+              ...filter,
+              key: [TYPE_FILTER]
+            }
+          ],
+          filterGroups: [],
+        });
+      } else {
+        finalFilters.push({ ...filter, key: arrayKeys.concat('parent_types') });
+      }
+    } else if (arrayKeys.includes(IDS_FILTER)) {
+      let validKeys = arrayKeys;
+      validKeys.push(ID_INTERNAL, ID_STANDARD, IDS_STIX);
+      validKeys = R.uniq(validKeys);
+      finalFilters.push({ ...filter, key: validKeys });
+    } else {
+      finalFilters.push(filter);
+    }
+  }
+  return {
+    ...inputFilters,
+    filters: finalFilters,
+    filterGroups: finalFilterGroups,
+  };
+};
+
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
@@ -1679,14 +1720,15 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   const completeFilters = specialFiltersContent.length > 0
     ? {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: specialFiltersContent,
       filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
     }
     : filters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, completeFilters);
+    const finalFilters = completeSpecialFilterKeys(completeFilters);
+    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
