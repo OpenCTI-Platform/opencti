@@ -28,7 +28,8 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import TaskScope from '../../../../components/TaskScope';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterFormatCorrect } from '../../../../utils/filters/filtersUtils';
+import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -214,7 +215,9 @@ const TasksList = ({ data }) => {
           let filters = null;
           let listIds = '';
           if (task.task_filters) {
-            filters = deserializeFilterGroupForFrontend(task.task_filters);
+            filters = isFilterFormatCorrect(task.task_filters)
+              ? deserializeFilterGroupForFrontend(task.task_filters)
+              : convertFiltersFromOldFormat(task.task_filters);
           } else if (task.task_ids) {
             listIds = truncate(R.join(', ', task.task_ids), 60);
           }
@@ -253,19 +256,21 @@ const TasksList = ({ data }) => {
                       {task.type !== 'RULE'
                         && (filters?.filters
                           ? <TasksFilterValueContainer
-                          filters={filters}
-                        ></TasksFilterValueContainer>
+                              filters={filters}
+                            ></TasksFilterValueContainer>
                           : (
-                          <Chip
-                            classes={{ root: classes.filter }}
-                            label={
-                              <div>
-                                <strong>{t('List of entities')}</strong>:{' '}
-                                {listIds}
-                              </div>
-                            }
-                          />
-                          ))}
+                            <Chip
+                              classes={{ root: classes.filter }}
+                              label={
+                                <div>
+                                  <strong>{t('List of entities')}</strong>:{' '}
+                                  {listIds}
+                                </div>
+                              }
+                            />
+                          )
+                        )
+                      }
                       {task.type === 'RULE' && (
                         <Chip
                           classes={{ root: classes.filter }}

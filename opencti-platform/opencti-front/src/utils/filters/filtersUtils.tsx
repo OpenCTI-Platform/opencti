@@ -151,6 +151,11 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined | nul
   );
 };
 
+export const isFilterFormatCorrect = (stringFilters: string): boolean => {
+  const filters = JSON.parse(stringFilters);
+  return filters.mode && filters.filters && filters.filterGroups;
+};
+
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
 export const findFilterFromKey = (
