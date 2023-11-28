@@ -1639,6 +1639,30 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   return null;
 };
 
+const completeSpecialFilterKeysContent = (filter, keysToAdd) => {
+  const { key, mode = 'or', operator = 'eq' } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  let newFilter;
+  let newFilterGroup;
+  if (mode === 'and') {
+    const newFiltersContent = keysToAdd.map((keyToAdd) => ({
+      ...filter,
+      key: keyToAdd,
+    }));
+    newFilterGroup = {
+      mode: operator === 'not_eq' ? 'and' : 'or',
+      filters: R.uniq([{
+        ...filter,
+        key: [TYPE_FILTER]
+      }].concat(newFiltersContent)),
+      filterGroups: [],
+    };
+  } else {
+    newFilter = { ...filter, key: arrayKeys.concat(keysToAdd) };
+  }
+  return { newFilter, newFilterGroup };
+};
+
 // complete the filters to be able to handle correctly special filter keys in the query builder
 const completeSpecialFilterKeys = (inputFilters) => {
   const { filters = [], filterGroups = [] } = inputFilters;
@@ -1650,33 +1674,26 @@ const completeSpecialFilterKeys = (inputFilters) => {
   }
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
-    const { key, mode = 'or', operator = 'eq' } = filter;
+    const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.includes(TYPE_FILTER)) { // add parent_types checking
-      const orBetweenTypeAndParent = mode === 'and';
-      if (orBetweenTypeAndParent) {
-        finalFilterGroups.push({
-          mode: operator === 'not_eq' ? 'and' : 'or',
-          filters: [
-            {
-              ...filter,
-              key: ['parent_types'],
-            },
-            {
-              ...filter,
-              key: [TYPE_FILTER]
-            }
-          ],
-          filterGroups: [],
-        });
-      } else {
-        finalFilters.push({ ...filter, key: arrayKeys.concat('parent_types') });
+    if (arrayKeys.includes(TYPE_FILTER) && arrayKeys.includes(IDS_FILTER)) {
+      throw Error(`A filter with these mutliple keys is not supported: ${arrayKeys}`);
+    } else if (arrayKeys.includes(TYPE_FILTER)) { // add parent_types checking
+      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent(filter, ['parent_types']);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
       }
     } else if (arrayKeys.includes(IDS_FILTER)) {
-      let validKeys = arrayKeys;
-      validKeys.push(ID_INTERNAL, ID_STANDARD, IDS_STIX);
-      validKeys = R.uniq(validKeys);
-      finalFilters.push({ ...filter, key: validKeys });
+      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent(filter, [ID_INTERNAL, ID_STANDARD, IDS_STIX]);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
+      }
     } else {
       finalFilters.push(filter);
     }
