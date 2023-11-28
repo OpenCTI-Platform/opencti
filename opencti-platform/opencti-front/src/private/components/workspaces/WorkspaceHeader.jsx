@@ -75,11 +75,16 @@ const useStyles = makeStyles(() => ({
   },
   tags: {
     float: 'right',
+    width: 350,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'end',
     marginTop: '-8px',
   },
   tag: {
     marginRight: 7,
     paddingBottom: 2,
+    maxWidth: 180,
   },
   tagsInput: {
     margin: '4px 15px 0 10px',
