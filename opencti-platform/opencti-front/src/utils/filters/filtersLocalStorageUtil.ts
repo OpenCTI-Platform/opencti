@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Filter, FilterGroup } from './filtersUtils';
-import { LocalStorage } from './filters.model';
+import { LocalStorage } from '../hooks/useLocalStorageModel';
 
 type FiltersLocalStorageUtilProps<U> = {
   viewStorage: LocalStorage,

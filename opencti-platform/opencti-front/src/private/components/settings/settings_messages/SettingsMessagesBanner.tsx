@@ -17,7 +17,7 @@ import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
 import { SettingsMessagesBannerSubscription } from './__generated__/SettingsMessagesBannerSubscription.graphql';
-import { MessageFromLocalStorage } from '../../../../utils/filters/filters.model';
+import { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 export const settingsMessagesQuery = graphql`
   query SettingsMessagesBannerQuery {

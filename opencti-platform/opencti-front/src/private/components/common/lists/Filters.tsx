@@ -12,7 +12,7 @@ import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntities.util';
+import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
 
 interface FiltersProps {
   variant?: string;
@@ -80,8 +80,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       ],
     },
   );
-    // TODO Issue first ok, second rendering with undefined
-    // console.log(availableEntityTypes);
   setSearchEntitiesScope({
     searchContext: searchContext ?? { entityTypes: [] },
     searchScope,

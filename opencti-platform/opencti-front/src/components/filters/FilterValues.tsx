@@ -27,26 +27,23 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface FilterValuesProps {
-  label: string;
+  label: string | React.JSX.Element;
   tooltip?: boolean;
   currentFilter: Filter;
-  filtersRepresentatives: ReadonlyArray<{
-    readonly id: string;
-    readonly value: string | null;
-  }>;
+  filtersRepresentativesMap: Map<string, string | null>
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, currentFilter, filtersRepresentatives, redirection, handleSwitchLocalMode, onClickLabel }) => {
+const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, currentFilter, filtersRepresentativesMap, redirection, handleSwitchLocalMode, onClickLabel }) => {
   const { t } = useFormatter();
   const location = useLocation();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
-  const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
+
   const classes = useStyles();
   const deactivatePopoverMenu = location.pathname.includes('dashboard/data/sharing');
 
@@ -84,7 +81,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, cu
 
   return <>
     <strong className={deactivatePopoverMenu ? '' : classes.label}
-            onClick={onCLick}>{label}</strong> {filterValues.length > 0 && ':'} {values}
+            onClick={onCLick}>{label}</strong> {values}
   </>;
 };
 

@@ -149,6 +149,7 @@ const SearchIndexedFilesComponent = () => {
     return (
       <>
         <ListLines
+          helpers={storageHelpers}
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}

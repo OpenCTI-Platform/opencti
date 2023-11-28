@@ -186,13 +186,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
-          : (option) => t(option.group ? option.group : `filter_${filterKey}`)
+          : (option) => t(option.group ? option.group : filterKey)
       }
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => (
         <TextField
           {...params}
-          label={t(`filter_${filterKey}`)}
+          label={t(filterKey)}
           variant="outlined"
           size="small"
           fullWidth={true}

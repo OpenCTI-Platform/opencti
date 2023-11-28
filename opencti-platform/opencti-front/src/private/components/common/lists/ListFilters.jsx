@@ -72,11 +72,11 @@ const ListFilters = ({
       ) : (
         <>
           <MUIAutocomplete
-            id="combo-box-demo"
+            id="list-filters-combo-box"
             options={availableFilterKeys
               .map((opt) => ({
                 value: opt,
-                label: t(`filter_${opt}`),
+                label: t(opt),
               }))
               .sort((a, b) => a.label.localeCompare(b.label))}
             sx={{ width: 200 }}

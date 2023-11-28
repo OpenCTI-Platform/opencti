@@ -66,7 +66,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   return (
     <DatePicker
       key={filterKey}
-      label={`${t(`filter_${filterKey}_${operator}`)}`}
+      label={t(filterKey)}
       value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}

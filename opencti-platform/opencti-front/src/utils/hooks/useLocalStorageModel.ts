@@ -1,4 +1,4 @@
-import { FilterGroup } from './filtersUtils';
+import { FilterGroup } from '../filters/filtersUtils';
 
 export interface MessageFromLocalStorage {
   id: string;

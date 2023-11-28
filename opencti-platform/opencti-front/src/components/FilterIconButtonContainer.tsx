@@ -91,51 +91,6 @@ FilterIconButtonContainerProps
   helpers,
 }) => {
   const { t } = useFormatter();
-  // const mockFilterGroup = {
-  //   mode: 'and',
-  //   filters: [],
-  //   filterGroups: [
-  //     {
-  //       mode: 'and',
-  //       filters: [{
-  //         key: ['entity_type'],
-  //         mode: 'or',
-  //         operator: 'eq',
-  //         values: ['Report', 'Indicator'],
-  //       }, {
-  //         key: ['confidence'],
-  //         mode: 'and',
-  //         operator: 'gt',
-  //         values: ['25'],
-  //       }],
-  //       filterGroups: [],
-  //     },
-  //     {
-  //       mode: 'and',
-  //       filters: [{
-  //         key: ['revoked'],
-  //         mode: 'or',
-  //         operator: 'eq',
-  //         values: ['true'],
-  //       }, {
-  //         key: ['objectLabel'],
-  //         mode: 'or',
-  //         operator: 'eq',
-  //         values: [
-  //   "6dc58e3c-279a-4c60-881c-f980d3c2c87b"
-  // ],
-  //       }, {
-  //         key: ['objectMarking'],
-  //         mode: 'or',
-  //         operator: 'eq',
-  //         values: [
-  //   "684f5867-01e4-44d1-9f6b-ec93583c98e6"
-  // ]
-  //       }],
-  //       filterGroups: [],
-  //     },
-  //   ],
-  // } as unknown as FilterGroup;
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
@@ -157,6 +112,7 @@ FilterIconButtonContainerProps
   const latestItemRef = useRef(null);
   const nbDisplayFilter = useRef(0);
   const hasRenderedRef = useRef(false);
+  const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
   const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
     filter: undefined,
     anchorEl: undefined,
@@ -188,93 +144,108 @@ FilterIconButtonContainerProps
 
   const manageRemoveFilter = (currentFilterId: string | undefined, filterKey: string, filterOperator: string) => {
     if (helpers) {
-      helpers?.handleRemoveFilterNew(currentFilterId);
+      helpers?.handleRemoveFilterById(currentFilterId);
     } else if (handleRemoveFilter) {
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
+
+  const convertOperatorToIcon = (operator: string) => {
+    switch (operator) {
+      case 'lt':
+        return <>&#60;</>;
+      case 'lte':
+        return <>&#8804;</>;
+      case 'gt':
+        return <>&#62;</>;
+      case 'gte':
+        return <>&#8805;</>;
+      default:
+        return null;
+    }
+  };
   return (
-        <div style={{
-          marginTop: '10px',
-          gap: '10px',
-          display: 'flex',
-          flexWrap: 'wrap',
-        }}>
-            {displayedFilters
-              .map((currentFilter, index) => {
-                const filterKey = currentFilter.key;
-                const filterOperator = currentFilter.operator;
-                const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
-                const isOperatorDisplayed = !['eq', 'not_eq', 'nil', 'not_nil'].includes(filterOperator);
-                const keyLabel = isOperatorDisplayed
-                  ? truncate(t(`filter_${filterKey}_${filterOperator}`), 20)
-                  : truncate(t(`filter_${filterKey}`), 20);
-                const label = `${isOperatorNegative ? `${t('NOT')} ` : ''}${keyLabel}`;
-                const isNotLastFilter = index < displayedFilters.length - 1;
-                return (
-                        <Fragment key={currentFilter.id}>
-                            <Tooltip
-                                title={
-                                    <FilterValues label={label}
-                                                  tooltip={true}
-                                                  currentFilter={currentFilter}
-                                                  handleSwitchLocalMode={handleSwitchLocalMode}
-                                                  filtersRepresentatives={filtersRepresentatives}
-                                                  redirection={redirection}/>
-                                }
-                            >
-                                <Chip
-                                    ref={isNotLastFilter ? null : latestItemRef}
-                                    classes={{ root: classNames(classFilter, currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator) ? classes.chipLabelNoValues : ''), label: classes.chipLabel }}
-                                    label={
-                                        <FilterValues
-                                            label={label}
-                                            tooltip={false} currentFilter={currentFilter}
-                                            handleSwitchLocalMode={handleSwitchLocalMode}
-                                            filtersRepresentatives={filtersRepresentatives}
-                                            redirection={redirection}
-                                            onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
-                                        />
-                                    }
-                                    disabled={
-                                      disabledPossible ? displayedFilters.length === 1 : undefined
-                                    }
-                                    onDelete={() => manageRemoveFilter(currentFilter.id, filterKey, filterOperator)}
-                                />
-                            </Tooltip>
-                            {isNotLastFilter && (
-                                <Chip
-                                    classes={{ root: classOperator }}
-                                    label={t(globalMode.toUpperCase())}
-                                    onClick={handleSwitchGlobalMode}
-                                />
-                            )}
-                        </Fragment>
-                );
-              })}
-            {
-                filterChipsParams?.anchorEl
-                && <FilterChipPopover filters={filters.filters}
-                                      params={filterChipsParams}
-                                      handleClose={handleClose}
-                                      open={open}
-                                      helpers={helpers}/>
+    <div style={{
+      marginTop: '10px',
+      gap: '10px',
+      display: 'flex',
+      flexWrap: 'wrap',
+    }}>
+      {displayedFilters
+        .map((currentFilter, index) => {
+          const filterKey = currentFilter.key;
+          const filterOperator = currentFilter.operator;
+          const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
+          const isOperatorDisplayed = !['eq', 'not_eq', 'nil', 'not_nil'].includes(filterOperator);
+          const keyLabel = <>{truncate(t(filterKey), 20)} {isOperatorDisplayed ? convertOperatorToIcon(filterOperator) : (currentFilter.values.length > 0 && ':')}</>;
+          const label = <>{isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel} </>;
+          const isNotLastFilter = index < displayedFilters.length - 1;
+          return (
+            <Fragment key={currentFilter.id}>
+              <Tooltip
+                title={
+                  <FilterValues label={label}
+                                tooltip={true}
+                                currentFilter={currentFilter}
+                                handleSwitchLocalMode={handleSwitchLocalMode}
+                                filtersRepresentativesMap={filtersRepresentativesMap}
+                                redirection={redirection}/>
+                }
+              >
+                <Chip
+                  ref={isNotLastFilter ? null : latestItemRef}
+                  classes={{ root: classNames(classFilter, currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator) ? classes.chipLabelNoValues : ''), label: classes.chipLabel }}
+                  label={
+                    <FilterValues
+                      label={label}
+                      tooltip={false} currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
+                    />
+                  }
+                  disabled={
+                    disabledPossible ? displayedFilters.length === 1 : undefined
+                  }
+                  onDelete={() => manageRemoveFilter(currentFilter.id, filterKey, filterOperator)}
+                />
+              </Tooltip>
+              {isNotLastFilter && (
+                <Chip
+                  classes={{ root: classOperator }}
+                  label={t(globalMode.toUpperCase())}
+                  onClick={handleSwitchGlobalMode}
+                />
+              )}
+            </Fragment>
+          );
+        })}
+      {
+        filterChipsParams.anchorEl
+        && <FilterChipPopover filters={filters.filters}
+                              params={filterChipsParams}
+                              handleClose={handleClose}
+                              open={open}
+                              helpers={helpers}/>
+      }
+      {filters.filterGroups && filters.filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+        && (
+          <Chip
+            classes={{ root: classFilter, label: classes.chipLabel }}
+            color={'warning'}
+            label={
+              <>
+                {t('Filters are not fully displayed')}
+                <DisplayFilterGroup
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  filterObj={filters}
+                                    filterMode={filters.mode}/>
+              </>
             }
-            {filters.filterGroups && filters.filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-                && (
-                    <Chip
-                        classes={{ root: classFilter, label: classes.chipLabel }}
-                        color={'warning'}
-                        label={
-                            <>
-                                {t('Filters are not fully displayed')}
-                                <DisplayFilterGroup filterGroups={filters.filterGroups}
-                                                    filterMode={filters.mode}/>
-                            </>
-                        }
-                    />)
-            }
-        </div>
+          />)
+      }
+    </div>
   );
 };
 

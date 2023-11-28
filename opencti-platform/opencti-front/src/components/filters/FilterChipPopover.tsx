@@ -10,7 +10,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptions, getUseSearch } from '../../utils/filters/SearchEntities.util';
+import { getOptions, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 interface FilterChipMenuProps {
@@ -89,8 +89,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     variant="outlined"
     size="small"
     fullWidth={true}
-    id={`${filterKey}-id`}
-    label={t(`filter_${filterKey}`)}
+    id={filter?.id ?? `${filterKey}-id`}
+    label={t(filterKey)}
     type="number"
     defaultValue={filterValues[0]}
     autoFocus={true}
@@ -174,7 +174,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 renderInput={(paramsInput) => (
                   <TextField
                     {...paramsInput}
-                    label={t(`filter_${filterKey}`)}
+                    label={t(filterKey)}
                     variant="outlined"
                     size="small"
                     fullWidth={true}

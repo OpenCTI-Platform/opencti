@@ -16,7 +16,7 @@ import {
   useVocabularyCategory_Vocabularynode$data,
   useVocabularyCategory_Vocabularynode$key,
 } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import { LocalStorage } from '../../../../utils/filters/filters.model';
+import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

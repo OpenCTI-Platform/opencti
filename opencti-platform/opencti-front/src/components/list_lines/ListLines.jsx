@@ -43,13 +43,16 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCyberObservablesExports
+  from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCoreRelationshipsExports
+  from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
 import Transition from '../Transition';
+import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
@@ -139,7 +142,7 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const { classes, t, sortBy, orderAsc, _ } = this.props;
+    const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
                 <ArrowDropDown classes={{ root: classes.sortIcon }}/>
@@ -159,13 +162,13 @@ class ListLines extends Component {
       );
     }
     return (
-      <div
-        className={classes.headerItem}
-        style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
-        key={field}
-      >
-        <div className={classes.headerItemText}>{t(label)}</div>
-      </div>
+            <div
+                className={classes.headerItem}
+                style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
+                key={field}
+            >
+                <div className={classes.headerItemText}>{t(label)}</div>
+            </div>
     );
   }
 
@@ -203,7 +206,6 @@ class ListLines extends Component {
       searchVariant,
       message,
       noTopMargin,
-      noFilters,
       enableGraph,
       availableEntityTypes,
       availableRelationshipTypes,
@@ -232,48 +234,50 @@ class ListLines extends Component {
             <div
                 className={noPadding ? classes.containerNoPadding : classes.container}
             >
+              <GenerateDefaultDirectFilters filters={filters} availableFilterKeys={availableFilterKeys} helpers={helpers}/>
                 {!this.props.inline
-                    && <><div
-                        className={
-                            parametersWithPadding
-                              ? classes.parametersWithPadding
-                              : classes.parameters
+                    && <>
+                        <div
+                            className={
+                                parametersWithPadding
+                                  ? classes.parametersWithPadding
+                                  : classes.parameters
+                            }
+                        >
+                            {typeof handleSearch === 'function'
+                                && <SearchInput
+                                    variant={searchVariant || 'small'}
+                                    onSubmit={handleSearch.bind(this)}
+                                    keyword={keyword}
+                                />}
+                            {extraFields}
+                            {availableFilterKeys && availableFilterKeys.length > 0 && (
+                                <Filters
+                                    helpers={helpers}
+                                    searchContext={searchContextFinal}
+                                    availableFilterKeys={availableFilterKeys}
+                                    handleAddFilter={handleAddFilter}
+                                    handleSwitchFilter={handleSwitchFilter}
+                                    handleRemoveFilter={handleRemoveFilter}
+                                    handleSwitchGlobalMode={handleSwitchGlobalMode}
+                                    handleSwitchLocalMode={handleSwitchLocalMode}
+                                    availableEntityTypes={availableEntityTypes}
+                                    availableRelationshipTypes={availableRelationshipTypes}
+                                    availableRelationFilterTypes={availableRelationFilterTypes}
+                                />
+                            )}
+                        </div>
+                        {isFilterGroupNotEmpty(filters)
+                            && <FilterIconButton
+                                helpers={helpers}
+                                availableFilterKeys={availableFilterKeys}
+                                filters={filters}
+                                handleRemoveFilter={handleRemoveFilter}
+                                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                                handleSwitchLocalMode={handleSwitchLocalMode}
+                                redirection
+                            />
                         }
-                    >
-                        {typeof handleSearch === 'function'
-                            && <SearchInput
-                                variant={searchVariant || 'small'}
-                                onSubmit={handleSearch.bind(this)}
-                                keyword={keyword}
-                            />}
-                    {extraFields}
-                    {availableFilterKeys && availableFilterKeys.length > 0 && (
-                        <Filters
-                            helpers={helpers}
-                            searchContext={searchContextFinal}
-                            availableFilterKeys={availableFilterKeys}
-                            handleAddFilter={handleAddFilter}
-                            handleSwitchFilter={handleSwitchFilter}
-                            handleRemoveFilter={handleRemoveFilter}
-                            handleSwitchGlobalMode={handleSwitchGlobalMode}
-                            handleSwitchLocalMode={handleSwitchLocalMode}
-                            availableEntityTypes={availableEntityTypes}
-                            availableRelationshipTypes={availableRelationshipTypes}
-                            availableRelationFilterTypes={availableRelationFilterTypes}
-                        />
-                    )}
-                    </div>
-                    {isFilterGroupNotEmpty(filters)
-                        && <FilterIconButton
-                            helpers={helpers}
-                            availableFilterKeys={availableFilterKeys}
-                            filters={filters}
-                            handleRemoveFilter={handleRemoveFilter}
-                            handleSwitchGlobalMode={handleSwitchGlobalMode}
-                            handleSwitchLocalMode={handleSwitchLocalMode}
-                            redirection
-                        />
-                    }
                     </>
                 }
                 <div className={classes.views}>

@@ -12,13 +12,13 @@ import {
   handleChangeOperatorFilters,
   handleRemoveFilter,
   handleRemoveRepresentationFilter, handleSwitchLocalMode,
-} from '../filters/filters.localStorage.util';
-import { LocalStorage } from '../filters/filters.model';
+} from '../filters/filtersLocalStorageUtil';
+import { LocalStorage } from './useLocalStorageModel';
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
   handleRemoveFilter: (key: string, op?: string, id?: string) => void;
-  handleRemoveFilterNew: (id?: string) => void;
+  handleRemoveFilterById: (id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
@@ -37,7 +37,7 @@ export interface UseLocalStorageHelpers {
   handleClearTypes: () => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
-  handleClearAllFilters: () => void;
+  handleClearAllFilters: (filters?: Filter[]) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddFilterWithEmptyValue: (filter: Filter) => void;
 }
@@ -276,7 +276,7 @@ export const usePaginationLocalStorage = <U>(
   );
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilterNew: (id?: string) => {
+    handleRemoveFilterById: (id?: string) => {
       handleRemoveFilter({ viewStorage, setValue, id });
     },
     handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
@@ -529,16 +529,18 @@ export const usePaginationLocalStorage = <U>(
     },
   };
 
-  // eslint-disable-next-line no-unsafe-optional-chaining
-  const removeEmptyFilter = paginationOptions?.filters ? [...paginationOptions?.filters?.filters.filter((f) => (f.values.length > 0))] : [];
-  const filters = removeEmptyFilter && removeEmptyFilter.length > 0 ? {
-    ...paginationOptions.filters,
-    filters: removeEmptyFilter.map((filter) => {
-      const removeIdFromFilter = { ...filter };
-      delete removeIdFromFilter.id;
-      return removeIdFromFilter;
-    }),
-  } : undefined;
+  const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => f.values.length > 0) ?? [];
+
+  const filters = removeEmptyFilter.length > 0
+    ? {
+      ...paginationOptions.filters,
+      filters: removeEmptyFilter.map((filter) => {
+        const removeIdFromFilter = { ...filter };
+        delete removeIdFromFilter.id;
+        return removeIdFromFilter;
+      }),
+    }
+    : undefined;
 
   const cleanPaginationOptions = {
     ...paginationOptions,

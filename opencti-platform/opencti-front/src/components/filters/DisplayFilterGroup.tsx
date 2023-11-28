@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { Fragment, FunctionComponent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import DialogContent from '@mui/material/DialogContent';
@@ -12,7 +12,13 @@ import CodeBlock from '@components/common/CodeBlock';
 import { useFormatter } from '../i18n';
 import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
 
-const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filterMode: string }> = ({ filterGroups, filterMode }) => {
+interface DisplayFilterGroupProps {
+  filterObj: FilterGroup,
+  filterMode: string,
+  filtersRepresentativesMap: Map<string, string | null>
+}
+const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({ filterObj, filterMode, filtersRepresentativesMap }) => {
+  const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
   const { t } = useFormatter();
   const handleClickOpen = () => {
@@ -22,7 +28,7 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
     setOpen(false);
   };
   const displayFilters = (filters: Filter[], parentMode: string) => {
-    return filters.map(({ key, operator, values, mode }, i) => <Box sx={{
+    return filters.map(({ key, operator, values, mode, id }, i) => <Box key={id ?? key} sx={{
       display: 'grid',
       gridTemplateColumns: 'auto 1fr',
       gap: '8px',
@@ -62,8 +68,8 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
             margin: '0 8px',
             padding: '8px',
           }}> {operator}</Box>
-        <Box sx={{ display: 'inline-block' }}>{values.map((value, j) => <>
-          <span> {t(value)} </span>
+        <Box sx={{ display: 'inline-block' }}>{values.map((value, j) => <Fragment key={value}>
+          <span key={value}> {filtersRepresentativesMap.get(value) ?? value} </span>
           {
             (j + 1) < values.length
             && <Box
@@ -78,13 +84,13 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
                 padding: '8px',
               }}>{t(mode)}</Box>
           }
-        </>)}</Box>
+        </Fragment>)}</Box>
       </Box>
     </Box>);
   };
   const displayFilterGroups = (filter: FilterGroup[]) => {
     return filter.map((f, i) => {
-      return <>
+      return <Fragment key={i}>
         {
           i !== 0 && <Box
             sx={{
@@ -105,7 +111,9 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
           marginBottom: '16px',
         }}>
 
-        <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>{displayFilters(f.filters, f.mode)}</Stack>
+        <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
+          {displayFilters(f.filters, f.mode)}
+        </Stack>
         {f.filterGroups.length > 0
           && <Stack direction="row">
             <Box
@@ -122,7 +130,7 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
             {displayFilterGroups(f.filterGroups)}
           </Stack>}
       </Box>
-      </>;
+      </Fragment>;
     });
   };
 
@@ -154,7 +162,7 @@ const DisplayFilterGroup: FunctionComponent<{ filterGroups: FilterGroup[], filte
         <DialogContent>
           {displayFilterGroups(filterGroups)}
           <CodeBlock
-            code={JSON.stringify(filterGroups, null, 2)}
+            code={JSON.stringify(filterObj, null, 2)}
             language={'json'}
           />
         </DialogContent>
