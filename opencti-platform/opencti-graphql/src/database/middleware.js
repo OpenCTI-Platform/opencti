@@ -444,6 +444,9 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
+        if (isEmptyField(metaRefKey)) {
+          throw UnsupportedError('SCHEMA_VALIDATION_ERROR', { key, inputKey, type: element.entity_type });
+        }
         const invalidRelations = values.filter((v) => toResolvedElements[v.toId] === undefined);
         if (invalidRelations.length > 0) {
           // Some targets can be unresolved in case of potential inconsistency between relation and target
@@ -2005,12 +2008,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [targetCreated], previous });
             updatedInstance[key] = targetCreated;
-            updatedInstance[relType] = updatedInstance[key].internal_id;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
             updatedInstance[key] = null;
-            updatedInstance[relType] = null;
           }
         }
       } else {
@@ -2039,7 +2040,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             }
             updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
             updatedInstance[key] = refs;
-            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
@@ -2050,7 +2050,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToCreate.push(...newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
-            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
@@ -2061,7 +2060,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToDelete.push(...relsToDelete);
             updatedInputs.push({ key, value: refs, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
-            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
       }
@@ -2117,10 +2115,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (lock) await lock.unlock();
   }
 };
-export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
-  const initial = await storeLoadByIdWithRefs(context, user, id, { type });
+
+export const updateAttributeFromLoadedWithRefs = async (context, user, initial, inputs, opts = {}) => {
   if (!initial) {
-    throw FunctionalError('Cant find element to update', { id, type });
+    throw FunctionalError('Cant update undefined element');
   }
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
@@ -2136,6 +2134,15 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   });
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
+
+export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
+  const initial = await storeLoadByIdWithRefs(context, user, id, { type });
+  if (!initial) {
+    throw FunctionalError('Cant find element to update', { id, type });
+  }
+  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+};
+
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
   return updateAttribute(context, user, id, type, inputs, opts);
