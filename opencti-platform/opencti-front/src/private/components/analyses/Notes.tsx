@@ -176,7 +176,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <NoteLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>

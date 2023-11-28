@@ -106,7 +106,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <WorkspaceLineDummy key={idx} dataColumns={dataColumns}/>
                   ))}
               </>

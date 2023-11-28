@@ -146,7 +146,7 @@ const Artifacts: FunctionComponent = () => {
                         <>
                           {Array(20)
                             .fill(0)
-                            .map((idx) => (
+                            .map((_, idx) => (
                                   <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
                             ))}
                         </>

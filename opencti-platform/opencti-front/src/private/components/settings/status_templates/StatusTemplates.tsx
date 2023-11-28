@@ -73,7 +73,7 @@ const StatusTemplates = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <StatusTemplateLineDummy
                       key={idx}
                       dataColumns={dataColumns}

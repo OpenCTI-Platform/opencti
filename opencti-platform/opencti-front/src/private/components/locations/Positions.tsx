@@ -89,7 +89,7 @@ const Positions: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <PositionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

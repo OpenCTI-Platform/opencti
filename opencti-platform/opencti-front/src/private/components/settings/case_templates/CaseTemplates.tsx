@@ -74,7 +74,7 @@ const CaseTemplates = () => {
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <CaseTemplateLineDummy
                         key={idx}
                         dataColumns={dataColumns}

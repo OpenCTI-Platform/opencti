@@ -147,7 +147,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

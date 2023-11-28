@@ -157,7 +157,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CaseIncidentLineDummy
                       key={idx}
                       dataColumns={dataColumns}

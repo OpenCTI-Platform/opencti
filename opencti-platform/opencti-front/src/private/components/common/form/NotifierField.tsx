@@ -96,8 +96,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: Option,
-        ) => (
-          <li {...props}>
+        ) => (<li {...props} key={option.value}>
             <div className={classes.icon}>
               <ItemIcon type="Notifier" />
             </div>

@@ -153,7 +153,7 @@ const Relationships = () => {
                   <>
                     {Array(20)
                       .fill(0)
-                      .map((idx) => (
+                      .map((_, idx) => (
                         <RelationshipsStixCoreRelationshipLineDummy key={idx} dataColumns={dataColumns} />
                       ))}
                   </>

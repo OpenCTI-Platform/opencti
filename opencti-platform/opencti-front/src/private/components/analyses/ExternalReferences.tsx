@@ -115,7 +115,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <ExternalReferenceLineDummy
                       key={idx}
                       dataColumns={dataColumns}

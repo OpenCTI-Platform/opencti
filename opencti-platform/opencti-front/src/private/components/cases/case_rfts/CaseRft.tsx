@@ -113,7 +113,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
                     >
                       {Array(20)
                         .fill(0)
-                        .map((idx) => (
+                        .map((_, idx) => (
                           <CaseTasksLineDummy key={idx} />
                         ))}
                     </ListLines>

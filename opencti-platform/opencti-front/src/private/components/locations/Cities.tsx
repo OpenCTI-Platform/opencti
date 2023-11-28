@@ -89,7 +89,7 @@ const Cities: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CityLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

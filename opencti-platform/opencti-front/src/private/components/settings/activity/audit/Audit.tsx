@@ -256,7 +256,7 @@ const Audit = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

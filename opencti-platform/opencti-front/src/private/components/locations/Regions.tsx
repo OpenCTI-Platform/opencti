@@ -89,7 +89,7 @@ const Regions: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <RegionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

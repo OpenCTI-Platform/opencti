@@ -136,7 +136,7 @@ const Infrastructures = () => {
               <>
               {Array(20)
                 .fill(0)
-                .map((idx) => (
+                .map((_, idx) => (
                   <InfrastructureLineDummy
                     key={idx}
                     dataColumns={dataColumns}

@@ -93,7 +93,7 @@ const Tasks = () => {
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <TasksLineDummy key={idx} />
                     ))}
                 </>

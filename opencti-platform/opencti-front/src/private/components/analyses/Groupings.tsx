@@ -188,7 +188,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <GroupingLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>

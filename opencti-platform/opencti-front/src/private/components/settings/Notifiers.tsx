@@ -98,7 +98,7 @@ const Notifiers = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <NotifierLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

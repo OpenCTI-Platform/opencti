@@ -114,7 +114,7 @@ const Vulnerabilities = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <VulnerabilityLineDummy
                       key={idx}
                       dataColumns={dataColumns}

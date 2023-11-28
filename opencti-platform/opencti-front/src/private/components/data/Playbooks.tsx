@@ -102,7 +102,7 @@ const Playbooks: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <PlaybookLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
