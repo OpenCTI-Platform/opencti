@@ -39,6 +39,7 @@ export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
 export const CONNECTIONS_FILTER = 'connections';
 export const RULE_FILTER = 'rule';
+export const USER_ID_FILTER = 'user_id';
 
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
@@ -79,6 +80,7 @@ export const specialFilterKeys = [
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
+// used in findFiltersRepresentatives
 export const filterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
@@ -88,6 +90,7 @@ export const filterKeysWhoseValueToResolve = [
   RELATION_TO_FILTER, // nested relation for the to of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
+  USER_ID_FILTER,
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,

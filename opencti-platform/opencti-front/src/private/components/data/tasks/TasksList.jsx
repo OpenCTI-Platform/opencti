@@ -263,7 +263,7 @@ const TasksList = ({ data }) => {
                           ? <TasksFilterValueContainer
                               filters={filters}
                               isFiltersInOldFormat={isFiltersInOldFormat}
-                            ></TasksFilterValueContainer>
+                            />
                           : (
                             <Chip
                               classes={{ root: classes.filter }}

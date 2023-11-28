@@ -76,7 +76,7 @@ const TaskFilterValue = ({
                             filterKey={currentFilter.key}
                             id={o}
                             value={filtersRepresentativesMap.get(o)}
-                          ></FilterIconButtonContent>
+                          />
                           {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>
                           )}{' '}
