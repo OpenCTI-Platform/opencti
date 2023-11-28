@@ -192,19 +192,20 @@ export const loadFile = async (user, filename) => {
     throw err;
   }
 };
-
-export const isFileObjectExcluded = (id) => {
-  const fileName = id.includes('/') ? R.last(id.split('/')) : id;
-  return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
+const getFileName = (fileId) => {
+  return fileId?.includes('/') ? R.last(fileId.split('/')) : fileId;
 };
-
 const guessMimeType = (fileId) => {
-  const mimeType = mime.lookup(fileId) || null;
-  const fileName = fileId.includes('/') ? R.last(fileId.split('/')) : fileId;
+  const fileName = getFileName(fileId);
+  const mimeType = mime.lookup(fileName) || null;
   if (!mimeType && fileName === 'pdf_report') {
     return 'application/pdf';
   }
   return mimeType;
+};
+export const isFileObjectExcluded = (id) => {
+  const fileName = getFileName(id);
+  return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
 const simpleFilesListing = async (directory, opts = {}) => {

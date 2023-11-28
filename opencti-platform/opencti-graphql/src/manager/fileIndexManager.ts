@@ -98,7 +98,7 @@ const indexImportedFiles = async (
   for (let index = 0; index < filesBulk.length; index += 1) {
     const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
     if (managerConfiguration?.manager_running) {
-      const files = await loadFilesForIndexing(SYSTEM_USER, filesBulk[index], { mimeTypes });
+      const files = await loadFilesForIndexing(SYSTEM_USER, filesBulk[index]);
       const filesToLoad: FileToIndexObject[] = files.map((file) => {
         const internalId = generateFileIndexId(file.id);
         const entityId = file.metaData.entity_id;
