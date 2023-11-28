@@ -19,7 +19,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import AccessesMenu from './AccessesMenu';
