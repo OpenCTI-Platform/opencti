@@ -218,8 +218,18 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     });
   const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
   const filters = {
-    objects: [{ id: containerId, value: containerId }],
-    entity_type: SCAN_ENTITIES.map((e) => ({ id: e, value: e })),
+    mode: 'and',
+    filters: [
+      {
+        key: ['objects'],
+        values: [containerId],
+      },
+      {
+        key: ['entity_type'],
+        values: SCAN_ENTITIES,
+      }
+    ],
+    filterGroups: [],
   };
   const input = {
     filters: JSON.stringify(filters),
