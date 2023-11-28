@@ -13,7 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import Switch from '@mui/material/Switch';
-import EEChip from '@components/common/entreprise_edition/EEChip';
+import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
