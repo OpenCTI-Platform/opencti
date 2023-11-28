@@ -1131,6 +1131,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '¡Estás seleccionando más de 1000 entidades en esta tarea en segundo plano así que estáte seguro de que sabes lo que haces!',
       Filters: 'Filtros',
+      'deprecated format': 'formato obsoleto',
+      'Filters are stored in a deprecated format (before 5.12)': 'Los filtros se almacenan en un formato obsoleto (antes de la versión 5.12)',
       'Filters are not fully displayed':
         'Los filtros no se muestran completamente',
       'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ':
@@ -3440,6 +3442,8 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites !',
       Filters: 'Filtres',
+      'deprecated format': 'format obsolète',
+      'Filters are stored in a deprecated format (before 5.12)': 'Les filtres sont stockés dans un format obsolète (avant la version 5.12)',
       'Filters are not fully displayed':
         'Les filtres ne sont pas entièrement affichés',
       'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ':
@@ -5691,7 +5695,9 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         'このバックグラウンドタスクで1000以上のエンティティをターゲットにしています。実行内容を確認してください。',
       Filters: 'フィルタ',
+      'deprecated format': '廃止予定の形式',
       'Filters are not fully displayed': 'フィルターが完全に表示されていません',
+      'Filters are stored in a deprecated format (before 5.12)': 'フィルターは非推奨の形式で保存されています（5.12より前）',
       'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ':
         'このフィルターには、プラットフォームの表示ではまだ完全にサポートされていない、入れ子になったフィルターグループが含まれており、API経由でのみ編集することができます。これらはAPI経由で作成されたか、以前のフィルターフォーマットからの移行で作成された可能性があります。フィルターオブジェクトの内容は次のとおりです',
       'Number of elements': '要素数',
@@ -7815,7 +7821,9 @@ const i18n = {
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '您正在使用此后台任务针对超过1000个实体，请确保您正在执行的操作!',
       Filters: '过滤器',
+      'deprecated format': '不推薦格式',
       'Filters are not fully displayed': '篩選器未完全顯示',
+      'Filters are stored in a deprecated format (before 5.12)': '過濾器以不推薦的格式保存（5.12之前）',
       'This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ':
         '这个过滤器包含嵌套的过滤器组，目前平台显示不完全支持，只能通过API进行编辑。它们可能是通过API或从之前的过滤器格式迁移而来。供您参考，以下是过滤器对象的内容',
       'Number of elements': '元素数量',
