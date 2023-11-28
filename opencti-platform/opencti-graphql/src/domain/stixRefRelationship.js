@@ -10,7 +10,7 @@ import { notify } from '../database/redis';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { listRelations, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listRelations, storeLoadById } from '../database/middleware-loader';
 import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -57,19 +57,31 @@ export const isDatable = (entityType, relationshipType) => {
 };
 
 // Mutation
+// @Deprecated method.
+// updateField must be directly used
 export const addStixRefRelationship = async (context, user, stixRefRelationship) => {
   if (!isStixRefRelationship(stixRefRelationship.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${stixRefRelationship.relationship_type}.`);
   }
-  const from = await storeLoadByIdWithRefs(context, user, stixRefRelationship.fromId);
+  const fromPromise = storeLoadByIdWithRefs(context, user, stixRefRelationship.fromId);
+  const toPromise = internalLoadById(context, user, stixRefRelationship.toId);
+  const [from, to] = await Promise.all([fromPromise, toPromise]);
+  if (!from || !to) {
+    throw FunctionalError('MISSING_ELEMENTS', {
+      from: stixRefRelationship.fromId,
+      from_missing: !from,
+      to: stixRefRelationship.toId,
+      to_missing: !to
+    });
+  }
   const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelationship.relationship_type);
   const inputs = [{ key: refInputName, value: [stixRefRelationship.toId], operation: UPDATE_OPERATION_ADD }];
   await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
   const opts = {
     first: 1,
     connectionFormat: false,
-    fromId: stixRefRelationship.fromId,
-    toId: stixRefRelationship.toId,
+    fromId: from.internal_id,
+    toId: to.internal_id,
     orderBy: 'created_at',
     orderMode: 'desc'
   };
