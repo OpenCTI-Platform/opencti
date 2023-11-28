@@ -14,6 +14,7 @@ import type { BasicStoreEntity, StoreEntity, StoreEntityReport } from '../../typ
 import { nowTime } from '../../utils/format';
 import { READ_STIX_INDICES } from '../../database/utils';
 import { getParentTypes } from '../../schema/schemaUtils';
+import { filterUnwantedEntitiesOut } from '../../domain/container';
 
 const buildStixReportForExport = (workspace: BasicStoreEntityWorkspace, investigatedEntities: StoreEntity[]): StixObject => {
   const id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, { name: workspace.name, published: workspace.created_at }) as StixId;
@@ -44,6 +45,8 @@ export const toStixReportBundle = async (context: AuthContext, user: AuthUser, w
 export const investigationAddFromContainer = async (context: AuthContext, user: AuthUser, containerId: string) => {
   const container = await internalLoadById<BasicStoreEntity>(context, user, containerId);
   const investigationToStartCanonicalName = `[${container.entity_type}] "${container.name}" (${nowTime()})`;
-  const investigationInput = { type: 'investigation', name: investigationToStartCanonicalName, investigated_entities_ids: container.object };
+  const filteredOutInvestigatedIds = await filterUnwantedEntitiesOut({ context, user, ids: container.object });
+
+  const investigationInput = { type: 'investigation', name: investigationToStartCanonicalName, investigated_entities_ids: filteredOutInvestigatedIds };
   return addWorkspace(context, user, investigationInput);
 };

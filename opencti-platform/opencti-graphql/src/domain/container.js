@@ -2,7 +2,12 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, listThings } from '../database/middleware';
-import { internalFindByIds, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  internalFindByIds,
+  listAllRelations,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_REF_RELATIONSHIP,
@@ -13,7 +18,7 @@ import {
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, isInferredIndex, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';
-import { elCount } from '../database/engine';
+import { elBatchIds, elCount } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
@@ -148,9 +153,21 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
   return buildPagination(0, null, resolvedObjects.map((r) => ({ node: r })), resolvedObjects.length);
 };
 
+export const filterUnwantedEntitiesOut = async ({ context, user, ids }) => {
+  const filteredOutInvestigatedIds = [];
+  const entities = await elBatchIds(context, user, ids);
+  entities?.forEach((entity) => {
+    if (!['Task', 'Note'].includes(entity.entity_type)) {
+      filteredOutInvestigatedIds.push(entity.id);
+    }
+  });
+  return filteredOutInvestigatedIds;
+};
+
 export const knowledgeAddFromInvestigation = async (context, user, { containerId, workspaceId }) => {
   const investigation = await findInvestigationById(context, user, workspaceId);
-  const toIds = investigation.investigated_entities_ids.filter((id) => id !== containerId);
+  const ids = investigation.investigated_entities_ids?.filter((id) => id !== containerId);
+  const toIds = await filterUnwantedEntitiesOut({ context, user, ids });
   const containerInput = { toIds, relationship_type: 'object' };
   return await stixCoreObjectAddRelations(context, user, containerId, containerInput);
 };
