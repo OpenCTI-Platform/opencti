@@ -1,4 +1,4 @@
-import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
+import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
 
 export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
 
@@ -31,7 +31,7 @@ export interface ModuleHelper {
 }
 
 const isFeatureEnable = (
-  settings: RootPrivateQuery$data['settings'],
+  settings: RootSettings$data,
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
@@ -40,7 +40,7 @@ const isFeatureEnable = (
 };
 
 const isModuleEnable = (
-  settings: RootPrivateQuery$data['settings'],
+  settings: RootSettings$data,
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
@@ -49,7 +49,7 @@ const isModuleEnable = (
 };
 
 const isModuleWarning = (
-  settings: RootPrivateQuery$data['settings'],
+  settings: RootSettings$data,
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
@@ -58,7 +58,7 @@ const isModuleWarning = (
 };
 
 const platformModuleHelper = (
-  settings: RootPrivateQuery$data['settings'],
+  settings: RootSettings$data,
 ): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
   isModuleWarning: (id: string) => isModuleWarning(settings, id),

@@ -13,6 +13,12 @@ declare module '@mui/material/Button' {
   }
 }
 
+declare module '@mui/material/Button' {
+  interface ChipPropsColorOverrides {
+    ee: true
+  }
+}
+
 declare module '@mui/material/SvgIcon' {
   interface SvgIconPropsColorOverrides {
     ee: true
@@ -27,6 +33,7 @@ interface ExtendedColor extends PaletteColorOptions {
   mode: PaletteMode
   background: string
   lightBackground: string
+  contrastText: string
 }
 
 interface ExtendedBackground extends TypeBackground {
