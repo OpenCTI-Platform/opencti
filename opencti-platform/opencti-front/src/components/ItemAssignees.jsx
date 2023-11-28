@@ -30,7 +30,7 @@ const ItemAssignees = (props) => {
 };
 
 ItemAssignees.propTypes = {
-  assigneesEdges: PropTypes.object,
+  assigneesEdges: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default ItemAssignees;
