@@ -42,6 +42,8 @@ export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 
+export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
+
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
 export const CONTEXT_ENTITY_TYPE_FILTER = 'contextEntityType';

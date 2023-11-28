@@ -7,6 +7,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { IDS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 // test queries involving dynamic filters
 
@@ -815,6 +816,43 @@ describe('Complex filters combinations, behavior tested on reports', () => {
       } });
     const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data.globalSearch.edges.length; // all the entities except Malwares and Softwares
     expect(entitiesNumber - entitiesNumberWithoutMalwaresAndSoftware).toEqual(3); // 2 malwares + 1 software
+    // --- 14. combinations of operators and modes with the special filter key 'ids' --- //
+    // (id(stix/internal/standard) = XX OR YY)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: ['course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
+    // (id(stix/internal/standard) = XX AND YY)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: ['course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
