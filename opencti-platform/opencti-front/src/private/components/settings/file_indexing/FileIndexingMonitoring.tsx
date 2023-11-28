@@ -92,16 +92,18 @@ interface FileIndexingMonitoringComponentProps {
   managerConfigurationId: string | undefined;
   isStarted: boolean;
   totalFiles: number;
+  lastIndexationDate: Date;
 }
 
 const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringComponentProps> = ({
   managerConfigurationId,
   isStarted,
   totalFiles,
+  lastIndexationDate,
   queryRef,
   refetch,
 }) => {
-  const { n, t } = useFormatter();
+  const { n, t, fldt } = useFormatter();
   const classes = useStyles();
 
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery, queryRef);
@@ -225,6 +227,12 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             </div>
           </Grid>
         </Grid>
+        <div style={{ paddingTop: 30 }}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('Last indexation')}
+          </Typography>
+          {fldt(lastIndexationDate)}
+        </div>
         {isStarted && (
           <div style={{ paddingTop: 30 }}>
             <Typography variant="h3" gutterBottom={true}>
@@ -246,9 +254,10 @@ interface FileIndexingMonitoringProps {
   managerConfigurationId: string | undefined;
   isStarted: boolean;
   totalFiles: number;
+  lastIndexationDate: Date;
 }
 
-const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({ managerConfigurationId, isStarted, totalFiles }) => {
+const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({ managerConfigurationId, isStarted, totalFiles, lastIndexationDate }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingMonitoringQuery>(fileIndexingMonitoringQuery);
   useEffect(() => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
@@ -268,6 +277,7 @@ const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = (
             managerConfigurationId={managerConfigurationId}
             isStarted={isStarted}
             totalFiles={totalFiles}
+            lastIndexationDate={lastIndexationDate}
           />
         </React.Suspense>
       ) : (

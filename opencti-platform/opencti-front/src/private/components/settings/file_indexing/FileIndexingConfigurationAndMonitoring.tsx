@@ -58,6 +58,7 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
   const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery, queryRef);
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const managerConfigurationId = managerConfiguration?.id;
+  const lastIndexationDate = managerConfiguration?.last_run_end_date;
   const isStarted = managerConfiguration?.manager_running || false;
 
   return (
@@ -67,6 +68,7 @@ const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileInd
           totalFiles={totalFiles}
           isStarted={isStarted}
           managerConfigurationId={managerConfigurationId}
+          lastIndexationDate={lastIndexationDate}
         />
       </Grid>
       <Grid item={true} xs={12} >
