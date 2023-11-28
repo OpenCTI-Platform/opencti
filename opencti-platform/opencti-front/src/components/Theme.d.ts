@@ -26,6 +26,7 @@ interface ExtendedColor extends PaletteColorOptions {
   text: Partial<TypeText>
   mode: PaletteMode
   background: string
+  lightBackground: string
 }
 
 interface ExtendedBackground extends TypeBackground {

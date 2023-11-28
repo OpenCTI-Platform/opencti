@@ -41,7 +41,6 @@ const TopMenuData = () => {
   const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(path) : location.pathname === path);
   const getVariant = (path: string) => (isCompatiblePath(path) ? 'contained' : 'text');
-  const getColor = (path: string) => (isCompatiblePath(path) ? 'secondary' : 'primary');
   return (
     <div>
       {isKnowledgeReader && (
@@ -50,7 +49,6 @@ const TopMenuData = () => {
           size="small"
           to="/dashboard/data/entities"
           variant={getVariant('/dashboard/data/entities')}
-          color={getColor('/dashboard/data/entities')}
           classes={{ root: classes.button }}
         >
           {t('Entities')}
@@ -62,7 +60,6 @@ const TopMenuData = () => {
           size="small"
           to="/dashboard/data/relationships"
           variant={getVariant('/dashboard/data/relationships')}
-          color={getColor('/dashboard/data/relationships')}
           classes={{ root: classes.button }}
         >
           {t('Relationships')}
@@ -74,7 +71,6 @@ const TopMenuData = () => {
           size="small"
           to="/dashboard/data/ingestion"
           variant={getVariant('/dashboard/data/ingestion')}
-          color={getColor('/dashboard/data/ingestion')}
           classes={{ root: classes.button }}
         >
           {t('Ingestion')}
@@ -94,7 +90,6 @@ const TopMenuData = () => {
                 && !platformModuleHelpers.isTasksManagerEnable()
               }
               variant={getVariant('/dashboard/data/processing')}
-              color={getColor('/dashboard/data/processing')}
               classes={{ root: classes.button }}
             >
               {t('Processing')}
@@ -108,7 +103,6 @@ const TopMenuData = () => {
           size="small"
           to="/dashboard/data/sharing"
           variant={getVariant('/dashboard/data/sharing')}
-          color={getColor('/dashboard/data/sharing')}
           classes={{ root: classes.button }}
         >
           {t('Data sharing')}
@@ -120,7 +114,6 @@ const TopMenuData = () => {
           size="small"
           to="/dashboard/data/connectors"
           variant={getVariant('/dashboard/data/connectors')}
-          color={getColor('/dashboard/data/connectors')}
           classes={{ root: classes.button }}
         >
           {t('Connectors')}

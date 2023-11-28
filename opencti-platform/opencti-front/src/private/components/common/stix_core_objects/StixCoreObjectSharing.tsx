@@ -4,7 +4,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import { AccountBalanceOutlined, ShareOutlined } from '@mui/icons-material';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import { BankPlus } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import type { FormikHelpers } from 'formik/dist/types';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -38,7 +39,7 @@ interface OrganizationForm {
 
 // endregion
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   organizationInHeader: {
     margin: '4px 7px 0 0',
     float: 'left',
@@ -52,9 +53,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 28,
-  },
-  sharedButtonEE: {
-    borderColor: theme.palette.ee.main,
   },
 }));
 
@@ -122,7 +120,9 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const userIsOrganizationEditor = useGranted([
+    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  ]);
   const isEnterpriseEdition = useEnterpriseEdition();
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
@@ -178,7 +178,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               <Chip
                 icon={<AccountBalanceOutlined />}
                 classes={{ root: classes.organizationInHeader }}
-                color="warning"
+                color="primary"
                 variant="outlined"
                 label={truncate(edge.node.name, 15)}
                 onDelete={() => removeOrganization(edge.node.id)}
@@ -191,9 +191,11 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
               size="small"
               style={{ marginRight: 3 }}
-              classes={{ root: isEnterpriseEdition ? undefined : classes.sharedButtonEE }}
             >
-              <ShareOutlined fontSize="small" color={isEnterpriseEdition ? 'warning' : 'ee'} />
+              <BankPlus
+                fontSize="small"
+                color={isEnterpriseEdition ? 'primary' : 'disabled'}
+              />
             </ToggleButton>
           </EETooltip>
           <Formik
@@ -244,13 +246,13 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         </Typography>
         <EETooltip title={t('Share with an organization')}>
           <IconButton
-            color={isEnterpriseEdition ? 'warning' : 'ee'}
+            color="primary"
             aria-label="Label"
             onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             size="large"
           >
-            <ShareOutlined fontSize="small" color={isEnterpriseEdition ? 'warning' : 'ee'} />
+            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
         <div className="clearfix" />
@@ -259,7 +261,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             <Chip
               icon={<AccountBalanceOutlined />}
               classes={{ root: classes.organization }}
-              color="warning"
+              color="primary"
               variant="outlined"
               label={truncate(edge.node.name, 15)}
               onDelete={() => removeOrganization(edge.node.id)}

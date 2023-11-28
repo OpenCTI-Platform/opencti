@@ -42,7 +42,7 @@ const computeInlineStyles = (theme) => ({
     color: '#5c7bf5',
   },
   ee: {
-    backgroundColor: theme.palette.ee.background,
+    backgroundColor: theme.palette.ee.lightBackground,
     color: theme.palette.ee.main,
   },
 });

@@ -409,37 +409,35 @@ class StixCoreRelationshipContainer extends Component {
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <div>
-                      <StixCoreRelationshipSharing
-                        elementId={stixCoreRelationship.id}
-                        disabled={
-                          stixCoreRelationship.x_opencti_inferences !== null
-                        }
-                      />
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <MarkdownDisplay
-                        content={
-                          stixCoreRelationship.x_opencti_inferences !== null ? (
-                            <i>{t('Inferred knowledge')}</i>
-                          ) : (
-                            stixCoreRelationship.description
-                          )
-                        }
-                        remarkGfmPlugin={true}
-                        commonmark={true}
-                      />
-                      <StixCoreObjectKillChainPhasesView
-                        killChainPhasesEdges={
-                          stixCoreRelationship.killChainPhases.edges
-                        }
-                      />
-                    </div>
+                    <StixCoreRelationshipSharing
+                      elementId={stixCoreRelationship.id}
+                      disabled={
+                        stixCoreRelationship.x_opencti_inferences !== null
+                      }
+                    />
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Description')}
+                    </Typography>
+                    <MarkdownDisplay
+                      content={
+                        stixCoreRelationship.x_opencti_inferences !== null ? (
+                          <i>{t('Inferred knowledge')}</i>
+                        ) : (
+                          stixCoreRelationship.description
+                        )
+                      }
+                      remarkGfmPlugin={true}
+                      commonmark={true}
+                    />
+                    <StixCoreObjectKillChainPhasesView
+                      killChainPhasesEdges={
+                        stixCoreRelationship.killChainPhases.edges
+                      }
+                    />
                   </Grid>
                 </Grid>
               </div>

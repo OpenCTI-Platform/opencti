@@ -136,7 +136,7 @@ class SessionsListComponent extends Component {
       sortByNameCaseInsensitive,
     )(data);
     return (
-      <div>
+      <>
         <List
           component="nav"
           aria-labelledby="nested-list-subheader"
@@ -158,7 +158,7 @@ class SessionsListComponent extends Component {
                   to={`/dashboard/settings/accesses/users/${user.id}`}
                 >
                   <ListItemIcon>
-                    <ItemIcon type="UserOverview" />
+                    <ItemIcon type="User" />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -243,7 +243,7 @@ class SessionsListComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </>
     );
   }
 }

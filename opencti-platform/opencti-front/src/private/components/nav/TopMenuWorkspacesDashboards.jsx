@@ -29,7 +29,6 @@ class TopMenuThreats extends Component {
           to="/dashboard/workspaces/dashboards"
           variant="contained"
           size="small"
-          color="secondary"
           classes={{ root: classes.button }}
         >
           {t('Custom dashboards')}

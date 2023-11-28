@@ -7,12 +7,10 @@ import * as R from 'ramda';
 import { pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
-import { VisibilityOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -46,6 +44,10 @@ const useStyles = makeStyles((theme) => ({
     textTransform: 'uppercase',
     borderRadius: 0,
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
 }));
 
 const RelationshipsStixCoreRelationshipLineComponent = ({
@@ -61,195 +63,184 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
   const classes = useStyles();
   const { t, fd } = useFormatter();
 
-  const remoteNode = (node.from && !node.from.relationship_type) ? node.from : node.to;
+  const remoteNode = node.from && !node.from.relationship_type ? node.from : node.to;
   let link = null;
   if (remoteNode) {
     link = `${computeLink(remoteNode)}`;
   }
   return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={link}
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, node)
-          : onToggleEntity(node))
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
         }
-        selected={node.id in (selectedElements || {})}
       >
-        <ListItemIcon
-          classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 40 }}
-        >
-          <Checkbox
-            edge="start"
-            checked={
-              (selectAll && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
-            }
-            disableRipple={true}
-          />
-        </ListItemIcon>
-        <ListItemIcon>
-          {node.is_inferred ? (
-            <Tooltip
-              title={
-                t('Inferred knowledge based on the rule ')
-                + R.head(node.x_opencti_inferences).rule.name
-              }
-            >
-              <AutoFix style={{ color: itemColor(node.entity_type) }} />
-            </Tooltip>
-          ) : (
-            <ItemIcon type={node.entity_type} />
-          )}
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.fromType.width, display: 'flex' }}
-              >
-                <Chip
-                  classes={{ root: classes.chipInList }}
-                  style={{
-                    width: 140,
-                    backgroundColor: hexToRGB(
-                      itemColor(
-                        node.from ? node.from.entity_type : 'Restricted',
-                      ),
-                      0.08,
-                    ),
-                    color: itemColor(
-                      node.from ? node.from.entity_type : 'Restricted',
-                    ),
-                    border: `1px solid ${itemColor(
-                      node.from ? node.from.entity_type : 'Restricted',
-                    )}`,
-                  }}
-                  label={
-                    <>
-                      <ItemIcon
-                        variant="inline"
-                        type={node.from ? node.from.entity_type : 'restricted'}
-                      />
-                      {node.from
-                        ? t(
-                          node.from.parent_types.includes(
-                            'basic-relationship',
-                          )
-                            ? `relationship_${node.from.entity_type}`
-                            : `entity_${node.from.entity_type}`,
-                        )
-                        : t('Restricted')}
-                    </>
-                  }
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.fromName.width }}
-              >
-                {node.from ? defaultValue(node.from, true) : t('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.relationship_type.width }}
-              >
-                <Chip
-                  variant="outlined"
-                  classes={{ root: classes.chipInList }}
-                  style={{ width: 120 }}
-                  color="primary"
-                  label={t(`relationship_${node.relationship_type}`)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.toType.width, display: 'flex' }}
-              >
-                <Chip
-                  classes={{ root: classes.chipInList }}
-                  style={{
-                    width: 140,
-                    backgroundColor: hexToRGB(
-                      itemColor(node.to ? node.to.entity_type : 'Restricted'),
-                      0.08,
-                    ),
-                    color: itemColor(
-                      node.to ? node.to.entity_type : 'Restricted',
-                    ),
-                    border: `1px solid ${itemColor(
-                      node.to ? node.to.entity_type : 'Restricted',
-                    )}`,
-                  }}
-                  label={
-                    <>
-                      <ItemIcon
-                        variant="inline"
-                        type={node.to ? node.to.entity_type : 'restricted'}
-                      />
-                      {node.to
-                        ? t(
-                          node.to.parent_types.includes('basic-relationship')
-                            ? `relationship_${node.to.entity_type}`
-                            : `entity_${node.to.entity_type}`,
-                        )
-                        : t('Restricted')}
-                    </>
-                  }
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
-              >
-                {node.to ? defaultValue(node.to, true) : t('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                {pathOr('', ['createdBy', 'name'], node)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                {(node.creators ?? []).map((c) => c?.name).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                {fd(node.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <ItemMarkings
-                  variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
-                  limit={1}
-                />
-              </div>
-            </div>
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(node.id in (deSelectedElements || {})))
+            || node.id in (selectedElements || {})
           }
+          disableRipple={true}
         />
-        <ListItemSecondaryAction>
-          <IconButton
-            aria-label="Go to"
-            component={Link}
-            to={link}
-            disabled={link === null}
-            size="large"
+      </ListItemIcon>
+      <ListItemIcon>
+        {node.is_inferred ? (
+          <Tooltip
+            title={
+              t('Inferred knowledge based on the rule ')
+              + R.head(node.x_opencti_inferences).rule.name
+            }
           >
-            <VisibilityOutlined />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
+            <AutoFix style={{ color: itemColor(node.entity_type) }} />
+          </Tooltip>
+        ) : (
+          <ItemIcon type={node.entity_type} />
+        )}
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.fromType.width, display: 'flex' }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  width: 140,
+                  backgroundColor: hexToRGB(
+                    itemColor(node.from ? node.from.entity_type : 'Restricted'),
+                    0.08,
+                  ),
+                  color: itemColor(
+                    node.from ? node.from.entity_type : 'Restricted',
+                  ),
+                  border: `1px solid ${itemColor(
+                    node.from ? node.from.entity_type : 'Restricted',
+                  )}`,
+                }}
+                label={
+                  <>
+                    <ItemIcon
+                      variant="inline"
+                      type={node.from ? node.from.entity_type : 'restricted'}
+                    />
+                    {node.from
+                      ? t(
+                        node.from.parent_types.includes('basic-relationship')
+                          ? `relationship_${node.from.entity_type}`
+                          : `entity_${node.from.entity_type}`,
+                      )
+                      : t('Restricted')}
+                  </>
+                }
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.fromName.width }}
+            >
+              {node.from ? defaultValue(node.from, true) : t('Restricted')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.relationship_type.width }}
+            >
+              <Chip
+                variant="outlined"
+                classes={{ root: classes.chipInList }}
+                style={{ width: 120 }}
+                color="primary"
+                label={t(`relationship_${node.relationship_type}`)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.toType.width, display: 'flex' }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  width: 140,
+                  backgroundColor: hexToRGB(
+                    itemColor(node.to ? node.to.entity_type : 'Restricted'),
+                    0.08,
+                  ),
+                  color: itemColor(
+                    node.to ? node.to.entity_type : 'Restricted',
+                  ),
+                  border: `1px solid ${itemColor(
+                    node.to ? node.to.entity_type : 'Restricted',
+                  )}`,
+                }}
+                label={
+                  <>
+                    <ItemIcon
+                      variant="inline"
+                      type={node.to ? node.to.entity_type : 'restricted'}
+                    />
+                    {node.to
+                      ? t(
+                        node.to.parent_types.includes('basic-relationship')
+                          ? `relationship_${node.to.entity_type}`
+                          : `entity_${node.to.entity_type}`,
+                      )
+                      : t('Restricted')}
+                  </>
+                }
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.toName.width }}
+            >
+              {node.to ? defaultValue(node.to, true) : t('Restricted')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {pathOr('', ['createdBy', 'name'], node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {(node.creators ?? []).map((c) => c?.name).join(', ')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+            >
+              {fd(node.created_at)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                limit={1}
+              />
+            </div>
+          </div>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };
 
@@ -3833,140 +3824,128 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
 export const RelationshipsStixCoreRelationshipLineDummy = ({ dataColumns }) => {
   const classes = useStyles();
   return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      style={{ minWidth: 40 }}
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <ListItemIcon
-          classes={{ root: classes.itemIconDisabled }}
-          style={{ minWidth: 40 }}
-        >
-          <Checkbox edge="start" disabled={true} disableRipple={true} />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.fromType.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.fromName.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.relationship_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.toType.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.fromType.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
             </div>
-          }
-        />
-        <ListItemSecondaryAction>
-          <IconButton
-            aria-label="Go to"
-            component={Link}
-            disabled={true}
-            size="large"
-          >
-            <VisibilityOutlined />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.fromName.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.relationship_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.toType.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.toName.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };

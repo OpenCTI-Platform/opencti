@@ -24,7 +24,6 @@ class TopMenuSearch extends Component {
         <Button
           variant="contained"
           size="small"
-          color="secondary"
           classes={{ root: classes.button }}
         >
           {t('Search')}

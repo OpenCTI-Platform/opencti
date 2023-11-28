@@ -11,9 +11,9 @@ import * as Yup from 'yup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
 import { makeStyles } from '@mui/styles';
 import Switch from '@mui/material/Switch';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
@@ -29,7 +29,7 @@ import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: '0 0 60px 0',
   },
@@ -43,12 +43,6 @@ const useStyles = makeStyles((theme) => ({
   button: {
     float: 'right',
     marginTop: -30,
-  },
-  listItemTextEE: {
-    color: theme.palette.ee.main,
-  },
-  dividerEE: {
-    borderColor: theme.palette.ee.main,
   },
 }));
 
@@ -306,8 +300,7 @@ const Settings = () => {
                       style={{ marginTop: 15 }}
                     >
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -430,7 +423,7 @@ const Settings = () => {
                       <Button
                         size="small"
                         variant="outlined"
-                        color="secondary"
+                        color="primary"
                         onClick={() => handleSubmitField(id, 'enterprise_edition', '')
                         }
                         classes={{ root: classes.button }}
@@ -441,8 +434,7 @@ const Settings = () => {
                     <div className="clearfix" />
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -452,51 +444,49 @@ const Settings = () => {
                             <List style={{ marginTop: -20 }}>
                               <ListItem divider={true}>
                                 <ListItemText primary={t('Version')} />
-                                <Chip
-                                  label={version}
-                                  color="primary"
-                                  style={{ borderRadius: 5 }}
+                                <ItemBoolean
+                                  variant="inList"
+                                  neutralLabel={version}
+                                  status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText primary={t('Edition')} />
-                                <Chip
-                                  label={
+                                <ItemBoolean
+                                  variant="inList"
+                                  neutralLabel={
                                     isEnterpriseEdition
-                                      ? t('Enterprise Edition (EE)')
-                                      : t('Community Edition (CC)')
+                                      ? t('Enterprise')
+                                      : t('Community')
                                   }
-                                  color={
-                                    isEnterpriseEdition ? 'success' : 'warning'
-                                  }
-                                  style={{ borderRadius: 5 }}
+                                  status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText
                                   primary={t('Architecture mode')}
                                 />
-                                <Chip
-                                  label={
+                                <ItemBoolean
+                                  variant="inList"
+                                  neutralLabel={
                                     settings.platform_cluster.instances_number
                                     > 1
                                       ? t('Cluster')
                                       : t('Standalone')
                                   }
-                                  color="primary"
-                                  style={{ borderRadius: 5 }}
+                                  status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText
                                   primary={t('Number of node(s)')}
                                 />
-                                <Chip
-                                  label={
+                                <ItemBoolean
+                                  variant="inList"
+                                  neutralLabel={
                                     settings.platform_cluster.instances_number
                                   }
-                                  color="primary"
-                                  style={{ borderRadius: 5 }}
+                                  status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
@@ -510,19 +500,31 @@ const Settings = () => {
                                   fullWidth={true}
                                 />
                               </ListItem>
-                              <ListItem divider={true} classes={{ divider: !isEnterpriseEdition ? classes.dividerEE : undefined }}>
+                              <ListItem divider={true}>
                                 <ListItemText
-                                  primary={t('Remove Filigran logos')}
-                                  classes={{ root: !isEnterpriseEdition ? classes.listItemTextEE : undefined }}
-                                />
+                                  primary={
+                                    <>
+                                      {t('Remove Filigran logos')}
+                                      <EEChip />
+                                    </>
+                                  }
+                                ></ListItemText>
                                 <Field
                                   component={Switch}
                                   variant="standard"
                                   name="platform_whitemark"
                                   fullWidth={true}
                                   disabled={!isEnterpriseEdition}
-                                  checked={settings.platform_whitemark && isEnterpriseEdition}
-                                  onChange={(event, value) => handleSubmitField(id, 'platform_whitemark', value)}
+                                  checked={
+                                    settings.platform_whitemark
+                                    && isEnterpriseEdition
+                                  }
+                                  onChange={(event, value) => handleSubmitField(
+                                    id,
+                                    'platform_whitemark',
+                                    value,
+                                  )
+                                  }
                                 />
                               </ListItem>
                             </List>
@@ -548,8 +550,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -755,8 +756,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}

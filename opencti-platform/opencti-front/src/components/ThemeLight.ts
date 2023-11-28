@@ -2,7 +2,9 @@ import { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo.png';
-import { EE_COLOR, hexToRGB } from '../utils/Colors';
+import { hexToRGB } from '../utils/Colors';
+
+const EE_COLOR = '#0066ff';
 
 const ThemeLight = (
   logo: string | null,
@@ -30,7 +32,8 @@ const ThemeLight = (
     chip: { main: '#000000' },
     ee: {
       main: EE_COLOR,
-      background: hexToRGB(EE_COLOR, 0.3),
+      background: hexToRGB(EE_COLOR, 0.2),
+      lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
     background: {
       default: background || '#f3f6f9',

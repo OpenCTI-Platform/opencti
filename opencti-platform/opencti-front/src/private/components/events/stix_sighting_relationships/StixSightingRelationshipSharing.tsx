@@ -4,7 +4,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import { AccountBalanceOutlined, ShareOutlined } from '@mui/icons-material';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import { BankPlus } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import type { FormikHelpers } from 'formik/dist/types';
 import { Form, Formik } from 'formik';
@@ -14,6 +15,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { StixSightingRelationshipSharingQuery$data } from './__generated__/StixSightingRelationshipSharingQuery.graphql';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -166,16 +168,17 @@ ContainerHeaderSharedProps
         </Typography>
         <EETooltip title="Share with an organization">
           <IconButton
-            color={isEnterpriseEdition ? 'warning' : 'ee'}
+            color="primary"
             aria-label="Label"
             onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large"
+            style={{ float: 'left', margin: '-6px 0 0 3px' }}
+            size="small"
             disabled={disabled}
           >
-            <ShareOutlined fontSize="small" />
+            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
+        {!isEnterpriseEdition && <EEChip floating={true} />}
         <div className="clearfix" />
         {edges.map((edge) => (
           <Tooltip key={edge.node.id} title={edge.node.name}>

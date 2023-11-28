@@ -27,9 +27,6 @@ class TopMenuSearch extends Component {
             location.pathname === '/dashboard/import' ? 'contained' : 'text'
           }
           size="small"
-          color={
-            location.pathname === '/dashboard/import' ? 'secondary' : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           {t('Data import')}

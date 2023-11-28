@@ -6,10 +6,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
-import { VisibilityOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
@@ -48,6 +46,10 @@ const useStyles = makeStyles((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
 }));
 
 const EntitiesStixDomainObjectLineComponent = ({
@@ -69,13 +71,16 @@ const EntitiesStixDomainObjectLineComponent = ({
       classes={{ root: classes.item }}
       divider={true}
       button={true}
-      onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, node) : onToggleEntity(node))
-      }
-      selected={node.id in (selectedElements || {})}
+      component={Link}
+      to={link}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
+        }
       >
         <Checkbox
           edge="start"
@@ -153,11 +158,9 @@ const EntitiesStixDomainObjectLineComponent = ({
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <IconButton aria-label="Go to" component={Link} to={link} size="large">
-          <VisibilityOutlined />
-        </IconButton>
-      </ListItemSecondaryAction>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
     </ListItem>
   );
 };
@@ -473,16 +476,9 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <IconButton
-          aria-label="Go to"
-          component={Link}
-          disabled={true}
-          size="large"
-        >
-          <VisibilityOutlined />
-        </IconButton>
-      </ListItemSecondaryAction>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
     </ListItem>
   );
 };

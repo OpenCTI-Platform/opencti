@@ -4,7 +4,13 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS,
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../common/entreprise_edition/EEChip';
 
@@ -23,14 +29,10 @@ const TopMenuSettings = () => {
   const location = useLocation();
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
-
   let buttonVariant = 'outlined';
-  let buttonColor = 'ee';
   if (isEnterpriseEdition) {
     buttonVariant = 'contained';
-    buttonColor = 'secondary';
   }
-
   return (
     <>
       <Security needs={[SETTINGS]}>
@@ -44,18 +46,18 @@ const TopMenuSettings = () => {
               ? 'contained'
               : 'text'
           }
-          color={
-            location.pathname === '/dashboard/settings'
-            || location.pathname === '/dashboard/settings/about'
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           {t('Parameters')}
         </Button>
       </Security>
-      <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
+      <Security
+        needs={[
+          SETTINGS_SETMARKINGS,
+          SETTINGS_SETACCESSES,
+          VIRTUAL_ORGANIZATION_ADMIN,
+        ]}
+      >
         <Button
           component={Link}
           size="small"
@@ -64,11 +66,6 @@ const TopMenuSettings = () => {
             location.pathname.includes('/dashboard/settings/accesses')
               ? 'contained'
               : 'text'
-          }
-          color={
-            location.pathname.includes('/dashboard/settings/accesses')
-              ? 'secondary'
-              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -85,11 +82,6 @@ const TopMenuSettings = () => {
               ? 'contained'
               : 'text'
           }
-          color={
-            location.pathname.includes('/dashboard/settings/customization')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           {t('Customization')}
@@ -105,11 +97,6 @@ const TopMenuSettings = () => {
               ? 'contained'
               : 'text'
           }
-          color={
-            location.pathname.includes('/dashboard/settings/vocabularies')
-              ? 'secondary'
-              : 'primary'
-          }
           classes={{ root: classes.button }}
         >
           {t('Taxonomies')}
@@ -124,11 +111,6 @@ const TopMenuSettings = () => {
             location.pathname.includes('/dashboard/settings/activity')
               ? buttonVariant
               : 'text'
-          }
-          color={
-            location.pathname.includes('/dashboard/settings/activity')
-              ? buttonColor
-              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -147,11 +129,6 @@ const TopMenuSettings = () => {
             location.pathname.includes('/dashboard/settings/file_indexing')
               ? buttonVariant
               : 'text'
-          }
-          color={
-            location.pathname.includes('/dashboard/settings/file_indexing')
-              ? buttonColor
-              : 'primary'
           }
           classes={{ root: classes.button }}
         >

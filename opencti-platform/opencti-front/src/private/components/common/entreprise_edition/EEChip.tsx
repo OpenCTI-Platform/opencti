@@ -24,21 +24,34 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.ee.background,
     cursor: 'pointer',
   },
+  containerFloating: {
+    float: 'left',
+    fontSize: 'xx-small',
+    height: 14,
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 21,
+    margin: '2px 0 0 6px',
+    borderRadius: theme.borderRadius,
+    border: `1px solid ${theme.palette.ee.main}`,
+    color: theme.palette.ee.main,
+    backgroundColor: theme.palette.ee.background,
+    cursor: 'pointer',
+  },
 }));
 
-const EEChip = ({ feature, clickable = true }: { feature?: string, clickable?: boolean }) => {
+const EEChip = ({ feature, clickable = true, floating = false }: { feature?: string, clickable?: boolean, floating?: boolean }) => {
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t } = useFormatter();
-
   const [displayDialog, setDisplayDialog] = useState(false);
   const isAdmin = useGranted([SETTINGS]);
   const { settings: { id: settingsId } } = useAuth();
-
   return (!isEnterpriseEdition && (
     <>
       <div
-        className={classes.container}
+        className={floating ? classes.containerFloating : classes.container}
         onClick={() => clickable && setDisplayDialog(true)}
       >
         EE

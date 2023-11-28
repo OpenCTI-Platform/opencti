@@ -155,7 +155,11 @@ class ListLines extends Component {
       );
     }
     return (
-      <div className={classes.headerItem} style={{ width }} key={field}>
+      <div
+        className={classes.headerItem}
+        style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
+        key={field}
+      >
         <div className={classes.headerItemText}>{t(label)}</div>
       </div>
     );
@@ -257,11 +261,9 @@ class ListLines extends Component {
             )}
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders
-              && !noFilters
-              && <div style={{ height: 38 }}> &nbsp; </div>
-            }
-            {isFilterGroupNotEmpty(filters)
-              && <FilterIconButton
+              && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+            {isFilterGroupNotEmpty(filters) && (
+              <FilterIconButton
                 availableFilterKeys={availableFilterKeys}
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
@@ -269,7 +271,7 @@ class ListLines extends Component {
                 handleSwitchLocalMode={handleSwitchLocalMode}
                 redirection
               />
-            }
+            )}
           </div>
         )}
         <div className={classes.views}>

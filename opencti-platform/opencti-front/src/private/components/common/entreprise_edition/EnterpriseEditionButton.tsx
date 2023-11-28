@@ -19,15 +19,21 @@ const useStyles = makeStyles({
   },
 });
 
-const EnterpriseEditionButton = ({ feature, inLine = false }: { feature?: string, inLine?: boolean }) => {
+const EnterpriseEditionButton = ({
+  feature,
+  inLine = false,
+}: {
+  feature?: string;
+  inLine?: boolean;
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
   const [feedbackCreation, setFeedbackCreation] = useState(false);
-  const { settings: { id: settingsId } } = useAuth();
-
+  const {
+    settings: { id: settingsId },
+  } = useAuth();
   const isAdmin = useGranted([SETTINGS]);
-
   return (
     <>
       <EnterpriseEditionAgreement
@@ -66,7 +72,11 @@ const EnterpriseEditionButton = ({ feature, inLine = false }: { feature?: string
         openDrawer={feedbackCreation}
         handleCloseDrawer={() => setFeedbackCreation(false)}
         initialValue={{
-          description: t(`I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`),
+          description: t(
+            `I would like to use a EE feature ${
+              feature ? `(${feature}) ` : ''
+            }but I don't have EE activated.\nI would like to discuss with you about activating EE.`,
+          ),
         }}
       />
     </>

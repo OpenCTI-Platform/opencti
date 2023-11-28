@@ -1,5 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useMutation,
+  usePreloadedQuery,
+} from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
@@ -15,7 +21,6 @@ import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import EEPaper from '@components/common/entreprise_edition/EEPaper';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
@@ -30,6 +35,7 @@ import SelectField from '../../../components/SelectField';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -109,10 +115,12 @@ const policiesValidation = () => Yup.object().shape({
 
 interface PoliciesComponentProps {
   keyword?: string;
-  queryRef: PreloadedQuery<PoliciesQuery>
+  queryRef: PreloadedQuery<PoliciesQuery>;
 }
 
-const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef }) => {
+const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
+  queryRef,
+}) => {
   const data = usePreloadedQuery(policiesQuery, queryRef);
   const isEnterpriseEdition = useEnterpriseEdition();
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
@@ -126,7 +134,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
         commitField({
           variables: {
             id: settings.id,
-            input: { key: name, value: ((value as Option)?.value ?? value) || '' },
+            input: {
+              key: name,
+              value: ((value as Option)?.value ?? value) || '',
+            },
           },
         });
       })
@@ -172,8 +183,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Platform main organization')} <EEChip />
                     </Typography>
-                    <EEPaper classes={{ root: classes.paper }} variant="outlined">
-                      <Alert severity="warning">
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Alert severity="warning" variant="outlined">
                         {t(
                           'When you set a platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
                         )}
@@ -184,14 +195,15 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                             name="platform_organization"
                             disabled={!isEnterpriseEdition}
                             label={'Platform organization'}
-                            onChange={(name: string, value: Option) => handleSubmitField(name, value || null)}
+                            onChange={(name: string, value: Option) => handleSubmitField(name, value || null)
+                            }
                             style={{ width: '100%', marginTop: 20 }}
                             multiple={false}
                             outlined={false}
                           />
                         </span>
                       </EETooltip>
-                    </EEPaper>
+                    </Paper>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
@@ -208,7 +220,11 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                               primary={provider.name}
                               secondary={provider.strategy}
                             />
-                            <Chip label={t('Enabled')} color="success" />
+                            <ItemBoolean
+                              variant="inList"
+                              label={t('Enabled')}
+                              status={true}
+                            />
                           </ListItem>
                         ))}
                       </List>
@@ -432,13 +448,15 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
 
 const Policies: FunctionComponent = () => {
   const queryRef = useQueryLoading<PoliciesQuery>(policiesQuery, {});
-  return <>
-    {queryRef && (
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PoliciesComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 export default Policies;

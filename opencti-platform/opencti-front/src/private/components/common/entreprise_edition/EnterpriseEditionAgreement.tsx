@@ -19,20 +19,23 @@ const EnterpriseEditionAgreementMutationFieldPatch = graphql`
         id
       }
     }
-  }`;
+  }
+`;
 
 interface EnterpriseEditionAgreementProps {
-  open: boolean
-  onClose: () => void
-  settingsId: string
+  open: boolean;
+  onClose: () => void;
+  settingsId: string;
 }
 
-const EnterpriseEditionAgreement: FunctionComponent<EnterpriseEditionAgreementProps> = ({ open, onClose, settingsId }) => {
+const EnterpriseEditionAgreement: FunctionComponent<
+EnterpriseEditionAgreementProps
+> = ({ open, onClose, settingsId }) => {
   const { t } = useFormatter();
   const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
-
-  const [commitMutation] = useMutation(EnterpriseEditionAgreementMutationFieldPatch);
-
+  const [commitMutation] = useMutation(
+    EnterpriseEditionAgreementMutationFieldPatch,
+  );
   const enableEnterpriseEdition = () => {
     commitMutation({
       variables: {
@@ -57,19 +60,9 @@ const EnterpriseEditionAgreement: FunctionComponent<EnterpriseEditionAgreementPr
       maxWidth="md"
     >
       <DialogTitle>
-        {t(
-          'OpenCTI Enterprise Edition (EE) license agreement',
-        )}
+        {t('OpenCTI Enterprise Edition (EE) license agreement')}
       </DialogTitle>
       <DialogContent>
-        <Alert severity="info" style={{ marginBottom: 15 }}>
-          {t(
-            'To learn more about OpenCTI Enterprise Edition, please read the',
-          )}{' '}
-          <a target="_blank" href="https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c">
-            {t('associated blog post')}.
-          </a>
-        </Alert>
         <span>
           {t(
             'By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:',
@@ -90,10 +83,7 @@ const EnterpriseEditionAgreement: FunctionComponent<EnterpriseEditionAgreementPr
             {t(
               'For all other usages, you (and your organization) should have entered in a',
             )}{' '}
-            <a
-              href="https://filigran.io/offering/subscribe"
-              target="_blank"
-            >
+            <a href="https://filigran.io/offering/subscribe" target="_blank">
               {t('Filigran Enterprise agreement')}
             </a>
             .
@@ -104,14 +94,13 @@ const EnterpriseEditionAgreement: FunctionComponent<EnterpriseEditionAgreementPr
             control={
               <Checkbox
                 checked={enterpriseEditionConsent}
-                onChange={(event) => setEnterpriseEditionConsent(event.target.checked)}
+                onChange={(event) => setEnterpriseEditionConsent(event.target.checked)
+                }
               />
             }
             label={
               <>
-                  <span>
-                    {t('I have read and agree to the')}
-                  </span>{' '}
+                <span>{t('I have read and agree to the')}</span>{' '}
                 <a
                   href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE"
                   target="_blank"
@@ -125,11 +114,7 @@ const EnterpriseEditionAgreement: FunctionComponent<EnterpriseEditionAgreementPr
         </FormGroup>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onClose}
-        >
-          {t('Cancel')}
-        </Button>
+        <Button onClick={onClose}>{t('Cancel')}</Button>
         <Button
           color="secondary"
           onClick={enableEnterpriseEdition}

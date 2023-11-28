@@ -43,7 +43,7 @@ interface DataComponentLineProps {
     k: string,
     id: string,
     value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    event: React.KeyboardEvent,
   ) => void;
 }
 
@@ -85,9 +85,7 @@ const DataComponentLine: FunctionComponent<DataComponentLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-
   const data = useFragment(dataComponentFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}

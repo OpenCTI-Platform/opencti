@@ -5,13 +5,24 @@ import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import EEPaper from '@components/common/entreprise_edition/EEPaper';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { makeStyles } from '@mui/styles';
+import Paper from '@mui/material/Paper';
 import { SettingsQuery$data } from '../__generated__/SettingsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
+
+const useStyles = makeStyles(() => ({
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '5px 0 0 0',
+    padding: 20,
+    borderRadius: 6,
+  },
+}));
 
 const SettingsAnalyticsValidation = () => Yup.object().shape({
   analytics_google_analytics_v4: Yup.string().nullable(),
@@ -32,6 +43,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   handleSubmitField,
   isEnterpriseEdition,
 }) => {
+  const classes = useStyles();
   const { t } = useFormatter();
   const { id, editContext } = settings;
   return (
@@ -40,7 +52,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
         {t('Third-party analytics')}
         <EEChip />
       </Typography>
-      <div style={{ float: 'left', margin: '-3px 0 0 10px' }}>
+      <div style={{ float: 'left', margin: '-2px 0 0 10px' }}>
         <Tooltip
           title={
             <>
@@ -59,7 +71,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
         </Tooltip>
       </div>
       <div className="clearfix" />
-      <EEPaper variant="outlined">
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <Formik
           onSubmit={() => {}}
           enableReinitialize={true}
@@ -96,7 +108,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
             </Form>
           )}
         </Formik>
-      </EEPaper>
+      </Paper>
     </>
   );
 };

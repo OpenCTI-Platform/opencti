@@ -1,8 +1,6 @@
 /* eslint-disable no-bitwise */
 import invert from 'invert-color';
 
-export const EE_COLOR = '#9931FB';
-
 export const stringToColour = (str, reversed = false) => {
   if (!str) {
     return '#5d4037';
