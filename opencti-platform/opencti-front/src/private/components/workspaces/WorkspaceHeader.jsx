@@ -126,7 +126,7 @@ const WorkspaceHeader = ({
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
-  const tags = R.propOr([], 'tags', workspace);
+  const tags = workspace && workspace.tags ? workspace.tags : [];
 
   const handleOpenTag = () => {
     setOpenTag(!openTag);
@@ -152,7 +152,7 @@ const WorkspaceHeader = ({
           id: workspace.id,
           input: {
             key: 'tags',
-            value: R.append(newTag, currentTags),
+            value: [...currentTags, newTag],
           },
         },
         setSubmitting,
@@ -504,7 +504,7 @@ const WorkspaceHeader = ({
                   fullWidth={true}
                 >
                   <DialogTitle>
-                    {t('Entity aliases')}
+                    {t('Entity tags')}
                     <Formik
                       initialValues={{ new_tag: '' }}
                       onSubmit={onSubmitCreateTag}
