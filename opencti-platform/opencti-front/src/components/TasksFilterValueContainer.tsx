@@ -45,7 +45,7 @@ const TasksFilterValueContainer = ({ filters, isFiltersInOldFormat }: { filters:
           <TaskFilterValue
             filters={filters}
             queryRef={queryRef}
-          ></TaskFilterValue>
+          />
         </React.Suspense>
       )}
       {isFiltersInOldFormat
