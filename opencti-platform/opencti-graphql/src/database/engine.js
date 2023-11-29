@@ -1619,12 +1619,13 @@ const completeSpecialFilterKeysContent = (filter, keysToAdd) => {
   let newFilter;
   let newFilterGroup;
   if (mode === 'and') {
+    // we must split the keys in different filters to get different elastic match
     const newFiltersContent = keysToAdd.map((keyToAdd) => ({
       ...filter,
       key: keyToAdd,
     }));
     newFilterGroup = {
-      mode: operator === 'not_eq' ? 'and' : 'or',
+      mode: operator === 'not_eq' ? 'and' : 'or', // black magic, call Cathia
       filters: R.uniq([{
         ...filter,
         key: [TYPE_FILTER]
@@ -1632,12 +1633,19 @@ const completeSpecialFilterKeysContent = (filter, keysToAdd) => {
       filterGroups: [],
     };
   } else {
+    // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
     newFilter = { ...filter, key: arrayKeys.concat(keysToAdd) };
   }
   return { newFilter, newFilterGroup };
 };
 
-// complete the filters to be able to handle correctly special filter keys in the query builder
+/**
+ * Complete the filter if needed for several special filter keys
+ * 3 keys need this preprocessing before building the query:
+ * - entity_type: we need to handle parent types
+ * - ids: we will match the ids in filter against internal id, standard id, stix ids,
+ * - source_reliability: created_by (author) can be an individual, organization or a system
+ */
 const completeSpecialFilterKeys = async (context, user, inputFilters) => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
@@ -1651,11 +1659,14 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const filter = filters[index];
     const { key, operator, values, mode } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.includes(TYPE_FILTER) && arrayKeys.includes(IDS_FILTER)) {
+    // Having multi special keys is not supported
+    if (arrayKeys.find((k) => k === TYPE_FILTER || k === IDS_FILTER || k === SOURCE_RELIABILITY_FILTER) !== undefined && arrayKeys.length > 1) {
       throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
-    } else if (arrayKeys.includes(TYPE_FILTER)) {
+    }
+
+    if (arrayKeys.includes(TYPE_FILTER)) {
       // in case we want to filter by entity_type
-      // we need to add parent_types checking (in case the given value in type in an abstract type)
+      // we need to add parent_types checking (in case the given value in type is an abstract type)
       let newValues = filter.values;
       if (filter.mode === 'and' && filter.operator === 'eq') {
         // keep only the most restrictive entity types
@@ -1699,7 +1710,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (authors.length > 0) {
         const newKeys = arrayKeys.filter((k) => k !== SOURCE_RELIABILITY_FILTER);
         newKeys.push('rel_created-by.internal_id');
-        const newValues = authors.forEach((author) => author.internal_id);
+        const newValues = authors.map((author) => author.internal_id);
         const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent({ ...filter, values: newValues }, newKeys);
         if (newFilter) {
           finalFilters.push(newFilter);
@@ -1709,6 +1720,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
     } else {
+      // not a special case, leave the filter unchanged
       finalFilters.push(filter);
     }
   }
