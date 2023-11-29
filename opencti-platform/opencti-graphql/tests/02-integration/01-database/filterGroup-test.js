@@ -5,7 +5,12 @@ import { addMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
-import { ENTITY_TYPE_CONTAINER, ID_INTERNAL } from '../../../src/schema/general';
+import {
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ENTITY_TYPE_CONTAINER,
+  ID_INTERNAL
+} from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { IDS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
@@ -745,6 +750,24 @@ describe('Complex filters combinations for elastic queries', () => {
               key: 'entity_type',
               operator: 'eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
+    // (entity_type = Report AND container AND Stix-Core-Object)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              values: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER, ABSTRACT_INTERNAL_OBJECT],
               mode: 'and',
             }
           ],
