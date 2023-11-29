@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { graphql } from 'react-relay';
 import { compose, map, pathOr, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
@@ -13,6 +13,7 @@ import { PersonOutlined } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { usersLinesSearchQuery } from '../users/UsersLines';
+import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   list: {
@@ -33,7 +34,10 @@ const userMutationRelationAdd = graphql`
     groupEdit(id: $id) {
       relationAdd(input: $input) {
         to {
-          ...GroupEditionUsers_group
+          ...GroupEditionContainer_group
+        }
+        from {
+          ...UserLine_node
         }
       }
     }
@@ -48,23 +52,39 @@ const userMutationRelationDelete = graphql`
   ) {
     groupEdit(id: $id) {
       relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
-        ...GroupEditionUsers_group
+        id
+        ...GroupEditionContainer_group
       }
     }
   }
 `;
 
-class GroupEditionUsersComponent extends Component {
+class GroupEditionUsers extends Component {
   handleToggle(userId, groupUser, event) {
+    const options = { ...this.props.paginationOptions };
+    Object.keys(options).forEach((key) => options[key] === undefined && delete options[key]);
     if (event.target.checked) {
+      const input = {
+        fromId: userId,
+        relationship_type: 'member-of',
+      };
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
           id: this.props.group.id,
-          input: {
-            fromId: userId,
-            relationship_type: 'member-of',
-          },
+          input,
+        },
+        updater: (store) => {
+          insertNode(
+            store,
+            'Pagination_group_members',
+            options,
+            'groupEdit',
+            this.props.group.id,
+            'relationAdd',
+            input,
+            'from',
+          );
         },
       });
     } else if (groupUser !== undefined) {
@@ -74,6 +94,9 @@ class GroupEditionUsersComponent extends Component {
           id: this.props.group.id,
           fromId: groupUser.id,
           relationship_type: 'member-of',
+        },
+        updater: (store) => {
+          deleteNodeFromId(store, this.props.group.id, 'Pagination_group_members', options, groupUser.id);
         },
       });
     }
@@ -134,7 +157,7 @@ class GroupEditionUsersComponent extends Component {
   }
 }
 
-GroupEditionUsersComponent.propTypes = {
+GroupEditionUsers.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -142,21 +165,5 @@ GroupEditionUsersComponent.propTypes = {
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
-
-const GroupEditionUsers = createFragmentContainer(GroupEditionUsersComponent, {
-  group: graphql`
-    fragment GroupEditionUsers_group on Group {
-      id
-      members {
-        edges {
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  `,
-});
 
 export default compose(inject18n, withStyles(styles))(GroupEditionUsers);
