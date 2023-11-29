@@ -218,11 +218,10 @@ const TasksList = ({ data }) => {
           }
           let filters = null;
           let listIds = '';
-          let isFiltersInOldFormat = false;
           if (task.task_filters) {
-            [filters, isFiltersInOldFormat] = isFilterFormatCorrect(task.task_filters)
-              ? [deserializeFilterGroupForFrontend(task.task_filters), false]
-              : [convertFiltersFromOldFormat(task.task_filters), true];
+            filters = isFilterFormatCorrect(task.task_filters)
+              ? deserializeFilterGroupForFrontend(task.task_filters)
+              : convertFiltersFromOldFormat(task.task_filters);
           } else if (task.task_ids) {
             listIds = truncate(R.join(', ', task.task_ids), 60);
           }
@@ -262,7 +261,6 @@ const TasksList = ({ data }) => {
                         && (isFilterGroupNotEmpty(filters)
                           ? <TasksFilterValueContainer
                               filters={filters}
-                              isFiltersInOldFormat={isFiltersInOldFormat}
                             />
                           : (
                             <Chip
