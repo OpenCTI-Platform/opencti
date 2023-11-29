@@ -86,6 +86,9 @@ export const EqFilters = [
   'objectParticipant',
   'killChainPhases',
   'x_opencti_reliability',
+  'contextEntityId',
+  'event_type',
+  'event_scope',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
