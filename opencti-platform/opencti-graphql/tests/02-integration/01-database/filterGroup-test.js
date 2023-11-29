@@ -817,7 +817,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
     const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data.globalSearch.edges.length; // all the entities except Malwares and Softwares
     expect(entitiesNumber - entitiesNumberWithoutMalwaresAndSoftware).toEqual(3); // 2 malwares + 1 software
     // --- 14. combinations of operators and modes with the special filter key 'ids' --- //
-    // (id(stix/internal/standard) = XX OR YY)
+    // (id(stix/internal/standard) = standard-XX OR standard-YY)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
         first: 10,
@@ -835,7 +835,7 @@ describe('Complex filters combinations, behavior tested on reports', () => {
         },
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(2);
-    // (id(stix/internal/standard) = XX AND YY)
+    // (id(stix/internal/standard) = standard-XX AND standard-YY)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
         first: 10,
@@ -853,6 +853,42 @@ describe('Complex filters combinations, behavior tested on reports', () => {
         },
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    // (id(stix/internal/standard) = internal-XX OR stix-XX)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: [report1InternalId, report1StixId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    // (id(stix/internal/standard) = internal-XX AND stix-XX)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: [report1InternalId, report1StixId],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
