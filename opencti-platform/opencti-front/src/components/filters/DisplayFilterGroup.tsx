@@ -9,6 +9,7 @@ import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 import CodeBlock from '@components/common/CodeBlock';
+import Typography from '@mui/material/Typography';
 import { useFormatter } from '../i18n';
 import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
 
@@ -160,7 +161,14 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({ filter
           For your information, here is the content of the filter object
         </DialogTitle>
         <DialogContent>
+          <Typography variant="h2" sx={{ textTransform: 'none' }} gutterBottom={true}>
+            Your filter group cannot be modified yet :
+          </Typography>
           {displayFilterGroups(filterGroups)}
+
+          <Typography variant="h2" sx={{ textTransform: 'none' }} gutterBottom={true}>
+            The complete Filter object is as follows:
+          </Typography>
           <CodeBlock
             code={JSON.stringify(filterObj, null, 2)}
             language={'json'}

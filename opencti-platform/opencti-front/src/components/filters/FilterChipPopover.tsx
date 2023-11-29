@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import Popover from '@mui/material/Popover';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -39,6 +39,35 @@ const OperatorKeyValues: {
   lte: 'Lower than/ Equals',
 };
 
+interface BasicNumberInputProps {
+  filter?: Filter;
+  filterKey: string;
+  helpers?: UseLocalStorageHelpers;
+  filterValues: string[];
+}
+const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({ filter, filterKey, helpers, filterValues }) => {
+  const { t } = useFormatter();
+  return <TextField
+    variant="outlined"
+    size="small"
+    fullWidth={true}
+    id={filter?.id ?? `${filterKey}-id`}
+    label={t(filterKey)}
+    type="number"
+    InputProps={{ inputProps: { min: 0 } }}
+    defaultValue={filterValues[0]}
+    autoFocus={true}
+    onKeyDown={(event) => {
+      if (event.key === 'Enter') {
+        helpers?.handleAddSingleValueFilter(filter?.id ?? '', (event.target as HTMLInputElement).value);
+      }
+    }}
+    onBlur={(event) => {
+      helpers?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
+    }
+    }
+  />;
+};
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   params,
   handleClose, open,
@@ -85,26 +114,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const isSpecificFilter = (fKey: string) => {
     return dateFilters.includes(fKey) || integerFilters.includes(fKey);
   };
-  const BasicNumberInput = () => <TextField
-    variant="outlined"
-    size="small"
-    fullWidth={true}
-    id={filter?.id ?? `${filterKey}-id`}
-    label={t(filterKey)}
-    type="number"
-    defaultValue={filterValues[0]}
-    autoFocus={true}
-    onKeyDown={(event) => {
-      if (event.key === 'Enter') {
-        helpers?.handleAddSingleValueFilter(filter?.id ?? '', (event.target as HTMLInputElement).value);
-      }
-    }
-    }
-    onBlur={(event) => {
-      helpers?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
-    }
-    }
-  />;
+
   const BasicFilterDate = () => <FilterDate
     defaultHandleAddFilter={handleDateChange}
     filterKey={filterKey}
@@ -112,12 +122,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     inputValues={inputValues}
     setInputValues={setInputValues}
   />;
-  const SpecificFilter = () => {
-    if (dateFilters.includes(filterKey)) {
+  const getSpecificFilter = (fKey: string): ReactNode => {
+    if (dateFilters.includes(fKey)) {
       return <BasicFilterDate/>;
     }
-    if (integerFilters.includes(filterKey)) {
-      return <BasicNumberInput/>;
+    if (integerFilters.includes(fKey)) {
+      return <BasicNumberInput filter={filter} filterKey={filterKey} filterValues={filterValues} helpers={helpers}/>;
     }
     return null;
   };
@@ -147,12 +157,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       >
         {
           getAvailableOperatorForFilter(filterKey).map((value) => <MenuItem key={value}
-            value={value}>{OperatorKeyValues[value]}</MenuItem>)
+                                                                            value={value}>{OperatorKeyValues[value]}</MenuItem>)
         }
       </Select>
       {
         isSpecificFilter(filterKey)
-          ? <SpecificFilter/>
+          ? <>{getSpecificFilter(filterKey)}</>
           : <>
             {(!['not_nil', 'nil'].includes(filterOperator))
               && <MUIAutocomplete

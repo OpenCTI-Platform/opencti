@@ -67,6 +67,8 @@ export const inlineFilters = [
 export const integerFilters = [
   'x_opencti_base_score',
   'x_opencti_score',
+  'confidence',
+  'likelihood',
 ];
 
 // filters that can have 'eq' or 'not_eq' operator

@@ -117,6 +117,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     const toolBarFilters = filtersWithEntityType(filters, 'Case-Incident');
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

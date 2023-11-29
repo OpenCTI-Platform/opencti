@@ -233,7 +233,7 @@ ContainerStixCyberObservablesComponentProps
   );
   return (
     <UserContext.Consumer>
-      {({platformModuleHelpers}) => (
+      {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <ListLines
             helpers={helpers}
