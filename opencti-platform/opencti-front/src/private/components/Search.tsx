@@ -7,7 +7,9 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import { useHistory, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
@@ -18,6 +20,7 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import { initialFilterGroup } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
+import { useFormatter } from '../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'search';
 
@@ -26,6 +29,7 @@ const Search = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const history = useHistory();
+  const { t } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
@@ -62,6 +66,8 @@ const Search = () => {
   const handleSearch = (searchKeyword: string) => {
     handleSearchByKeyword(searchKeyword, 'knowledge', history);
   };
+
+  const resultsCount = numberOfElements?.original ?? 0;
 
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -187,6 +193,17 @@ const Search = () => {
       <ExportContextProvider>
         <div>
           {renderLines()}
+          {resultsCount <= 5 && searchTerm && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Button
+                size="small"
+                component={Link}
+                to={`/dashboard/search/files/${searchTerm}`}
+              >
+                <div>{t('Extend this search to indexed files')}<EEChip /></div>
+              </Button>
+            </div>
+          )}
         </div>
       </ExportContextProvider>
   );
