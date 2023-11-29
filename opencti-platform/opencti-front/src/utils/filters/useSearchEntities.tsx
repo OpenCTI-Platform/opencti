@@ -876,6 +876,7 @@ const useSearchEntities = ({
           'read',
           'search',
           'enrich',
+          'download',
           'import',
           'export',
           'login',
