@@ -40,6 +40,7 @@ export const SIGHTED_BY_FILTER = 'sightedBy';
 export const CONNECTIONS_FILTER = 'connections';
 export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
+export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
@@ -76,7 +77,7 @@ export const specialFilterKeys = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  'source_reliability', // reliability of the author
+  SOURCE_RELIABILITY_FILTER, // reliability of the author
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
@@ -90,6 +91,11 @@ export const filterKeysWhoseValueToResolve = [
   RELATION_TO_FILTER, // nested relation for the to of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
+  CONTEXT_ENTITY_ID_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CONTEXT_CREATED_BY_FILTER,
+  CONTEXT_OBJECT_MARKING_FILTER,
+  CONTEXT_OBJECT_LABEL_FILTER,
   USER_ID_FILTER,
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
