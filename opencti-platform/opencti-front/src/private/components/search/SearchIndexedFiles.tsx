@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import SearchIndexedFilesLines, { searchIndexedFilesLinesQuery } from '@components/search/SearchIndexedFilesLines';
 import {
@@ -5,8 +20,10 @@ import {
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
-import { useHistory, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import Alert from '@mui/material/Alert';
+import { Button } from '@mui/material';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -18,14 +35,19 @@ import ItemMarkings from '../../../components/ItemMarkings';
 import useAuth from '../../../utils/hooks/useAuth';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
+import Security from '../../../utils/Security';
+import { SETTINGS } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
-  const { fd } = useFormatter();
+  const { fd, t } = useFormatter();
   const history = useHistory();
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();
+  const managerConfiguration = useManagerConfiguration();
+  const isFileIndexingRunning = managerConfiguration?.manager_running || false;
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
   const {
@@ -158,6 +180,24 @@ const SearchIndexedFilesComponent = () => {
   return (
     <ExportContextProvider>
       <div>
+        {!isFileIndexingRunning && (
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ marginBottom: 30 }}
+          >
+            {t('File indexing is not started: ')}
+            <Security needs={[SETTINGS]} placeholder={<span>{t('please contact your administrator')}</span>}>
+              <Button
+                component={Link}
+                size="small"
+                to="/dashboard/settings/file_indexing"
+                >
+                {t('configure file indexing')}
+              </Button>
+            </Security>
+          </Alert>
+        )}
         {fileSearchEnabled && renderLines()}
       </div>
     </ExportContextProvider>
