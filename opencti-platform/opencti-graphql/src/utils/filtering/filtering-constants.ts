@@ -90,6 +90,11 @@ export const filterKeysWhoseValueToResolve = [
   RELATION_TO_FILTER, // nested relation for the to of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
+  CONTEXT_ENTITY_ID_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CONTEXT_CREATED_BY_FILTER,
+  CONTEXT_OBJECT_MARKING_FILTER,
+  CONTEXT_OBJECT_LABEL_FILTER,
   USER_ID_FILTER,
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
