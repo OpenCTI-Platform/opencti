@@ -875,189 +875,185 @@ const ContainerHeader = (props) => {
         </div>
       )}
       <div className={classes.actions}>
-        <QueryRenderer
-          query={containerHeaderObjectsQuery}
-          variables={{ id: container.id }}
-          render={({ props: containerProps }) => {
-            if (containerProps && containerProps.container) {
-              const suggestions = generateSuggestions(
-                containerProps.container.objects.edges.map((o) => ({
-                  ...o.node,
-                  types: o.types,
-                })),
-              );
-              const appliedSuggestions = getAppliedSuggestions();
-              if (userIsKnowledgeEditor) {
-                return (
-                  <React.Fragment>
-                    <ToggleButtonGroup
-                      size="small"
-                      color="secondary"
-                      exclusive={false}
-                    >
-                      {!knowledge && disableSharing !== true && (
-                        <StixCoreObjectSharing
-                          elementId={container.id}
-                          variant="header"
-                        />
-                      )}
-                      {enableQuickExport && (
-                        <StixCoreObjectFileExport
-                          id={container.id}
-                          type={container.entity_type}
-                        />
-                      )}
-                      {enableSuggestions && (
-                        <React.Fragment>
-                          <Tooltip title={t('Open the suggestions')}>
-                            <ToggleButton
-                              onClick={() => setDisplaySuggestions(true)}
-                              disabled={
-                                suggestions.length === 0
-                                || currentMode !== 'graph'
+        <ToggleButtonGroup size="small" color="secondary" exclusive={false}>
+          {!knowledge && disableSharing !== true && (
+            <StixCoreObjectSharing elementId={container.id} variant="header" />
+          )}
+          {enableQuickExport && (
+            <StixCoreObjectFileExport
+              id={container.id}
+              type={container.entity_type}
+            />
+          )}
+          {enableSuggestions && (
+            <QueryRenderer
+              query={containerHeaderObjectsQuery}
+              variables={{ id: container.id }}
+              render={({ props: containerProps }) => {
+                if (containerProps && containerProps.container) {
+                  const suggestions = generateSuggestions(
+                    containerProps.container.objects.edges.map((o) => ({
+                      ...o.node,
+                      types: o.types,
+                    })),
+                  );
+                  const appliedSuggestions = getAppliedSuggestions();
+                  if (userIsKnowledgeEditor) {
+                    return (
+                      <>
+                        <Tooltip title={t('Open the suggestions')}>
+                          <ToggleButton
+                            onClick={() => setDisplaySuggestions(true)}
+                            disabled={
+                              suggestions.length === 0
+                              || currentMode !== 'graph'
+                            }
+                            value="suggestion"
+                            size="small"
+                          >
+                            <Badge
+                              badgeContent={
+                                suggestions.filter(
+                                  (n) => !appliedSuggestions.includes(n.type),
+                                ).length
                               }
-                              value="suggestion"
-                              size="small"
+                              color="secondary"
                             >
-                              <Badge
-                                badgeContent={
-                                  suggestions.filter(
-                                    (n) => !appliedSuggestions.includes(n.type),
-                                  ).length
-                                }
-                                color="secondary"
-                              >
-                                <AssistantOutlined
-                                  fontSize="small"
-                                  disabled={suggestions.length === 0}
-                                  color={
-                                    // eslint-disable-next-line no-nested-ternary
-                                    suggestions.length === 0
-                                      ? 'disabled'
-                                      : displaySuggestions
-                                        ? 'secondary'
-                                        : 'primary'
-                                  }
-                                />
-                              </Badge>
-                            </ToggleButton>
-                          </Tooltip>
-                        </React.Fragment>
-                      )}
-                      {enableQuickSubscription && (
-                        <StixCoreObjectQuickSubscription
-                          instanceId={container.id}
-                          instanceName={defaultValue(container)}
-                        />
-                      )}
-                      {!knowledge && (
-                        <StixCoreObjectEnrichment
-                          stixCoreObjectId={container.id}
-                        />
-                      )}
-                    </ToggleButtonGroup>
-                    <Dialog
-                      PaperProps={{ elevation: 1 }}
-                      open={displaySuggestions}
-                      TransitionComponent={Transition}
-                      onClose={() => setDisplaySuggestions(false)}
-                      maxWidth="md"
-                      fullWidth={true}
-                    >
-                      <DialogTitle>{t('Suggestions')}</DialogTitle>
-                      <DialogContent dividers={true}>
-                        <List>
-                          {suggestions.map((suggestion) => (
-                            <ListItem
-                              key={suggestion.type}
-                              disableGutters={true}
-                              divider={true}
-                            >
-                              <ListItemText
-                                primary={
-                                  <MarkdownDisplay
-                                    content={t(`suggestion_${suggestion.type}`)}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                    markdownComponents={true}
-                                  />
+                              <AssistantOutlined
+                                fontSize="small"
+                                disabled={suggestions.length === 0}
+                                color={
+                                  // eslint-disable-next-line no-nested-ternary
+                                  suggestions.length === 0
+                                    ? 'disabled'
+                                    : displaySuggestions
+                                      ? 'secondary'
+                                      : 'primary'
                                 }
                               />
-                              <Select
-                                style={{
-                                  width: 200,
-                                  minWidth: 200,
-                                  margin: '0 0 0 15px',
-                                }}
-                                variant="standard"
-                                onChange={(event) => handleSelectEntity(suggestion.type, event)
-                                }
-                                value={selectedEntity[suggestion.type]}
-                              >
-                                {suggestion.data.map((object) => (
-                                  <MenuItem key={object.id} value={object.id}>
-                                    {defaultValue(object)}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                              <ListItemSecondaryAction>
-                                <IconButton
-                                  edge="end"
-                                  aria-label="apply"
-                                  onClick={() => applySuggestion(
-                                    suggestion.type,
-                                    containerProps.container.objects.edges.map(
-                                      (o) => ({
-                                        ...o.node,
-                                        types: o.types,
-                                      }),
-                                    ),
-                                  )
-                                  }
-                                  size="large"
-                                  color={
-                                    applied.some(
-                                      (a) => a[suggestion.type]
-                                        === selectedEntity[suggestion.type],
-                                    )
-                                      ? 'success'
-                                      : 'secondary'
-                                  }
-                                  disabled={
-                                    applying.includes(suggestion.type)
-                                    || !selectedEntity[suggestion.type]
-                                  }
-                                >
-                                  {applying.includes(suggestion.type) ? (
-                                    <CircularProgress
-                                      size={20}
-                                      color="inherit"
-                                    />
-                                  ) : (
-                                    <AddTaskOutlined />
-                                  )}
-                                </IconButton>
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          ))}
-                        </List>
-                      </DialogContent>
-                      <DialogActions>
-                        <Button
-                          onClick={() => setDisplaySuggestions(false)}
-                          color="primary"
+                            </Badge>
+                          </ToggleButton>
+                        </Tooltip>
+                        <Dialog
+                          PaperProps={{ elevation: 1 }}
+                          open={displaySuggestions}
+                          TransitionComponent={Transition}
+                          onClose={() => setDisplaySuggestions(false)}
+                          maxWidth="md"
+                          fullWidth={true}
                         >
-                          {t('Close')}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </React.Fragment>
-                );
-              }
-            }
-            return <div />;
-          }}
-        />
+                          <DialogTitle>{t('Suggestions')}</DialogTitle>
+                          <DialogContent dividers={true}>
+                            <List>
+                              {suggestions.map((suggestion) => (
+                                <ListItem
+                                  key={suggestion.type}
+                                  disableGutters={true}
+                                  divider={true}
+                                >
+                                  <ListItemText
+                                    primary={
+                                      <MarkdownDisplay
+                                        content={t(
+                                          `suggestion_${suggestion.type}`,
+                                        )}
+                                        remarkGfmPlugin={true}
+                                        commonmark={true}
+                                        markdownComponents={true}
+                                      />
+                                    }
+                                  />
+                                  <Select
+                                    style={{
+                                      width: 200,
+                                      minWidth: 200,
+                                      margin: '0 0 0 15px',
+                                    }}
+                                    variant="standard"
+                                    onChange={(event) => handleSelectEntity(suggestion.type, event)
+                                    }
+                                    value={selectedEntity[suggestion.type]}
+                                  >
+                                    {suggestion.data.map((object) => (
+                                      <MenuItem
+                                        key={object.id}
+                                        value={object.id}
+                                      >
+                                        {defaultValue(object)}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                  <ListItemSecondaryAction>
+                                    <IconButton
+                                      edge="end"
+                                      aria-label="apply"
+                                      onClick={() => applySuggestion(
+                                        suggestion.type,
+                                        containerProps.container.objects.edges.map(
+                                          (o) => ({
+                                            ...o.node,
+                                            types: o.types,
+                                          }),
+                                        ),
+                                      )
+                                      }
+                                      size="large"
+                                      color={
+                                        applied.some(
+                                          (a) => a[suggestion.type]
+                                            === selectedEntity[suggestion.type],
+                                        )
+                                          ? 'success'
+                                          : 'secondary'
+                                      }
+                                      disabled={
+                                        applying.includes(suggestion.type)
+                                        || !selectedEntity[suggestion.type]
+                                      }
+                                    >
+                                      {applying.includes(suggestion.type) ? (
+                                        <CircularProgress
+                                          size={20}
+                                          color="inherit"
+                                        />
+                                      ) : (
+                                        <AddTaskOutlined />
+                                      )}
+                                    </IconButton>
+                                  </ListItemSecondaryAction>
+                                </ListItem>
+                              ))}
+                            </List>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button
+                              onClick={() => setDisplaySuggestions(false)}
+                              color="primary"
+                            >
+                              {t('Close')}
+                            </Button>
+                          </DialogActions>
+                        </Dialog>
+                      </>
+                    );
+                  }
+                }
+                return <div />;
+              }}
+            />
+          )}
+          <>
+            {enableQuickSubscription && (
+              <StixCoreObjectQuickSubscription
+                instanceId={container.id}
+                instanceName={defaultValue(container)}
+              />
+            )}
+            {!knowledge && (
+              <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
+            )}
+          </>
+        </ToggleButtonGroup>
       </div>
       <div className="clearfix" />
     </div>

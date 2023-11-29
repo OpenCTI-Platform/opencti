@@ -19,7 +19,7 @@ const TopMenuNotifications = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   return (
-    <div>
+    <>
       <Button
         component={Link}
         to="/dashboard/profile/notifications"
@@ -28,11 +28,6 @@ const TopMenuNotifications = () => {
           location.pathname === '/dashboard/profile/notifications'
             ? 'contained'
             : 'text'
-        }
-        color={
-          location.pathname === '/dashboard/profile/notifications'
-            ? 'secondary'
-            : 'primary'
         }
         classes={{ root: classes.button }}
       >
@@ -47,16 +42,11 @@ const TopMenuNotifications = () => {
             ? 'contained'
             : 'text'
         }
-        color={
-          location.pathname === '/dashboard/profile/triggers'
-            ? 'secondary'
-            : 'primary'
-        }
         classes={{ root: classes.button }}
       >
         {t('Triggers and digests')}
       </Button>
-    </div>
+    </>
   );
 };
 

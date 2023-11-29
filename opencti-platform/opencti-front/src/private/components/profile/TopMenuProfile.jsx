@@ -19,7 +19,7 @@ const TopMenuProfile = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   return (
-    <div>
+    <>
       <Button
         component={Link}
         to="/dashboard/profile/me"
@@ -27,16 +27,11 @@ const TopMenuProfile = () => {
         variant={
           location.pathname === '/dashboard/profile/me' ? 'contained' : 'text'
         }
-        color={
-          location.pathname === '/dashboard/profile/me'
-            ? 'secondary'
-            : 'primary'
-        }
         classes={{ root: classes.button }}
       >
         {t('Profile')}
       </Button>
-    </div>
+    </>
   );
 };
 

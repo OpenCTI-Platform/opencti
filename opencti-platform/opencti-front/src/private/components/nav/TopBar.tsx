@@ -306,7 +306,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     to="/dashboard/search_bulk"
                     color={
                       location.pathname.includes('/dashboard/search_bulk')
-                        ? 'secondary'
+                        ? 'primary'
                         : 'default'
                     }
                     size="medium"
@@ -329,7 +329,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       location.pathname.includes(
                         '/dashboard/workspaces/dashboards',
                       )
-                        ? 'secondary'
+                        ? 'primary'
                         : 'default'
                     }
                     size="medium"
@@ -345,7 +345,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       location.pathname.includes(
                         '/dashboard/workspaces/investigations',
                       )
-                        ? 'secondary'
+                        ? 'primary'
                         : 'default'
                     }
                     size="medium"
@@ -362,7 +362,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   to="/dashboard/import"
                   color={
                     location.pathname.includes('/dashboard/import')
-                      ? 'secondary'
+                      ? 'primary'
                       : 'default'
                   }
                   size="medium"
@@ -384,12 +384,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       '/dashboard/profile/notifications',
                       '/dashboard/profile/triggers',
                     ].includes(location.pathname)
-                      ? 'secondary'
+                      ? 'primary'
                       : 'default'
                   }
                 >
                   <Badge
-                    color="warning"
+                    color="secondary"
                     variant="dot"
                     invisible={!isNewNotification}
                   >
@@ -407,7 +407,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               onClick={handleOpenMenu}
               color={
                 location.pathname === '/dashboard/profile/me'
-                  ? 'secondary'
+                  ? 'primary'
                   : 'default'
               }
             >
