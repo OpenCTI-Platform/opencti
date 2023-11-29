@@ -18,6 +18,7 @@ import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
 import { initialFilterGroup } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
@@ -28,6 +29,7 @@ const Search = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const history = useHistory();
   const { t } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
@@ -197,7 +199,9 @@ const Search = () => {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Button
                 size="small"
+                variant="outlined"
                 component={Link}
+                color={isEnterpriseEdition ? 'primary' : 'ee'}
                 to={`/dashboard/search/files/${searchTerm}`}
               >
                 <div>{t('Extend this search to indexed files')}<EEChip /></div>

@@ -23,7 +23,8 @@ import { SearchIndexedFileLine_node$data } from '@components/search/__generated_
 import { Link, useHistory, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
-import { Button } from '@mui/material';
+import AlertTitle from '@mui/material/AlertTitle';
+import Button from '@mui/material/Button';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -184,18 +185,23 @@ const SearchIndexedFilesComponent = () => {
           <Alert
             severity="warning"
             variant="outlined"
-            style={{ marginBottom: 30 }}
+            style={{ position: 'relative', marginBottom: 30 }}
           >
-            {t('File indexing is not started: ')}
-            <Security needs={[SETTINGS]} placeholder={<span>{t('please contact your administrator')}</span>}>
-              <Button
-                component={Link}
-                size="small"
-                to="/dashboard/settings/file_indexing"
-                >
-                {t('configure file indexing')}
-              </Button>
-            </Security>
+            <AlertTitle style={{ marginBottom: 0 }}>
+              {t('File indexing is not started.')}
+              <Security needs={[SETTINGS]} placeholder={<span>&nbsp;{t('Please contact your administrator.')}</span>}>
+                <Button
+                  component={Link}
+                  size="small"
+                  to="/dashboard/settings/file_indexing"
+                  color="warning"
+                  variant="outlined"
+                  style={{ marginLeft: 20 }}
+                  >
+                  {t('Configure file indexing')}
+                </Button>
+              </Security>
+            </AlertTitle>
           </Alert>
         )}
         {fileSearchEnabled && renderLines()}
