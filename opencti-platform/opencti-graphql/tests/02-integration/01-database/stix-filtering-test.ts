@@ -295,7 +295,14 @@ describe('Stix Filtering', () => {
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Stix-Core-Relationship'], mode: 'or' }],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([26, 38]); // all of rels are Stix-core-rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([24, 40]); // 24/26 rels are Stix-core-rel
+
+      filterGroup = {
+        mode: 'or',
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Stix-Sighting-Relationship'], mode: 'or' }],
+        filterGroups: [],
+      } as FilterGroup;
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([2, 62]); // 2/24 rels are Stix-sighting-rel
 
       filterGroup = {
         mode: 'or',
