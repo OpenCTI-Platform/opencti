@@ -68,7 +68,7 @@ const TaskFilterValue = ({
                   ) : (
                     currentFilter.values.map((o) => {
                       const localFilterMode = t(
-                        currentFilter.mode.toUpperCase(),
+                        (currentFilter.mode ?? 'eq').toUpperCase(),
                       );
                       return (
                         <span key={o}>

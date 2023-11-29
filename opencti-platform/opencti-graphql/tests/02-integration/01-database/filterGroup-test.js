@@ -1002,6 +1002,98 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     expect(queryResult.errors[0].message).toEqual('Not supported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+    // --- 15. combinations of operators and modes with the special filter key 'source_reliability' --- //
+    // (source_reliability = A - Completely reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(13);
+    // (source_reliability = A - Completely reliable OR B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(16);
+    // (source_reliability = A - Completely reliable AND B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    // (source_reliability != A - Completely reliable AND != B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'not_eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    const numberOfEntitiesWithSourceReliabilityNotAAndNotB = queryResult.data.globalSearch.edges.length;
+    // (source_reliability != A - Completely reliable OR != B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: IDS_FILTER,
+              operator: 'not_eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
+    expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(16); // number of entities with source_reliability A or B
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
