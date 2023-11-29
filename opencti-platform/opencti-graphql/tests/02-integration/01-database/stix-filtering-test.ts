@@ -322,6 +322,20 @@ describe('Stix Filtering', () => {
 
       filterGroup = {
         mode: 'or',
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report', 'Container'], mode: 'or' }],
+        filterGroups: [],
+      } as FilterGroup;
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([4, 60]); // 1 report, 1 Note, 1 Opinion, 1 Observed-Data
+
+      filterGroup = {
+        mode: 'or',
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report', 'Container'], mode: 'and' }],
+        filterGroups: [],
+      } as FilterGroup;
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // only 1 report which is a Container
+
+      filterGroup = {
+        mode: 'or',
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Software', 'Stix-Domain-Object'], mode: 'or' }],
         filterGroups: [],
       } as FilterGroup;
