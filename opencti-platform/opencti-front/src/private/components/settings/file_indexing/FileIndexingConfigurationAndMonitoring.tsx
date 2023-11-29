@@ -43,6 +43,7 @@ export const fileIndexingDefaultMimeTypes = [
   'text/csv',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/html',
 ];
 export const fileIndexingDefaultMaxFileSize = 5242880;
 

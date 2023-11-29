@@ -52,7 +52,7 @@ const STREAM_SCHEDULE_TIME = 10000;
 const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_key');
 
 // configuration that will be handled in ManagerConfiguration in MVP2
-const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/html'];
 const ACCEPT_MIME_TYPES: string[] = defaultMimeTypes;
 const MAX_FILE_SIZE: number = 5242880; // 5 mb
 const INCLUDE_GLOBAL_FILES: boolean = false;

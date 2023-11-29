@@ -54,7 +54,7 @@ const testFilesSearching = async (search, expectedFiles) => {
   expect(resultFiles).toEqual(expectedFiles);
 };
 
-const filesIds = ['TEST_FILE_1', 'TEST_FILE_2', 'TEST_FILE_3', 'TEST_FILE_4', 'TEST_FILE_5', 'TEST_FILE_6'];
+const filesIds = ['TEST_FILE_1', 'TEST_FILE_2', 'TEST_FILE_3', 'TEST_FILE_4', 'TEST_FILE_5', 'TEST_FILE_6', 'TEST_FILE_7'];
 
 describe('Indexing file test', () => {
   let document1;
@@ -95,6 +95,11 @@ describe('Indexing file test', () => {
   it('Should index xlsx file', async () => {
     const mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     const result = await indexFile('test-file-to-index.xlsx', mimeType, 'TEST_FILE_6');
+    await testFileIndexing(result, mimeType);
+  });
+  it('Should index html file', async () => {
+    const mimeType = 'text/html';
+    const result = await indexFile('test-file-to-index.html', mimeType, 'TEST_FILE_7');
     await testFileIndexing(result, mimeType);
   });
   it('Should find document by search query', async () => {

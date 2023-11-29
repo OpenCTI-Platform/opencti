@@ -2198,6 +2198,7 @@ const i18n = {
       'text/plain': 'TXT',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
       'application/vnd.ms-excel': 'XLS',
+      'text/html': 'HTML',
       'Workflow of': 'Flujo de trabajo de',
       'Create a status': 'Crear un estado',
       'Update a status': 'Actualizar un estado',
@@ -4503,6 +4504,7 @@ const i18n = {
       'text/plain': 'TXT',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
       'application/vnd.ms-excel': 'XLS',
+      'text/html': 'HTML',
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Update a status': 'Mettre à jour un statut',
@@ -9353,6 +9355,7 @@ const i18n = {
       'text/plain': 'TXT',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
       'application/vnd.ms-excel': 'XLS',
+      'text/html': 'HTML',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':
