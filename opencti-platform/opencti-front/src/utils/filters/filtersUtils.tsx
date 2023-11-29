@@ -89,6 +89,9 @@ export const EqFilters = [
   'contextEntityId',
   'event_type',
   'event_scope',
+  'user_id',
+  'group_ids',
+  'organization_ids',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
