@@ -98,7 +98,7 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   }
   let ids = filteredFilters.map((f) => f.values).flat() ?? [];
   if (filterGroups.length > 0) {
-    ids = ids.concat(filterGroups.map((group) => extractFilterGroupValues(group, key)).flat());
+    ids = ids.concat(filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
   return uniq(ids);
 };
