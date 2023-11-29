@@ -108,7 +108,7 @@ const AttackPatterns = () => {
                   <>
                     {Array(20)
                       .fill(0)
-                      .map((idx) => (
+                      .map((_, idx) => (
                             <AttackPatternLineDummy
                                 key={idx}
                                 dataColumns={dataColumns}

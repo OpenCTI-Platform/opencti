@@ -155,7 +155,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CaseRftLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

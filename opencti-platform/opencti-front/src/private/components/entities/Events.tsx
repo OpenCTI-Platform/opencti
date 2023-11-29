@@ -98,7 +98,7 @@ const Events = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <EventLineDummy
                       key={idx}
                       dataColumns={dataColumns}

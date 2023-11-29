@@ -136,7 +136,7 @@ const ContainerStixCoreObjectsMapping = ({
                 <>
                   {Array(20)
                     .fill(0)
-                    .map((idx) => (
+                    .map((_, idx) => (
                       <ContainerStixCoreObjectsMappingLineDummy
                         key={idx}
                         dataColumns={dataColumns}

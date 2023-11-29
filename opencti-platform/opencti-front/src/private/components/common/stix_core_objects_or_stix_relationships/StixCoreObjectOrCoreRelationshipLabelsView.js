@@ -342,8 +342,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 StixCoreObjectOrCoreRelationshipLabelsView.propTypes = {
   id: PropTypes.string,
   labels: PropTypes.object,
-  mutationRelationsAdd: PropTypes.func,
-  mutationRelationDelete: PropTypes.func,
+  mutationRelationsAdd: PropTypes.object,
+  mutationRelationDelete: PropTypes.object,
 };
 
 export default StixCoreObjectOrCoreRelationshipLabelsView;

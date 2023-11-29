@@ -102,7 +102,7 @@ const Channels = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <ChannelLineDummy
                       key={idx}
                       dataColumns={dataColumns}

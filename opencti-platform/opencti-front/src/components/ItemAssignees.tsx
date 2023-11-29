@@ -1,13 +1,24 @@
-import React from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
 import * as R from 'ramda';
 
-const ItemAssignees = (props) => {
+type Node = {
+  readonly entity_type: string;
+  readonly id: string;
+  readonly name: string;
+};
+
+type Props = {
+  assigneesEdges: ReadonlyArray<{
+    readonly node: Node;
+  }>
+};
+
+const ItemAssignees: FunctionComponent<Props> = (props) => {
   const { assigneesEdges } = props;
-  const sortBy = R.sortWith([R.ascend(R.prop('name'))]);
+  const sortBy = R.sortWith([R.ascend<Node>(R.prop('name'))]);
   const assignees = R.pipe(
-    R.map((n) => n.node),
+    R.map((n: { node: Node }) => n.node),
     sortBy,
   )(assigneesEdges);
   return (
@@ -27,10 +38,6 @@ const ItemAssignees = (props) => {
         : '-'}
     </div>
   );
-};
-
-ItemAssignees.propTypes = {
-  assigneesEdges: PropTypes.object,
 };
 
 export default ItemAssignees;

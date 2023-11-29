@@ -179,8 +179,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t('No available options')}
       options={options}
-      onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
-      }
+      onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
       inputValue={input}
       onChange={handleChange}
       groupBy={

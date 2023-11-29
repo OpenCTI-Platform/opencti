@@ -155,7 +155,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CaseRfiLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

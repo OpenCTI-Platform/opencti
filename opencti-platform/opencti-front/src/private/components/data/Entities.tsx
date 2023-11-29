@@ -158,7 +158,7 @@ const Entities = () => {
                     <>
                       {Array(20)
                         .fill(0)
-                        .map((idx) => (
+                        .map((_, idx) => (
                           <EntitiesStixDomainObjectLineDummy key={idx} dataColumns={dataColumns} />
                         ))}
                     </>

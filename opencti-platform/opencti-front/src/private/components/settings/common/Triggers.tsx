@@ -175,7 +175,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <TriggerLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

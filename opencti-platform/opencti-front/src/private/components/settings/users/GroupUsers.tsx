@@ -125,7 +125,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <UserLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

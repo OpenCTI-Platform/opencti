@@ -160,7 +160,7 @@ const Search = () => {
                         <>
                           {Array(20)
                             .fill(0)
-                            .map((idx) => (
+                            .map((_, idx) => (
                                   <SearchStixCoreObjectLineDummy key={idx} dataColumns={dataColumns} />
                             ))}
                         </>

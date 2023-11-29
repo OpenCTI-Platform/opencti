@@ -1879,6 +1879,7 @@ const i18n = {
       'entity_Payment-Card': 'Tarjeta bancaria',
       'entity_Media-Content': 'Contenido multimedia',
       entity_Vocabulary: 'Vocabulario',
+      entity_Notification: 'Notificación',
       // Relations
       relationship_All: 'Todos los tipos de relación',
       'relationship_service-dll': 'Dll Servicio',
@@ -4194,6 +4195,7 @@ const i18n = {
       'entity_Payment-Card': 'Carte de paiement',
       'entity_Media-Content': 'Contenu média',
       entity_Vocabulary: 'Vocabulaire',
+      entity_Notification: 'Notification',
       // Relations
       relationship_All: 'Tous les types de relation',
       'relationship_service-dll': 'service dll',
@@ -6410,6 +6412,7 @@ const i18n = {
       'entity_Payment-Card': 'クレジットカード番号',
       'entity_Media-Content': 'メディアコンテンツ',
       entity_Vocabulary: '語彙',
+      entity_Notification: '通知',
       // Relations
       relationship_All: '全てのタイプのリレーション',
       'relationship_service-dll': 'DLLサービス',
@@ -8517,6 +8520,7 @@ const i18n = {
       'entity_Payment-Card': '支付卡',
       'entity_Media-Content': '媒体内容',
       entity_Vocabulary: '词汇',
+      entity_Notification: '通知',
       // Relations
       relationship_All: '所有关系',
       'relationship_service-dll': '服務DLL',
@@ -9035,6 +9039,7 @@ const i18n = {
       'entity_Payment-Card': 'Payment card',
       'entity_Media-Content': 'Media content',
       entity_Vocabulary: 'Vocabulary',
+      entity_Notification: 'Notification',
       // Relations
       relationship_All: 'All types of relationship',
       'relationship_service-dll': 'service dll',

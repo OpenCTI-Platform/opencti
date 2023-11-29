@@ -91,7 +91,7 @@ const AdministrativeAreas: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <AdministrativeAreaLineDummy
                       key={idx}
                       dataColumns={dataColumns}

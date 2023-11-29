@@ -18,7 +18,7 @@ const TasksFilterValueContainer = ({ filters }: { filters: FilterGroup }) => {
           <TaskFilterValue
             filters={filters}
             queryRef={queryRef}
-          ></TaskFilterValue>
+          />
         </React.Suspense>
       )}
     </>

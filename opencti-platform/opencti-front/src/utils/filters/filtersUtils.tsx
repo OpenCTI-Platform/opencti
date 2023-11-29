@@ -151,6 +151,11 @@ export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined | nul
   );
 };
 
+export const isFilterFormatCorrect = (stringFilters: string): boolean => {
+  const filters = JSON.parse(stringFilters);
+  return filters.mode && filters.filters && filters.filterGroups;
+};
+
 export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
 
 export const findFilterFromKey = (
@@ -231,7 +236,7 @@ export const filtersWithEntityType = (
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
-  if (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey)) {
+  if (value && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))) {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }

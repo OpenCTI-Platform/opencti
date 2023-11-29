@@ -144,7 +144,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <FeedbackLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

@@ -101,7 +101,7 @@ const DataComponents: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <DataComponentLineDummy
                       key={idx}
                       dataColumns={dataColumns}

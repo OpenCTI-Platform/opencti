@@ -266,7 +266,7 @@ ContainerStixCyberObservablesComponentProps
                   <>
                     {Array(20)
                       .fill(0)
-                      .map((idx) => (
+                      .map((_, idx) => (
                         <ContainerStixCyberObservableLineDummy
                           key={idx}
                           dataColumns={buildColumns(platformModuleHelpers)}

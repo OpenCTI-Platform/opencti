@@ -93,7 +93,7 @@ const Individuals = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <IndividualLineDummy
                       key={idx}
                       dataColumns={dataColumns}

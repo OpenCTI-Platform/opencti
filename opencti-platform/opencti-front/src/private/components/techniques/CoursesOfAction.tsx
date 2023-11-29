@@ -96,7 +96,7 @@ const CoursesOfAction = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CourseOfActionLineDummy
                       key={idx}
                       dataColumns={dataColumns}

@@ -89,7 +89,7 @@ const Countries: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <CountryLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

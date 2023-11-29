@@ -122,7 +122,7 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: newBaseFilters ? serializeFilterGroupForBackend(newBaseFilters) : null },
+        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
       },
     });
   };

@@ -39,8 +39,8 @@ export const RESOLUTION_FILTERS = [
 export type FilterResolutionMap = Map<string, string>;
 
 // map (filter key) <-> (corresponding prop key in a stix object)
-const RESOLUTION_MAP_PATHS: Record<string, string> = {
-  [ASSIGNEE_FILTER]: 'id', // assignee --> resolve with the standard id (which is the stix.id)
+const STIX_RESOLUTION_MAP_PATHS: Record<string, string> = {
+  // [ASSIGNEE_FILTER]: 'id', // no resolution required in stix ; assignee_ids are internal ids already
   [CREATED_BY_FILTER]: 'id', // created by --> resolve with the standard id (which is the stix.id)
   [LABEL_FILTER]: 'value', // labels --> resolve id to stix.name
   [INDICATOR_FILTER]: 'type', // indicator types --> resolve id to stix.type
@@ -96,13 +96,13 @@ export const resolveFilterGroup = (filterGroup: FilterGroup, resolutionMap: Filt
  */
 const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>) : Promise<FilterResolutionMap> => {
   const map: Map<string, string> = new Map();
-  if (Object.keys(RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
+  if (Object.keys(STIX_RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
     for (let index = 0; index < filter.values.length; index += 1) {
       const v = filter.values[index];
       // manipulating proper stix objects typing requires a lot of refactoring at this point (typeguards, etc)
       // like with isStixMatchFilterGroup, let's use any to describe our stix objects in cache
       const cachedObject = cache.get(v) as any;
-      const path = RESOLUTION_MAP_PATHS[filter.key[0]];
+      const path = STIX_RESOLUTION_MAP_PATHS[filter.key[0]];
       if (cachedObject && path) {
         // some entities in cache might be restricted for this user or deleted
         if (!(await isUserCanAccessStixElement(context, user, cachedObject))) {

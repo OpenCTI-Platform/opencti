@@ -100,7 +100,7 @@ const DataSources: FunctionComponent = () => {
               <>
                 {Array(20)
                   .fill(0)
-                  .map((idx) => (
+                  .map((_, idx) => (
                     <DataSourceLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>

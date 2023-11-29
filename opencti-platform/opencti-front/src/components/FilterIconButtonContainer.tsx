@@ -220,9 +220,7 @@ FilterIconButtonContainerProps
                 <Tooltip
                   title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
             They might have been created via the API or a migration from a previous filter format.
-            For your information, here is the content of the filter object: ${JSON.stringify(
-                    filters.filterGroups,
-                  )}`}
+            For your information, here is the content of the filter object: ${JSON.stringify(filters.filterGroups)}`}
                 >
                   <InformationOutline
                     fontSize="small"
