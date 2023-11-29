@@ -81,7 +81,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };
     navigate(
-      `/dashboard/search${
+      `/dashboard/search/knowledge${
         keyword.length > 0 ? `/${keyword}` : ''
       }?${new URLSearchParams(urlParams).toString()}`,
     );

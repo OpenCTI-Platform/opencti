@@ -188,7 +188,7 @@ const FileIndexingConfiguration: FunctionComponent<FileIndexingConfigurationProp
                 <ListItem key={metrics.mimeType} divider={true} dense={true} style={{ height: 32, padding: 0 }}>
                   <ListItemText primary={t(metrics.mimeType)} className={classes.mimeType} style={{ width: '18%' }} />
                   <ListItemText primary={`~${metrics.count}`} className={classes.mimeTypeCount} style={{ width: '25%' }}/>
-                  <ListItemText primary={'files for'} style={{ width: '27%' }}/>
+                  <ListItemText primary={t('files for')} style={{ width: '27%' }}/>
                   <ListItemText primary={`${b(metrics.size)}`} className={classes.mimeTypeCount} style={{ width: '30%' }}/>
                 </ListItem>
               ))}

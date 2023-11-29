@@ -54,7 +54,7 @@ const testFilesSearching = async (search, expectedFiles) => {
   expect(resultFiles).toEqual(expectedFiles);
 };
 
-const filesIds = ['TEST_FILE_1', 'TEST_FILE_2', 'TEST_FILE_3', 'TEST_FILE_4', 'TEST_FILE_5', 'TEST_FILE_6'];
+const filesIds = ['TEST_FILE_1', 'TEST_FILE_2', 'TEST_FILE_3', 'TEST_FILE_4', 'TEST_FILE_5', 'TEST_FILE_6', 'TEST_FILE_7'];
 
 describe('Indexing file test', () => {
   let document1;
@@ -97,6 +97,11 @@ describe('Indexing file test', () => {
     const result = await indexFile('test-file-to-index.xlsx', mimeType, 'TEST_FILE_6');
     await testFileIndexing(result, mimeType);
   });
+  it('Should index html file', async () => {
+    const mimeType = 'text/html';
+    const result = await indexFile('test-file-to-index.html', mimeType, 'TEST_FILE_7');
+    await testFileIndexing(result, mimeType);
+  });
   it('Should find document by search query', async () => {
     const expectedFile1 = {
       _index: 'test_files-000001',
@@ -108,7 +113,7 @@ describe('Indexing file test', () => {
       entity_id: undefined,
       file_id: 'import/global/test-report-to-index.pdf',
       searchOccurrences: 11,
-      sort: [3.0948513, new Date(document1.indexed_at).getTime(), 'test_file_1']
+      sort: [3.33155, new Date(document1.indexed_at).getTime(), 'test_file_1']
     };
     await testFilesSearching('elastic', [expectedFile1]);
 
@@ -122,7 +127,7 @@ describe('Indexing file test', () => {
       entity_id: undefined,
       file_id: 'import/global/test-file-to-index.csv',
       searchOccurrences: 3,
-      sort: [1.5410707, new Date(document4.indexed_at).getTime(), 'test_file_4'],
+      sort: [1.6763315, new Date(document4.indexed_at).getTime(), 'test_file_4'],
     };
     const expectedFile2 = {
       _index: 'test_files-000001',
@@ -134,7 +139,7 @@ describe('Indexing file test', () => {
       entity_id: undefined,
       file_id: 'import/global/test-large-report-to-index.pdf',
       searchOccurrences: 1,
-      sort: [0.5858766, new Date(document2.indexed_at).getTime(), 'test_file_2'],
+      sort: [0.6007867, new Date(document2.indexed_at).getTime(), 'test_file_2'],
     };
     await testFilesSearching('control', [expectedFile4, expectedFile2]);
   });

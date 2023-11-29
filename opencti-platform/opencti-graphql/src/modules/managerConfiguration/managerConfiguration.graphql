@@ -8,13 +8,13 @@ type ManagerConfiguration implements InternalObject & BasicObject {
     manager_running: Boolean @auth
     last_run_start_date: DateTime @auth
     last_run_end_date: DateTime @auth
-    manager_setting: JSON @auth
+    manager_setting: JSON @auth(for: [SETTINGS])
 }
 
 # Queries
 type Query {
     managerConfiguration(id: String!): ManagerConfiguration @auth(for: [SETTINGS])
-    managerConfigurationByManagerId(managerId: String!): ManagerConfiguration @auth(for: [SETTINGS])
+    managerConfigurationByManagerId(managerId: String!): ManagerConfiguration @auth
 }
 
 # Mutations

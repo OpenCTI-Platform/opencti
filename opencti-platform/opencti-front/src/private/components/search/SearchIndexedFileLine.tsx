@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -6,10 +21,11 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { OpenInNewOutlined } from '@mui/icons-material';
+import { MoreVertOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
 import { DataColumns } from '../../../components/list_lines';
 import { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -25,6 +41,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+  },
+  itemIconDisabled: {
+    color: theme.palette.grey?.[700],
   },
   bodyItem: {
     height: 20,
@@ -98,7 +117,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   );
 };
 
-const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineComponent, {
+export const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineComponent, {
   node: graphql`
       fragment SearchIndexedFileLine_node on IndexedFile {
         id
@@ -132,4 +151,40 @@ const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLineCompo
   `,
 });
 
-export default SearchIndexedFileLine;
+export const SearchIndexedFileLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
+  const classes = useStyles();
+  return (
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <MoreVertOutlined />
+      </ListItemSecondaryAction>
+    </ListItem>
+  );
+};

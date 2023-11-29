@@ -66,6 +66,7 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { handleSearchByKeyword } from '../../../utils/SearchUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -221,12 +222,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setMenuOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
-    if (searchKeyword.length > 0) {
-      // With need to double encode because of react router.
-      // Waiting for history 5.0 integrated to react router.
-      const encodeKey = encodeURIComponent(encodeURIComponent(searchKeyword));
-      history.push(`/dashboard/search/${encodeKey}`);
-    }
+    handleSearchByKeyword(searchKeyword, 'knowledge', history);
   };
   const handleOpenDrawer = () => {
     setOpenDrawer(true);

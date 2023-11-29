@@ -18,11 +18,15 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import FileIndexingRequirements from '@components/settings/file_indexing/FileIndexingRequirements';
 import FileIndexingConfigurationAndMonitoring from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import { interval } from 'rxjs';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
+import { TEN_SECONDS } from '../../../../utils/Time';
+
+const interval$ = interval(TEN_SECONDS);
 
 const fileIndexingConfigurationQuery = graphql`
   query FileIndexingConfigurationQuery($managerId: String!) {
@@ -59,16 +63,27 @@ export const fileIndexingResetMutation = graphql`
 
 interface FileIndexingComponentProps {
   queryRef: PreloadedQuery<FileIndexingConfigurationQuery>;
+  refetch: () => void;
 }
 
 const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   queryRef,
+  refetch,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
 
   const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
+
+  useEffect(() => {
+    const subscription = interval$.subscribe(() => {
+      refetch();
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  });
 
   return (
     <div>
@@ -95,11 +110,16 @@ const FileIndexing = () => {
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
   }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
+
   return (
     <>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <FileIndexingComponent queryRef={queryRef} />
+          <FileIndexingComponent queryRef={queryRef} refetch={refetch} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.container} />

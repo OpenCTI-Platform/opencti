@@ -1,10 +1,30 @@
-import React, { FunctionComponent } from 'react';
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import React from 'react';
 import SearchIndexedFilesLines, { searchIndexedFilesLinesQuery } from '@components/search/SearchIndexedFilesLines';
 import {
   SearchIndexedFilesLinesPaginationQuery,
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
+import { Link, useHistory, useParams } from 'react-router-dom';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Button from '@mui/material/Button';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -13,12 +33,24 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
+import useAuth from '../../../utils/hooks/useAuth';
+import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
+import Security from '../../../utils/Security';
+import { SETTINGS } from '../../../utils/hooks/useGranted';
 
-interface SearchIndexedFilesProps {
-  search: string;
-}
 const LOCAL_STORAGE_KEY = 'view-files';
-const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ search }) => {
+const SearchIndexedFilesComponent = () => {
+  const { fd, t } = useFormatter();
+  const history = useHistory();
+  const {
+    platformModuleHelpers: { isFileIndexManagerEnable },
+  } = useAuth();
+  const managerConfiguration = useManagerConfiguration();
+  const isFileIndexingRunning = managerConfiguration?.manager_running || false;
+  const { keyword } = useParams() as { keyword: string };
+  const searchTerm = decodeSearchKeyword(keyword);
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -41,9 +73,14 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
 
   const queryRef = useQueryLoading<SearchIndexedFilesLinesPaginationQuery>(
     searchIndexedFilesLinesQuery,
-    { ...paginationOptions, search },
+    { ...paginationOptions, search: searchTerm },
   );
-  const { fd } = useFormatter();
+
+  const handleSearch = (searchKeyword: string) => {
+    handleSearchByKeyword(searchKeyword, 'files', history);
+  };
+
+  const fileSearchEnabled = isFileIndexManagerEnable();
 
   const renderLines = () => {
     const dataColumns = {
@@ -116,8 +153,10 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
           orderAsc={orderAsc}
           dataColumns={dataColumns}
           handleSort={storageHelpers.handleSort}
+          handleSearch={handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          keyword={searchTerm}
           disableCards={true}
           secondaryAction={true}
           paginationOptions={paginationOptions}
@@ -141,8 +180,45 @@ const SearchIndexedFiles : FunctionComponent<SearchIndexedFilesProps> = ({ searc
   };
   return (
     <ExportContextProvider>
-      {renderLines()}
+      <div>
+        {!isFileIndexingRunning && (
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative', marginBottom: 30 }}
+          >
+            <AlertTitle style={{ marginBottom: 0 }}>
+              {t('File indexing is not started.')}
+              <Security needs={[SETTINGS]} placeholder={<span>&nbsp;{t('Please contact your administrator.')}</span>}>
+                <Button
+                  component={Link}
+                  size="small"
+                  to="/dashboard/settings/file_indexing"
+                  color="warning"
+                  variant="outlined"
+                  style={{ marginLeft: 20 }}
+                  >
+                  {t('Configure file indexing')}
+                </Button>
+              </Security>
+            </AlertTitle>
+          </Alert>
+        )}
+        {fileSearchEnabled && renderLines()}
+      </div>
     </ExportContextProvider>
+  );
+};
+
+const SearchIndexedFiles = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
+  if (!isEnterpriseEdition) {
+    return (
+      <EnterpriseEdition feature={'File indexing'} />
+    );
+  }
+  return (
+    <SearchIndexedFilesComponent />
   );
 };
 

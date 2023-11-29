@@ -64,7 +64,12 @@ export const resetFileIndexing = async (context, user) => {
   if (!managerConfiguration) {
     throw FunctionalError('No manager configuration found');
   }
-  await managerConfigurationEditField(context, user, managerConfiguration.id, [{ key: 'manager_running', value: [false] }]);
+  const managerConfigurationEditInput = [
+    { key: 'manager_running', value: [false] },
+    { key: 'last_run_start_date', value: [null] },
+    { key: 'last_run_end_date', value: [null] },
+  ];
+  await managerConfigurationEditField(context, user, managerConfiguration.id, managerConfigurationEditInput);
   await elDeleteAllFiles();
   await publishUserAction({
     user,

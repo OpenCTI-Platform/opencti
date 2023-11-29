@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import { KeyboardDoubleArrowDownOutlined } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
+import React from 'react';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
 import {
   SearchStixCoreObjectLine_node$data,
@@ -9,10 +7,9 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import { useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
-import TopBar from './nav/TopBar';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
@@ -21,24 +18,22 @@ import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
-import { useFormatter } from '../../components/i18n';
+import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
 import { initialFilterGroup } from '../../utils/filters/filtersUtils';
+import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
+import { useFormatter } from '../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'search';
 
 const Search = () => {
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable, isFileIndexManagerEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const history = useHistory();
   const { t } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
-  let searchTerm = '';
-  try {
-    searchTerm = decodeURIComponent(keyword || '');
-  } catch (e) {
-    // Do nothing
-  }
-  const fileSearchEnabled = isFileIndexManagerEnable();
+  const searchTerm = decodeSearchKeyword(keyword);
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -69,10 +64,12 @@ const Search = () => {
     searchStixCoreObjectsLinesQuery,
     { ...paginationOptions, search: searchTerm },
   );
-  const [searchOpen, setSearchOpen] = useState(false);
-  const handleSearchIndexFiles = () => {
-    setSearchOpen(true);
+
+  const handleSearch = (searchKeyword: string) => {
+    handleSearchByKeyword(searchKeyword, 'knowledge', history);
   };
+
+  const resultsCount = numberOfElements?.original ?? 0;
 
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -126,6 +123,7 @@ const Search = () => {
               orderAsc={orderAsc}
               dataColumns={dataColumns}
               handleSort={storageHelpers.handleSort}
+              handleSearch={handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
               handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
@@ -138,6 +136,7 @@ const Search = () => {
               selectAll={selectAll}
               disableCards={true}
               filters={filters}
+              keyword={searchTerm}
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               iconExtension={true}
@@ -195,26 +194,20 @@ const Search = () => {
   return (
       <ExportContextProvider>
         <div>
-          <TopBar keyword={searchTerm} />
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-            style={{ margin: '-5px 20px 0 0', float: 'left' }}
-          >
-            {t('Search for an entity')}
-          </Typography>
           {renderLines()}
-          {fileSearchEnabled && searchTerm && (
+          {resultsCount <= 5 && searchTerm && (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Button
                 size="small"
-                onClick={handleSearchIndexFiles}
+                variant="outlined"
+                component={Link}
+                color={isEnterpriseEdition ? 'primary' : 'ee'}
+                to={`/dashboard/search/files/${searchTerm}`}
               >
-                <KeyboardDoubleArrowDownOutlined /> {t('Extend this search to indexed files')} <KeyboardDoubleArrowDownOutlined />
+                <div>{t('Extend this search to indexed files')}<EEChip /></div>
               </Button>
             </div>
           )}
-          { searchOpen ? (<SearchIndexedFiles search={searchTerm}/>) : ('')}
         </div>
       </ExportContextProvider>
   );
