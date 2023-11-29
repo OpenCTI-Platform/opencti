@@ -58,6 +58,9 @@ const i18n = {
       Search: 'Buscar',
       'Search these results': 'Buscar estos resultados',
       'Search the platform': 'Buscar en la plataforma',
+      'Global search': 'Búsqueda global',
+      'Knowledge search': 'Búsqueda de conocimiento',
+      'Files search': 'Búsqueda de archivos',
       Active: 'Activo',
       Inactive: 'Inactivo',
       'Last update': 'Última actualización',
@@ -727,6 +730,8 @@ const i18n = {
       'CSV Mappers': 'Mapeadores CSV',
       // File Indexing Configuration
       'File indexing': 'Indexación de archivos',
+      'Configure file indexing': 'Configurar la indexación de archivos',
+      'File indexing is not started.': 'Indexación de archivos no está iniciado',
       'Configuration and impact': 'Configuración e impacto',
       'Files will be indexed': 'Los archivos se indexarán',
       'Storage size': 'Tamaño de almacenamiento',
@@ -2245,6 +2250,7 @@ const i18n = {
       Expired: 'Caducada',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
         'Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.',
+      'Please contact your administrator.': 'Comuníquese con su administrador.',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
@@ -2364,6 +2370,9 @@ const i18n = {
       Search: 'Rechercher',
       'Search these results': 'Rechercher ces résultats',
       'Search the platform': 'Rechercher dans la plateforme',
+      'Global search': 'Recherche globale',
+      'Knowledge search': 'Recherche de connaissance',
+      'Files search': 'Recherche de fichiers',
       Active: 'Actif',
       Inactive: 'Inactif',
       'Last update': 'Dernière mise à jour',
@@ -3046,6 +3055,8 @@ const i18n = {
       'CSV Mappers': 'Mappeurs CSV',
       // File Indexing Configuration
       'File indexing': 'Indexation de fichiers',
+      'Configure file indexing': "Configurer l'indexation de fichiers",
+      'File indexing is not started.': "L'indexation des fichiers n'est pas démarrée.",
       'Configuration and impact': 'Configuration et impact',
       'Files will be indexed': 'Fichiers à indexer',
       'Storage size': 'Taille de stockage',
@@ -4555,6 +4566,7 @@ const i18n = {
       Expired: 'Expiré',
       'Your account has expired. If you would like to reactivate your account, please contact your administrator.':
         'Votre compte à expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.',
+      'Please contact your administrator.': 'Veuillez contacter votre administrateur.',
       create: 'Creation events',
       update: 'Modification events',
       delete: 'Deletion events',
