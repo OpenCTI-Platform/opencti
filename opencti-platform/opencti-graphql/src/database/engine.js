@@ -61,7 +61,7 @@ import {
   RULE_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
-import { getParentTypes } from '../schema/schemaUtils';
+import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -1652,11 +1652,16 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const { key, operator, values, mode } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
     if (arrayKeys.includes(TYPE_FILTER) && arrayKeys.includes(IDS_FILTER)) {
-      throw Error(`A filter with these mutliple keys is not supported: ${arrayKeys}`);
+      throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
     } else if (arrayKeys.includes(TYPE_FILTER)) {
       // in case we want to filter by entity_type
       // we need to add parent_types checking (in case the given value in type in an abstract type)
-      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent(filter, ['parent_types']);
+      let newValues = filter.values;
+      if (filter.mode === 'and' && filter.operator === 'eq') {
+        // keep only the most restrictive entity types
+        newValues = keepMostRestrictiveTypes(filter.values);
+      }
+      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent({ ...filter, values: newValues }, ['parent_types']);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
@@ -1666,6 +1671,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     } else if (arrayKeys.includes(IDS_FILTER)) {
       // the special filter key 'ids' take all the ids into account
       const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+      if (filter.mode === 'and') {
+        throw Error('Not supported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+      }
       const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent(filter, idsArray);
       if (newFilter) {
         finalFilters.push(newFilter);
