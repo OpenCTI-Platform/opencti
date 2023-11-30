@@ -226,33 +226,23 @@ Here is an example of OpenID configuration using environment variables:
 - PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false
 ```
 
-OpenCTI support mapping OpenID Roles/Groups on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
+OpenCTI support mapping OpenID Claims on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
 
 ```json
 "oic": {
     "config": {
         ...,
         // Groups mapping
-        "groups_management": { // To map OpenID Groups to OpenCTI Groups
+        "groups_management": { // To map OpenID Claims to OpenCTI Groups
             "groups_scope": "groups",
             "groups_path": ["groups", "realm_access.groups", "resource_access.account.groups"],
             "groups_mapping": ["OpenID_Group_1:OpenCTI_Group_1", "OpenID_Group_2:OpenCTI_Group_2", ...]
         },
-        "groups_management": { // To map OpenID Roles to OpenCTI Groups
-            "groups_scope": "roles",
-            "groups_path": ["roles", "realm_access.roles", "resource_access.account.roles"],
-            "groups_mapping": ["OpenID_Role_1:OpenCTI_Group_1", "OpenID_Role_2:OpenCTI_Group_2", ...]
-        },
         // Organizations mapping  
-        "organizations_management": { // To map OpenID Groups to OpenCTI Organizations
+        "organizations_management": { // To map OpenID Claims to OpenCTI Organizations
             "organizations_scope": "groups",
             "organizations_path": ["groups", "realm_access.groups", "resource_access.account.groups"],
             "organizations_mapping": ["OpenID_Group_1:OpenCTI_Group_1", "OpenID_Group_2:OpenCTI_Group_2", ...]
-        },
-        "organizations_management": { // To map OpenID Roles to OpenCTI Organizations
-            "organizations_scope": "roles",
-            "organizations_path": ["roles", "realm_access.roles", "resource_access.account.roles"],
-            "organizations_mapping": ["OpenID_Role_1:OpenCTI_Group_1", "OpenID_Role_2:OpenCTI_Group_2", ...]
         },
     }
 }
@@ -264,6 +254,19 @@ Here is an example of OpenID Groups mapping configuration using environment vari
 - "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=groups"
 - "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]"
 - "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]"
+```
+
+By default, the claims are mapped based on the content of the JWT `access_token`. If you want to map claims which are in other JWT (such as `id_token`), you can define the following environment variables:
+
+```yaml
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=id_token"
+- "PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token"
+```
+
+Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoint instead of a JWT.
+```yaml
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true"
+- "PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__READ_USERINFO=true"
 ```
 
 ### Facebook (button)
