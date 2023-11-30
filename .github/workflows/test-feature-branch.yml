@@ -1,0 +1,108 @@
+name: test-feature-branch 
+on: workflow_dispatch
+
+jobs:
+  worker:
+    name: worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: filigran/worker
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: opencti-worker
+          file: opencti-worker/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  platform:
+    name: platform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.18
+          packages: >
+            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
+
+      - name: Setup Node.js & python
+        run: |
+          npm install -g node-gyp yarn
+          python -V
+        shell: alpine.sh --root {0}
+
+      - name: Build into Alpine
+        run: |
+          cd opencti-platform/opencti-front
+          yarn install
+          yarn build
+          cd ../opencti-graphql
+          yarn install
+          yarn build
+        shell: alpine.sh {0}
+
+      - run: mkdir -p opencti/{dependencies,src/python}
+      - run: cp -a ./opencti-platform/opencti-graphql/{config,build,static,public} opencti/
+      - run: cp ./opencti-platform/opencti-graphql/src/python/requirements.txt opencti/dependencies/
+      - run: cp -a ./opencti-platform/opencti-graphql/src/python/runtime opencti/src/python/
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: filigran/platform
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: opencti-platform/Dockerfile_ga
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: deploy
+    needs: [platform, worker]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - name: deploy via awx
+        uses: certara/github-action-ansible-tower-awx@master
+        with:
+          ansible-tower-user: ${{ secrets.AWX_USER }}
+          ansible-tower-pass: ${{ secrets.AWX_PASSWORD }}
+          ansible-tower-url: ${{ secrets.AWX_URL }}
+          template-id: "26"
+          additional-vars: |
+            { "customer": "${{env.GITHUB_REF_NAME_SLUG}}" }
+      - name: display URL
+        run: echo "https://${{env.GITHUB_REF_NAME_SLUG}}.octi.dev.filigran.io"
