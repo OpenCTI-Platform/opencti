@@ -751,9 +751,9 @@ export const deleteAllNotificationByUser = async (userId) => {
  * Delete a user and related data:
  * - Delete relation
  * - Delete user's Notification, Digests and Triggers (both are Triggers)
- * - Delete user's Investigation and Dashboard (both are Workspace) that are not shared to another 'admin' or 'edit'.
+ * - Delete user's Investigation and Dashboard (both are Workspace) that are not shared to another 'admin'.
  *
- * User workspace where the user is 'admin' and having other users with 'view' only are deleted too.
+ * User workspace where the user is 'admin' and having other users are deleted too.
  * Only one audit log is create for the user deletion. No audit log for Notification, Triggers, Workspace deletion.
  * @param context
  * @param user the user that is user to call delete
