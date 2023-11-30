@@ -9,10 +9,16 @@ import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_LOCATION,
   ID_INTERNAL
 } from '../../../src/schema/general';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE
+} from '../../../src/schema/stixDomainObject';
 import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
 
@@ -1094,6 +1100,48 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
     expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(9); // number of entities with source_reliability A or B
+    // --- 16. filters with a relationship type key --- //
+    const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
+    const locationInternalId = location.internal_id;
+    const intrusionSet = await storeLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', ENTITY_TYPE_INTRUSION_SET);
+    const intrusionSetInternalId = intrusionSet.internal_id;
+    // (objects = internal-id-of-a-location)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'objects',
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 report contains this location
+    // (targets = internal-id-of-a-location)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'targets',
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
+    expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
