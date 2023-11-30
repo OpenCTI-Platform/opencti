@@ -61,7 +61,7 @@ const STIX_RESOLUTION_MAP_PATHS: Record<string, string> = {
  * For instance, labels are entities internally, and filter.values would contain these entities internal ids.
  * In Stix, the labels are stored in plain text: we need to replace the ids in filter.values with their resolution.
  */
-export const resolveFilter = (filter: Filter, resolutionMap: FilterResolutionMap): Filter => {
+const resolveFilter = (filter: Filter, resolutionMap: FilterResolutionMap): Filter => {
   const newFilterValues: string [] = [];
   filter.values.forEach((v) => {
     const resolution = resolutionMap.get(v);
@@ -122,6 +122,18 @@ const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser,
   return map;
 };
 
+const mergeMaps = <K, V>(mapArray: Map<K, V>[]) : Map<K, V> => {
+  const mergedMap = new Map<K, V>();
+
+  mapArray.forEach((map) => {
+    map.forEach((value, key) => {
+      mergedMap.set(key, value);
+    });
+  });
+
+  return mergedMap;
+};
+
 /**
  * recursively call buildResolutionMapForFilter inside a filter group
  */
@@ -134,7 +146,7 @@ export const buildResolutionMapForFilterGroup = async (
   const filtersMaps = await Promise.all(filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)));
   const filterGroupsMaps = await Promise.all(filterGroup.filterGroups.map((fg) => buildResolutionMapForFilterGroup(context, user, fg, cache)));
   // merge all maps into one; for a given unique key the last value wins
-  return new Map([...new Map(...filtersMaps), ...new Map(...filterGroupsMaps)]);
+  return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
 };
 
 /**
