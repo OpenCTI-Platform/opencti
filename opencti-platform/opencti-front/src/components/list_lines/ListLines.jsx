@@ -79,7 +79,12 @@ const styles = (theme) => ({
     flexWrap: 'wrap',
   },
   parametersWithPadding: {
-    padding: '0 0 0 15px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: -10,
+    paddingBottom: 10,
+    flexWrap: 'wrap',
   },
   views: {
     float: 'right',
@@ -238,11 +243,7 @@ class ListLines extends Component {
                 {!this.props.inline
                     && <>
                         <div
-                            className={
-                                parametersWithPadding
-                                  ? classes.parametersWithPadding
-                                  : classes.parameters
-                            }
+                            className={classes.parameters}
                         >
                             {typeof handleSearch === 'function'
                                 && <SearchInput

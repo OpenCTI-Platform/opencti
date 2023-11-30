@@ -110,7 +110,6 @@ const ListFilters = ({
             </IconButton>
           </Tooltip>
         </>
-
       )}
       <Popover
         classes={{ paper: classes.container }}

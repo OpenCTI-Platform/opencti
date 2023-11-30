@@ -54,7 +54,6 @@ const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({ filter, fi
     id={filter?.id ?? `${filterKey}-id`}
     label={t(filterKey)}
     type="number"
-    InputProps={{ inputProps: { min: 0 } }}
     defaultValue={filterValues[0]}
     autoFocus={true}
     onKeyDown={(event) => {

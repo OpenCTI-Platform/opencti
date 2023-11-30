@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
@@ -51,6 +52,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   allEntityTypes,
   handleAddFilter,
   handleRemoveFilter,
+  handleSwitchFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
   searchContext,
@@ -158,7 +160,8 @@ const Filters: FunctionComponent<FiltersProps> = ({
     );
   }
   return (
-        <ListFilters
+    <> { helpers
+      ? <ListFilters
             size={size}
             fontSize={fontSize}
             handleOpenFilters={handleOpenFilters}
@@ -171,7 +174,31 @@ const Filters: FunctionComponent<FiltersProps> = ({
             type={type}
             helpers={helpers}
         />
-  );
+      : <ListFiltersWithoutLocalStorage
+          size={size}
+          fontSize={fontSize}
+          handleOpenFilters={handleOpenFilters}
+          handleCloseFilters={handleCloseFilters}
+          open={open}
+          anchorEl={anchorEl}
+          noDirectFilters={noDirectFilters}
+          availableFilterKeys={availableFilterKeys}
+          filterElement={filterElement}
+          searchContext={searchContext}
+          variant={variant}
+          type={type}
+          inputValues={inputValues}
+          setInputValues={setInputValues}
+          defaultHandleAddFilter={defaultHandleAddFilter}
+          defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+          handleSwitchFilter={handleSwitchFilter}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationshipTypes={availableRelationshipTypes}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          allEntityTypes={allEntityTypes}
+        />
+      }
+      </>);
 };
 
 export default Filters;

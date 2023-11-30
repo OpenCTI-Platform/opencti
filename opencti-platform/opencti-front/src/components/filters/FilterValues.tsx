@@ -7,6 +7,7 @@ import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
 import { Theme } from '../Theme';
 import { Filter } from '../../utils/filters/filtersUtils';
+import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>(() => ({
   inlineOperator: {
@@ -34,18 +35,19 @@ interface FilterValuesProps {
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  helpers?: UseLocalStorageHelpers
 }
 
-const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, currentFilter, filtersRepresentativesMap, redirection, handleSwitchLocalMode, onClickLabel }) => {
+const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, currentFilter, filtersRepresentativesMap, redirection, handleSwitchLocalMode, onClickLabel, helpers }) => {
   const { t } = useFormatter();
-  const location = useLocation();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
 
   const classes = useStyles();
-  const deactivatePopoverMenu = location.pathname.includes('dashboard/data/sharing');
+
+  const deactivatePopoverMenu = !helpers;
 
   const onCLick = deactivatePopoverMenu ? () => {
   } : onClickLabel;

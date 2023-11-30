@@ -136,10 +136,12 @@ FilterIconButtonContainerProps
     });
   };
   const handleChipClick = (event: React.MouseEvent<HTMLButtonElement>, filterId?: string) => {
-    setFilterChipsParams({
-      filterId,
-      anchorEl: event.currentTarget,
-    });
+    if (helpers) {
+      setFilterChipsParams({
+        filterId,
+        anchorEl: event.currentTarget,
+      });
+    }
   };
 
   const manageRemoveFilter = (currentFilterId: string | undefined, filterKey: string, filterOperator: string) => {
@@ -189,6 +191,7 @@ FilterIconButtonContainerProps
                                 currentFilter={currentFilter}
                                 handleSwitchLocalMode={handleSwitchLocalMode}
                                 filtersRepresentativesMap={filtersRepresentativesMap}
+                                helpers={helpers}
                                 redirection={redirection}/>
                 }
               >
@@ -202,6 +205,7 @@ FilterIconButtonContainerProps
                       handleSwitchLocalMode={handleSwitchLocalMode}
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       redirection={redirection}
+                      helpers={helpers}
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                     />
                   }
