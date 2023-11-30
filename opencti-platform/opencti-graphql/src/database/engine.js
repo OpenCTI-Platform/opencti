@@ -1911,15 +1911,18 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   return body;
 };
+export const elRawCount = (query) => {
+  return engine.count(query)
+    .then((data) => {
+      return oebp(data).count;
+    });
+};
 export const elCount = async (context, user, indexName, options = {}) => {
   const convertedFilters = checkAndConvertFilters(options.filters);
   const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
   const query = { index: indexName, body };
   logApp.debug('[SEARCH] elCount', { query });
-  return engine.count(query)
-    .then((data) => {
-      return oebp(data).count;
-    });
+  return elRawCount(query);
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
   const { interval, field, types = null } = options;

@@ -10878,8 +10878,11 @@ type Query {
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
   filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!], includedPaths: [String!]): FilesMetrics @auth(for: [SETTINGS])
+
+  ######## INDEXED FILES
+  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
+  indexedFilesCount(search: String): Int @auth(for: [KNOWLEDGE])
   indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
 
   ###### ENTITIES

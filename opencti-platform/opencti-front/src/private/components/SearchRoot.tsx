@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -8,14 +8,33 @@ import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { useFormatter } from '../../components/i18n';
+import { decodeSearchKeyword } from '../../utils/SearchUtils';
+import useAuth from '../../utils/hooks/useAuth';
+import { SearchRootFilesCountQuery } from './__generated__/SearchRootFilesCountQuery.graphql';
 
-const SearchRoot = () => {
+const searchRootFilesCountQuery = graphql`
+  query SearchRootFilesCountQuery($search: String) {
+    indexedFilesCount(search: $search)
+  }
+`;
+
+interface SearchRootComponentProps {
+  queryRef: PreloadedQuery<SearchRootFilesCountQuery> | null | undefined;
+}
+
+const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ queryRef }) => {
   const { t } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
+  let filesCount = 0;
+  if (queryRef) {
+    const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchRootFilesCountQuery, queryRef);
+    filesCount = indexedFilesCount ?? 0;
+  }
 
   return (
     <ExportContextProvider>
@@ -44,7 +63,17 @@ const SearchRoot = () => {
               component={Link}
               to={`/dashboard/search/files/${keyword ?? ''}`}
               value='files'
-              label={<div>{t('Files search')}<EEChip /></div>}
+              label={
+                <div>
+                  {t('Files search')}
+                  {filesCount > 0 && (
+                    <div style={{ position: 'absolute', fontSize: 10, right: 4, bottom: 4 }}>
+                      {filesCount}
+                    </div>
+                  )}
+                  <EEChip />
+                </div>
+              }
             />
           </Tabs>
         </Box>
@@ -81,6 +110,29 @@ const SearchRoot = () => {
         </Switch>
       </div>
     </ExportContextProvider>
+  );
+};
+
+const SearchRoot = () => {
+  const {
+    platformModuleHelpers: { isFileIndexManagerEnable },
+  } = useAuth();
+  const fileSearchEnabled = isFileIndexManagerEnable();
+  const { keyword } = useParams() as { keyword: string };
+  const searchTerm = decodeSearchKeyword(keyword);
+
+  const [queryRef, loadQuery] = useQueryLoader<SearchRootFilesCountQuery>(searchRootFilesCountQuery);
+  const queryArgs = {
+    search: searchTerm,
+  };
+  useEffect(() => {
+    if (fileSearchEnabled) {
+      loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
+    }
+  }, []);
+
+  return (
+      <SearchRootComponent queryRef={queryRef} />
   );
 };
 

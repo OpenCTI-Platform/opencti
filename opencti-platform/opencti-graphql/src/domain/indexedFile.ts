@@ -22,9 +22,9 @@ import {
 import { FunctionalError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { elDeleteAllFiles, elSearchFiles } from '../database/file-search';
+import { elCountFiles, elDeleteAllFiles, elSearchFiles } from '../database/file-search';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { QueryIndexedFilesArgs } from '../generated/graphql';
+import type { QueryIndexedFilesArgs, QueryIndexedFilesCountArgs } from '../generated/graphql';
 
 export const indexedFilesMetrics = async () => {
   const metrics = await getStats([READ_INDEX_FILES]);
@@ -32,6 +32,10 @@ export const indexedFilesMetrics = async () => {
     globalCount: metrics.docs.count,
     globalSize: metrics.store.size_in_bytes,
   };
+};
+
+export const countIndexedFiles = async (context: AuthContext, user: AuthUser, args: QueryIndexedFilesCountArgs) => {
+  return elCountFiles(context, context.user, args);
 };
 
 export const searchIndexedFiles = async (context: AuthContext, user: AuthUser, args: QueryIndexedFilesArgs) => {

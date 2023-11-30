@@ -83,7 +83,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
     return function cleanup() {
       subscription.unsubscribe();
     };
-  });
+  }, []);
 
   return (
     <div>

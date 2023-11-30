@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { indexedFilesMetrics, resetFileIndexing, searchIndexedFiles } from '../domain/indexedFile';
+import { countIndexedFiles, indexedFilesMetrics, resetFileIndexing, searchIndexedFiles } from '../domain/indexedFile';
 import { batchLoader } from '../database/middleware';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 
@@ -23,6 +23,7 @@ const indexedFileResolvers = {
   Query: {
     indexedFilesMetrics: () => indexedFilesMetrics(),
     indexedFiles: (_, args, context) => searchIndexedFiles(context, context.user, args),
+    indexedFilesCount: (_, args, context) => countIndexedFiles(context, context.user, args),
   },
   IndexedFile: {
     entity: (file, _, context) => domainLoader.load(file.entity_id, context, context.user),

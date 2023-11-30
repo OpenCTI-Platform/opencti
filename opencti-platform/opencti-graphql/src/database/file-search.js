@@ -30,6 +30,7 @@ import {
   buildDataRestrictions,
   elFindByIds,
   elIndex,
+  elRawCount,
   elRawDeleteByQuery,
   elRawSearch,
   elRawUpdateByQuery,
@@ -131,16 +132,12 @@ const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = tru
   }
   return convertedHits;
 };
-export const elSearchFiles = async (context, user, options = {}) => {
-  const { first = 20, after, orderBy = null, orderMode = 'asc' } = options; // pagination options
+const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   const { search = null, fileIds = [], entityIds = [] } = options; // search options
-  const { fields = [], excludeFields = ['attachment.content'], connectionFormat = true, highlight = true } = options; // result options
-  const searchAfter = after ? cursorToOffset(after) : undefined;
   const { includeAuthorities = false } = options;
   const dataRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
   const must = [...dataRestrictions.must];
   const mustNot = [...dataRestrictions.must_not];
-  const sort = [];
   if (search) {
     const fullTextSearch = {
       multi_match: {
@@ -156,7 +153,23 @@ export const elSearchFiles = async (context, user, options = {}) => {
   if (entityIds?.length > 0) {
     must.push({ terms: { 'entity_id.keyword': entityIds } });
   }
-  if (!orderBy) { // TODO handle orderby param
+  return {
+    query: {
+      bool: {
+        must,
+        must_not: mustNot,
+      },
+    },
+  };
+};
+export const elSearchFiles = async (context, user, options = {}) => {
+  const { search = null, first = 20, after, connectionFormat = true, orderBy = null, orderMode = 'asc' } = options;
+  const { fields = [], excludeFields = ['attachment.content'], highlight = true } = options; // results format options
+  const searchAfter = after ? cursorToOffset(after) : undefined;
+  const body = await elBuildSearchFilesQueryBody(context, user, options);
+  body.size = first;
+  const sort = [];
+  if (!orderBy) {
     // order by last indexed date by default
     if (search) {
       sort.push({ _score: 'desc' });
@@ -167,16 +180,7 @@ export const elSearchFiles = async (context, user, options = {}) => {
   } else {
     sort.push({ [orderBy]: orderMode });
   }
-  const body = {
-    query: {
-      bool: {
-        must,
-        must_not: mustNot,
-      },
-    },
-    size: first,
-    sort,
-  };
+  body.sort = sort;
   if (searchAfter) {
     body.search_after = searchAfter;
   }
@@ -205,6 +209,13 @@ export const elSearchFiles = async (context, user, options = {}) => {
       logApp.error('[SEARCH] search files fail', { error: err, query });
       throw err;
     });
+};
+
+export const elCountFiles = async (context, user, options = {}) => {
+  const body = await elBuildSearchFilesQueryBody(context, user, options);
+  const query = { index: INDEX_FILES, body };
+  logApp.debug('[SEARCH] elCountFiles', { query });
+  return elRawCount(query);
 };
 
 export const elDeleteFilesByIds = async (fileIds) => {
