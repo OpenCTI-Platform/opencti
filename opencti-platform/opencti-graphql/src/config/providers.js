@@ -346,13 +346,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           // region groups mapping
           const computeGroupsMapping = () => {
+            const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
             const token = mappedConfig.groups_management?.token_reference || 'access_token';
             const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
-            logApp.debug(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
+            if (!readUserinfo) {
+              logApp.debug(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
+            }
             const availableGroups = R.flatten(groupsPath.map((path) => {
-              const value = R.path(path.split('.'), decodedUser) || [];
+              const userClaims = (readUserinfo) ? userinfo : decodedUser;
+              const value = R.path(path.split('.'), userClaims) || [];
               return Array.isArray(value) ? value : [value];
             }));
             const groupsMapper = genConfigMapper(groupsMapping);
@@ -365,12 +369,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
           const computeOrganizationsMapping = () => {
             const orgaDefault = mappedConfig.organizations_default ?? [];
+            const readUserinfo = mappedConfig.organizations_management?.read_userinfo || false;
             const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
             const token = mappedConfig.organizations_management?.token_reference || 'access_token';
             const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
             const decodedUser = jwtDecode(tokenset[token]);
             const availableOrgas = R.flatten(orgaPath.map((path) => {
-              const value = R.path(path.split('.'), decodedUser) || [];
+              const userClaims = (readUserinfo) ? userinfo : decodedUser;
+              const value = R.path(path.split('.'), userClaims) || [];
               return Array.isArray(value) ? value : [value];
             }));
             const orgasMapper = genConfigMapper(orgasMapping);
