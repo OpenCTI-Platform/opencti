@@ -11,7 +11,8 @@
       "labels": ["identity"],
       "created": "2020-02-23T23:40:53.575Z",
       "modified": "2020-02-27T08:45:39.351Z",
-      "x_opencti_organization_type": "CSIRT"
+      "x_opencti_organization_type": "CSIRT",
+      "x_opencti_reliability": "A - Completely reliable"
     },
     {
       "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
@@ -346,7 +347,8 @@
       "identity_class": "organization",
       "labels": ["identity"],
       "created": "2020-02-25T22:23:20.648Z",
-      "modified": "2020-02-25T22:23:20.648Z"
+      "modified": "2020-02-25T22:23:20.648Z",
+      "x_opencti_reliability": "B - Usually reliable"
     },
     {
       "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",

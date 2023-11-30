@@ -177,12 +177,14 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
   }
 
   if (filterGroup.mode === 'or') {
+    const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
-      return filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter));
+      results.push(filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      return filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap));
+      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
     }
+    return results.length > 0 && results.some((isTrue) => isTrue);
   }
 
   return false;

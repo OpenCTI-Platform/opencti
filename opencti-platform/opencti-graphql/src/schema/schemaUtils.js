@@ -182,3 +182,18 @@ export const convertStixToInternalTypes = (type) => {
       return pascalize(type);
   }
 };
+
+/**
+ * Takes an array of entity types and return it filtered by removing
+ * parent types of types already in the array.
+ * Example: [Report, Container, Stix-Relationship] => [Report, Stix-Relationship] because a Report is a Container
+ */
+export const keepMostRestrictiveTypes = (entityTypes) => {
+  let restrictedEntityTypes = [...entityTypes];
+  for (let i = 0; i < entityTypes.length; i += 1) {
+    const type = entityTypes[i];
+    const parentTypes = getParentTypes(type);
+    restrictedEntityTypes = restrictedEntityTypes.filter((t) => !parentTypes.includes(t));
+  }
+  return restrictedEntityTypes;
+};

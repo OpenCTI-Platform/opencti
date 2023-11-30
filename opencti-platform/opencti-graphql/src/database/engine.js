@@ -61,7 +61,7 @@ import {
   RULE_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
-import { getParentTypes } from '../schema/schemaUtils';
+import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -89,7 +89,8 @@ import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { IDS_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { FilterMode } from '../generated/graphql';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1437,59 +1438,24 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
 const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 
-const buildLocalMustFilter = async (context, user, validFilter) => {
+const buildLocalMustFilter = async (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  // 00. Handle reliability
-  // in case we want to filter by source reliability (reliability of author)
-  // we need to find all authors filtered by reliability and filter on these authors
-  const sourceReliabilityFilter = arrayKeys.find((k) => k === 'source_reliability');
-  if (sourceReliabilityFilter) {
-    const authorTypes = [
-      ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-      ENTITY_TYPE_IDENTITY_ORGANIZATION,
-      ENTITY_TYPE_IDENTITY_SYSTEM
-    ];
-    const reliabilityFilter = { key: ['x_opencti_reliability'], operator, values, localFilterMode };
-    const filters = {
-      mode: 'and',
-      filters: [reliabilityFilter],
-      filterGroups: [],
-    };
-    const opts = { types: authorTypes, connectionFormat: false, filters };
-    const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
-    if (authors.length > 0) {
-      arrayKeys.splice(0, 1);
-      arrayKeys.push('rel_created-by.internal_id');
-      values.splice(0, values.length);
-      authors.forEach((author) => values.push(author.internal_id));
-    }
-  }
-  // 01. Handle special keys
-  // In case of entity_type filters, we also look by default in the parent_types property.
-  let validKeys = arrayKeys;
-  if (arrayKeys.includes(TYPE_FILTER)) {
-    validKeys.push('parent_types');
-  }
-  if (arrayKeys.includes(IDS_FILTER)) {
-    validKeys.push(ID_INTERNAL, ID_STANDARD, IDS_STIX);
-  }
-  validKeys = R.uniq(validKeys);
-  // 02. Handle nested filters
+  // 01. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
   // TODO Add connections like filters to have native fromId, toId filters handling.
   // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
   if (nested) {
-    if (validKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+    if (arrayKeys.length > 1) {
+      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
     }
     const nestedMust = [];
     const nestedMustNot = [];
     for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
       const nestedElement = nested[nestIndex];
-      const parentKey = validKeys.at(0);
+      const parentKey = arrayKeys.at(0);
       const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
       const nestedShould = [];
       for (let i = 0; i < nestedValues.length; i += 1) {
@@ -1512,7 +1478,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
       nestedMust.push(should);
     }
     const nestedQuery = {
-      path: R.head(validKeys),
+      path: R.head(arrayKeys),
       query: {
         bool: {
           must: nestedMust,
@@ -1522,54 +1488,54 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
     };
     return { nested: nestedQuery };
   }
-  // 03. Handle nil and not_nil operators
+  // 02. Handle nil and not_nil operators
   if (operator === 'nil') {
-    if (validKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+    if (arrayKeys.length > 1) {
+      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
     } else {
       valuesFiltering.push({
         bool: {
           must_not: {
             exists: {
-              field: R.head(validKeys)
+              field: R.head(arrayKeys)
             }
           }
         }
       });
     }
   } else if (operator === 'not_nil') {
-    if (validKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+    if (arrayKeys.length > 1) {
+      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
     } else {
-      valuesFiltering.push({ exists: { field: R.head(validKeys) } });
+      valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
     }
   }
-  // 04. Handle values according to the operator
+  // 03. Handle values according to the operator
   if (operator !== 'nils' && operator !== 'not_nils') {
     for (let i = 0; i < values.length; i += 1) {
       if (values[i] === 'EXISTS') {
-        if (validKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+        if (arrayKeys.length > 1) {
+          throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
         }
-        valuesFiltering.push({ exists: { field: R.head(validKeys) } });
+        valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
       } else if (operator === 'eq') {
         valuesFiltering.push({
           multi_match: {
-            fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
+            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
             query: values[i].toString(),
           },
         });
       } else if (operator === 'not_eq') {
         noValuesFiltering.push({
           multi_match: {
-            fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
+            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
             query: values[i].toString(),
           },
         });
       } else if (operator === 'match') {
         valuesFiltering.push({
           multi_match: {
-            fields: validKeys,
+            fields: arrayKeys,
             query: values[i].toString(),
           },
         });
@@ -1577,7 +1543,7 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
         valuesFiltering.push({
           query_string: {
             query: `"${values[i].toString()}"`,
-            fields: validKeys,
+            fields: arrayKeys,
           },
         });
       } else if (operator === 'script') {
@@ -1587,14 +1553,14 @@ const buildLocalMustFilter = async (context, user, validFilter) => {
           },
         });
       } else {
-        if (validKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
+        if (arrayKeys.length > 1) {
+          throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
         }
-        valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
+        valuesFiltering.push({ range: { [R.head(arrayKeys)]: { [operator]: values[i] } } });
       }
     }
   }
-  // 05. Push the values
+  // 04. Push the values
   if (valuesFiltering.length > 0) {
     return {
       bool: {
@@ -1632,7 +1598,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     const filter = filters[index];
     const isValidFilter = filter?.values || filter?.nested?.length > 0;
     if (isValidFilter) {
-      const localMustFilter = await buildLocalMustFilter(context, user, filter);
+      const localMustFilter = await buildLocalMustFilter(filter);
       localMustFilters.push(localMustFilter);
     }
   }
@@ -1645,6 +1611,190 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     };
   }
   return null;
+};
+
+// If filter key = entity_type, we should also handle parent_types
+// Exemple: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+// we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
+const adaptFilterToEntityTypeFilterKey = (filter) => {
+  const { key, mode = 'or', operator = 'eq' } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  // at this point arrayKeys === ['entity_type']
+
+  // we'll build these new filters or filterGroup, depending on the situation
+  let newFilter;
+  let newFilterGroup;
+
+  if (mode === 'or') {
+    // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
+    // and we will search in both entity_types and parent_types
+    newFilter = { ...filter, key: arrayKeys.concat(['parent_types']) };
+  }
+
+  if (mode === 'and') {
+    let { values } = filter;
+    if (operator === 'eq') {
+      // 'and'+'eq' => keep only the most restrictive entity types
+      // because in elastic entity_type is a unique value (not an abstract type)
+      // for example [Report, Container] => [Report]
+      // for example [Report, Stix-Cyber-Observable] => [Report, Stix-Cyber-Observable]
+      values = keepMostRestrictiveTypes(filter.values);
+    }
+
+    // we must split the keys in different filters to get different elastic matches, so we construct a filterGroup
+    // - if the operator is 'eq', it means we have to check equality against the type
+    // and all parent types, so it's a filterGroup with 'or' operator
+    // - if the operator is 'not_eq', it means we have to check that there is no match in type
+    // and all parent types, so it's a filterGroup with 'and' operator
+    newFilterGroup = {
+      mode: operator === 'eq' ? 'or' : 'and',
+      filters: [
+        { ...filter, key: ['entity_type'], values },
+        { ...filter, key: ['parent_types'], values }
+      ],
+      filterGroups: [],
+    };
+  }
+
+  // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
+  return { newFilter, newFilterGroup };
+};
+
+const adaptFilterToIdsFilterKey = (filter) => {
+  const { key, mode = 'or', operator = 'eq' } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  if (filter.mode === 'and') {
+    throw Error('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+  }
+  // at this point arrayKey === ['ids'], and mode is always 'or'
+
+  // we'll build these new filters or filterGroup, depending on the situation
+  let newFilter;
+  let newFilterGroup;
+
+  const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
+
+  if (mode === 'or') {
+    // elastic multi-key is a 'or'
+    newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
+  }
+
+  if (mode === 'and') {
+    // similarly we need to split into filters for each additional source
+    newFilterGroup = {
+      mode: operator === 'eq' ? 'or' : 'and',
+      filters: [
+        { ...filter, key: ['ids'] },
+        [...idsArray.map((k) => ({ ...filter, key: [k] }))],
+      ],
+      filterGroups: [],
+    };
+  }
+
+  // depending on the operator, only one of new Filter and newFilterGroup is defined
+  return { newFilter, newFilterGroup };
+};
+
+const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {
+  const { key, mode = 'or', operator = 'eq', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== SOURCE_RELIABILITY_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  // at this point arrayKey === ['source_reliability']
+
+  // in case we want to filter by source reliability (reliability of author)
+  // we need to find all authors filtered by reliability and filter on these authors
+  const authorTypes = [
+    ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    ENTITY_TYPE_IDENTITY_SYSTEM
+  ];
+  const reliabilityFilter = {
+    mode: 'and',
+    filters: [{ key: ['x_opencti_reliability'], operator, values, mode }],
+    filterGroups: [],
+  };
+  const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
+  const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
+  // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
+  const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
+  const newFilter = {
+    key: ['rel_created-by.internal_id'],
+    values: authorIds,
+    mode: 'or',
+    operator: 'eq',
+  };
+
+  return { newFilter, newFilterGroup: undefined };
+};
+
+/**
+ * Complete the filter if needed for several special filter keys
+ * 3 keys need this preprocessing before building the query:
+ * - entity_type: we need to handle parent types
+ * - ids: we will match the ids in filter against internal id, standard id, stix ids,
+ * - source_reliability: created_by (author) can be an individual, organization or a system
+ */
+const completeSpecialFilterKeys = async (context, user, inputFilters) => {
+  const { filters = [], filterGroups = [] } = inputFilters;
+  const finalFilters = [];
+  const finalFilterGroups = [];
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const filterGroup = filterGroups[index];
+    const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup);
+    finalFilterGroups.push(newFilterGroup);
+  }
+  for (let index = 0; index < filters.length; index += 1) {
+    const filter = filters[index];
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+
+    if (arrayKeys.includes(TYPE_FILTER)) {
+      // in case we want to filter by entity_type
+      // we need to add parent_types checking (in case the given value in type is an abstract type)
+      const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
+      }
+    } else if (arrayKeys.includes(IDS_FILTER)) {
+      // the special filter key 'ids' take all the ids into account
+      const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
+      }
+    } else if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
+      // in case we want to filter by source reliability (reliability of author)
+      // we need to find all authors filtered by reliability and filter on these authors
+      const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
+      }
+    } else {
+      // not a special case, leave the filter unchanged
+      finalFilters.push(filter);
+    }
+  }
+  return {
+    ...inputFilters,
+    filters: finalFilters,
+    filterGroups: finalFilterGroups,
+  };
 };
 
 const elQueryBodyBuilder = async (context, user, options) => {
@@ -1679,14 +1829,15 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   const completeFilters = specialFiltersContent.length > 0
     ? {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: specialFiltersContent,
       filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
     }
     : filters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, completeFilters);
+    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
+    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
