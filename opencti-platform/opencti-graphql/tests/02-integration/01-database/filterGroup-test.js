@@ -1020,7 +1020,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(13);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(6);
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -1038,7 +1038,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(16);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 6 entities with source_reliability A + 3 with source_reliability B
     // (source_reliability = A - Completely reliable AND B - Usually reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -1093,7 +1093,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
-    expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(16); // number of entities with source_reliability A or B
+    expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(9); // number of entities with source_reliability A or B
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
