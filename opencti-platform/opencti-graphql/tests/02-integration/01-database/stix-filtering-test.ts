@@ -233,7 +233,7 @@ describe('Stix Filtering', () => {
         ],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 38 objects, 26 rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
 
       // same test, reverse order
       filterGroup = {
@@ -244,7 +244,7 @@ describe('Stix Filtering', () => {
         ],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 38 objects, 26 rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
     });
 
     it('using parent entity types', async () => {
