@@ -66,7 +66,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
   const remoteNode = node.from && !node.from.relationship_type ? node.from : node.to;
   let link = null;
   if (remoteNode) {
-    link = `${computeLink(remoteNode)}`;
+    link = `${computeLink(remoteNode)}/knowledge/relations/${node.id}`;
   }
   return (
     <ListItem
