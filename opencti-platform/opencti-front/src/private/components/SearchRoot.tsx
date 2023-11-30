@@ -9,6 +9,7 @@ import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import Badge from '@mui/material/Badge';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { useFormatter } from '../../components/i18n';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
@@ -63,16 +64,13 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ quer
               component={Link}
               to={`/dashboard/search/files/${keyword ?? ''}`}
               value='files'
-              label={
-                <div>
-                  {t('Files search')}
-                  {filesCount > 0 && (
-                    <div style={{ position: 'absolute', fontSize: 10, right: 4, bottom: 4 }}>
-                      {filesCount}
-                    </div>
-                  )}
-                  <EEChip />
-                </div>
+              label={<>
+                {filesCount > 0 ? (
+                  <Badge badgeContent={filesCount} color="primary">{t('Files search')}</Badge>
+                ) : (
+                  <div>{t('Files search')}<EEChip /></div>
+                )}
+              </>
               }
             />
           </Tabs>
