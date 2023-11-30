@@ -57,6 +57,7 @@ import incidentResolvers from '../resolvers/incident';
 import { authDirectiveBuilder } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
+import indexedFileResolvers from '../resolvers/indexedFile';
 import globalTypeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
@@ -182,6 +183,7 @@ const schemaResolvers = [
   attributeResolvers,
   subTypeResolvers,
   fileResolvers,
+  indexedFileResolvers,
   taskResolvers,
   retentionResolvers,
   stixResolvers,

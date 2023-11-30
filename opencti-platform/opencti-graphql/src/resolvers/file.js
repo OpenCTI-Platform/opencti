@@ -3,9 +3,6 @@ import {
   askJobImport,
   deleteImport,
   filesMetrics,
-  indexedFilesMetrics,
-  resetFileIndexing,
-  searchIndexedFiles,
   uploadImport,
   uploadPending
 } from '../domain/file';
@@ -23,11 +20,6 @@ const fileResolvers = {
     importFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/global/'),
     pendingFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/pending/'),
     filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
-    indexedFilesMetrics: () => indexedFilesMetrics(),
-    indexedFiles: (_, args, context) => searchIndexedFiles(context, context.user, args),
-  },
-  IndexedFile: {
-    entity: (file, _, context) => domainLoader.load(file.entity_id, context, context.user),
   },
   File: {
     works: (file, _, context) => worksForSource(context, context.user, file.id),
@@ -43,7 +35,6 @@ const fileResolvers = {
     },
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
-    resetFileIndexing: (_, __, context) => resetFileIndexing(context, context.user),
   },
 };
 

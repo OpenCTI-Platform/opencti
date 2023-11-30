@@ -29,12 +29,10 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import {
-  elIndexFiles,
   elLoadById,
-  elSearchFiles,
-  elUpdateFilesWithEntityRestrictions,
   isAttachmentProcessorEnabled,
 } from '../database/engine';
+import { elIndexFiles, elSearchFiles, elUpdateFilesWithEntityRestrictions } from '../database/file-search';
 import { fileListingForIndexing, getFileContent, loadFilesForIndexing } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
 import { generateFileIndexId } from '../schema/identifier';

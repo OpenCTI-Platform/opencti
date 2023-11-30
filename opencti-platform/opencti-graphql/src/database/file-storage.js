@@ -15,7 +15,8 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
-import { elDeleteFilesByIds, isAttachmentProcessorEnabled } from './engine';
+import { elDeleteFilesByIds } from './file-search';
+import { isAttachmentProcessorEnabled } from './engine';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
