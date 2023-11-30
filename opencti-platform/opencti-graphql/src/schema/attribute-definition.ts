@@ -5,6 +5,7 @@ export interface AttributeDefinition {
   name: string
   type: AttrType
   mandatoryType: MandatoryType
+  editDefault: boolean
   multiple: boolean
   upsert: boolean
   update?: boolean
@@ -21,6 +22,7 @@ export const internalId: AttributeDefinition = {
   name: 'internal_id',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -30,6 +32,7 @@ export const creators: AttributeDefinition = {
   label: 'Creators',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: false
 };
@@ -39,6 +42,7 @@ export const standardId: AttributeDefinition = {
   label: 'Id',
   type: 'string',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false,
 };
@@ -48,6 +52,7 @@ export const iAliasedIds: AttributeDefinition = {
   label: 'Internal aliases',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: false,
 };
@@ -56,6 +61,7 @@ export const files: AttributeDefinition = {
   name: 'x_opencti_files',
   type: 'object',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: false,
   update: false,
@@ -67,6 +73,7 @@ export const entityType: AttributeDefinition = {
   name: 'entity_type',
   type: 'string',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -76,6 +83,7 @@ export const entityLocationType: AttributeDefinition = {
   label: 'Location type',
   type: 'string',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -84,6 +92,7 @@ export const relationshipType: AttributeDefinition = {
   name: 'relationship_type',
   type: 'string',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -92,6 +101,7 @@ export const xOpenctiType: AttributeDefinition = {
   name: 'x_opencti_type',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -105,6 +115,7 @@ export const xOpenctiStixIds: AttributeDefinition = {
   label: 'STIX IDs',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: false,
 };
@@ -116,6 +127,7 @@ export const xOpenctiAliases: AttributeDefinition = {
   label: 'Aliases',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: true,
 };
@@ -125,6 +137,7 @@ export const aliases: AttributeDefinition = {
   label: 'Aliases',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: true,
   upsert: true,
 };
@@ -135,6 +148,7 @@ export const specVersion: AttributeDefinition = {
   name: 'spec_version',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -143,6 +157,7 @@ export const created: AttributeDefinition = {
   name: 'created',
   type: 'date',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -150,6 +165,7 @@ export const modified: AttributeDefinition = {
   name: 'modified',
   type: 'date',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -159,6 +175,7 @@ export const createdAt: AttributeDefinition = {
   label: 'Created at',
   type: 'date',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -167,6 +184,7 @@ export const updatedAt: AttributeDefinition = {
   label: 'Updated at',
   type: 'date',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: false,
   upsert: false
 };
@@ -175,6 +193,7 @@ export const revoked: AttributeDefinition = {
   name: 'revoked',
   type: 'boolean',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: true,
 };
@@ -183,6 +202,7 @@ export const confidence: AttributeDefinition = {
   name: 'confidence',
   type: 'numeric',
   mandatoryType: 'no',
+  editDefault: true,
   multiple: false,
   scalable: true,
   upsert: true,
@@ -192,6 +212,7 @@ export const xOpenctiReliability: AttributeDefinition = {
   name: 'x_opencti_reliability',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false,
   label: 'Reliability'
@@ -201,6 +222,7 @@ export const lang: AttributeDefinition = {
   name: 'lang',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false,
 };
@@ -209,6 +231,7 @@ export const identityClass: AttributeDefinition = {
   name: 'identity_class',
   type: 'string',
   mandatoryType: 'no',
+  editDefault: false,
   multiple: false,
   upsert: false
 };

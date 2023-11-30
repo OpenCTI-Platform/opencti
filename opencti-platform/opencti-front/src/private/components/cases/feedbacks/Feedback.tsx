@@ -32,6 +32,7 @@ const feedbackFragment = graphql`
     revoked
     description
     confidence
+    currentUserAccessRight
     createdBy {
       ... on Identity {
         id
@@ -97,6 +98,9 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
   const classes = useStyles();
   const feedbackData = useFragment(feedbackFragment, data);
 
+  const canManage = feedbackData.currentUserAccessRight === 'admin';
+  const canEdit = canManage || feedbackData.currentUserAccessRight === 'edit';
+
   return (
     <>
       <Grid
@@ -129,7 +133,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={feedbackData.id} />
         </Grid>
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
         <FeedbackEdition feedbackId={feedbackData.id} />
       </Security>
     </>

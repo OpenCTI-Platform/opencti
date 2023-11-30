@@ -49,18 +49,19 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     xOpenctiAliases,
     iAliasedIds,
     xOpenctiReliability,
-    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     {
       name: 'x_opencti_organization_type',
       type: 'string',
       mandatoryType: 'no',
+      editDefault: false,
       multiple: false,
       upsert: false,
       label: 'Organization type'
     },
-    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'grantable_groups', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    { name: 'grantable_groups', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
   ],
   relations: [
     {

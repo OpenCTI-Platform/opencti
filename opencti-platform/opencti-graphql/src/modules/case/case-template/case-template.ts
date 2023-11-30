@@ -14,6 +14,7 @@ const CaseTemplateToTaskTemplateRelation: RelationRefDefinition = {
   databaseName: TEMPLATE_TASK_RELATION,
   stixName: 'task_refs',
   mandatoryType: 'internal',
+  editDefault: false,
   multiple: true,
   checker: (_, toType) => toType === ENTITY_TYPE_TASK_TEMPLATE,
   datable: false,
@@ -35,8 +36,8 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [CaseTemplateToTaskTemplateRelation],

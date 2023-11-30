@@ -6,13 +6,16 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
+import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
 import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
+import { INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -64,6 +67,7 @@ interface EntitySettingAttributeLineProps {
 
 const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({ node = null, dataColumns, entitySetting }) => {
   const classes = useStyles();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
 
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -75,34 +79,53 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
 
+  const needEE = attribute.name === INPUT_AUTHORIZED_MEMBERS && !isEnterpriseEdition;
+
   return (
     <>
       <ListItemButton
         key={attribute.name}
         divider={true}
         classes={{ root: classes.item }}
-        onClick={handleOpenUpdate}
+        onClick={() => !needEE && handleOpenUpdate()}
+        disableRipple={needEE}
+        sx={needEE
+          ? {
+            '&:hover': {
+              cursor: 'default',
+              backgroundColor: 'transparent',
+            },
+          }
+          : {}
+        }
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShortTextOutlined />
+          {attribute.name === INPUT_AUTHORIZED_MEMBERS
+            ? <LockPersonOutlined
+                fontSize="small"
+                color={!needEE ? 'warning' : 'ee'}
+              />
+            : <ShortTextOutlined />
+          }
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              {Object.values(dataColumns ?? {}).map((value) => (
+              {Object.values(dataColumns ?? {}).map((value, i) => (
                 <div
                   key={value.label}
                   className={classes.bodyItem}
                   style={{ width: value.width }}
                 >
                   {value.render?.(attribute)}
+                  {needEE && i === 0 && <EEChip />}
                 </div>
               ))}
             </div>
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <NorthEastOutlined />
+          {!needEE && <NorthEastOutlined />}
         </ListItemIcon>
       </ListItemButton>
       <EntitySettingAttributeEdition

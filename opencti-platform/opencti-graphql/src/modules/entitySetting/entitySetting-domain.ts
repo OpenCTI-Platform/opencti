@@ -13,6 +13,9 @@ import { defaultEntitySetting, getAvailableSettings, type typeAvailableSetting }
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
+import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
+import { containsValidAdmin } from '../../utils/authorizedMembers';
+import { FunctionalError } from '../../config/errors';
 
 // -- LOADING --
 
@@ -59,6 +62,22 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntityS
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
+  const authorizedMembersEdit = input
+    .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
+    .flatMap(({ value }) => JSON.parse(value[0]))
+    .find(({ name }) => name === INPUT_AUTHORIZED_MEMBERS);
+
+  if (authorizedMembersEdit && Array.isArray(authorizedMembersEdit.default_values)) {
+    const hasValidAdmin = await containsValidAdmin(
+      context,
+      authorizedMembersEdit.default_values.map(JSON.parse),
+      ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS']
+    );
+    if (!hasValidAdmin) {
+      throw FunctionalError('It should have at least one member with admin access');
+    }
+  }
+
   const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
   await publishUserAction({
     user,

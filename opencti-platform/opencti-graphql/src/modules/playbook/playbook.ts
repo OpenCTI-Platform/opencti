@@ -38,11 +38,11 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: false },
-    { name: 'playbook_running', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'playbook_start', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'playbook_definition', type: 'json', mandatoryType: 'internal', multiple: false, upsert: false, schemaDef: PlayComponentDefinition }
+    { name: 'name', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false },
+    { name: 'playbook_running', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'playbook_start', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'playbook_definition', type: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, schemaDef: PlayComponentDefinition }
   ],
   relations: [],
   representative: (stix: StixPlaybook) => {

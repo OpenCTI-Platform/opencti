@@ -34,6 +34,7 @@ export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad5
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 
 export const MEMBER_ACCESS_ALL = 'ALL';
+export const MEMBER_ACCESS_CREATOR = 'CREATOR';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
 export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
@@ -213,6 +214,10 @@ export const isBypassUser = (user: AuthUser): boolean => {
 
 export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
   return isBypassUser(user) || R.find((s) => s.name === capability, user.capabilities || []) !== undefined;
+};
+
+export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = []) => {
+  return capabilities.every((capability) => isUserHasCapability(user, capability));
 };
 
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {

@@ -5,8 +5,9 @@ import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
 import {
   type AuthorizedMember,
-  BYPASS,
+  isUserHasCapabilities,
   MEMBER_ACCESS_ALL,
+  MEMBER_ACCESS_CREATOR,
   MEMBER_ACCESS_RIGHT_ADMIN,
   SYSTEM_USER,
   validateUserAccessOperation
@@ -19,7 +20,7 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 export const getAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity & { authorized_members: Array<AuthorizedMember> }
+  entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
   let authorizedMembers: MemberAccess[] = [];
   if (isEmptyField(entity.authorized_members)) {
@@ -28,7 +29,7 @@ export const getAuthorizedMembers = async (
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
     return authorizedMembers; // return empty if user doesn't have the right access_right
   }
-  const membersIds = entity.authorized_members.map((e) => e.id);
+  const membersIds = (entity.authorized_members ?? []).map((e) => e.id);
   const args = {
     connectionFormat: false,
     first: 100,
@@ -39,22 +40,17 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = entity.authorized_members.map((am) => {
+  authorizedMembers = (entity.authorized_members ?? []).map((am) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === am.id) as BasicStoreEntity;
     return { id: am.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: am.access_right };
   });
   return authorizedMembers;
 };
 
-const hasExplorationCapabilities = (u: AuthUser) => {
-  const userCapabilities = u.capabilities.map((n) => n.name);
-  return userCapabilities.includes(BYPASS)
-    || (userCapabilities.includes('EXPLORE_EXUPDATE_EXDELETE') && userCapabilities.includes('EXPLORE_EXUPDATE'));
-};
-
 export const containsValidAdmin = async (
   context: AuthContext,
   authorized_members: Array<AuthorizedMember>,
+  requiredCapabilities: string[] = []
 ) => {
   const adminIds = authorized_members
     .filter((n) => n.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
@@ -62,7 +58,7 @@ export const containsValidAdmin = async (
   if (adminIds.length === 0) { // no admin
     return false;
   }
-  if (adminIds.includes(MEMBER_ACCESS_ALL)) { // everyone is admin
+  if (adminIds.includes(MEMBER_ACCESS_ALL) || adminIds.includes(MEMBER_ACCESS_CREATOR)) { // everyone  or creator is admin
     return true;
   }
   // find the users that have admin rights
@@ -79,9 +75,8 @@ export const containsValidAdmin = async (
   // resolve the users
   const users: (AuthUser | undefined)[] = await Promise.all(userIds.map((userId) => findUser(context, SYSTEM_USER, userId)));
   // restrict to the users that exist and have admin exploration capability
-  const authorizedUsers = users.filter((u) => u && hasExplorationCapabilities(u));
-  if (authorizedUsers.length > 0) { // at least 1 user with admin access and admin exploration capability
-    return true;
-  }
-  return false;
+  const authorizedUsers = users.filter((u) => u && isUserHasCapabilities(u, requiredCapabilities));
+
+  // at least 1 user with admin access and admin exploration capability
+  return authorizedUsers.length > 0;
 };

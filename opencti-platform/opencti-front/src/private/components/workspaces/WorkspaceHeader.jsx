@@ -21,7 +21,8 @@ import {
   CloseOutlined,
   MoveToInboxOutlined,
   LockPersonOutlined,
-  Delete, ContentCopyOutlined,
+  Delete,
+  ContentCopyOutlined,
 } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
@@ -408,7 +409,7 @@ const WorkspaceHeader = ({
           )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
             <div className={classes.manageAccess}>
-              <Tooltip title={t('Manage access')}>
+              <Tooltip title={t('Manage access restriction')}>
                 <ToggleButtonGroup size="small" color="warning" exclusive={true}>
                   <ToggleButton
                     aria-label="Label"

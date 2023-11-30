@@ -42,6 +42,18 @@ const feedbackQuery = graphql`
     feedback(id: $id) {
       id
       name
+      currentUserAccessRight
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
+      creators {
+        id
+        name
+        entity_type
+      }
       x_opencti_graph_data
       ...Feedback_case
       ...FileImportViewer_entity
@@ -55,6 +67,23 @@ const feedbackQuery = graphql`
     }
     connectorsForImport {
       ...FileManager_connectorsImport
+    }
+  }
+`;
+
+// Mutation to edit authorized members of a feedback
+const feedbackAuthorizedMembersMutation = graphql`
+  mutation RootFeedbackAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    feedbackEditAuthorizedMembers(id: $id, input: $input) {
+      authorized_members {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -87,6 +116,9 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       paddingRight = 350;
     }
   }
+
+  const canManage = feedbackData?.currentUserAccessRight === 'admin';
+
   return (
     <>
       {feedbackData ? (
@@ -95,7 +127,10 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
             enableSuggestions={false}
-            disableSharing={true}
+            disableSharing
+            enableQuickSubscription
+            enableManageAuthorizedMembers={canManage}
+            authorizedMembersMutation={feedbackAuthorizedMembersMutation}
           />
           <Box
             sx={{

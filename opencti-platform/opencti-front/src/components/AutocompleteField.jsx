@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import { fieldToTextField } from 'formik-mui';
+import { fieldToAutocomplete } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 import { truncate } from '../utils/String';
@@ -44,7 +44,7 @@ const AutocompleteField = (props) => {
   const internalOnBlur = React.useCallback(() => {
     setTouched(true);
   }, [setTouched]);
-  const fieldProps = fieldToTextField(props);
+  const fieldProps = fieldToAutocomplete(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
   const defaultOptionToValue = (option, value) => option.value === value.value;

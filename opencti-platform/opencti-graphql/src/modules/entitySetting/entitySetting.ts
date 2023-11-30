@@ -32,12 +32,12 @@ const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, Stix
     },
   },
   attributes: [
-    { name: 'target_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'platform_entity_files_ref', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'platform_hidden_type', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'enforce_reference', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'attributes_configuration', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: attributeConfiguration },
-    { name: 'availableSettings', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'target_type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'platform_entity_files_ref', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
+    { name: 'platform_hidden_type', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
+    { name: 'enforce_reference', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
+    { name: 'attributes_configuration', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: attributeConfiguration },
+    { name: 'availableSettings', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
   ],
   relations: [],
   validators: {

@@ -28,8 +28,8 @@ const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTa
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [],

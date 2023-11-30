@@ -37,10 +37,10 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'latitude', type: 'numeric', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'longitude', type: 'numeric', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'latitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'longitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
     entityLocationType,
   ],
   relations: [

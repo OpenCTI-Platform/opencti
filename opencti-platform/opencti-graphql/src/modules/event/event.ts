@@ -37,11 +37,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'event_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Event types' },
-    { name: 'start_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Start date' },
-    { name: 'stop_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'End date' },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'event_types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, label: 'Event types' },
+    { name: 'start_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'Start date' },
+    { name: 'stop_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'End date' },
   ],
   relations: [
     {

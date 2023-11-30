@@ -9,9 +9,7 @@ import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$key } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
-import EntitySettingAttributeLines, {
-  computeAttributeNodeType,
-} from './EntitySettingAttributeLines';
+import EntitySettingAttributeLines from './EntitySettingAttributeLines';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
 
@@ -53,19 +51,10 @@ const EntitySettingAttributes = ({
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '25%',
+      width: '50%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
         const text = data.label ?? data.name;
-        return t(text.charAt(0).toUpperCase() + text.slice(1));
-      },
-    },
-    type: {
-      label: 'Type',
-      width: '25%',
-      isSortable: false,
-      render: (data: EntitySettingAttributeLine_attribute$data) => {
-        const text = computeAttributeNodeType(data);
         return t(text.charAt(0).toUpperCase() + text.slice(1));
       },
     },

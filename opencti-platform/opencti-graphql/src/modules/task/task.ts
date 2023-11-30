@@ -29,10 +29,10 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'due_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: true, label: 'Due date' },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'due_date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Due date' },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [

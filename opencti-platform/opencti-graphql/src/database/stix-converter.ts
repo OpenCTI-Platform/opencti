@@ -248,6 +248,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     creator_ids: builtCreatorIds,
     assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
+    authorized_members: instance.authorized_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
   };
   return cleanObject(octiExtensions);

@@ -112,6 +112,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_AUTHORIZED_MEMBERS,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -189,6 +190,7 @@ import {
   isUserCanAccessStoreElement,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  MEMBER_ACCESS_CREATOR,
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
@@ -2095,7 +2097,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = generateUpdateMessage(updatedInstance.entity_type, updatedInputs);
+      const message = await generateUpdateMessage(context, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2257,7 +2259,19 @@ export const fillDefaultValues = (user, input, entitySetting) => {
     .filter((attr) => INPUT_MARKINGS !== attr.name)
     .forEach((attr) => {
       if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
-        filledValues.set(attr.name, getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name)));
+        const defaultValue = getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name));
+
+        if (attr.name === INPUT_AUTHORIZED_MEMBERS && defaultValue) {
+          const defaultAuthorizedMembers = defaultValue.map((v) => JSON.parse(v));
+          // Replace dynamic creator rule with the id of the user making the query.
+          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+          if (creatorRule) {
+            creatorRule.id = user.id;
+          }
+          filledValues.set(attr.name, defaultAuthorizedMembers);
+        } else {
+          filledValues.set(attr.name, defaultValue);
+        }
       }
     });
 
@@ -2961,7 +2975,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         // Generate the new version of the from
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
-      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -3382,7 +3396,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,

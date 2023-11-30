@@ -40,7 +40,7 @@ const objectMembersFieldSearchQuery = graphql`
     }
 `;
 
-interface OptionMember extends Option {
+export interface OptionMember extends Option {
   type: string;
 }
 
@@ -51,6 +51,7 @@ interface ObjectMembersFieldProps {
   onChange?: (name: string, value: Option[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
+  disabled?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -59,10 +60,12 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   style,
   onChange,
   helpertext,
+  disabled = false,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [members, setMembers] = useState<OptionMember[]>([]);
+
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
@@ -92,6 +95,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     <div style={{ width: '100%' }}>
       <Field
         component={AutocompleteField}
+        disabled={disabled}
         name={name}
         multiple={multiple ?? false}
         textfieldprops={{

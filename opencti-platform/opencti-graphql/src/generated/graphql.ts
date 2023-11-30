@@ -1703,6 +1703,7 @@ export enum Capabilities {
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
+  KnowledgeKnupdateKnmanageauthmembers = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
   KnowledgeKnupdateKnorgarestrict = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
   KnowledgeKnupload = 'KNOWLEDGE_KNUPLOAD',
   Modules = 'MODULES',
@@ -6719,6 +6720,7 @@ export enum FeedOrdering {
 
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Feedback';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -6731,6 +6733,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -11982,6 +11985,7 @@ export type Mutation = {
   feedEdit: Feed;
   feedbackAdd?: Maybe<Feedback>;
   feedbackDelete?: Maybe<Scalars['ID']['output']>;
+  feedbackEditAuthorizedMembers?: Maybe<Feedback>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -12649,6 +12653,12 @@ export type MutationFeedbackAddArgs = {
 
 export type MutationFeedbackDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationFeedbackEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -18054,6 +18064,8 @@ export type QueryMarkingDefinitionsArgs = {
 
 export type QueryMembersArgs = {
   entityTypes?: InputMaybe<Array<MemberType>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -30719,6 +30731,7 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FeedbackCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -30731,6 +30744,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -32559,6 +32573,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedEdit?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<MutationFeedEditArgs, 'id' | 'input'>>;
   feedbackAdd?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackAddArgs, 'input'>>;
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
+  feedbackEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackEditAuthorizedMembersArgs, 'id'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;

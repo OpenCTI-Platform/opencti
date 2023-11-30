@@ -14,7 +14,7 @@ interface AttributeNode {
   scale: string | null
 }
 
-export const computeAttributeNodeType = (node: AttributeNode) => {
+const computeAttributeNodeType = (node: AttributeNode) => {
   return !node.scale ? node.type : 'scale';
 };
 

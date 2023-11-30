@@ -17,6 +17,8 @@ import {
 import { truncate } from '../utils/mailData';
 import { creators } from '../schema/attribute-definition';
 import { FROM_START_STR, UNTIL_END_STR } from '../utils/format';
+import { SYSTEM_USER } from '../utils/access';
+import { internalFindByIds } from './middleware-loader';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
@@ -56,12 +58,26 @@ export const generateDeleteMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
 };
 
-export const generateUpdateMessage = (entityType, inputs) => {
+export const generateUpdateMessage = async (context, entityType, inputs) => {
   const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
   const patchElements = Object.entries(inputsByOperations);
   if (patchElements.length === 0) {
     throw UnsupportedError('[OPENCTI] Error generating update message with empty inputs');
   }
+
+  const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
+    return operations.slice(0, 3).flatMap(({ key, value }) => {
+      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+    });
+  });
+  let members = [];
+  if (authorizedMembersIds.length > 0) {
+    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
+      baseData: true,
+      baseFields: ['internal_id', 'name']
+    });
+  }
+
   // noinspection UnnecessaryLocalVariableJS
   const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
@@ -82,6 +98,11 @@ export const generateUpdateMessage = (entityType, inputs) => {
           message = values.map((val) => truncate(extractEntityRepresentativeName(val))).join(', ');
         } else if (key === creators.name) {
           message = 'itself'; // Creator special case
+        } else if (key === 'authorized_members') {
+          message = value.map(({ id, access_right }) => {
+            const member = members.find(({ internal_id }) => internal_id === id);
+            return `${member?.name ?? id} (${access_right})`;
+          }).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {

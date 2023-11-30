@@ -27,6 +27,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
+import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,12 +43,14 @@ import { containerAddStixCoreObjectsLinesRelationAddMutation } from './Container
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
+import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 const useStyles = makeStyles({
   containerDefault: {
@@ -96,6 +99,9 @@ export const containerHeaderObjectsQuery = graphql`
           name
           entity_type
         }
+      }
+      creators {
+        id
       }
       objectMarking {
         edges {
@@ -484,6 +490,8 @@ const ContainerHeader = (props) => {
     enableQuickSubscription,
     enableQuickExport,
     investigationAddFromContainer,
+    enableManageAuthorizedMembers,
+    authorizedMembersMutation,
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -740,6 +748,7 @@ const ContainerHeader = (props) => {
       }
     }
   };
+
   let className = 'containerDefault';
   if (knowledge) {
     className = 'containerKnowledge';
@@ -747,6 +756,7 @@ const ContainerHeader = (props) => {
   if (currentMode === 'graph' || currentMode === 'correlation') {
     className = 'containerGraph';
   }
+
   return (
     <div className={classes[className]}>
       {!knowledge && (
@@ -885,6 +895,17 @@ const ContainerHeader = (props) => {
               type={container.entity_type}
             />
           )}
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+            hasAccess={!!enableManageAuthorizedMembers}
+          >
+            <FormAuthorizedMembersDialog
+              id={container.id}
+              owner={container.creators?.[0]}
+              authorizedMembers={authorizedMembersToOptions(container.authorized_members)}
+              mutation={authorizedMembersMutation}
+            />
+          </Security>
           {enableSuggestions && (
             <QueryRenderer
               query={containerHeaderObjectsQuery}

@@ -101,6 +101,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
+
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -117,6 +118,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
       context_data: contextData,
+      authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
       'rel_granted.internal_id': R.uniq(eventGrantedRefs)
     };
