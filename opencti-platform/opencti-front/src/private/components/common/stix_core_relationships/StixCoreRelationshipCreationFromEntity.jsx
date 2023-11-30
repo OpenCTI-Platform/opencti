@@ -25,6 +25,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import {
   addFilter,
+  removeIdFromFilterObject,
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
@@ -496,7 +497,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     }
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: finalFilters,
+      filters: removeIdFromFilterObject(finalFilters),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };

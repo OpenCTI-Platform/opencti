@@ -531,22 +531,30 @@ export const usePaginationLocalStorage = <U>(
 
   const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => f.values.length > 0) ?? [];
 
-  const filters = removeEmptyFilter.length > 0
-    ? {
+  let filters;
+  if (removeEmptyFilter.length > 0) {
+    filters = {
       ...paginationOptions.filters,
-      filters: removeEmptyFilter.map((filter) => {
-        const removeIdFromFilter = { ...filter };
+      filters: removeEmptyFilter.map((filter: Filter) => {
+        const removeIdFromFilter = {
+          ...filter,
+          key: filter.key === 'container_type' ? 'entity_type' : filter.key,
+        };
         delete removeIdFromFilter.id;
         return removeIdFromFilter;
       }),
-    }
-    : undefined;
+    };
+  } else {
+    // In case where filter is empty but filterGroup exist
+    filters = isFilterGroupNotEmpty(paginationOptions.filters) ? paginationOptions.filters : undefined;
+  }
 
   const cleanPaginationOptions = {
     ...paginationOptions,
     filters,
   };
 
+  console.log(cleanPaginationOptions);
   return {
     viewStorage,
     helpers,

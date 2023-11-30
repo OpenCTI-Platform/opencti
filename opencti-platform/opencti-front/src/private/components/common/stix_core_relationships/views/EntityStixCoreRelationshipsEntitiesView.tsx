@@ -21,6 +21,7 @@ import {
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import {
   addFilter, cleanFilters,
+  removeIdFromFilterObject,
   filtersWithEntityType,
   findFilterFromKey,
   removeFilter,
@@ -145,7 +146,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
               ? sortBy
               : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
+    filters: removeFilter(cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys), ['relationship_type', 'entity_type']),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = addFilter(

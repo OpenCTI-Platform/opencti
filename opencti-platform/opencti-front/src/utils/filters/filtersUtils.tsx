@@ -164,7 +164,7 @@ export const entityTypesFilters = [
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 
-export const isFilterGroupNotEmpty = (filterGroup: FilterGroup | undefined | null) => {
+export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   return (
     filterGroup
     && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0)
@@ -558,7 +558,7 @@ export const constructHandleRemoveFilter = (
   if (filters) {
     const newBaseFilters = {
       ...filters,
-      filters: filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+      filters: filters.filters.filter((f) => (f.key !== k || f.operator !== op)), // remove filter with key=k and operator=op
     };
     return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : undefined;
   }
@@ -637,4 +637,18 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
     return ['eq', 'not_eq'];
   }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
+};
+
+export const removeIdFromFilterObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
+  if (!filters) {
+    return undefined;
+  }
+  return {
+    ...filters,
+    filters: filters.filters.map((f) => {
+      const newFilter = { ...f };
+      delete newFilter.id;
+      return newFilter;
+    }).filter((f) => f.values.length > 0),
+  };
 };
