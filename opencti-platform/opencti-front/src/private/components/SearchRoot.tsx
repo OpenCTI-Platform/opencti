@@ -10,13 +10,11 @@ import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { useFormatter } from '../../components/i18n';
-import { decodeSearchKeyword } from '../../utils/SearchUtils';
 
 const SearchRoot = () => {
   const { t } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
-  const searchTerm = decodeSearchKeyword(keyword);
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
 
   return (
@@ -26,7 +24,7 @@ const SearchRoot = () => {
           variant="h1"
           gutterBottom={true}
         >
-          {t('Global search')}{searchTerm ? ` : ${searchTerm}` : ''}
+          {t('Global search')}
         </Typography>
         <Box
           sx={{
