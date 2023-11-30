@@ -836,7 +836,7 @@ const StixRelationshipsMultiHorizontalBars = ({
           subSelectionToTypes = R.head(subSelectionFiltersContent.filter((n) => n.key === 'toTypes'))
             ?.values || null;
           subSelectionFiltersContent = subSelectionFiltersContent.filter(
-            (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+            (n) => !['relationship_type', 'fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
           );
         }
       }
