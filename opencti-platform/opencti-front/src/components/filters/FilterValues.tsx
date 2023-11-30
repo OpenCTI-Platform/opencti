@@ -2,7 +2,6 @@ import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { useLocation } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
 import { Theme } from '../Theme';
@@ -38,7 +37,16 @@ interface FilterValuesProps {
   helpers?: UseLocalStorageHelpers
 }
 
-const FilterValues: FunctionComponent<FilterValuesProps> = ({ label, tooltip, currentFilter, filtersRepresentativesMap, redirection, handleSwitchLocalMode, onClickLabel, helpers }) => {
+const FilterValues: FunctionComponent<FilterValuesProps> = (
+  { label,
+    tooltip,
+    currentFilter,
+    filtersRepresentativesMap,
+    redirection,
+    handleSwitchLocalMode,
+    onClickLabel,
+    helpers },
+) => {
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;

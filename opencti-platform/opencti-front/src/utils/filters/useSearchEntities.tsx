@@ -58,6 +58,7 @@ import {
 import {
   objectParticipantFieldParticipantsSearchQuery,
 } from '@components/common/form/ObjectParticipantField';
+import { useTheme } from '@mui/styles';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import {
@@ -75,6 +76,7 @@ import { isNotEmptyField } from '../utils';
 import {
   useSearchEntitiesSchemaSCOSearchQuery$data,
 } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
+import { Theme } from '../../components/Theme';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -328,6 +330,7 @@ const useSearchEntities = ({
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
   const { schema } = useAuth();
+  const theme = useTheme() as Theme;
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
@@ -681,7 +684,15 @@ const useSearchEntities = ({
               type: 'Label',
               color: n?.node.color,
             }));
-            unionSetEntities(filterKey, objectLabelEntities);
+            unionSetEntities(filterKey, [
+              {
+                label: t('No label'),
+                value: null,
+                type: 'Label',
+                color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+              },
+              ...objectLabelEntities,
+            ]);
           });
         break;
       case 'x_opencti_base_score':

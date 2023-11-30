@@ -133,8 +133,10 @@ EntityStixCoreRelationshipsEntitiesViewProps
       width: '10%',
     },
   };
-  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
+  const findValuesFromSelectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values;
+  const selectedTypes = findValuesFromSelectedTypes && findValuesFromSelectedTypes.length > 0 ? findValuesFromSelectedTypes : stixCoreObjectTypes;
+  const findValuesFromRelationshipKey = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values;
+  const selectedRelationshipTypes = findValuesFromRelationshipKey && findValuesFromRelationshipKey.length > 0 ? findValuesFromRelationshipKey : relationshipTypes;
 
   const paginationOptions = {
     types: selectedTypes,

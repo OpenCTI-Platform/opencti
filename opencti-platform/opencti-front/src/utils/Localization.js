@@ -1436,7 +1436,6 @@ const i18n = {
       'Incident Date': 'Fecha del incidente',
       'Confidence level': 'Nivel de confianza',
       Confidence: 'Confianza',
-      confidence: 'Confianza',
       Authorized_members: 'Restricción de acceso',
       'The min value cannot be greater than max value':
         'El valor mínimo no puede ser mayor que el valor máximo',

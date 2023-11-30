@@ -64,7 +64,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   } = viewStorage;
   const finalPaginationOptions = {
     ...paginationOptions,
-    filters: removeIdFromFilterObject(paginationOptions?.filters as unknown as FilterGroup),
+    filters: removeIdFromFilterObject(paginationOptions.filters as unknown as FilterGroup),
   } as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
   if (isTo) {
     finalPaginationOptions.toId = entityId;

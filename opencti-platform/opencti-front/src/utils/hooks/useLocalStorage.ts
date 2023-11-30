@@ -530,7 +530,6 @@ export const usePaginationLocalStorage = <U>(
   };
 
   const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => f.values.length > 0) ?? [];
-
   let filters;
   if (removeEmptyFilter.length > 0) {
     filters = {
@@ -546,7 +545,11 @@ export const usePaginationLocalStorage = <U>(
     };
   } else {
     // In case where filter is empty but filterGroup exist
-    filters = isFilterGroupNotEmpty(paginationOptions.filters) ? paginationOptions.filters : undefined;
+    const newFilters = {
+      ...paginationOptions.filters,
+      filters: removeEmptyFilter,
+    } as FilterGroup;
+    filters = isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
   }
 
   const cleanPaginationOptions = {
@@ -554,7 +557,6 @@ export const usePaginationLocalStorage = <U>(
     filters,
   };
 
-  console.log(cleanPaginationOptions);
   return {
     viewStorage,
     helpers,

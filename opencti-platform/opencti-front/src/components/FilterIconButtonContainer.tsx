@@ -118,23 +118,27 @@ FilterIconButtonContainerProps
     anchorEl: undefined,
   } as FilterChipsParameter);
   const open = Boolean(filterChipsParams.anchorEl);
-
-  useEffect(() => {
-    if (hasRenderedRef.current && latestItemRef.current && nbDisplayFilter.current < displayedFilters.length) {
-      setFilterChipsParams({
-        filterId: displayedFilters[displayedFilters.length - 1].id,
-        anchorEl: latestItemRef.current as unknown as HTMLElement,
-      });
-    }
-    nbDisplayFilter.current = displayedFilters.length;
-    hasRenderedRef.current = true;
-  }, [displayedFilters]);
+  if (helpers) {
+    // activate popover feature on chip only when "helper" is defined, not the best way to handle but
+    // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
+    useEffect(() => {
+      if (hasRenderedRef.current && latestItemRef.current && nbDisplayFilter.current < displayedFilters.length) {
+        setFilterChipsParams({
+          filterId: displayedFilters[displayedFilters.length - 1].id,
+          anchorEl: latestItemRef.current as unknown as HTMLElement,
+        });
+      }
+      nbDisplayFilter.current = displayedFilters.length;
+      hasRenderedRef.current = true;
+    }, [displayedFilters]);
+  }
   const handleClose = () => {
     setFilterChipsParams({
       filterId: undefined,
       anchorEl: undefined,
     });
   };
+
   const handleChipClick = (event: React.MouseEvent<HTMLButtonElement>, filterId?: string) => {
     if (helpers) {
       setFilterChipsParams({
