@@ -66,7 +66,7 @@ import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
   ATTRIBUTE_EXPLANATION,
-  ATTRIBUTE_NAME,
+  ATTRIBUTE_NAME, ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -1613,30 +1613,125 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   return null;
 };
 
-const completeSpecialFilterKeysContent = (filter, keysToAdd) => {
+const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  // at this point arrayKey === ['entity_type']
+
+  // we'll build these new filters or filterGroup, depending on the situation
   let newFilter;
   let newFilterGroup;
+
+  if (mode === 'or') {
+    // for instance filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+    // we check parent_types because otherwise wwe would never match Stix-Cyber-Observable which is an abstract parent type
+
+    // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
+    // and we will search in both entity_types and parent_types
+    newFilter = { ...filter, key: arrayKeys.concat(['parent_types']) };
+  }
+
   if (mode === 'and') {
-    // we must split the keys in different filters to get different elastic match
-    const newFiltersContent = keysToAdd.map((keyToAdd) => ({
-      ...filter,
-      key: keyToAdd,
-    }));
+    // for instance filter = {mode: 'and', operator: 'not_eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+    let { values } = filter;
+    if (operator === 'eq') {
+      // 'and'+'eq' => keep only the most restrictive entity types
+      // for example [Report, Container] => [Report]
+      // for example [Report, Stix-Cyber-Observable] => [Report, Stix-Cyber-Observable]
+      // because in elastic entity_type is a unique value (not an abstract type)
+      values = keepMostRestrictiveTypes(filter.values);
+    }
+
+    // we must split the keys in different filters to get different elastic match, so we construct a filterGroup
+    // if the operator is 'eq', it means we have to check equality against the type
+    // and all parent types, so it's a filterGroup with 'or' operator
+    // if the operator is 'not_eq', it means we have to check that there is no match in type
+    // and all parent types, so it's a filterGroup with 'and' operator
     newFilterGroup = {
-      mode: operator === 'not_eq' ? 'and' : 'or', // black magic, call Cathia
-      filters: R.uniq([{
-        ...filter,
-        key: [TYPE_FILTER]
-      }].concat(newFiltersContent)),
+      mode: operator === 'eq' ? 'or' : 'and',
+      filters: [
+        { ...filter, key: ['entity_type'], values },
+        { ...filter, key: ['parent_types'], values }
+      ],
       filterGroups: [],
     };
-  } else {
-    // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
-    newFilter = { ...filter, key: arrayKeys.concat(keysToAdd) };
   }
+
+  // depending on operator, only one is defined
   return { newFilter, newFilterGroup };
+};
+
+const adaptFilterToIdsFilterKey = (filter) => {
+  const { key, mode = 'or', operator = 'eq' } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  if (filter.mode === 'and') {
+    throw Error('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+  }
+  // at this point arrayKey === ['ids'], and mode is always 'or'
+
+  // we'll build these new filters or filterGroup, depending on the situation
+  let newFilter;
+  let newFilterGroup;
+
+  const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
+
+  if (mode === 'or') {
+    // for example filter = {mode: 'or', operator: 'eq', key: ['ids'], values: ['xxx', 'yyy']}
+    // elastic multi-key is a 'or'
+    newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
+  }
+
+  if (mode === 'and') {
+    // for example filter = {mode: 'and', operator: 'not_eq', key: ['ids'], values: ['xxx', 'yyy']}
+    // similarly we need to split into filters for each additional source
+    newFilterGroup = {
+      mode: operator === 'eq' ? 'or' : 'and',
+      filters: [
+        { ...filter, key: ['ids'] },
+        [...idsArray.map((k) => ({ ...filter, key: [k] }))],
+      ],
+      filterGroups: [],
+    };
+  }
+
+  // depending on operator, only one is defined
+  return { newFilter, newFilterGroup };
+};
+
+const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {
+  const { key, mode = 'or', operator = 'eq', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== SOURCE_RELIABILITY_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  // at this point arrayKey === ['source_reliability']
+
+  // in case we want to filter by source reliability (reliability of author)
+  // we need to find all authors filtered by reliability and filter on these authors
+  const authorTypes = [
+    ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    ENTITY_TYPE_IDENTITY_SYSTEM
+  ];
+  const reliabilityFilter = {
+    mode: 'and',
+    filters: [{ key: ['x_opencti_reliability'], operator, values, mode }],
+    filterGroups: [],
+  };
+  const opts = { types: authorTypes, filter: reliabilityFilter, connectionFormat: false };
+  const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // these are the authors with reliability matching the user filter
+  // we now construct a new filter that will match against the creator internal_id:
+  // only those in the listed authors match the filter; so it's actually a simple 'or'+'eq' on the list
+  const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
+  const newFilter = { mode: 'or', operator: 'eq', key: ['rel_created-by.internal_id'], values: authorIds };
+
+  return { newFilter, newFilterGroup: undefined };
 };
 
 /**
@@ -1657,22 +1752,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
   }
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
-    const { key, operator, values, mode } = filter;
+    const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    // Having multi special keys is not supported
-    if (arrayKeys.find((k) => k === TYPE_FILTER || k === IDS_FILTER || k === SOURCE_RELIABILITY_FILTER) !== undefined && arrayKeys.length > 1) {
-      throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
-    }
 
     if (arrayKeys.includes(TYPE_FILTER)) {
       // in case we want to filter by entity_type
       // we need to add parent_types checking (in case the given value in type is an abstract type)
-      let newValues = filter.values;
-      if (filter.mode === 'and' && filter.operator === 'eq') {
-        // keep only the most restrictive entity types
-        newValues = keepMostRestrictiveTypes(filter.values);
-      }
-      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent({ ...filter, values: newValues }, ['parent_types']);
+      const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
@@ -1681,11 +1767,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
     } else if (arrayKeys.includes(IDS_FILTER)) {
       // the special filter key 'ids' take all the ids into account
-      const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-      if (filter.mode === 'and') {
-        throw Error('Not supported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
-      }
-      const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent(filter, idsArray);
+      const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
@@ -1695,29 +1777,12 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     } else if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
       // in case we want to filter by source reliability (reliability of author)
       // we need to find all authors filtered by reliability and filter on these authors
-      const authorTypes = [
-        ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-        ENTITY_TYPE_IDENTITY_ORGANIZATION,
-        ENTITY_TYPE_IDENTITY_SYSTEM
-      ];
-      const reliabilityFilter = {
-        mode: 'and',
-        filters: [{ key: ['x_opencti_reliability'], operator, values, mode }],
-        filterGroups: [],
-      };
-      const opts = { types: authorTypes, connectionFormat: false, reliabilityFilter };
-      const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
-      if (authors.length > 0) {
-        const newKeys = arrayKeys.filter((k) => k !== SOURCE_RELIABILITY_FILTER);
-        newKeys.push('rel_created-by.internal_id');
-        const newValues = authors.map((author) => author.internal_id);
-        const { newFilter, newFilterGroup } = completeSpecialFilterKeysContent({ ...filter, values: newValues }, newKeys);
-        if (newFilter) {
-          finalFilters.push(newFilter);
-        }
-        if (newFilterGroup) {
-          finalFilterGroups.push(newFilterGroup);
-        }
+      const { newFilter, newFilterGroup } = adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
       }
     } else {
       // not a special case, leave the filter unchanged

@@ -12,7 +12,7 @@ import {
   ID_INTERNAL
 } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { IDS_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 // test queries involving dynamic filters
 
@@ -1001,17 +1001,17 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.errors[0].message).toEqual('Not supported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+    expect(queryResult.errors[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
     // --- 15. combinations of operators and modes with the special filter key 'source_reliability' --- //
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
-        first: 10,
+        first: 20,
         filters: {
           mode: 'or',
           filters: [
             {
-              key: IDS_FILTER,
+              key: SOURCE_RELIABILITY_FILTER,
               operator: 'eq',
               values: ['A - Completely reliable'],
               mode: 'or',
@@ -1029,7 +1029,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'or',
           filters: [
             {
-              key: IDS_FILTER,
+              key: SOURCE_RELIABILITY_FILTER,
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'or',
@@ -1047,7 +1047,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'or',
           filters: [
             {
-              key: IDS_FILTER,
+              key: SOURCE_RELIABILITY_FILTER,
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'and',
@@ -1065,7 +1065,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'or',
           filters: [
             {
-              key: IDS_FILTER,
+              key: SOURCE_RELIABILITY_FILTER,
               operator: 'not_eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'and',
@@ -1083,7 +1083,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'or',
           filters: [
             {
-              key: IDS_FILTER,
+              key: SOURCE_RELIABILITY_FILTER,
               operator: 'not_eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'or',
