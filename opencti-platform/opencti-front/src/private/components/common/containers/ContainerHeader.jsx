@@ -50,6 +50,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
+import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 const useStyles = makeStyles({
   containerDefault: {
@@ -490,7 +491,6 @@ const ContainerHeader = (props) => {
     enableQuickExport,
     investigationAddFromContainer,
     enableManageAuthorizedMembers,
-    authorizedMembers,
     authorizedMembersMutation,
   } = props;
   const classes = useStyles();
@@ -902,7 +902,7 @@ const ContainerHeader = (props) => {
             <FormAuthorizedMembersDialog
               id={container.id}
               owner={container.creators?.[0]}
-              authorizedMembers={authorizedMembers}
+              authorizedMembers={authorizedMembersToOptions(container.authorized_members)}
               mutation={authorizedMembersMutation}
             />
           </Security>

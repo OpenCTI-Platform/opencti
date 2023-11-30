@@ -22,7 +22,6 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
-import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -49,6 +48,11 @@ const feedbackQuery = graphql`
         name
         entity_type
         access_right
+      }
+      creators {
+        id
+        name
+        entity_type
       }
       x_opencti_graph_data
       ...Feedback_case
@@ -127,7 +131,6 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             enableQuickSubscription
             enableManageAuthorizedMembers={canManage}
             authorizedMembersMutation={feedbackAuthorizedMembersMutation}
-            authorizedMembers={authorizedMembersToOptions(feedbackData.authorized_members)}
           />
           <Box
             sx={{
