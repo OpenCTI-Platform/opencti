@@ -103,20 +103,22 @@ export const askJobImport = async (context, user, args) => {
     entity_name: entityName,
     entity_type: entityType
   };
-  if (entity.creator_id) {
-    contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-  }
-  if (entity[RELATION_GRANTED_TO]) {
-    contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-  }
-  if (entity[RELATION_OBJECT_MARKING]) {
-    contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-  }
-  if (entity[RELATION_CREATED_BY]) {
-    contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-  }
-  if (entity[RELATION_OBJECT_LABEL]) {
-    contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
+  if (entity) { // Entity can be null for global
+    if (entity.creator_id) {
+      contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
+    }
+    if (entity[RELATION_GRANTED_TO]) {
+      contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
+    }
+    if (entity[RELATION_OBJECT_MARKING]) {
+      contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
+    }
+    if (entity[RELATION_CREATED_BY]) {
+      contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
+    }
+    if (entity[RELATION_OBJECT_LABEL]) {
+      contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
+    }
   }
   await publishUserAction({
     user,
