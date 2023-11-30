@@ -66,7 +66,7 @@ import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
   ATTRIBUTE_EXPLANATION,
-  ATTRIBUTE_NAME, ENTITY_TYPE_CONTAINER_REPORT,
+  ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -1613,42 +1613,41 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   return null;
 };
 
+// If filter key = entity_type, we should also handle parent_types
+// Exemple: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+// we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
 const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
-  // at this point arrayKey === ['entity_type']
+  // at this point arrayKeys === ['entity_type']
 
   // we'll build these new filters or filterGroup, depending on the situation
   let newFilter;
   let newFilterGroup;
 
   if (mode === 'or') {
-    // for instance filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
-    // we check parent_types because otherwise wwe would never match Stix-Cyber-Observable which is an abstract parent type
-
     // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
     // and we will search in both entity_types and parent_types
     newFilter = { ...filter, key: arrayKeys.concat(['parent_types']) };
   }
 
   if (mode === 'and') {
-    // for instance filter = {mode: 'and', operator: 'not_eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
     let { values } = filter;
     if (operator === 'eq') {
       // 'and'+'eq' => keep only the most restrictive entity types
+      // because in elastic entity_type is a unique value (not an abstract type)
       // for example [Report, Container] => [Report]
       // for example [Report, Stix-Cyber-Observable] => [Report, Stix-Cyber-Observable]
-      // because in elastic entity_type is a unique value (not an abstract type)
       values = keepMostRestrictiveTypes(filter.values);
     }
 
-    // we must split the keys in different filters to get different elastic match, so we construct a filterGroup
-    // if the operator is 'eq', it means we have to check equality against the type
+    // we must split the keys in different filters to get different elastic matches, so we construct a filterGroup
+    // - if the operator is 'eq', it means we have to check equality against the type
     // and all parent types, so it's a filterGroup with 'or' operator
-    // if the operator is 'not_eq', it means we have to check that there is no match in type
+    // - if the operator is 'not_eq', it means we have to check that there is no match in type
     // and all parent types, so it's a filterGroup with 'and' operator
     newFilterGroup = {
       mode: operator === 'eq' ? 'or' : 'and',
@@ -1660,7 +1659,7 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
     };
   }
 
-  // depending on operator, only one is defined
+  // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
 
@@ -1682,13 +1681,11 @@ const adaptFilterToIdsFilterKey = (filter) => {
   const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
 
   if (mode === 'or') {
-    // for example filter = {mode: 'or', operator: 'eq', key: ['ids'], values: ['xxx', 'yyy']}
     // elastic multi-key is a 'or'
     newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
   }
 
   if (mode === 'and') {
-    // for example filter = {mode: 'and', operator: 'not_eq', key: ['ids'], values: ['xxx', 'yyy']}
     // similarly we need to split into filters for each additional source
     newFilterGroup = {
       mode: operator === 'eq' ? 'or' : 'and',
@@ -1700,7 +1697,7 @@ const adaptFilterToIdsFilterKey = (filter) => {
     };
   }
 
-  // depending on operator, only one is defined
+  // depending on the operator, only one of new Filter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
 
@@ -1725,11 +1722,15 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
     filterGroups: [],
   };
   const opts = { types: authorTypes, filter: reliabilityFilter, connectionFormat: false };
-  const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // these are the authors with reliability matching the user filter
-  // we now construct a new filter that will match against the creator internal_id:
-  // only those in the listed authors match the filter; so it's actually a simple 'or'+'eq' on the list
+  const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
+  // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
-  const newFilter = { mode: 'or', operator: 'eq', key: ['rel_created-by.internal_id'], values: authorIds };
+  const newFilter = {
+    key: ['rel_created-by.internal_id'],
+    values: authorIds,
+    mode: 'or',
+    operator: 'eq',
+  };
 
   return { newFilter, newFilterGroup: undefined };
 };
