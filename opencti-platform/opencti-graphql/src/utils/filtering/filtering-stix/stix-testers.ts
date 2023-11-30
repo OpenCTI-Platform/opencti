@@ -231,12 +231,12 @@ export const testRelationTo = (stix: any, filter: Filter) => {
  */
 export const testRelationFromTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
-    const stixValue = stix.extensions?.[STIX_EXT_OCTI].source_type;
+    const stixValue = stix.extensions?.[STIX_EXT_OCTI].source_type ?? [];
     const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
-    const stixValue = stix.extensions?.[STIX_EXT_OCTI].sighting_of_type;
+    const stixValue = stix.extensions?.[STIX_EXT_OCTI].sighting_of_type ?? [];
     const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }
@@ -250,7 +250,7 @@ export const testRelationFromTypes = (stix: any, filter: Filter) => {
  */
 export const testRelationToTypes = (stix: any, filter: Filter) => {
   if (stix.type === STIX_TYPE_RELATION) {
-    const stixValue: string = stix.extensions?.[STIX_EXT_OCTI].target_type;
+    const stixValue: string = stix.extensions?.[STIX_EXT_OCTI].target_type ?? [];
     const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
     return testStringFilter(filter, extendedStixValues);
   }

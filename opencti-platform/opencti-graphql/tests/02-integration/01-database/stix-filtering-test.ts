@@ -14,9 +14,8 @@ const stixIndicator = stixIndicators[0]; // confidence 75, revoked=true, no labe
 const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const WHITE_TLP = { standard_id: TLP_CLEAR_ID, internal_id: '' };
 
+// we build a mock resolution map during the testing below
 const MOCK_RESOLUTION_MAP: Map<string, string> = new Map();
-MOCK_RESOLUTION_MAP.set('id-for-label-indicator', 'indicator');
-MOCK_RESOLUTION_MAP.set('id-for-marking-tlp:green', 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9');
 
 const testManyStix = async (stixs: any[], callback: (stix: any) => Promise<boolean>): Promise<[match: number, notMatch: number]> => {
   const results = await Promise.all(stixs.map(async (stix) => callback(stix)));
@@ -143,6 +142,9 @@ describe('Stix Filtering', () => {
   // Now testing complex filters with edge cases
   describe('Complex filtering cases', () => {
     it('using all types of filter keys (string, numeric, boolean)', async () => {
+      MOCK_RESOLUTION_MAP.set('id-for-label-indicator', 'indicator');
+      MOCK_RESOLUTION_MAP.set('id-for-marking-tlp:green', 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9');
+
       const filterGroup = {
         mode: 'and',
         filters: [],
@@ -217,6 +219,32 @@ describe('Stix Filtering', () => {
         filterGroups: [],
       } as FilterGroup;
       expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([61, 3]); // all but malware and software
+    });
+
+    it('using several filter keys that need resolution', async () => {
+      MOCK_RESOLUTION_MAP.set('id-for-coa', 'course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e');
+      MOCK_RESOLUTION_MAP.set('id-for-attack-pattern', 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
+
+      let filterGroup = {
+        mode: 'and',
+        filters: [
+          { key: ['fromId'], operator: 'eq', values: ['id-for-coa'], mode: 'or' },
+          { key: ['toId'], operator: 'eq', values: ['id-for-attack-pattern'], mode: 'or' },
+        ],
+        filterGroups: [],
+      } as FilterGroup;
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
+
+      // same test, reverse order
+      filterGroup = {
+        mode: 'and',
+        filters: [
+          { key: ['toId'], operator: 'eq', values: ['id-for-attack-pattern'], mode: 'or' },
+          { key: ['fromId'], operator: 'eq', values: ['id-for-coa'], mode: 'or' },
+        ],
+        filterGroups: [],
+      } as FilterGroup;
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
     });
 
     it('using parent entity types', async () => {

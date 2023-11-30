@@ -60,7 +60,7 @@ import {
   stixObjectOrRelationshipAddRefRelations,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
-import { addFilter } from '../utils/filtering/filtering-utils';
+import { addFilter, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -74,38 +74,46 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   let finalArgs = args;
-  if (isNotEmptyField(dynamicFrom)) {
+  if (isFilterGroupNotEmpty(dynamicFrom)) {
     const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
     }
+  } else {
+    finalArgs = { ...finalArgs, dynamicFrom: undefined };
   }
-  if (isNotEmptyField(dynamicTo)) {
+  if (isFilterGroupNotEmpty(dynamicTo)) {
     const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
     }
+  } else {
+    finalArgs = { ...finalArgs, dynamicTo: undefined };
   }
   return distributionRelations(context, context.user, finalArgs);
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], dynamicFrom, dynamicTo, authorId } = args;
   let finalArgs = args;
-  if (isNotEmptyField(dynamicFrom)) {
+  if (isFilterGroupNotEmpty(dynamicFrom)) {
     const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
     }
+  } else {
+    finalArgs = { ...finalArgs, dynamicFrom: undefined };
   }
-  if (isNotEmptyField(dynamicTo)) {
+  if (isFilterGroupNotEmpty(dynamicTo)) {
     const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
     }
+  } else {
+    finalArgs = { ...finalArgs, dynamicTo: undefined };
   }
   if (isNotEmptyField(authorId)) {
     const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
@@ -122,19 +130,23 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { dynamicFrom, dynamicTo } = timeSeriesParameter;
     let finalTimeSeriesParameter = timeSeriesParameter;
-    if (isNotEmptyField(dynamicFrom)) {
+    if (isFilterGroupNotEmpty(dynamicFrom)) {
       const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
         .then((result) => result.map((n) => n.id));
       if (fromIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
       }
+    } else {
+      finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicFrom: undefined };
     }
-    if (isNotEmptyField(dynamicTo)) {
+    if (isFilterGroupNotEmpty(dynamicTo)) {
       const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
         .then((result) => result.map((n) => n.id));
       if (toIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, toId: args.toId ? [...toIds, args.toId] : toIds };
       }
+    } else {
+      finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicTo: undefined };
     }
     return { data: timeSeriesRelations(context, user, { ...args, ...finalTimeSeriesParameter }) };
   }));

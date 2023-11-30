@@ -75,9 +75,10 @@ const StixRelationshipsMultiLineChart = ({
         ...selection.filters,
         filters: filtersContent.filter(
           (n) => ![
-            'entity_type',
-            'elementId',
             'relationship_type',
+            'fromId',
+            'toId',
+            'fromTypes',
             'toTypes',
           ].includes(n.key),
         ),
