@@ -1721,7 +1721,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
     filters: [{ key: ['x_opencti_reliability'], operator, values, mode }],
     filterGroups: [],
   };
-  const opts = { types: authorTypes, filter: reliabilityFilter, connectionFormat: false };
+  const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
   // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
@@ -1778,7 +1778,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     } else if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
       // in case we want to filter by source reliability (reliability of author)
       // we need to find all authors filtered by reliability and filter on these authors
-      const { newFilter, newFilterGroup } = adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+      const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
