@@ -83,6 +83,35 @@ export const resetFileIndexing = async (context, user) => {
 
 // endregion
 
+export const updateContextData = (entity, mappedData) => {
+  const contextData = {};
+  if (!entity) { // Entity can be null for global
+    return {
+      ...mappedData,
+    };
+  }
+
+  if (entity.creator_id) {
+    contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
+  }
+  if (entity[RELATION_GRANTED_TO]) {
+    contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
+  }
+  if (entity[RELATION_OBJECT_MARKING]) {
+    contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
+  }
+  if (entity[RELATION_CREATED_BY]) {
+    contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
+  }
+  if (entity[RELATION_OBJECT_LABEL]) {
+    contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
+  }
+  return {
+    ...mappedData,
+    ...contextData
+  };
+};
+
 // region import / upload
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
@@ -94,7 +123,7 @@ export const askJobImport = async (context, user, args) => {
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
-  const contextData = {
+  const contextData = updateContextData(entity, {
     id: entityId,
     file_id: file.id,
     file_name: file.name,
@@ -102,24 +131,8 @@ export const askJobImport = async (context, user, args) => {
     connectors: connectors.map((c) => c.name),
     entity_name: entityName,
     entity_type: entityType
-  };
-  if (entity) { // Entity can be null for global
-    if (entity.creator_id) {
-      contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-    }
-    if (entity[RELATION_GRANTED_TO]) {
-      contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-    }
-    if (entity[RELATION_OBJECT_MARKING]) {
-      contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-    }
-    if (entity[RELATION_CREATED_BY]) {
-      contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-    }
-    if (entity[RELATION_OBJECT_LABEL]) {
-      contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
-    }
-  }
+  });
+
   await publishUserAction({
     user,
     event_access: 'extended',
