@@ -143,9 +143,6 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     // WHEN the user is deleted
     await userDelete(adminContext, ADMIN_USER, userToDeletedAuth.id);
 
-    // TODO ask how to wait for elastic to actually delete data.... instead of waiting 3s
-    await new Promise((f) => { setTimeout(f, 3000); });
-
     const deletedUser = await findUserById(adminContext, ADMIN_USER, userToDeletedAuth.id);
     expect(deletedUser).toBeUndefined();
 
