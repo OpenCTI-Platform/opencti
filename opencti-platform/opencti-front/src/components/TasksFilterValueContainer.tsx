@@ -7,16 +7,17 @@ import Loader from './Loader';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 
 const TasksFilterValueContainer = ({ filters }: { filters: FilterGroup }) => {
+  const cleanUpFilters = removeIdFromFilterObject(filters) as FilterGroup;
   const queryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
-    { filters: removeIdFromFilterObject(filters) as unknown as GqlFilterGroup },
+    { filters: cleanUpFilters as unknown as GqlFilterGroup },
   );
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader />}>
           <TaskFilterValue
-            filters={filters}
+            filters={cleanUpFilters}
             queryRef={queryRef}
           />
         </React.Suspense>
