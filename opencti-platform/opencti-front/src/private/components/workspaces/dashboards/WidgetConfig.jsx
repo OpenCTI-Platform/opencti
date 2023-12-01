@@ -545,6 +545,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         const dataFilters = data[filterName];
         const filter = findFilterFromKey(dataFilters?.filters ?? [], key, op);
         if (filter) {
+          if (op === 'nil' || op === 'not_nil') {
+            return { ...data };
+          }
           const newValues = isUniqFilter(key)
             ? [id]
             : R.uniq([...(filter?.values ?? []), id]);
@@ -570,7 +573,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         }
         const newFilterElement = {
           key,
-          values: [id],
+          values: (op === 'nil' || op === 'not_nil') ? [] : [id],
           operator: op,
           mode: 'or',
         };
