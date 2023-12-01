@@ -197,12 +197,13 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
 
 export const exportTransformFilters = (filteringArgs, orderOptions) => {
   const orderingInversed = invertObj(orderOptions);
+  const { filters } = filteringArgs;
   return {
     ...filteringArgs,
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: checkAndConvertFilters(filteringArgs),
+    filters: filters ? checkAndConvertFilters(filters) : undefined,
   };
 };
 
