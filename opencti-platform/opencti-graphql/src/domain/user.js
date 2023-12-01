@@ -16,7 +16,7 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import { elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
@@ -685,29 +685,23 @@ export const meEditField = async (context, user, userId, inputs, password = null
   }
   return userEditField(context, user, userId, inputs);
 };
-
-export const deleteAllWorkspaceForUser = async (userId) => {
-  return await elRawDeleteByQuery({
+export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
+  const workspace = await elRawSearch(context, authUser, null, {
     index: READ_INDEX_INTERNAL_OBJECTS,
-    refresh: true,
     body: {
       query: {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Workspace' } } },
             { term: { 'authorized_members.id.keyword': { value: userId } } }
-          ],
-          filter: {
-            script: {
-              script: 'return (doc[\'authorized_members.id.keyword\'].size() == 1);'
-            }
-          }
+          ]
         }
       }
     }
   }).catch((err) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
+  console.log('workspace', workspace);
 };
 
 export const deleteAllTrigerAndDigestByUser = async (userId) => {
@@ -771,7 +765,7 @@ export const userDelete = async (context, user, userId) => {
   }
   await deleteAllTrigerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
-  await deleteAllWorkspaceForUser(userId);
+  await deleteAllWorkspaceForUser(context, user, userId);
 
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
