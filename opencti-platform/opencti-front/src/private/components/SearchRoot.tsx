@@ -23,19 +23,14 @@ const searchRootFilesCountQuery = graphql`
 `;
 
 interface SearchRootComponentProps {
-  queryRef: PreloadedQuery<SearchRootFilesCountQuery> | null | undefined;
+  filesCount?: number;
 }
 
-const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ queryRef }) => {
+const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ filesCount = 0 }) => {
   const { t } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
-  let filesCount = 0;
-  if (queryRef) {
-    const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchRootFilesCountQuery, queryRef);
-    filesCount = indexedFilesCount ?? 0;
-  }
 
   return (
     <ExportContextProvider>
@@ -109,6 +104,18 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ quer
   );
 };
 
+interface SearchRootComponentWithQueryProps {
+  queryRef: PreloadedQuery<SearchRootFilesCountQuery>;
+}
+
+const SearchRootComponentWithQuery: FunctionComponent<SearchRootComponentWithQueryProps> = ({ queryRef }) => {
+  const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchRootFilesCountQuery, queryRef);
+  const filesCount = indexedFilesCount ?? 0;
+  return (
+    <SearchRootComponent filesCount={filesCount} />
+  );
+};
+
 const SearchRoot = () => {
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
@@ -127,9 +134,10 @@ const SearchRoot = () => {
     }
   }, []);
 
-  return (
-      <SearchRootComponent queryRef={queryRef} />
-  );
+  if (queryRef) {
+    return (<SearchRootComponentWithQuery queryRef={queryRef} />);
+  }
+  return (<SearchRootComponent />);
 };
 
 export default SearchRoot;
