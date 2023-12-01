@@ -25,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -474,6 +475,10 @@ const StixDomainObjectHeader = (props) => {
               variant="header"
             />
           )}
+          <StixCoreObjectFileExport
+            id={stixDomainObject.id}
+            type={stixDomainObject.entity_type}
+          />
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixDomainObject.id} />
           )}

@@ -23,7 +23,6 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Slide from '@mui/material/Slide';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -86,11 +85,7 @@ import WorkbenchFileToolbar from './WorkbenchFileToolbar';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import RichTextField from '../../../../../components/RichTextField';
 import Drawer from '../../drawer/Drawer';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../../components/Transition';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -3166,10 +3161,11 @@ const WorkbenchFileContentComponent = ({
                                       'x_opencti_aliases',
                                       'x_mitre_id',
                                     ],
-                                    values:
-                                      [object.name
-                                      || object.value
-                                      || object.definition],
+                                    values: [
+                                      object.name
+                                        || object.value
+                                        || object.definition,
+                                    ],
                                   },
                                 ],
                                 filterGroups: [],
@@ -3954,11 +3950,12 @@ const WorkbenchFileContentComponent = ({
                                       'x_opencti_aliases',
                                       'x_mitre_id',
                                     ],
-                                    values:
-                                      [object.name
-                                      || object.value
-                                      || object.definition
-                                      || 'Unknown'],
+                                    values: [
+                                      object.name
+                                        || object.value
+                                        || object.definition
+                                        || 'Unknown',
+                                    ],
                                   },
                                   {
                                     key: 'created',

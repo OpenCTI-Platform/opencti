@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { map } from 'ramda';
+import { filter, map } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -23,6 +23,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
 import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -52,6 +53,7 @@ interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
   id: string;
   type: string;
+  redirectToContent?: boolean;
 }
 
 interface FormValues {
@@ -64,6 +66,7 @@ const StixCoreObjectFileExportComponent = ({
   queryRef,
   id,
   type,
+  redirectToContent,
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t } = useFormatter();
@@ -96,7 +99,7 @@ const StixCoreObjectFileExportComponent = ({
         MESSAGING$.notifySuccess('Export successfully started');
         navigate({
           pathname:
-            values.format === 'application/pdf'
+            values.format === 'application/pdf' && redirectToContent
               ? `${resolveLink(type)}/${id}/content`
               : `${resolveLink(type)}/${id}/files`,
           search: fileId
@@ -115,10 +118,13 @@ const StixCoreObjectFileExportComponent = ({
   );
   // All formats are supported PDF is selected by default if available
   // Redirecting to content for PDF export, to file for everything else
-  const formatValue = exportScopes.filter((s) => s === 'application/pdf')
+  const exportConnsPerFormat = scopesConn(connectorsExport);
+  const isExportActive = (format: string) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const formatValue = exportScopes.filter((s) => s === 'application/pdf').length > 0
+    && isExportActive('application/pdf')
     ? 'application/pdf'
-    : exportScopes.at(0);
-  const isExportPossible = connectorsExport.length > 0;
+    : '';
+  const isExportPossible = filter((x) => isExportActive(x ?? ''), exportScopes).length > 0;
   return (
     <>
       <Tooltip
@@ -129,25 +135,27 @@ const StixCoreObjectFileExportComponent = ({
         }
         aria-label="generate-export"
       >
-        <ToggleButton
-          onClick={() => handleClickOpen()}
-          disabled={!isExportPossible}
-          value="quick-export"
-          aria-haspopup="true"
-          color="primary"
-          size="small"
-          style={{ marginRight: 3 }}
-        >
-          <FileExportOutline
-            fontSize="small"
-            color={isExportPossible ? 'primary' : 'disabled'}
-          />
-        </ToggleButton>
+        <span>
+          <ToggleButton
+            onClick={() => handleClickOpen()}
+            disabled={!isExportActive}
+            value="quick-export"
+            aria-haspopup="true"
+            color="primary"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <FileExportOutline
+              fontSize="small"
+              color={isExportPossible ? 'primary' : 'disabled'}
+            />
+          </ToggleButton>
+        </span>
       </Tooltip>
       <Formik<FormValues>
         enableReinitialize={true}
         initialValues={{
-          format: formatValue ?? 'unknown',
+          format: formatValue,
           type: 'full',
           maxMarkingDefinition: 'none',
         }}
@@ -185,7 +193,11 @@ const StixCoreObjectFileExportComponent = ({
                           containerstyle={{ width: '100%' }}
                         >
                           {exportScopes.map((value, i) => (
-                            <MenuItem key={i} value={value ?? ''}>
+                            <MenuItem
+                              key={i}
+                              value={value ?? ''}
+                              disabled={!isExportActive(value ?? '')}
+                            >
                               {value}
                             </MenuItem>
                           ))}

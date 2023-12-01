@@ -44,6 +44,8 @@ const caseIncidentQuery = graphql`
   query RootIncidentCaseQuery($id: String!) {
     caseIncident(id: $id) {
       id
+      standard_id
+      entity_type
       name
       ...CaseUtils_case
       ...IncidentKnowledge_case
@@ -111,7 +113,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             container={caseData}
             PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
             enableQuickSubscription={true}
-            enableQuickExport={true}
           />
           <Box
             sx={{

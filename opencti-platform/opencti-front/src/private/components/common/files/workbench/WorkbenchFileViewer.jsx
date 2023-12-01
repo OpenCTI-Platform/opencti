@@ -59,20 +59,18 @@ const WorkbenchFileViewerBase = ({
   return (
     <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }}>
-        <div>
-          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t('Analyst workbenches')}
-          </Typography>
-          <IconButton
-            color="secondary"
-            aria-label="Add"
-            onClick={() => setOpenCreate(true)}
-            classes={{ root: classes.createButton }}
-            size="large"
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        </div>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Analyst workbenches')}
+        </Typography>
+        <IconButton
+          color="secondary"
+          aria-label="Add"
+          onClick={() => setOpenCreate(true)}
+          classes={{ root: classes.createButton }}
+          size="large"
+        >
+          <Add fontSize="small" />
+        </IconButton>
         <WorkbenchFileCreator
           handleCloseCreate={() => setOpenCreate(false)}
           openCreate={openCreate}
@@ -134,7 +132,6 @@ const WorkbenchFileViewer = createRefetchContainer(
       fragment WorkbenchFileViewer_entity on StixCoreObject {
         id
         entity_type
-        toStix
         pendingFiles(first: 1000) @connection(key: "Pagination_pendingFiles") {
           edges {
             node {

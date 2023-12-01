@@ -10,6 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
+import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
 import TextField from '../../../../../components/TextField';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
 import ItemIcon from '../../../../../components/ItemIcon';
@@ -18,6 +19,7 @@ import { Theme } from '../../../../../components/Theme';
 import { Option } from '../../form/ReferenceField';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
+import { fetchQuery } from '../../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
@@ -36,8 +38,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const workbenchFileCreatorMutation = graphql`
-  mutation WorkbenchFileCreatorMutation($file: Upload!, $labels: [String], $entityId: String) {
-    uploadPending(file: $file, labels: $labels, errorOnExisting: true, entityId: $entityId) {
+  mutation WorkbenchFileCreatorMutation(
+    $file: Upload!
+    $labels: [String]
+    $entityId: String
+  ) {
+    uploadPending(
+      file: $file
+      labels: $labels
+      errorOnExisting: true
+      entityId: $entityId
+    ) {
       id
       ...FileLine_file
     }
@@ -60,43 +71,63 @@ interface WorkbenchFileCreatorProps {
   entity?: WorkbenchFileViewer_entity$data;
 }
 
-const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({ openCreate, handleCloseCreate, onCompleted, entity }) => {
+const workbenchFileCreatorStixCoreObjectQuery = graphql`
+  query WorkbenchFileCreatorStixCoreObjectQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      id
+      toStix
+    }
+  }
+`;
+
+const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
+  openCreate,
+  handleCloseCreate,
+  onCompleted,
+  entity,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [commitWorkbench] = useMutation<WorkbenchFileCreatorMutation>(workbenchFileCreatorMutation);
+  const [commitWorkbench] = useMutation<WorkbenchFileCreatorMutation>(
+    workbenchFileCreatorMutation,
+  );
   const entityId = entity?.id;
-  const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
+  const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     let { name } = values;
     const finalLabels = values.labels.map((label) => label.value);
     if (!name.endsWith('.json')) {
       name += '.json';
     }
-    const objects = [];
-    if (entity?.toStix) {
-      const stixEntity = JSON.parse(entity.toStix);
-      delete stixEntity.extensions;
-      stixEntity.x_opencti_id = entity.id;
-      objects.push(stixEntity);
-    }
-    const data = { id: `bundle--${uuid()}`, type: 'bundle', objects };
-    const json = JSON.stringify(data);
-    const blob = new Blob([json], { type: 'text/json' });
-    const file = new File([blob], name, {
-      type: 'application/json',
-    });
-
-    commitWorkbench({
-      variables: { file, labels: finalLabels, entityId },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        handleCloseCreate();
-        onCompleted?.();
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objects: any = [];
+    fetchQuery(workbenchFileCreatorStixCoreObjectQuery, {
+      id: entityId,
+    })
+      .toPromise()
+      .then(async (entityData) => {
+        const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
+        if (workbenchStixCoreObject?.toStix) {
+          const stixEntity = JSON.parse(workbenchStixCoreObject.toStix);
+          delete stixEntity.extensions;
+          stixEntity.x_opencti_id = workbenchStixCoreObject.id;
+          objects.push(stixEntity);
+        }
+        const data = { id: `bundle--${uuid()}`, type: 'bundle', objects };
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'text/json' });
+        const file = new File([blob], name, {
+          type: 'application/json',
+        });
+        commitWorkbench({
+          variables: { file, labels: finalLabels, entityId },
+          onCompleted: () => {
+            setSubmitting(false);
+            resetForm();
+            handleCloseCreate();
+            onCompleted?.();
+          },
+        });
+      });
   };
 
   const initialValues: WorkbenchFileCreatorFormValues = {
@@ -139,7 +170,10 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({ op
                   label: t('Labels'),
                 }}
                 options={[]}
-                renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: Option) => (
+                renderOption={(
+                  props: React.HTMLAttributes<HTMLLIElement>,
+                  option: Option,
+                ) => (
                   <li {...props}>
                     <div className={classes.icon}>
                       <ItemIcon type="Label" />

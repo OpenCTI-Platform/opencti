@@ -42,6 +42,7 @@ const dataSourceQuery = graphql`
     dataSource(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_graph_data
       ...DataSource_dataSource

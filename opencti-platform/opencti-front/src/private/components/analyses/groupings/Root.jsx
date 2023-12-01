@@ -43,6 +43,7 @@ const groupingQuery = graphql`
     grouping(id: $id) {
       id
       standard_id
+      entity_type
       ...Grouping_grouping
       ...GroupingDetails_grouping
       ...GroupingKnowledge_grouping

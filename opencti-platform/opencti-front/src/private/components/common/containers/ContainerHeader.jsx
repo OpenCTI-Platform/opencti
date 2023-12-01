@@ -488,7 +488,6 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
     enableQuickSubscription,
-    enableQuickExport,
     investigationAddFromContainer,
     enableManageAuthorizedMembers,
     authorizedMembersMutation,
@@ -889,12 +888,11 @@ const ContainerHeader = (props) => {
           {!knowledge && disableSharing !== true && (
             <StixCoreObjectSharing elementId={container.id} variant="header" />
           )}
-          {enableQuickExport && (
-            <StixCoreObjectFileExport
-              id={container.id}
-              type={container.entity_type}
-            />
-          )}
+          <StixCoreObjectFileExport
+            id={container.id}
+            type={container.entity_type}
+            redirectToContent={true}
+          />
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             hasAccess={!!enableManageAuthorizedMembers}
@@ -902,7 +900,9 @@ const ContainerHeader = (props) => {
             <FormAuthorizedMembersDialog
               id={container.id}
               owner={container.creators?.[0]}
-              authorizedMembers={authorizedMembersToOptions(container.authorized_members)}
+              authorizedMembers={authorizedMembersToOptions(
+                container.authorized_members,
+              )}
               mutation={authorizedMembersMutation}
             />
           </Security>

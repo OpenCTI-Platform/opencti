@@ -43,6 +43,7 @@ const dataComponentQuery = graphql`
     dataComponent(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_graph_data
       ...DataComponent_dataComponent

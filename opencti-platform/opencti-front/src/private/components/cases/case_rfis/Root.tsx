@@ -45,6 +45,7 @@ const caseRfiQuery = graphql`
     caseRfi(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_graph_data
       ...CaseUtils_case
@@ -111,7 +112,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}
             enableQuickSubscription={true}
-            enableQuickExport={true}
           />
           <Box
             sx={{
