@@ -603,7 +603,7 @@ const useSearchEntities = ({
       case 'containers': {
         const filters = [];
         if (searchContext?.elementId) filters.push({ key: 'objects', values: [searchContext?.elementId] });
-        if (availableEntityTypes) filters.push({ key: 'types', values: availableEntityTypes });
+        if (availableEntityTypes) filters.push({ key: 'entity_type', values: availableEntityTypes });
         fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
