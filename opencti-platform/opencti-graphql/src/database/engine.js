@@ -2354,7 +2354,6 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 };
 // endregion
 
-
 const buildSearchResult = async (data, first, searchAfter, connectionFormat = true) => {
   const convertedHits = await elConvertHits(data.hits.hits);
   if (connectionFormat) {
