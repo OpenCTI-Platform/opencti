@@ -177,7 +177,6 @@ FilterIconButtonContainerProps
   return (
     <Box sx={
       !isReadonlyFilter ? {
-        gap: '10px',
         display: 'flex',
         overflow: 'hidden',
         marginRight: '30px',

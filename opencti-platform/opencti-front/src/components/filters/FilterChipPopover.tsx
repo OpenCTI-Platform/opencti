@@ -165,7 +165,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           : <>
             {(!['not_nil', 'nil'].includes(filterOperator))
               && <MUIAutocomplete
-                multiple
                 disableCloseOnSelect
                 key={filterKey}
                 selectOnFocus={true}
@@ -199,6 +198,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 renderOption={(props, option) => {
                   const checked = filterValues.includes(option.value);
                   return <li {...props}
+                              onKeyDown={ (e) => {
+                                if (e.key === 'Enter') {
+                                  e.stopPropagation();
+                                }
+                              }}
                              onClick={() => handleChange(!checked, option.value)}>
                     <Checkbox
                       checked={checked}
