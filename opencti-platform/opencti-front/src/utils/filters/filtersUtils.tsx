@@ -646,10 +646,12 @@ export const removeIdFromFilterObject = (filters?: FilterGroup | null): FilterGr
   }
   return {
     ...filters,
-    filters: filters.filters.map((f) => {
-      const newFilter = { ...f };
-      delete newFilter.id;
-      return newFilter;
-    }).filter((f) => f.values.length > 0),
+    filters: filters.filters
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
+      .map((f) => {
+        const newFilter = { ...f };
+        delete newFilter.id;
+        return newFilter;
+      }),
   };
 };
