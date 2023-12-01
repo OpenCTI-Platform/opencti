@@ -4,9 +4,7 @@ import {
   EntitiesStixDomainObjectsLinesPaginationQuery$variables,
 } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLinesPaginationQuery.graphql';
 import { EntitiesStixDomainObjectLineDummy } from '@components/data/entities/EntitiesStixDomainObjectLine';
-import {
-  EntitiesStixDomainObjectLine_node$data,
-} from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
+import { EntitiesStixDomainObjectLine_node$data } from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolBar from './ToolBar';
 import EntitiesStixDomainObjectsLines, {
@@ -17,7 +15,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'entities';
 
@@ -33,11 +31,9 @@ const Entities = () => {
     LOCAL_STORAGE_KEY,
     {
       filters: initialFilterGroup,
-      searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
-      types: [],
     },
   );
   const {
@@ -47,7 +43,6 @@ const Entities = () => {
     sortBy,
     orderAsc,
     openExports,
-    types,
   } = viewStorage;
   const {
     selectedElements,
@@ -104,92 +99,90 @@ const Entities = () => {
       },
     };
 
-    const toolBarFilters = (types && types.length > 0)
-      ? filtersWithEntityType(filters, types)
-      : filtersWithEntityType(filters, 'Stix-Domain-Object');
     return (
       <>
-          <ListLines
-            helpers={storageHelpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={storageHelpers.handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-              handleToggleExports={storageHelpers.handleToggleExports}
-              openExports={openExports}
-              handleToggleSelectAll={handleToggleSelectAll}
-              availableEntityTypes={['Stix-Domain-Object']}
-              exportEntityType="Stix-Domain-Object"
-              selectAll={selectAll}
-              disableCards={true}
-              keyword={searchTerm}
-              filters={filters}
-              noPadding={true}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              iconExtension={true}
-              secondaryAction={true}
-              availableFilterKeys={[
-                'entity_type',
-                'objectLabel',
-                'objectMarking',
-                'createdBy',
-                'source_reliability',
-                'confidence',
-                'creator_id',
-                'created',
-                'created_at',
-              ]}
+        <ListLines
+          helpers={storageHelpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          availableEntityTypes={['Stix-Domain-Object']}
+          exportEntityType="Stix-Domain-Object"
+          selectAll={selectAll}
+          disableCards={true}
+          keyword={searchTerm}
+          filters={filters}
+          noPadding={true}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          secondaryAction={true}
+          availableFilterKeys={[
+            'entity_type',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'creator_id',
+            'created',
+            'created_at',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <EntitiesStixDomainObjectLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
             >
-              {queryRef && (
-                <React.Suspense
-                  fallback={
-                    <>
-                      {Array(20)
-                        .fill(0)
-                        .map((_, idx) => (
-                          <EntitiesStixDomainObjectLineDummy key={idx} dataColumns={dataColumns} />
-                        ))}
-                    </>
-                  }
-                >
-                  <EntitiesStixDomainObjectsLines
-                    queryRef={queryRef}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    onLabelClick={storageHelpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  />
-                  <ToolBar
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    numberOfSelectedElements={numberOfSelectedElements}
-                    selectAll={selectAll}
-                    search={searchTerm}
-                    filters={toolBarFilters}
-                    handleClearSelectedElements={handleClearSelectedElements}
-                    variant="large"
-                  />
-                </React.Suspense>
-              )}
-          </ListLines>
+              <EntitiesStixDomainObjectsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={storageHelpers.handleAddFilter}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                search={searchTerm}
+                filters={filters}
+                handleClearSelectedElements={handleClearSelectedElements}
+                variant="large"
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
       </>
     );
   };
   return (
     <ExportContextProvider>
-      <div>
-        {renderLines()}
-      </div>
+      <div>{renderLines()}</div>
     </ExportContextProvider>
   );
 };
