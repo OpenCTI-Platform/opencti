@@ -65,11 +65,9 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ quer
               to={`/dashboard/search/files/${keyword ?? ''}`}
               value='files'
               label={<>
-                {filesCount > 0 ? (
-                  <Badge badgeContent={filesCount} color="primary">{t('Files search')}</Badge>
-                ) : (
-                  <div>{t('Files search')}<EEChip /></div>
-                )}
+                <Badge badgeContent={filesCount} color="primary">
+                  <div style={{ padding: '0px 12px' }}>{t('Files search')}<EEChip /></div>
+                </Badge>
               </>
               }
             />
