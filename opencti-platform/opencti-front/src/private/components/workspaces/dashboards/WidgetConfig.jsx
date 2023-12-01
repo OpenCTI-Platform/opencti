@@ -1,5 +1,5 @@
 /* eslint-disable custom-rules/classes-rule */
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
@@ -17,16 +17,14 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import {
-  Add,
   AddOutlined,
   CancelOutlined,
   FormatShapesOutlined,
   LibraryBooksOutlined,
-  MapOutlined,
+  MapOutlined, CloudUploadOutlined, WidgetsOutlined,
 } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
@@ -55,6 +53,11 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import ReactMde from 'react-mde';
+import SpeedDial from '@mui/material/SpeedDial';
+import { SpeedDialIcon } from '@mui/material';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { graphql, useMutation } from 'react-relay';
+import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
@@ -66,8 +69,8 @@ import {
   initialFilterGroup, isFilterGroupNotEmpty,
   isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
-import { capitalizeFirstLetter } from '../../../../utils/String';
-import { QueryRenderer } from '../../../../relay/environment';
+import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
+import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -78,7 +81,17 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    zIndex: 1001,
+    zIndex: 1100,
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
   card: {
     height: 180,
@@ -354,7 +367,19 @@ const visualizationTypes = [
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
 
-const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
+const workspaceImportWidgetMutation = graphql`
+  mutation WidgetConfigImportMutation(
+    $id: ID!
+    $input: ImportConfigurationInput!
+  ) {
+    workspaceWidgetConfigurationImport(id: $id, input: $input) {
+      manifest
+      ...Dashboard_workspace
+    }
+  }
+`;
+
+const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   let initialStep = 0;
   if (widget?.type === 'text') {
     initialStep = 3;
@@ -367,6 +392,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const [selectedTab, setSelectedTab] = useState('write');
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState(widget?.type ?? null);
+  const inputRef = useRef();
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const initialSelection = {
     label: '',
@@ -382,6 +408,24 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
+  const [commitWidgetImportMutation] = useMutation(workspaceImportWidgetMutation);
+
+  const handleWidgetImport = async (event) => {
+    const importedWidgetConfiguration = event.target.files[0];
+    const emptyDashboardManifest = toB64(JSON.stringify({ widgets: {}, config: {} }));
+    const dashboardManifest = workspace.manifest ?? emptyDashboardManifest;
+    commitWidgetImportMutation({
+      variables: {
+        id: workspace.id,
+        input: {
+          importType: 'widget',
+          file: importedWidgetConfiguration,
+          dashboardManifest,
+        },
+      },
+      onError: (error) => handleError(error),
+    });
+  };
   const handleClose = () => {
     if (!widget) {
       setStepIndex(0);
@@ -1506,14 +1550,30 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   return (
     <div>
       {!widget && (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
+        <>
+          <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
+          <SpeedDial
+              className={classes.createButton}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon />}
+              FabProps={{ color: 'secondary' }}
+          >
+            <SpeedDialAction
+                title={t('Import a widget')}
+                icon={<CloudUploadOutlined />}
+                tooltipTitle={t('Import a widget')}
+                onClick={() => inputRef.current?.click()}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+                title={t('Create a widget')}
+                icon={<WidgetsOutlined />}
+                tooltipTitle={t('Create a widget')}
+                onClick={() => setOpen(true)}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+          </SpeedDial>
+        </>
       )}
       {widget && (
         <MenuItem

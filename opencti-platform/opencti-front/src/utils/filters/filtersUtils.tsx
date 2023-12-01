@@ -283,11 +283,11 @@ const sanitizeFilterGroupKeysForBackend = (
 ): GqlFilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => ({
+    filters: filterGroup?.filters?.map((f) => ({
       ...f,
       key: Array.isArray(f.key) ? f.key : [f.key],
     })),
-    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
+    filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
   } as GqlFilterGroup;
 };
 
@@ -297,11 +297,11 @@ const sanitizeFilterGroupKeysForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => ({
+    filters: filterGroup?.filters?.map((f) => ({
       ...f,
       key: Array.isArray(f.key) ? f.key[0] : f.key,
     })),
-    filterGroups: filterGroup.filterGroups.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
+    filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
   } as FilterGroup;
 };
 

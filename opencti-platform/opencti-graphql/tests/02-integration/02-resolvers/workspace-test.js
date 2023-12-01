@@ -13,6 +13,7 @@ import {
 } from "../../utils/testQuery";
 import { elLoadById } from "../../../src/database/engine";
 import { MEMBER_ACCESS_ALL } from "../../../src/utils/access";
+import { toBase64 } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -349,6 +350,134 @@ describe("Workspace resolver standard behavior", () => {
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },
     });
+  });
+
+  it('can import widget, given valid entity type JSON import', async () => {
+    const workspaceWidgetName = 'workspaceImportWidget';
+    const CREATE_WORKSPACE = {
+      input: {
+        type: 'dashboard',
+        name: workspaceWidgetName,
+      },
+    };
+    const workspaceWidget = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: CREATE_WORKSPACE,
+    });
+    expect(workspaceWidget).not.toBeNull();
+    expect(workspaceWidget.data.workspaceAdd).not.toBeNull();
+    expect(workspaceWidget.data.workspaceAdd.name).toEqual(workspaceWidgetName);
+    const workspaceId = workspaceWidget.data.workspaceAdd.id;
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_octi_widget_list.json'));
+    const upload = new Upload();
+    const fileUpload = {
+      fieldName: 'fieldName',
+      filename: 'valid.json',
+      mimetype: 'application/json',
+      createReadStream: () => file,
+    };
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.file = fileUpload;
+    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
+            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+            id
+            manifest
+          }
+        }
+      `,
+      variables: {
+        id: workspaceId,
+        input: {
+          file: upload,
+          dashboardManifest: emptyDashboardManifest,
+          importType: 'widget',
+        }
+      }
+    });
+    expect(queryResult.data.workspaceWidgetConfigurationImport).not.toBeUndefined();
+    expect(queryResult.data.workspaceWidgetConfigurationImport).not.toBeNull();
+    const deleteWorkspace = await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: workspaceId },
+    });
+    expect(deleteWorkspace.data.workspaceDelete).toEqual(workspaceId);
+    expect(deleteWorkspace).not.toBeNull();
+  });
+
+  it('can not import widget, given invalid widget type import', async () => {
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_invalid_type_octi_widget_list.json'));
+    const upload = new Upload();
+    const fileUpload = {
+      fieldName: 'fieldName',
+      filename: 'invalid-type.json',
+      mimetype: 'application/json',
+      createReadStream: () => file,
+    };
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.file = fileUpload;
+    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
+            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+            manifest
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          file: upload,
+          dashboardManifest: emptyDashboardManifest,
+          importType: 'widget',
+        }
+      }
+    });
+
+    expect(queryResult.errors[0].message).toEqual(
+      'Invalid type. Please import OpenCTI widget-type only'
+    );
+  });
+
+  it('can not import widget, given invalid widget version import', async () => {
+    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_invalid_version_octi_widget_list.json'));
+    const upload = new Upload();
+    const fileUpload = {
+      fieldName: 'fieldName',
+      filename: 'invalid-version.json',
+      mimetype: 'application/json',
+      createReadStream: () => file,
+    };
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
+    upload.file = fileUpload;
+    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
+            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+            manifest
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          file: upload,
+          dashboardManifest: emptyDashboardManifest,
+          importType: 'widget',
+        }
+      }
+    });
+
+    expect(queryResult.errors[0].message).toEqual(
+      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0'
+    );
   });
 
   it("can not investigate on an internal object", async () => {

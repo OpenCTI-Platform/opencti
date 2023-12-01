@@ -5,7 +5,9 @@ import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
 import type { FileUpload } from 'graphql-upload/Upload.mjs';
 import { streamToString } from '../../../src/database/file-storage';
-import { checkDashboardConfigurationImport } from '../../../src/modules/workspace/workspace-domain';
+import {
+  checkConfigurationImport,
+} from '../../../src/modules/workspace/workspace-domain';
 
 describe('workspace', () => {
   it('should verify import version compatibility, given invalid version', () => {
@@ -17,7 +19,7 @@ describe('workspace', () => {
       '../../data/20233010_octi_dashboard_Custom Dash_invalid_4.0.4_version.json',
       'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0',
     ])(
-      'checkDashboardConfigurationImport(%i)',
+      'checkConfigurationImport(%i)',
       async (filePath, expectedErrorMessage) => {
         const file = fs.createReadStream(path.resolve(__dirname, filePath));
         const upload = new Upload();
@@ -27,13 +29,13 @@ describe('workspace', () => {
           createReadStream: () => file,
           encoding: 'utf8',
         } as unknown as FileUpload;
-        upload.promise = new Promise((executor) => executor(fileUpload));
+        upload.promise = new Promise((executor) => { executor(fileUpload); });
         upload.file = fileUpload;
         const readStream = fileUpload.createReadStream();
         const fileContent = await streamToString(readStream);
         const parsedData = JSON.parse(fileContent.toString());
 
-        expect(() => checkDashboardConfigurationImport(parsedData),).toThrowError(expectedErrorMessage);
+        expect(() => checkConfigurationImport('dashboard', parsedData),).toThrowError(expectedErrorMessage);
       },
     );
   });
@@ -52,13 +54,13 @@ describe('workspace', () => {
       createReadStream: () => file,
       encoding: 'utf8',
     } as unknown as FileUpload;
-    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
     upload.file = fileUpload;
     const readStream = fileUpload.createReadStream();
     const fileContent = await streamToString(readStream);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkDashboardConfigurationImport(parsedData),).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
+    expect(() => checkConfigurationImport('dashboard', parsedData)).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
   });
 
   it('should verify import version compatibility, given valid import', async () => {
@@ -75,12 +77,12 @@ describe('workspace', () => {
       createReadStream: () => file,
       encoding: 'utf8',
     } as unknown as FileUpload;
-    upload.promise = new Promise((executor) => executor(fileUpload));
+    upload.promise = new Promise((executor) => { executor(fileUpload); });
     upload.file = fileUpload;
     const readStream = fileUpload.createReadStream();
     const fileContent = await streamToString(readStream);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkDashboardConfigurationImport(parsedData),).not.toThrowError();
+    expect(() => checkConfigurationImport('dashboard', parsedData),).not.toThrowError();
   });
 });
