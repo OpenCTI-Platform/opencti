@@ -69,8 +69,6 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   const selectedNodes = new Set<Coord>();
 
   const startFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    e.stopPropagation();
-    e.preventDefault();
     if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
       return;
     }
@@ -86,8 +84,6 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   };
 
   const stopFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    e.stopPropagation();
-    e.preventDefault();
     if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
       return;
     }
