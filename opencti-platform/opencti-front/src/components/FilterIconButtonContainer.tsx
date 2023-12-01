@@ -87,6 +87,7 @@ FilterIconButtonContainerProps
   disabledPossible,
   redirection,
   filtersRepresentativesQueryRef,
+  chipColor,
   handleRemoveFilter,
   helpers,
 }) => {
@@ -200,6 +201,7 @@ FilterIconButtonContainerProps
                 }
               >
                 <Chip
+                  color={chipColor}
                   ref={isNotLastFilter ? null : latestItemRef}
                   classes={{ root: classNames(classFilter, currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator) ? classes.chipLabelNoValues : ''), label: classes.chipLabel }}
                   label={
