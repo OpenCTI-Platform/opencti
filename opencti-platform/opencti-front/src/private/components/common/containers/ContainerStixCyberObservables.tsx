@@ -29,7 +29,7 @@ import {
 } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import {
   GqlFilterGroup,
-  initialFilterGroup,
+  initialFilterGroup, removeIdFromFilterObject,
 } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
@@ -146,7 +146,7 @@ ContainerStixCyberObservablesComponentProps
   const paginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: filters as unknown as GqlFilterGroup,
+    filters: removeIdFromFilterObject(filters) as unknown as GqlFilterGroup,
   };
   const exportPaginationOptions = {
     ...rawPaginationOptions,
