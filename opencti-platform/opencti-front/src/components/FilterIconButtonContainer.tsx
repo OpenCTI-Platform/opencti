@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
@@ -171,13 +172,23 @@ FilterIconButtonContainerProps
         return null;
     }
   };
+
+  const isReadonlyFilter = helpers || handleRemoveFilter;
   return (
-    <div style={{
-      marginTop: '10px',
-      gap: '10px',
-      display: 'flex',
-      flexWrap: 'wrap',
-    }}>
+    <Box sx={
+      !isReadonlyFilter ? {
+        gap: '10px',
+        display: 'flex',
+        overflow: 'hidden',
+        marginRight: '30px',
+      }
+        : {
+          marginTop: '10px',
+          gap: '10px',
+          display: 'flex',
+          flexWrap: 'wrap',
+        }
+    }>
       {displayedFilters
         .map((currentFilter, index) => {
           const filterKey = currentFilter.key;
@@ -218,7 +229,7 @@ FilterIconButtonContainerProps
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
-                  onDelete={() => manageRemoveFilter(currentFilter.id, filterKey, filterOperator)}
+                  onDelete={isReadonlyFilter ? () => manageRemoveFilter(currentFilter.id, filterKey, filterOperator) : undefined}
                 />
               </Tooltip>
               {isNotLastFilter && (
@@ -255,7 +266,7 @@ FilterIconButtonContainerProps
             }
           />)
       }
-    </div>
+    </Box>
   );
 };
 
