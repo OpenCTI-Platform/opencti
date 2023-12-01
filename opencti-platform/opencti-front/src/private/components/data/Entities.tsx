@@ -1,23 +1,16 @@
 import React from 'react';
-import {
-  EntitiesStixDomainObjectsLinesPaginationQuery,
-  EntitiesStixDomainObjectsLinesPaginationQuery$variables,
-} from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLinesPaginationQuery.graphql';
+import { EntitiesStixDomainObjectsLinesPaginationQuery, EntitiesStixDomainObjectsLinesPaginationQuery$variables, } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLinesPaginationQuery.graphql';
 import { EntitiesStixDomainObjectLineDummy } from '@components/data/entities/EntitiesStixDomainObjectLine';
-import {
-  EntitiesStixDomainObjectLine_node$data,
-} from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
+import { EntitiesStixDomainObjectLine_node$data, } from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolBar from './ToolBar';
-import EntitiesStixDomainObjectsLines, {
-  entitiesStixDomainObjectsLinesQuery,
-} from './entities/EntitiesStixDomainObjectsLines';
+import EntitiesStixDomainObjectsLines, { entitiesStixDomainObjectsLinesQuery, } from './entities/EntitiesStixDomainObjectsLines';
 import useAuth from '../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'entities';
 
@@ -33,11 +26,9 @@ const Entities = () => {
     LOCAL_STORAGE_KEY,
     {
       filters: initialFilterGroup,
-      searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
-      types: [],
     },
   );
   const {
@@ -104,9 +95,6 @@ const Entities = () => {
       },
     };
 
-    const toolBarFilters = (types && types.length > 0)
-      ? filtersWithEntityType(filters, types)
-      : filtersWithEntityType(filters, 'Stix-Domain-Object');
     return (
       <>
           <ListLines
@@ -175,7 +163,7 @@ const Entities = () => {
                     numberOfSelectedElements={numberOfSelectedElements}
                     selectAll={selectAll}
                     search={searchTerm}
-                    filters={toolBarFilters}
+                    filters={filters}
                     handleClearSelectedElements={handleClearSelectedElements}
                     variant="large"
                   />
