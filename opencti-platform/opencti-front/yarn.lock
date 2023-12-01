@@ -15086,7 +15086,7 @@ __metadata:
     typeface-ibm-plex-sans: 1.1.13
     typeface-roboto: 1.1.13
     typescript: 5.2.2
-    unified: 11.0.3
+    unified: 11.0.4
     use-analytics: 1.1.0
     uuid: 9.0.1
     vite-plugin-relay: 2.0.0
@@ -19663,7 +19663,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:11.0.3, unified@npm:^11.0.0":
+"unified@npm:11.0.4":
+  version: 11.0.4
+  resolution: "unified@npm:11.0.4"
+  dependencies:
+    "@types/unist": ^3.0.0
+    bail: ^2.0.0
+    devlop: ^1.0.0
+    extend: ^3.0.0
+    is-plain-obj: ^4.0.0
+    trough: ^2.0.0
+    vfile: ^6.0.0
+  checksum: cfb023913480ac2bd5e787ffb8c27782c43e6be4a55f8f1c288233fce46a7ebe7718ccc5adb80bf8d56b7ef85f5fc32239c7bfccda006f9f2382e0cc2e2a77e4
+  languageName: node
+  linkType: hard
+
+"unified@npm:^11.0.0":
   version: 11.0.3
   resolution: "unified@npm:11.0.3"
   dependencies:
