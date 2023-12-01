@@ -2622,7 +2622,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   }
   // If confidence is passed at creation, just compare confidence
   const isPatchUpdateOption = updatePatch.update === true;
-  const applyUpdate = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
+  const isConfidenceMatch = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2632,11 +2632,15 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
-      const canBeUpsert = applyUpdate && attribute.upsert; // If field can be upsert
       const isInputWithData = isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
-      const isWorkflowReset = attribute.name === X_WORKFLOW_ID && !isInputWithData; // Reset of workflow is not allowed
-      if ((isFullSync || canBeUpsert || isCurrentlyEmpty) && !isWorkflowReset) {
+      // Field can be upsert if:
+      // 1. Confidence is correct
+      // 2. Attribute is declared upsert=true in the schema
+      // 3. Data from the inputs is not empty to prevent any data cleaning
+      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
+      if (canBeUpsert || isFullSync || isCurrentlyEmpty) {
         inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
       }
     }
@@ -2649,6 +2653,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     const isInputAvailable = inputField in updatePatch;
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
+      const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
@@ -2656,15 +2661,17 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
         // If expected data is different from current data
         if (R.symmetricDifference(currentData, targetData).length > 0) {
           const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
+          // In full synchro, just replace everything
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if (diffTargets.length > 0) {
+          } else if (isInputWithData && diffTargets.length > 0) {
+            // If data is provided and different from existing data, apply an add operation
             inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
         }
       } else {
         const currentData = element[relDef.databaseName];
-        const updatable = isUpsertSynchro || isEmptyField(currentData);
+        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData));
         // If expected data is different from current data
         // And data can be updated (complete a null value or forced through synchro upsert option
         if (!R.equals(currentData, patchInputData) && updatable) {
