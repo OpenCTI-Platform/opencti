@@ -90,6 +90,9 @@ const i18n = {
       'Update a status template': 'Actualizar una plantilla de estado',
       'Do you want to delete this entity?': '¿Quieres borrar esta entidad?',
       'Do you want to delete this user?': '¿Quieres borrar este usuario?',
+      'All notifications, triggers and digests associated with the user will be deleted.': 'Se eliminarán todas las notificaciones, activadores y resúmenes asociados con el usuario.',
+      'All investigations and dashboard where the user is the only admin, will be deleted.': 'Se eliminarán todas las investigaciones y el panel de control en los que el usuario sea el único administrador.',
+      'If you want to keep the associated information, we recommend deactivating the user instead.': 'Si desea conservar la información asociada, le recomendamos desactivar el usuario.',
       'Do you want to delete this file?': '¿Quieres borrar este fichero?',
       'Do you want to remove this job?': '¿Quieres borrar esta tarea?',
       'Do you want to delete this group?': '¿Quieres borrar este grupo?',
@@ -2419,7 +2422,13 @@ const i18n = {
       'Do you want to delete this entity?':
         'Souhaitez-vous supprimer cette entité ?',
       'Do you want to delete this user?':
-        'Souahitez-vous supprimer cet utilisateur ?',
+        'Souhaitez-vous supprimer cet utilisateur ?',
+      'All notifications, triggers and digests associated with the user will be deleted.':
+          'Toutes les notifications, déclencheurs et résumés associés à l’utilisateur seront supprimés.',
+      'All investigations and dashboard where the user is the only admin, will be deleted.':
+          'Toutes les enquêtes et tous les tableaux de bord où l’utilisateur est le seul administrateur seront supprimés.',
+      'If you want to keep the associated information, we recommend deactivating the user instead.':
+          'Si vous souhaitez conserver les informations associées, nous vous recommandons plutôt de désactiver l’utilisateur.',
       'Do you want to delete this file?':
         'Souhaitez-vous supprimer ce fichier ?',
       'Do you want to remove this job?':
@@ -4744,6 +4753,12 @@ const i18n = {
       'Update a status template': '状態テンプレートを更新する',
       'Do you want to delete this entity?': 'このエンティティを削除しますか？',
       'Do you want to delete this user?': 'このユーザーを削除しますか？',
+      'All notifications, triggers and digests associated with the user will be deleted.':
+          'ユーザーに関連付けられているすべての通知、トリガー、ダイジェストが削除されます',
+      'All investigations and dashboard where the user is the only admin, will be deleted.':
+          'ユーザーが唯一の管理者であるすべての調査とダッシュボードが削除されます',
+      'If you want to keep the associated information, we recommend deactivating the user instead.':
+          '関連情報を保持したい場合は、代わりにユーザーを非アクティブ化することをお勧めします。',
       'Do you want to delete this file?': 'このファイルを削除しますか？',
       'Do you want to remove this job?': 'このジョブを削除しますか？',
       'Do you want to delete this group?': 'このグループを削除しますか？',
@@ -6970,9 +6985,11 @@ const i18n = {
       'Do you want to delete this file?': '你想删除这个文件吗？',
       'Do you want to remove this job?': '您要删除此作业吗？',
       'Do you want to delete this user?': '是否要删除此用户？',
+      'All notifications, triggers and digests associated with the user will be deleted.': '与用户关联的所有通知、触发器和摘要都将被删除',
+      'All investigations and dashboard where the user is the only admin, will be deleted.': '用户是唯一管理员的所有调查和仪表板都将被删除',
+      'If you want to keep the associated information, we recommend deactivating the user instead.': '如果您想保留关联信息，我们建议您停用该用户。',
       'Do you want to delete this group?': '是否要删除此组？',
-      'Do you want to delete this threat actor group?':
-        '您想删除该威胁组织吗？',
+      'Do you want to delete this threat actor group?': '您想删除该威胁组织吗？',
       'Do you want to delete this threat actor individual?':
         '您想删除此威胁行为者个人吗？',
       'Do you want to delete this intrusion set?': '是否要删除此入侵集合？',

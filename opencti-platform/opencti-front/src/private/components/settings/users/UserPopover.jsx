@@ -9,10 +9,10 @@ import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { withRouter } from 'react-router-dom';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
@@ -140,10 +140,13 @@ class UserPopover extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this user?')}
-            </DialogContentText>
+          <DialogTitle>{t('Do you want to delete this user?')}</DialogTitle>
+          <DialogContent dividers>
+              <ul>
+                <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+                <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+              </ul>
+                  {t('If you want to keep the associated information, we recommend deactivating the user instead.')}
           </DialogContent>
           <DialogActions>
             <Button
