@@ -603,7 +603,7 @@ export const getDefaultOperatorFilter = (filterKey: string) => {
     return 'eq';
   }
   if (dateFilters.includes(filterKey)) {
-    return 'gt';
+    return 'gte';
   }
   if (integerFilters.includes(filterKey)) {
     return 'gt';

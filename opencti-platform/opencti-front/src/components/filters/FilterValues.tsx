@@ -63,7 +63,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = (
   if (isOperatorNil) {
     return <>
       <strong className={deactivatePopoverMenu ? '' : classes.label}
-              onClick={onCLick}>{label}</strong> :<span>{filterOperator === 'nil' ? t('is null') : t('is not null')}</span>
+              onClick={onCLick}>{label}</strong> :<span>{filterOperator === 'nil' ? t('is empty') : t('is not empty')}</span>
     </>;
   }
   const values = filterValues.map((id) => {

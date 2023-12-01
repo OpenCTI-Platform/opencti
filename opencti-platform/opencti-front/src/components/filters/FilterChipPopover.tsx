@@ -31,8 +31,8 @@ const OperatorKeyValues: {
 } = {
   eq: 'Equals',
   not_eq: 'Not equals',
-  nil: 'Null',
-  not_nil: 'Not null',
+  nil: 'Empty',
+  not_nil: 'Not empty',
   gt: 'Greater than',
   gte: 'Greater than/ Equals',
   lt: 'Lower than',
@@ -156,7 +156,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       >
         {
           getAvailableOperatorForFilter(filterKey).map((value) => <MenuItem key={value}
-                                                                            value={value}>{OperatorKeyValues[value]}</MenuItem>)
+                                                                            value={value}>{t(OperatorKeyValues[value])}</MenuItem>)
         }
       </Select>
       {

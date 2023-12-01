@@ -6,7 +6,6 @@ import {
   Filter,
   FilterGroup,
   findFilterFromKey,
-  getDefaultOperatorFilter,
   isFilterGroupNotEmpty,
   isUniqFilter,
 } from '../filters/filtersUtils';
