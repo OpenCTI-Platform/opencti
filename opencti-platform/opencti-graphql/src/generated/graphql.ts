@@ -16985,6 +16985,7 @@ export type Query = {
   incidents?: Maybe<IncidentConnection>;
   incidentsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   indexedFiles?: Maybe<IndexedFileConnection>;
+  indexedFilesCount?: Maybe<Scalars['Int']['output']>;
   indexedFilesMetrics?: Maybe<FilesMetrics>;
   indicator?: Maybe<Indicator>;
   indicators?: Maybe<IndicatorConnection>;
@@ -17823,6 +17824,11 @@ export type QueryIncidentsTimeSeriesArgs = {
 export type QueryIndexedFilesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryIndexedFilesCountArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33861,6 +33867,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   incidents?: Resolver<Maybe<ResolversTypes['IncidentConnection']>, ParentType, ContextType, Partial<QueryIncidentsArgs>>;
   incidentsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryIncidentsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   indexedFiles?: Resolver<Maybe<ResolversTypes['IndexedFileConnection']>, ParentType, ContextType, Partial<QueryIndexedFilesArgs>>;
+  indexedFilesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryIndexedFilesCountArgs>>;
   indexedFilesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType>;
   indicator?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<QueryIndicatorArgs, 'id'>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<QueryIndicatorsArgs>>;

@@ -4,22 +4,14 @@ import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport }
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { elDeleteAllFiles, elSearchFiles, getStats } from '../database/engine';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { READ_INDEX_FILES } from '../database/utils';
 import {
   RELATION_CREATED_BY,
   RELATION_GRANTED_TO,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
-import {
-  getManagerConfigurationFromCache,
-  managerConfigurationEditField
-} from '../modules/managerConfiguration/managerConfiguration-domain';
-import { FunctionalError } from '../config/errors';
 
-// region File indexing
 export const filesMetrics = async (context, user, args) => {
   const { excludedPaths = [] } = args;
   const finalExcludedPaths = ['import/pending/', ...excludedPaths]; // always exclude pending
@@ -46,42 +38,6 @@ export const filesMetrics = async (context, user, args) => {
     metricsByMimeType,
   };
 };
-
-export const indexedFilesMetrics = async () => {
-  const metrics = await getStats([READ_INDEX_FILES]);
-  return {
-    globalCount: metrics.docs.count,
-    globalSize: metrics.store.size_in_bytes,
-  };
-};
-
-export const searchIndexedFiles = async (context, user, args) => {
-  return elSearchFiles(context, context.user, args);
-};
-
-export const resetFileIndexing = async (context, user) => {
-  const managerConfiguration = await getManagerConfigurationFromCache(context, user, 'FILE_INDEX_MANAGER');
-  if (!managerConfiguration) {
-    throw FunctionalError('No manager configuration found');
-  }
-  const managerConfigurationEditInput = [
-    { key: 'manager_running', value: [false] },
-    { key: 'last_run_start_date', value: [null] },
-    { key: 'last_run_end_date', value: [null] },
-  ];
-  await managerConfigurationEditField(context, user, managerConfiguration.id, managerConfigurationEditInput);
-  await elDeleteAllFiles();
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: 'Reset file indexing',
-  });
-  return true;
-};
-
-// endregion
 
 // region import / upload
 export const askJobImport = async (context, user, args) => {

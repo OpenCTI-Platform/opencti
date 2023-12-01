@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { createReadStream } from 'node:fs';
-import { elIndexFiles, elDelete, elLoadById, elSearchFiles } from '../../../src/database/engine';
+import { elDelete, elLoadById } from '../../../src/database/engine';
+import { elIndexFiles, elSearchFiles } from '../../../src/database/file-search';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteFile, getFileContent, upload } from '../../../src/database/file-storage';
 import { INDEX_FILES } from '../../../src/database/utils';

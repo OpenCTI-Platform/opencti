@@ -120,7 +120,6 @@ const topBarNotificationNumberSubscription = graphql`
 `;
 
 interface TopBarProps {
-  keyword?: string;
   queryRef: PreloadedQuery<TopBarQuery>;
 }
 
@@ -157,7 +156,6 @@ const routes = {
 
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
-  keyword,
 }) => {
   const theme = useTheme<Theme>();
   const history = useHistory();
@@ -232,6 +230,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
+
+  // global search keyword
+  const keyword = location.pathname.match(/(?:\/([a-zA-Z]+)){4}/)?.[1] ?? '';
 
   const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
   const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
@@ -442,9 +443,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   );
 };
 
-const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = ({
-  keyword,
-}) => {
+const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
   const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
   const classes = useStyles();
   return (
@@ -460,7 +459,7 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = ({
             />
           }
         >
-          <TopBarComponent queryRef={queryRef} keyword={keyword} />
+          <TopBarComponent queryRef={queryRef} />
         </React.Suspense>
       )}
     </>

@@ -7119,8 +7119,9 @@ type Query {
   file(id: String!): File
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
-  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   filesMetrics(mimeTypes: [String!], maxFileSize: Float, excludedPaths: [String!], includedPaths: [String!]): FilesMetrics
+  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
+  indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
   settings: Settings!
   group(id: String!): Group
