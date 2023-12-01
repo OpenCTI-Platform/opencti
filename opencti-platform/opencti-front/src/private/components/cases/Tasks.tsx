@@ -57,6 +57,7 @@ const Tasks = () => {
     const toolBarFilters = filtersWithEntityType(filters, 'Task');
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         handleSort={helpers.handleSort}

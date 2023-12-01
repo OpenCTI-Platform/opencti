@@ -10,13 +10,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import VocabularyPopover from './VocabularyPopover';
 import { DataColumns } from '../../../../components/list_lines';
-import { LocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { vocabFragment } from '../../../../utils/hooks/useVocabularyCategory';
 import {
   useVocabularyCategory_Vocabularynode$data,
   useVocabularyCategory_Vocabularynode$key,
 } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

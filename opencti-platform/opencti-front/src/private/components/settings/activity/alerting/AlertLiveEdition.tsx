@@ -43,35 +43,35 @@ interface AlertLiveFormValues {
 }
 
 const alertLiveEditionFragment = graphql`
-  fragment AlertLiveEdition_trigger on Trigger {
-    id
-    name
-    trigger_type
-    event_types
-    description
-    filters
-    created
-    modified
-    notifiers {
-      id
-      name
+    fragment AlertLiveEdition_trigger on Trigger {
+        id
+        name
+        trigger_type
+        event_types
+        description
+        filters
+        created
+        modified
+        notifiers {
+            id
+            name
+        }
+        recipients {
+            id
+            name
+        }
     }
-    recipients {
-      id
-      name
-    }
-  }
 `;
 
 const alertLiveEditionFieldPatch = graphql`
-  mutation AlertLiveEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
-    triggerActivityFieldPatch(id: $id, input: $input) {
-      ...AlertLiveEdition_trigger
+    mutation AlertLiveEditionFieldPatchMutation(
+        $id: ID!
+        $input: [EditInput!]!
+    ) {
+        triggerActivityFieldPatch(id: $id, input: $input) {
+            ...AlertLiveEdition_trigger
+        }
     }
-  }
 `;
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -13,17 +13,23 @@ import {
   ContainerStixCyberObservablesLinesQuery$variables,
 } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { ContainerStixCyberObservables_container$data } from './__generated__/ContainerStixCyberObservables_container.graphql';
+import {
+  ContainerStixCyberObservables_container$data,
+} from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
-import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
+import {
+  ContainerStixCyberObservablesLinesSearchQuery$data,
+} from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
+import {
+  ContainerStixCyberObservableLine_node$data,
+} from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import {
   GqlFilterGroup,
-  initialFilterGroup,
+  initialFilterGroup, removeIdFromFilterObject,
 } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
@@ -117,7 +123,7 @@ ContainerStixCyberObservablesComponentProps
   } = useEntityToggle<ContainerStixCyberObservableLine_node$data>(
     LOCAL_STORAGE_KEY,
   );
-  // Format filters Front (object)
+    // Format filters Front (object)
   const toolbarFilters = {
     mode: 'and',
     filters: [
@@ -136,11 +142,11 @@ ContainerStixCyberObservablesComponentProps
     ],
     filterGroups: [],
   };
-  // Format filters query (options + filters)
+    // Format filters query (options + filters)
   const paginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: filters as unknown as GqlFilterGroup,
+    filters: removeIdFromFilterObject(filters) as unknown as GqlFilterGroup,
   };
   const exportPaginationOptions = {
     ...rawPaginationOptions,
@@ -230,6 +236,7 @@ ContainerStixCyberObservablesComponentProps
       {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <ListLines
+            helpers={helpers}
             sortBy={sortBy}
             orderAsc={orderAsc}
             dataColumns={buildColumns(platformModuleHelpers)}

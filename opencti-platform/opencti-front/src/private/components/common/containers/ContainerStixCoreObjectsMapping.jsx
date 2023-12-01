@@ -107,6 +107,7 @@ const ContainerStixCoreObjectsMapping = ({
   return (
       <div className={classes.container}>
         <ListLines
+          helpers={helpers}
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}

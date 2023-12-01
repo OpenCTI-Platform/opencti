@@ -50,12 +50,21 @@ const TaskFilterValue = ({
                 .replace('rel_', '')
                 .replace('.*', '')}`,
             )
-            : t(`filter_${currentFilter.key}`),
+            : t(currentFilter.key),
           20,
         )}`;
         const isOperatorNil = ['nil', 'not_nil'].includes(
           currentFilter.operator,
         );
+        const DisplayNilLabel = () => {
+          if (currentFilter.operator === 'nil') {
+            return <span>{t('is empty')}</span>;
+          }
+          if (currentFilter.operator === 'not_nil') {
+            return <span>{t('is not empty')}</span>;
+          }
+          return null;
+        };
         return (
           <span key={currentFilter.key}>
             <Chip
@@ -64,7 +73,7 @@ const TaskFilterValue = ({
                 <div>
                   <strong>{label}</strong>:{' '}
                   {isOperatorNil ? (
-                    <span>{t('No value')}</span>
+                    <DisplayNilLabel/>
                   ) : (
                     currentFilter.values.map((o) => {
                       const localFilterMode = t(

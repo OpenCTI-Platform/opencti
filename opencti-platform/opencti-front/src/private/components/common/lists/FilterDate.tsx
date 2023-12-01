@@ -25,7 +25,11 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 }) => {
   const { t } = useFormatter();
 
-  const findFilterFromKey = (filters: { key: string, values: (string | Date)[], operator?: string }[], key: string, op = 'eq') => {
+  const findFilterFromKey = (filters: {
+    key: string,
+    values: (string | Date)[],
+    operator?: string
+  }[], key: string, op = 'eq') => {
     for (const filter of filters) {
       if (filter.key === key) {
         if (filter.operator === op) {
@@ -62,7 +66,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   return (
     <DatePicker
       key={filterKey}
-      label={`${t(`filter_${filterKey}_${operator}`)}`}
+      label={t(filterKey)}
       value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}

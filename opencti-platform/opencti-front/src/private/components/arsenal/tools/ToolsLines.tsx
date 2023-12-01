@@ -22,60 +22,60 @@ interface ToolsLinesProps {
 }
 
 export const toolsLinesQuery = graphql`
-    query ToolsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: ToolsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...ToolsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query ToolsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: ToolsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ToolsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const toolsLinesFragment = graphql`
-    fragment ToolsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "ToolsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "ToolsLinesRefetchQuery") {
-        tools(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_tools") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    ...ToolLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment ToolsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "ToolsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ToolsLinesRefetchQuery") {
+    tools(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_tools") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...ToolLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const ToolsLines: FunctionComponent<ToolsLinesProps> = ({
@@ -85,7 +85,7 @@ const ToolsLines: FunctionComponent<ToolsLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ToolsLinesPaginationQuery,
   ToolsLines_data$key
   >({

@@ -46,24 +46,24 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 export const feedCreationAllTypesQuery = graphql`
-  query FeedCreationAllTypesQuery {
-    scoTypes: subTypes(type: "Stix-Cyber-Observable") {
-      edges {
-        node {
-          id
-          label
+    query FeedCreationAllTypesQuery {
+        scoTypes: subTypes(type: "Stix-Cyber-Observable") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
         }
-      }
-    }
-    sdoTypes: subTypes(type: "Stix-Domain-Object") {
-      edges {
-        node {
-          id
-          label
+        sdoTypes: subTypes(type: "Stix-Domain-Object") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
         }
-      }
     }
-  }
 `;
 
 const styles = (theme) => ({
@@ -146,11 +146,11 @@ const styles = (theme) => ({
 });
 
 const feedCreationMutation = graphql`
-  mutation FeedCreationMutation($input: FeedAddInput!) {
-    feedAdd(input: $input) {
-      ...FeedLine_node
+    mutation FeedCreationMutation($input: FeedAddInput!) {
+        feedAdd(input: $input) {
+            ...FeedLine_node
+        }
     }
-  }
 `;
 
 const feedCreationValidation = (t) => Yup.object().shape({
@@ -250,7 +250,7 @@ const FeedCreation = (props) => {
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
-      || Object.keys(feedAttributes).length === 0
+            || Object.keys(feedAttributes).length === 0
     ) {
       return false;
     }
@@ -258,15 +258,15 @@ const FeedCreation = (props) => {
       const feedAttribute = feedAttributes[n];
       if (
         !feedAttribute
-        || !feedAttribute.attribute
-        || !feedAttribute.mappings
-        || R.values(feedAttribute.mappings).length !== selectedTypes.length
-        || R.values(feedAttribute.mappings).filter(
-          (m) => !m.attribute
-            || !m.type
-            || m.attribute.length === 0
-            || m.type.length === 0,
-        ).length > 0
+                || !feedAttribute.attribute
+                || !feedAttribute.mappings
+                || R.values(feedAttribute.mappings).length !== selectedTypes.length
+                || R.values(feedAttribute.mappings).filter(
+                  (m) => !m.attribute
+                        || !m.type
+                        || m.attribute.length === 0
+                        || m.type.length === 0,
+                ).length > 0
       ) {
         return false;
       }

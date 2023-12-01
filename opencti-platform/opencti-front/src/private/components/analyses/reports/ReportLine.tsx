@@ -117,7 +117,7 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Report" />
+        <ItemIcon type="Report"/>
       </ListItemIcon>
       <ListItemText
         primary={
@@ -195,7 +195,7 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined/>
       </ListItemIcon>
     </ListItem>
   );
@@ -269,10 +269,10 @@ export const ReportLineDummy: FunctionComponent<ReportLineDummyProps> = ({
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox edge="start" disabled={true} disableRipple={true}/>
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+        <Skeleton animation="wave" variant="circular" width={30} height={30}/>
       </ListItemIcon>
       <ListItemText
         primary={
@@ -369,7 +369,7 @@ export const ReportLineDummy: FunctionComponent<ReportLineDummyProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined/>
       </ListItemIcon>
     </ListItem>
   );

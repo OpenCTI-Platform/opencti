@@ -21,6 +21,7 @@ import {
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import {
   addFilter, cleanFilters,
+  removeIdFromFilterObject,
   filtersWithEntityType,
   findFilterFromKey,
   removeFilter,
@@ -40,6 +41,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   paddingRightButtonAdd?: number;
   handleChangeView?: (viewMode: string) => void;
 }
+
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
 EntityStixCoreRelationshipsEntitiesViewProps
 > = ({
@@ -131,8 +133,10 @@ EntityStixCoreRelationshipsEntitiesViewProps
       width: '10%',
     },
   };
-  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
+  const findValuesFromSelectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values;
+  const selectedTypes = findValuesFromSelectedTypes && findValuesFromSelectedTypes.length > 0 ? findValuesFromSelectedTypes : stixCoreObjectTypes;
+  const findValuesFromRelationshipKey = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values;
+  const selectedRelationshipTypes = findValuesFromRelationshipKey && findValuesFromRelationshipKey.length > 0 ? findValuesFromRelationshipKey : relationshipTypes;
 
   const paginationOptions = {
     types: selectedTypes,
@@ -140,11 +144,11 @@ EntityStixCoreRelationshipsEntitiesViewProps
     elementId: entityId,
     search: searchTerm,
     orderBy:
-      sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable
-        ? sortBy
-        : 'name',
+            sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable
+              ? sortBy
+              : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
+    filters: removeFilter(cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys), ['relationship_type', 'entity_type']),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = addFilter(
@@ -170,109 +174,110 @@ EntityStixCoreRelationshipsEntitiesViewProps
 
   const finalView = currentView || view;
   return (
-    <>
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        handleAddFilter={storageHelpers.handleAddFilter}
-        handleRemoveFilter={storageHelpers.handleRemoveFilter}
-        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-        handleChangeView={handleChangeView || storageHelpers.handleChangeView}
-        onToggleEntity={onToggleEntity}
-        handleToggleSelectAll={handleToggleSelectAll}
-        paginationOptions={paginationOptions}
-        selectAll={selectAll}
-        keyword={searchTerm}
-        displayImport={true}
-        handleToggleExports={storageHelpers.handleToggleExports}
-        openExports={openExports}
-        exportEntityType={'Stix-Core-Object'}
-        iconExtension={true}
-        filters={filters}
-        availableFilterKeys={availableFilterKeys}
-        availableRelationFilterTypes={{
-          targets: isRelationReversed
-            ? [
-              'Position',
-              'City',
-              'Country',
-              'Region',
-              'Individual',
-              'System',
-              'Organization',
-              'Sector',
-              'Event',
-              'Vulnerability',
-            ]
-            : [
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Malware-Analysis',
-            ],
-        }}
-        availableEntityTypes={stixCoreObjectTypes}
-        availableRelationshipTypes={relationshipTypes}
-        numberOfElements={numberOfElements}
-        noPadding={true}
-        disableCards={true}
-        enableEntitiesView={true}
-        enableNestedView={enableNestedView}
-        enableContextualView={enableContextualView}
-        currentView={finalView}
-      >
-        <EntityStixCoreRelationshipsEntitiesViewLines
-          paginationOptions={paginationOptions}
-          dataColumns={dataColumns}
-          onToggleEntity={onToggleEntity}
-          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-          isRelationReversed={isRelationReversed}
-          onLabelClick={storageHelpers.handleAddFilter}
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          selectAll={selectAll}
-        />
-      </ListLines>
-      <ToolBar
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        numberOfSelectedElements={numberOfSelectedElements}
-        selectAll={selectAll}
-        filters={backgroundTaskFilters}
-        search={searchTerm}
-        handleClearSelectedElements={handleClearSelectedElements}
-        variant="medium"
-        warning={true}
-        warningMessage={t(
-          'Be careful, you are about to delete the selected entities (not the relationships!).',
-        )}
-      />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={isRelationReversed}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
-            stixCoreObjectTypes,
-          )}
-          targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
-            stixCoreObjectTypes,
-          )}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          paginationOptions={paginationOptions}
-          connectionKey="Pagination_stixCoreObjects"
-          paddingRight={paddingRightButtonAdd ?? 220}
-        />
-      </Security>
-    </>
+        <>
+            <ListLines
+                helpers={storageHelpers}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={dataColumns}
+                handleSort={storageHelpers.handleSort}
+                handleSearch={storageHelpers.handleSearch}
+                handleAddFilter={storageHelpers.handleAddFilter}
+                handleRemoveFilter={storageHelpers.handleRemoveFilter}
+                handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+                handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+                handleChangeView={handleChangeView || storageHelpers.handleChangeView}
+                onToggleEntity={onToggleEntity}
+                handleToggleSelectAll={handleToggleSelectAll}
+                paginationOptions={paginationOptions}
+                selectAll={selectAll}
+                keyword={searchTerm}
+                displayImport={true}
+                handleToggleExports={storageHelpers.handleToggleExports}
+                openExports={openExports}
+                exportEntityType={'Stix-Core-Object'}
+                iconExtension={true}
+                filters={filters}
+                availableFilterKeys={availableFilterKeys}
+                availableRelationFilterTypes={{
+                  targets: isRelationReversed
+                    ? [
+                      'Position',
+                      'City',
+                      'Country',
+                      'Region',
+                      'Individual',
+                      'System',
+                      'Organization',
+                      'Sector',
+                      'Event',
+                      'Vulnerability',
+                    ]
+                    : [
+                      'Threat-Actor',
+                      'Intrusion-Set',
+                      'Campaign',
+                      'Incident',
+                      'Malware',
+                      'Tool',
+                      'Malware-Analysis',
+                    ],
+                }}
+                availableEntityTypes={stixCoreObjectTypes}
+                availableRelationshipTypes={relationshipTypes}
+                numberOfElements={numberOfElements}
+                noPadding={true}
+                disableCards={true}
+                enableEntitiesView={true}
+                enableNestedView={enableNestedView}
+                enableContextualView={enableContextualView}
+                currentView={finalView}
+            >
+                <EntityStixCoreRelationshipsEntitiesViewLines
+                    paginationOptions={paginationOptions}
+                    dataColumns={dataColumns}
+                    onToggleEntity={onToggleEntity}
+                    setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                    isRelationReversed={isRelationReversed}
+                    onLabelClick={storageHelpers.handleAddFilter}
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    selectAll={selectAll}
+                />
+            </ListLines>
+            <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={backgroundTaskFilters}
+                search={searchTerm}
+                handleClearSelectedElements={handleClearSelectedElements}
+                variant="medium"
+                warning={true}
+                warningMessage={t(
+                  'Be careful, you are about to delete the selected entities (not the relationships!).',
+                )}
+            />
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntity
+                    entityId={entityId}
+                    allowedRelationshipTypes={relationshipTypes}
+                    isRelationReversed={isRelationReversed}
+                    targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
+                      stixCoreObjectTypes,
+                    )}
+                    targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
+                      stixCoreObjectTypes,
+                    )}
+                    defaultStartTime={defaultStartTime}
+                    defaultStopTime={defaultStopTime}
+                    paginationOptions={paginationOptions}
+                    connectionKey="Pagination_stixCoreObjects"
+                    paddingRight={paddingRightButtonAdd ?? 220}
+                />
+            </Security>
+        </>
   );
 };
 

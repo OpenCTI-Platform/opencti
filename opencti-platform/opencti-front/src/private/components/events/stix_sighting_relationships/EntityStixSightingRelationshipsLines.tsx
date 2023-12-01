@@ -19,72 +19,72 @@ import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks
 const nbOfRowsToLoad = 50;
 
 export const entityStixSightingRelationshipsLinesQuery = graphql`
-    query EntityStixSightingRelationshipsLinesPaginationQuery(
-        $fromId: StixRef
-        $toId: StixRef
-        $toTypes: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixSightingRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...EntityStixSightingRelationshipsLines_data
-        @arguments(
-            fromId: $fromId
-            toId: $toId
-            toTypes: $toTypes
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query EntityStixSightingRelationshipsLinesPaginationQuery(
+    $fromId: StixRef
+    $toId: StixRef
+    $toTypes: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixSightingRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...EntityStixSightingRelationshipsLines_data
+    @arguments(
+      fromId: $fromId
+      toId: $toId
+      toTypes: $toTypes
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const EntityStixSightingRelationshipsLinesFragment = graphql`
-    fragment EntityStixSightingRelationshipsLines_data on Query
-    @argumentDefinitions(
-        fromId: { type: "StixRef" }
-        toId: { type: "StixRef" }
-        toTypes: { type: "[String]" }
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-            type: "StixSightingRelationshipsOrdering"
-            defaultValue: first_seen
-        }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "EntityStixSightingRelationshipsLinesRefetchQuery") {
-        stixSightingRelationships(
-            fromId: $fromId
-            toId: $toId
-            toTypes: $toTypes
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_stixSightingRelationships") {
-            edges {
-                node {
-                    ...EntityStixSightingRelationshipLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
-        }
+  fragment EntityStixSightingRelationshipsLines_data on Query
+  @argumentDefinitions(
+    fromId: { type: "StixRef" }
+    toId: { type: "StixRef" }
+    toTypes: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixSightingRelationshipsOrdering"
+      defaultValue: first_seen
     }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "EntityStixSightingRelationshipsLinesRefetchQuery") {
+    stixSightingRelationships(
+      fromId: $fromId
+      toId: $toId
+      toTypes: $toTypes
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixSightingRelationships") {
+      edges {
+        node {
+          ...EntityStixSightingRelationshipLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
 `;
 
 interface EntityStixSightingRelationshipsLinesProps {
@@ -117,22 +117,22 @@ const EntityStixSightingRelationshipsLines: FunctionComponent<EntityStixSighting
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.stixSightingRelationships?.edges ?? []}
-        globalCount={data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-        LineComponent={EntityStixSightingRelationshipLine}
-        DummyLineComponent={EntityStixSightingRelationshipLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        entityLink={entityLink}
-        isTo={isTo}
-        onLabelClick={onLabelClick}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.stixSightingRelationships?.edges ?? []}
+      globalCount={data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={EntityStixSightingRelationshipLine}
+      DummyLineComponent={EntityStixSightingRelationshipLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      entityLink={entityLink}
+      isTo={isTo}
+      onLabelClick={onLabelClick}
+    />
   );
 };
 

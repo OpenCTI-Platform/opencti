@@ -27,14 +27,14 @@ export const indicatorsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...IndicatorsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        filters: $filters
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 

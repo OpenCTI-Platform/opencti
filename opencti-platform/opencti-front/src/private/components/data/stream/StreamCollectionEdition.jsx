@@ -36,13 +36,13 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const streamCollectionMutationFieldPatch = graphql`
-  mutation StreamCollectionEditionFieldPatchMutation($id: ID!$input: [EditInput]!) {
-    streamCollectionEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...StreamCollectionEdition_streamCollection
-      }
+    mutation StreamCollectionEditionFieldPatchMutation($id: ID!$input: [EditInput]!) {
+        streamCollectionEdit(id: $id) {
+            fieldPatch(input: $input) {
+                ...StreamCollectionEdition_streamCollection
+            }
+        }
     }
-  }
 `;
 
 const streamCollectionValidation = (t) => Yup.object().shape({
@@ -249,19 +249,19 @@ const StreamCollectionEditionFragment = createFragmentContainer(
   StreamCollectionEditionContainer,
   {
     streamCollection: graphql`
-      fragment StreamCollectionEdition_streamCollection on StreamCollection {
-        id
-        name
-        description
-        filters
-        stream_live
-        stream_public
-        authorized_members {
-          id
-          name
-        }
-      }
-    `,
+            fragment StreamCollectionEdition_streamCollection on StreamCollection {
+                id
+                name
+                description
+                filters
+                stream_live
+                stream_public
+                authorized_members {
+                    id
+                    name
+                }
+            }
+        `,
   },
 );
 

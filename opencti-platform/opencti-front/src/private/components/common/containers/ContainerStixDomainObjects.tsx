@@ -1,13 +1,17 @@
 import React from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import { ContainerStixDomainObjectLine_node$data } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
+import {
+  ContainerStixDomainObjectLine_node$data,
+} from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectLineDummy } from '@components/common/containers/ContainerStixDomainObjectLine';
-import { ContainerStixDomainObjects_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
+import {
+  ContainerStixDomainObjects_container$key,
+} from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixDomainObjectsLines, {
   containerStixDomainObjectsLinesQuery,
@@ -21,28 +25,28 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const ContainerStixDomainObjectsFragment = graphql`
-  fragment ContainerStixDomainObjects_container on Container {
-    id
-    ... on Report {
-      name
+    fragment ContainerStixDomainObjects_container on Container {
+        id
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
+        ... on ObservedData {
+            name
+            first_observed
+            last_observed
+        }
+        ...ContainerHeader_container
     }
-    ... on Grouping {
-      name
-    }
-    ... on Note {
-      attribute_abstract
-      content
-    }
-    ... on Opinion {
-      opinion
-    }
-    ... on ObservedData {
-      name
-      first_observed
-      last_observed
-    }
-    ...ContainerHeader_container
-  }
 `;
 
 const ContainerStixDomainObjects = ({
@@ -98,9 +102,9 @@ const ContainerStixDomainObjects = ({
       {
         key: 'entity_type',
         values:
-          types && types.length > 0
-            ? R.map((n) => ({ id: n, value: n }), types)
-            : [],
+                    types && types.length > 0
+                      ? R.map((n) => ({ id: n, value: n }), types)
+                      : [],
         operator: 'eq',
       },
       ...(filters?.filters ?? []),
@@ -183,6 +187,7 @@ const ContainerStixDomainObjects = ({
   };
   return (
     <ListLines
+      helpers={storageHelpers}
       sortBy={sortBy}
       orderAsc={orderAsc}
       dataColumns={dataColumns}

@@ -26,35 +26,23 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = () => ({
-  container: {
-    marginLeft: -10,
-  },
   parameters: {
-    float: 'left',
-    margin: '-10px 0 0 15px',
-  },
-  views: {
+    gap: '10px',
     display: 'flex',
-    float: 'right',
+    flexWrap: 'wrap',
+    marginTop: '-10px',
+    alignItems: 'center',
+    paddingBottom: '10px',
   },
   cardsContainer: {
     marginTop: 10,
     paddingTop: 0,
   },
-  sortField: {
-    float: 'left',
-    marginTop: 2,
-  },
   sortFieldLabel: {
-    margin: '10px 15px 0 0',
     fontSize: 14,
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-3px 0 0 15px',
   },
 });
 
@@ -90,20 +78,21 @@ class ListCards extends Component {
       exportContext,
       numberOfElements,
       availableFilterKeys,
+      helpers,
     } = this.props;
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     return (
-      <div className={classes.container}>
+      <div>
         <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={handleSearch.bind(this)}
-              keyword={keyword}
-            />
-          </div>
+          <GenerateDefaultDirectFilters filters={filters} availableFilterKeys={availableFilterKeys} helpers={helpers}/>
+          <SearchInput
+            variant="small"
+            onSubmit={handleSearch.bind(this)}
+            keyword={keyword}
+          />
           {availableFilterKeys && availableFilterKeys.length > 0 && (
             <Filters
+              helpers={helpers}
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
               handleSwitchGlobalMode={handleSwitchGlobalMode}
@@ -114,15 +103,10 @@ class ListCards extends Component {
             />
           )}
           <InputLabel
-            classes={{ root: classes.sortFieldLabel }}
-            style={{
-              marginLeft:
-                availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
-            }}
-          >
+            classes={{ root: classes.sortFieldLabel }}>
             {t('Sort by')}
           </InputLabel>
-          <FormControl classes={{ root: classes.sortField }}>
+          <FormControl>
             <Select
               name="sort-by"
               value={sortBy}
@@ -144,21 +128,22 @@ class ListCards extends Component {
           <IconButton
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
-            classes={{ root: classes.sortIcon }}
             size="large"
           >
-            {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+            {orderAsc ? <ArrowDownward/> : <ArrowUpward/>}
           </IconButton>
-          {isFilterGroupNotEmpty(filters)
-            && <FilterIconButton
-              filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              redirection
-            />
-          }
         </div>
+        {isFilterGroupNotEmpty(filters)
+          && <FilterIconButton
+            helpers={helpers}
+            filters={filters}
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            redirection
+          />
+        }
+
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
             {numberOfElements && (
@@ -186,14 +171,14 @@ class ListCards extends Component {
                 {typeof handleChangeView === 'function' && (
                   <ToggleButton value="cards" aria-label="cards">
                     <Tooltip title={t('Cards view')}>
-                      <ViewModuleOutlined fontSize="small" />
+                      <ViewModuleOutlined fontSize="small"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
                 {typeof handleChangeView === 'function' && (
                   <ToggleButton value="lines" aria-label="lines">
                     <Tooltip title={t('Lines view')}>
-                      <ViewListOutlined color="primary" fontSize="small" />
+                      <ViewListOutlined color="primary" fontSize="small"/>
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -224,7 +209,7 @@ class ListCards extends Component {
                           aria-label="export"
                           disabled={true}
                         >
-                          <FileDownloadOutlined fontSize="small" />
+                          <FileDownloadOutlined fontSize="small"/>
                         </ToggleButton>
                       </span>
                     </Tooltip>
@@ -233,7 +218,7 @@ class ListCards extends Component {
             )}
           </div>
         </div>
-        <div className="clearfix" />
+        <div className="clearfix"/>
         <div className={classes.cardsContainer}>{children}</div>
         {typeof handleToggleExports === 'function' && (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
@@ -273,6 +258,7 @@ ListCards.propTypes = {
   paginationOptions: PropTypes.object,
   numberOfElements: PropTypes.object,
   availableFilterKeys: PropTypes.array,
+  helpers: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);

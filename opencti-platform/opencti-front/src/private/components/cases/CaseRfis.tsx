@@ -115,6 +115,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     const toolBarFilters = filtersWithEntityType(filters, 'Case-Rfi');
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

@@ -58,6 +58,7 @@ import {
 import {
   objectParticipantFieldParticipantsSearchQuery,
 } from '@components/common/form/ObjectParticipantField';
+import { useTheme } from '@mui/styles';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import {
@@ -75,6 +76,7 @@ import { isNotEmptyField } from '../utils';
 import {
   useSearchEntitiesSchemaSCOSearchQuery$data,
 } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
+import { Theme } from '../../components/Theme';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -299,6 +301,15 @@ interface EntityWithLabelValue {
   type: string;
 }
 
+export interface SearchEntitiesProps {
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  searchContext: { entityTypes: string[]; elementId?: string[] };
+  searchScope: Record<string, string[]>;
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
+  allEntityTypes?: boolean;
+}
+
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
@@ -319,11 +330,12 @@ const useSearchEntities = ({
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
   const { schema } = useAuth();
+  const theme = useTheme() as Theme;
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
       ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
-          === index,
+        === index,
     ),
   }));
   const entityType = searchContext?.entityTypes?.length > 0
@@ -591,7 +603,7 @@ const useSearchEntities = ({
       case 'containers': {
         const filters = [];
         if (searchContext?.elementId) filters.push({ key: 'objects', values: [searchContext?.elementId] });
-        if (availableEntityTypes) filters.push({ key: 'types', values: availableEntityTypes });
+        if (availableEntityTypes) filters.push({ key: 'entity_type', values: availableEntityTypes });
         fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
@@ -672,7 +684,15 @@ const useSearchEntities = ({
               type: 'Label',
               color: n?.node.color,
             }));
-            unionSetEntities(filterKey, objectLabelEntities);
+            unionSetEntities(filterKey, [
+              {
+                label: t('No label'),
+                value: null,
+                type: 'Label',
+                color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+              },
+              ...objectLabelEntities,
+            ]);
           });
         break;
       case 'x_opencti_base_score':
@@ -804,6 +824,24 @@ const useSearchEntities = ({
           type: 'Vocabulary',
         }));
         unionSetEntities('revoked', revokedEntities);
+        break;
+      case 'trigger_type':
+        // eslint-disable-next-line no-case-declarations
+        const isTriggerTypeEntities = ['digest', 'live'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('trigger_type', isTriggerTypeEntities);
+        break;
+      case 'instance_trigger':
+        // eslint-disable-next-line no-case-declarations
+        const isInstanceTrigger = ['true', 'false'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('instance_trigger', isInstanceTrigger);
         break;
       case 'is_read':
         // eslint-disable-next-line no-case-declarations

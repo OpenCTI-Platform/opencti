@@ -15,9 +15,9 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface AttackPatternsLinesProps {
-  queryRef: PreloadedQuery < AttackPatternsLinesPaginationQuery >;
+  queryRef: PreloadedQuery<AttackPatternsLinesPaginationQuery>;
   dataColumns: DataColumns;
-  paginationOptions ? : AttackPatternsLinesPaginationQuery$variables;
+  paginationOptions?: AttackPatternsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onLabelClick: HandleAddFilter;
 }
@@ -84,7 +84,7 @@ const AttackPatternsLines: FunctionComponent<AttackPatternsLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   AttackPatternsLinesPaginationQuery,
   AttackPatternsLines_data$key
   >({
@@ -96,22 +96,22 @@ const AttackPatternsLines: FunctionComponent<AttackPatternsLinesProps> = ({
   });
 
   return (
-      <ListLinesContent
-          initialLoading={!data}
-          loadMore={loadMore}
-          hasMore={hasMore}
-          isLoading={isLoadingMore}
-          dataList={data?.attackPatterns?.edges ?? []}
-          globalCount={
-              data?.attackPatterns?.pageInfo?.globalCount ?? nbOfRowsToLoad
-          }
-          LineComponent={AttackPatternLine}
-          DummyLineComponent={AttackPatternLineDummy}
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-          paginationOptions={paginationOptions}
-          onLabelClick={onLabelClick}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.attackPatterns?.edges ?? []}
+      globalCount={
+        data?.attackPatterns?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
+      LineComponent={AttackPatternLine}
+      DummyLineComponent={AttackPatternLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
+    />
   );
 };
 

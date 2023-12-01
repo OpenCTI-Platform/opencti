@@ -30,80 +30,80 @@ interface ArtifactsLinesProps {
 }
 
 export const artifactsLinesQuery = graphql`
-    query ArtifactsLinesPaginationQuery(
-        $types: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixCyberObservablesOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...ArtifactsLines_data
-        @arguments(
-            types: $types
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query ArtifactsLinesPaginationQuery(
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCyberObservablesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...ArtifactsLines_data
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const artifactsLinesFragment = graphql`
-        fragment ArtifactsLines_data on Query
-        @argumentDefinitions(
-            types: { type: "[String]" }
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: {
-                type: "StixCyberObservablesOrdering"
-                defaultValue: created_at
+  fragment ArtifactsLines_data on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixCyberObservablesOrdering"
+      defaultValue: created_at
+    }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ArtifactsLinesRefetchQuery") {
+    stixCyberObservables(
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCyberObservables") {
+      edges {
+        node {
+          id
+          entity_type
+          observable_value
+          created_at
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
-            orderMode: { type: "OrderingMode", defaultValue: asc }
-            filters: { type: "FilterGroup" }
-        )
-        @refetchable(queryName: "ArtifactsLinesRefetchQuery") {
-            stixCyberObservables(
-                types: $types
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            ) @connection(key: "Pagination_stixCyberObservables") {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        observable_value
-                        created_at
-                        objectMarking {
-                            edges {
-                                node {
-                                    id
-                                    definition_type
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                }
-                            }
-                        }
-                        ...ArtifactLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
+          }
+          ...ArtifactLine_node
         }
-    `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const ArtifactsLines: FunctionComponent<ArtifactsLinesProps> = ({
   dataColumns,
@@ -116,7 +116,7 @@ const ArtifactsLines: FunctionComponent<ArtifactsLinesProps> = ({
   queryRef,
   paginationOptions,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ArtifactsLinesPaginationQuery,
   ArtifactsLines_data$key
   >({
@@ -127,24 +127,24 @@ const ArtifactsLines: FunctionComponent<ArtifactsLinesProps> = ({
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.stixCyberObservables?.edges ?? []}
-        globalCount={data?.stixCyberObservables?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-        LineComponent={ArtifactLine}
-        DummyLineComponent={ArtifactLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        onLabelClick={onLabelClick}
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        selectAll={selectAll}
-        onToggleEntity={onToggleEntity}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.stixCyberObservables?.edges ?? []}
+      globalCount={data?.stixCyberObservables?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={ArtifactLine}
+      DummyLineComponent={ArtifactLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
+    />
   );
 };
 

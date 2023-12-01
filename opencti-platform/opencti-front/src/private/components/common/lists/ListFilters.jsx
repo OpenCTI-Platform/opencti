@@ -1,33 +1,20 @@
 import Button from '@mui/material/Button';
-import { FilterListOutlined } from '@mui/icons-material';
+import { FilterListOffOutlined, FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import TextField from '@mui/material/TextField';
+import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, inlineFilters } from '../../../../utils/filters/filtersUtils';
-import FilterAutocomplete from './FilterAutocomplete';
-import InlineFilters from './InlineFilters';
+import { directFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
-  filters: {
-    float: 'left',
-    margin: '-3px 0 0 -5px',
-  },
   container: {
     width: 600,
     padding: 20,
-  },
-  autocomplete: {
-    float: 'left',
-    margin: '5px 10px 0 10px',
-    width: 200,
-  },
-  booleanFilter: {
-    float: 'left',
-    margin: '5px 10px 0 10px',
   },
 }));
 
@@ -38,38 +25,38 @@ const ListFilters = ({
   handleCloseFilters,
   open,
   anchorEl,
-  noDirectFilters,
   availableFilterKeys,
   filterElement,
-  searchContext,
   variant,
   type,
-  inputValues,
-  setInputValues,
-  availableEntityTypes,
-  availableRelationshipTypes,
-  availableRelationFilterTypes,
-  allEntityTypes,
-  defaultHandleAddFilter,
-  defaultHandleRemoveFilter,
-  handleSwitchFilter,
+  helpers,
 }) => {
   const { t } = useFormatter();
+  const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
-  let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
+  let icon = <FilterListOutlined fontSize={fontSize || 'medium'}/>;
   let tooltip = t('Filters');
   let color = 'primary';
   if (type === 'from') {
-    icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
+    icon = <RayStartArrow fontSize={fontSize || 'medium'}/>;
     tooltip = t('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
-    icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
+    icon = <RayEndArrow fontSize={fontSize || 'medium'}/>;
     tooltip = t('Dynamic target filters');
     color = 'success';
   }
+  const handleClearFilters = () => {
+    const dFilter = availableFilterKeys.filter((n) => directFilters.includes(n));
+    helpers.handleClearAllFilters(
+      dFilter.map((key) => getDefaultFilterObject(key)),
+    );
+  };
+  const handleChange = (value) => {
+    helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value));
+  };
   return (
-    <div className={classes.filters}>
+    <>
       {variant === 'text' ? (
         <Tooltip title={tooltip}>
           <Button
@@ -78,22 +65,51 @@ const ListFilters = ({
             onClick={handleOpenFilters}
             startIcon={icon}
             size="small"
-            style={{ float: 'left', margin: '0 15px 0 7px' }}
           >
             {t('Filters')}
           </Button>
         </Tooltip>
       ) : (
-        <Tooltip title={tooltip}>
-          <IconButton
-            color={color}
-            onClick={handleOpenFilters}
-            style={{ float: 'left', marginTop: -2 }}
-            size={size || 'large'}
-          >
-            {icon}
-          </IconButton>
-        </Tooltip>
+        <>
+          <MUIAutocomplete
+            id="list-filters-combo-box"
+            options={availableFilterKeys
+              .map((opt) => ({
+                value: opt,
+                label: t(opt),
+              }))
+              .sort((a, b) => a.label.localeCompare(b.label))}
+            sx={{ width: 200 }}
+            value={null}
+            onChange={(event, selectOptionValue) => {
+              handleChange(selectOptionValue.value);
+            }}
+            inputValue={inputValue}
+            onInputChange={(event, newValue, reason) => {
+              if (reason === 'reset') {
+                return;
+              }
+              setInputValue(newValue);
+            }}
+            renderInput={(params) => <TextField {...params}
+                                                variant="outlined"
+                                                size="small" label={t('Add filter')}/>
+            }
+            renderOption={(props, option) => <li {...props}>
+              {option.label}
+            </li>
+            }
+          />
+          <Tooltip title={t('Clear filters')}>
+            <IconButton
+              color={color}
+              onClick={handleClearFilters}
+              size={size || 'large'}
+            >
+              {<FilterListOffOutlined/>}
+            </IconButton>
+          </Tooltip>
+        </>
       )}
       <Popover
         classes={{ paper: classes.container }}
@@ -113,40 +129,7 @@ const ListFilters = ({
       >
         {filterElement}
       </Popover>
-      {!noDirectFilters
-        && availableFilterKeys.filter((n) => directFilters.includes(n)).map(
-          (filterKey) => {
-            if (inlineFilters.includes(filterKey)) {
-              return (
-                <div className={classes.booleanFilter} key={filterKey}>
-                  <InlineFilters
-                    filterKey={filterKey}
-                    defaultHandleRemoveFilter={defaultHandleRemoveFilter}
-                    handleSwitchFilter={handleSwitchFilter}
-                  />
-                </div>
-              );
-            }
-            return (
-              <div className={classes.autocomplete} key={filterKey}>
-                <FilterAutocomplete
-                  filterKey={filterKey}
-                  searchContext={searchContext}
-                  defaultHandleAddFilter={defaultHandleAddFilter}
-                  inputValues={inputValues}
-                  setInputValues={setInputValues}
-                  availableEntityTypes={availableEntityTypes}
-                  availableRelationshipTypes={availableRelationshipTypes}
-                  availableRelationFilterTypes={availableRelationFilterTypes}
-                  allEntityTypes={allEntityTypes}
-                  openOnFocus={false}
-                />
-              </div>
-            );
-          },
-        )}
-      <div className="clearfix" />
-    </div>
+    </>
   );
 };
 

@@ -16,7 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, initialFilterGroup, removeIdFromFilterObject } from '../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -62,7 +62,10 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     filters,
     numberOfElements,
   } = viewStorage;
-  const finalPaginationOptions = paginationOptions;
+  const finalPaginationOptions = {
+    ...paginationOptions,
+    filters: removeIdFromFilterObject(paginationOptions.filters as unknown as FilterGroup),
+  } as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
   if (isTo) {
     finalPaginationOptions.toId = entityId;
   } else {
@@ -113,6 +116,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     return (
       <>
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

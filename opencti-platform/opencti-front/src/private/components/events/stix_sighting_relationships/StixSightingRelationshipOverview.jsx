@@ -411,7 +411,7 @@ class StixSightingRelationshipContainer extends Component {
                         gutterBottom={true}
                         style={{ marginTop: 20 }}
                       >
-                        {t('filter_x_opencti_negative')}
+                        {t('x_opencti_negative')}
                       </Typography>
                       <Chip
                         classes={{

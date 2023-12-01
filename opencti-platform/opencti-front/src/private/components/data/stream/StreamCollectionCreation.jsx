@@ -82,11 +82,11 @@ const styles = (theme) => ({
 });
 
 const StreamCollectionCreationMutation = graphql`
-  mutation StreamCollectionCreationMutation($input: StreamCollectionAddInput!) {
-    streamCollectionAdd(input: $input) {
-      ...StreamLine_node
+    mutation StreamCollectionCreationMutation($input: StreamCollectionAddInput!) {
+        streamCollectionAdd(input: $input) {
+            ...StreamLine_node
+        }
     }
-  }
 `;
 
 const streamCollectionCreationValidation = (t) => Yup.object().shape({

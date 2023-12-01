@@ -24,7 +24,7 @@ import {
 
 const dataColumns = {
   x_opencti_negative: {
-    label: 'filter_x_opencti_negative',
+    label: 'x_opencti_negative',
     width: '10%',
     isSortable: true,
   },
@@ -107,78 +107,79 @@ const StixSightingRelationships = () => {
   } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
   const renderLines = (
-    paginationOptions : StixSightingRelationshipsLinesPaginationQuery$variables,
+    paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
   ) => {
     const toolBarFilters = filtersWithEntityType(filters, 'stix-sighting-relationship');
     return (
-      <>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          openExports={openExports}
-          exportEntityType="stix-sighting-relationship"
-          keyword={searchTerm}
-          filters={filters}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          secondaryAction={true}
-          iconExtension={true}
-          availableFilterKeys={[
-            'x_opencti_workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'confidence',
-            'created',
-            'toSightingId',
-            'x_opencti_negative',
-            'creator',
-          ]}
-        >
-          <QueryRenderer
-            query={stixSightingRelationshipsLinesQuery}
-            variables={paginationOptions}
-            render={({
-              props,
-            }: {
-              props: StixSightingRelationshipsLinesPaginationQuery$data;
-            }) => (
-              <StixSightingRelationshipsLines
-                data={props}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                onLabelClick={storageHelpers.handleAddFilter}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-              />
-            )}
-          />
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={toolBarFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="stix-sighting-relationship"
-        />
-      </>
+            <>
+                <ListLines
+                    helpers={storageHelpers}
+                    sortBy={sortBy}
+                    orderAsc={orderAsc}
+                    dataColumns={dataColumns}
+                    handleSort={storageHelpers.handleSort}
+                    handleSearch={storageHelpers.handleSearch}
+                    handleAddFilter={storageHelpers.handleAddFilter}
+                    handleRemoveFilter={storageHelpers.handleRemoveFilter}
+                    handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+                    handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+                    handleToggleExports={storageHelpers.handleToggleExports}
+                    handleToggleSelectAll={handleToggleSelectAll}
+                    selectAll={selectAll}
+                    openExports={openExports}
+                    exportEntityType="stix-sighting-relationship"
+                    keyword={searchTerm}
+                    filters={filters}
+                    paginationOptions={paginationOptions}
+                    numberOfElements={numberOfElements}
+                    secondaryAction={true}
+                    iconExtension={true}
+                    availableFilterKeys={[
+                      'x_opencti_workflow_id',
+                      'objectLabel',
+                      'objectMarking',
+                      'createdBy',
+                      'confidence',
+                      'created',
+                      'toSightingId',
+                      'x_opencti_negative',
+                      'creator',
+                    ]}
+                >
+                    <QueryRenderer
+                        query={stixSightingRelationshipsLinesQuery}
+                        variables={rawPaginationOptions}
+                        render={({
+                          props,
+                        }: {
+                          props: StixSightingRelationshipsLinesPaginationQuery$data;
+                        }) => (
+                            <StixSightingRelationshipsLines
+                                data={props}
+                                paginationOptions={paginationOptions}
+                                dataColumns={dataColumns}
+                                initialLoading={props === null}
+                                onLabelClick={storageHelpers.handleAddFilter}
+                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                                selectedElements={selectedElements}
+                                deSelectedElements={deSelectedElements}
+                                onToggleEntity={onToggleEntity}
+                                selectAll={selectAll}
+                            />
+                        )}
+                    />
+                </ListLines>
+                <ToolBar
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    numberOfSelectedElements={numberOfSelectedElements}
+                    selectAll={selectAll}
+                    search={searchTerm}
+                    filters={toolBarFilters}
+                    handleClearSelectedElements={handleClearSelectedElements}
+                    type="stix-sighting-relationship"
+                />
+            </>
     );
   };
 
@@ -200,9 +201,9 @@ const StixSightingRelationships = () => {
     filters: newFilters as unknown as GqlFilterGroup,
   };
   return (
-    <ExportContextProvider>
-      {renderLines(enrichedPaginationOptions)}
-    </ExportContextProvider>
+        <ExportContextProvider>
+            {renderLines(enrichedPaginationOptions)}
+        </ExportContextProvider>
   );
 };
 

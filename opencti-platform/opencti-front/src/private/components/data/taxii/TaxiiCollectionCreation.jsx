@@ -83,11 +83,11 @@ const styles = (theme) => ({
 });
 
 const TaxiiCollectionCreationMutation = graphql`
-  mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
-    taxiiCollectionAdd(input: $input) {
-      ...TaxiiLine_node
+    mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
+        taxiiCollectionAdd(input: $input) {
+            ...TaxiiLine_node
+        }
     }
-  }
 `;
 
 const taxiiCollectionCreationValidation = (t) => Yup.object().shape({

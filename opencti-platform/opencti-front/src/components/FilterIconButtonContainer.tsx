@@ -1,31 +1,24 @@
-import { last } from 'ramda';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { FunctionComponent } from 'react';
+import React, { Fragment, FunctionComponent, useEffect, useRef } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { InformationOutline } from 'mdi-material-ui';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
 import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
-import FilterIconButtonContent, {
-  filterIconButtonContentQuery,
-} from './FilterIconButtonContent';
+import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
+import FilterValues from './filters/FilterValues';
+import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
+import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  filter1: {
-    marginRight: 10,
-    lineHeight: 32,
-    marginBottom: 10,
-  },
-  filter2: {
-    margin: '0 10px 10px 0',
-    lineHeight: 32,
-  },
   filter3: {
     fontSize: 12,
     height: 20,
@@ -36,28 +29,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
   operator1: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
-    marginRight: 10,
-    marginBottom: 10,
   },
   operator2: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 10px 0',
   },
   operator3: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
     height: 20,
     marginRight: 10,
-  },
-  inlineOperator: {
-    display: 'inline-block',
-    height: '100%',
-    borderRadius: 0,
-    margin: '0 5px 0 5px',
-    padding: '0 5px 0 5px',
-    backgroundColor: 'rgba(255, 255, 255, .1)',
-    fontFamily: 'Consolas, monaco, monospace',
   },
   chipLabel: {
     lineHeight: '32px',
@@ -68,6 +49,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+  },
+  chipLabelNoValues: {
+    outline: '2px solid currentColor',
+    backgroundColor: 'transparent',
+    color: '#FFFFFF29',
+    transition: 'all 130ms ease-in-out',
+    '&:hover': {
+      backgroundColor: '#FFFFFF29',
+      color: 'white',
+      outline: 'none',
+    },
   },
 }));
 
@@ -83,13 +75,13 @@ interface FilterIconButtonContainerProps {
   redirection?: boolean;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
   chipColor?: ChipOwnProps['color'];
+  helpers?: UseLocalStorageHelpers
 }
 
 const FilterIconButtonContainer: FunctionComponent<
 FilterIconButtonContainerProps
 > = ({
   filters,
-  handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
   styleNumber,
@@ -97,6 +89,8 @@ FilterIconButtonContainerProps
   redirection,
   filtersRepresentativesQueryRef,
   chipColor,
+  handleRemoveFilter,
+  helpers,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -104,11 +98,10 @@ FilterIconButtonContainerProps
     filterIconButtonContentQuery,
     filtersRepresentativesQueryRef,
   );
-  const filtersRepresentativesMap = new Map(
-    filtersRepresentatives.map((n) => [n.id, n.value]),
-  );
+
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
+
   let classFilter = classes.filter1;
   let classOperator = classes.operator1;
   if (styleNumber === 2) {
@@ -118,121 +111,161 @@ FilterIconButtonContainerProps
     classFilter = classes.filter3;
     classOperator = classes.operator3;
   }
-  const lastKey = last(displayedFilters)?.key;
-  const lastOperator = last(displayedFilters)?.operator;
+  const latestItemRef = useRef(null);
+  const nbDisplayFilter = useRef(0);
+  const hasRenderedRef = useRef(false);
+  const filtersRepresentativesMap = new Map(filtersRepresentatives.map((n) => [n.id, n.value]));
+  const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
+    filter: undefined,
+    anchorEl: undefined,
+  } as FilterChipsParameter);
+  const open = Boolean(filterChipsParams.anchorEl);
+  if (helpers) {
+    // activate popover feature on chip only when "helper" is defined, not the best way to handle but
+    // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
+    useEffect(() => {
+      if (hasRenderedRef.current && latestItemRef.current && nbDisplayFilter.current < displayedFilters.length) {
+        setFilterChipsParams({
+          filterId: displayedFilters[displayedFilters.length - 1].id,
+          anchorEl: latestItemRef.current as unknown as HTMLElement,
+        });
+      }
+      nbDisplayFilter.current = displayedFilters.length;
+      hasRenderedRef.current = true;
+    }, [displayedFilters]);
+  }
+  const handleClose = () => {
+    setFilterChipsParams({
+      filterId: undefined,
+      anchorEl: undefined,
+    });
+  };
+
+  const handleChipClick = (event: React.MouseEvent<HTMLButtonElement>, filterId?: string) => {
+    if (helpers) {
+      setFilterChipsParams({
+        filterId,
+        anchorEl: event.currentTarget,
+      });
+    }
+  };
+
+  const manageRemoveFilter = (currentFilterId: string | undefined, filterKey: string, filterOperator: string) => {
+    if (helpers) {
+      helpers?.handleRemoveFilterById(currentFilterId);
+    } else if (handleRemoveFilter) {
+      handleRemoveFilter(filterKey, filterOperator ?? undefined);
+    }
+  };
+
+  const convertOperatorToIcon = (operator: string) => {
+    switch (operator) {
+      case 'lt':
+        return <>&#60;</>;
+      case 'lte':
+        return <>&#8804;</>;
+      case 'gt':
+        return <>&#62;</>;
+      case 'gte':
+        return <>&#8805;</>;
+      default:
+        return null;
+    }
+  };
+
+  const isReadonlyFilter = helpers || handleRemoveFilter;
   return (
-    <>
-      {displayedFilters.map((currentFilter) => {
-        const filterKey = currentFilter.key;
-        const filterValues = currentFilter.values;
-        const filterOperator = currentFilter.operator;
-        const isOperatorNegative = filterOperator.startsWith('not_');
-        const isOperatorDisplayed = ![
-          'eq',
-          'not_eq',
-          'nil',
-          'not_nil',
-        ].includes(filterOperator);
-        const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
-        const keyLabel = isOperatorDisplayed
-          ? truncate(t(`filter_${filterKey}_${filterOperator}`), 20)
-          : truncate(t(`filter_${filterKey}`), 20);
-        const label = `${isOperatorNegative ? `${t('NOT')} ` : ''}${keyLabel}`;
-        const isNotLastFilter = lastKey !== filterKey || lastOperator !== filterOperator;
-        const values = (tooltip: boolean) => (
-          <>
-            {isOperatorNil ? (
-              <span>{t('No value')}</span>
-            ) : (
-              filterValues.map((id) => {
-                return (
-                  <span key={id}>
-                    {filtersRepresentativesMap.has(id) && (
-                      <FilterIconButtonContent
-                        redirection={tooltip ? false : redirection}
-                        isFilterTooltip={!!tooltip}
-                        filterKey={filterKey}
-                        id={id}
-                        value={filtersRepresentativesMap.get(id)}
-                      />
-                    )}
-                    {last(filterValues) !== id && (
-                      <Chip
-                        className={classes.inlineOperator}
-                        label={t((currentFilter.mode ?? 'or').toUpperCase())}
-                        onClick={() => handleSwitchLocalMode?.(currentFilter)}
-                      />
-                    )}{' '}
-                  </span>
-                );
-              })
-            )}
-          </>
-        );
-        return (
-          <span key={filterKey}>
-            <Tooltip
-              title={
-                <>
-                  <strong>{label}</strong>: {values(true)}
-                </>
-              }
-            >
-              <Chip
-                classes={{ root: classFilter, label: classes.chipLabel }}
-                color={chipColor}
-                label={
-                  <>
-                    <strong>{label}</strong>: {values(false)}
-                  </>
+    <Box sx={
+      !isReadonlyFilter ? {
+        display: 'flex',
+        overflow: 'hidden',
+        marginRight: '30px',
+      }
+        : {
+          marginTop: '10px',
+          gap: '10px',
+          display: 'flex',
+          flexWrap: 'wrap',
+        }
+    }>
+      {displayedFilters
+        .map((currentFilter, index) => {
+          const filterKey = currentFilter.key;
+          const filterOperator = currentFilter.operator;
+          const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
+          const isOperatorDisplayed = !['eq', 'not_eq', 'nil', 'not_nil'].includes(filterOperator);
+          const keyLabel = <>{truncate(t(filterKey), 20)} {isOperatorDisplayed ? convertOperatorToIcon(filterOperator) : (currentFilter.values.length > 0 && ':')}</>;
+          const label = <>{isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel} </>;
+          const isNotLastFilter = index < displayedFilters.length - 1;
+          return (
+            <Fragment key={currentFilter.id}>
+              <Tooltip
+                title={
+                  <FilterValues label={label}
+                                tooltip={true}
+                                currentFilter={currentFilter}
+                                handleSwitchLocalMode={handleSwitchLocalMode}
+                                filtersRepresentativesMap={filtersRepresentativesMap}
+                                helpers={helpers}
+                                redirection={redirection}/>
                 }
-                disabled={
-                  disabledPossible ? displayedFilters.length === 1 : undefined
-                }
-                onDelete={
-                  handleRemoveFilter
-                    ? () => handleRemoveFilter(
-                      filterKey,
-                      filterOperator ?? undefined,
-                    )
-                    : undefined
-                }
-              />
-            </Tooltip>
-            {isNotLastFilter && (
-              <Chip
-                classes={{ root: classOperator }}
-                label={t(globalMode.toUpperCase())}
-                onClick={handleSwitchGlobalMode}
-              />
-            )}
-          </span>
-        );
-      })}
-      {filters.filterGroups
-        && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+              >
+                <Chip
+                  color={chipColor}
+                  ref={isNotLastFilter ? null : latestItemRef}
+                  classes={{ root: classNames(classFilter, currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator) ? classes.chipLabelNoValues : ''), label: classes.chipLabel }}
+                  label={
+                    <FilterValues
+                      label={label}
+                      tooltip={false} currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      helpers={helpers}
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
+                    />
+                  }
+                  disabled={
+                    disabledPossible ? displayedFilters.length === 1 : undefined
+                  }
+                  onDelete={isReadonlyFilter ? () => manageRemoveFilter(currentFilter.id, filterKey, filterOperator) : undefined}
+                />
+              </Tooltip>
+              {isNotLastFilter && (
+                <Chip
+                  classes={{ root: classOperator }}
+                  label={t(globalMode.toUpperCase())}
+                  onClick={handleSwitchGlobalMode}
+                />
+              )}
+            </Fragment>
+          );
+        })}
+      {
+        filterChipsParams.anchorEl
+        && <FilterChipPopover filters={filters.filters}
+                              params={filterChipsParams}
+                              handleClose={handleClose}
+                              open={open}
+                              helpers={helpers}/>
+      }
+      {filters.filterGroups && filters.filterGroups.length > 0 // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+        && (
           <Chip
             classes={{ root: classFilter, label: classes.chipLabel }}
             color={'warning'}
             label={
               <>
                 {t('Filters are not fully displayed')}
-                <Tooltip
-                  title={`This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API.
-            They might have been created via the API or a migration from a previous filter format.
-            For your information, here is the content of the filter object: ${JSON.stringify(filters.filterGroups)}`}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="secondary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
+                <DisplayFilterGroup
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  filterObj={filters}
+                                    filterMode={filters.mode}/>
               </>
             }
-          />
-      )}
-    </>
+          />)
+      }
+    </Box>
   );
 };
 

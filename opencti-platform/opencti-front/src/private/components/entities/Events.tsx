@@ -69,6 +69,7 @@ const Events = () => {
     );
     return (
       <ListLines
+          helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

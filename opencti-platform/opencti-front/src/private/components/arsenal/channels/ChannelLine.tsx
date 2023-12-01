@@ -46,32 +46,32 @@ interface ChannelLineProps {
 
 const channelLineFragment = graphql`
   fragment ChannelLine_node on Channel {
-      id
-      name
-      channel_types
-      created
-      modified
-      confidence
-      objectMarking {
-          edges {
-              node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-              }
-          }
+    id
+    name
+    channel_types
+    created
+    modified
+    confidence
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
       }
-      objectLabel {
-          edges {
-              node {
-                  id
-                  value
-                  color
-              }
-          }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
       }
+    }
   }
 `;
 
@@ -90,7 +90,7 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = (
       to={`/dashboard/arsenal/channels/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Channel" />
+        <ItemIcon type="Channel"/>
       </ListItemIcon>
       <ListItemText
         primary={
@@ -133,7 +133,7 @@ export const ChannelLine: FunctionComponent<ChannelLineProps> = (
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRight />
+        <KeyboardArrowRight/>
       </ListItemIcon>
     </ListItem>
   );
@@ -144,7 +144,7 @@ export const ChannelLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+        <Skeleton animation="wave" variant="circular" width={30} height={30}/>
       </ListItemIcon>
       <ListItemText
         primary={
@@ -208,7 +208,7 @@ export const ChannelLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) 
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRight />
+        <KeyboardArrowRight/>
       </ListItemIcon>
     </ListItem>
   );

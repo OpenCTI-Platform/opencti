@@ -344,7 +344,7 @@ const StixRelationshipsDonut = ({
                   textAlign: 'center',
                 }}
               >
-                <CircularProgress size={40} thickness={2} />
+                <CircularProgress size={40} thickness={2}/>
               </span>
             </div>
           );

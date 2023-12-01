@@ -22,60 +22,60 @@ interface SystemsLinesProps {
 }
 
 export const systemsLinesQuery = graphql`
-    query SystemsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: SystemsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...SystemsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query SystemsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: SystemsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...SystemsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const systemsLinesFragment = graphql`
-    fragment SystemsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "SystemsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "SystemsLinesRefetchQuery") {
-        systems(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_systems") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    ...SystemLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment SystemsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "SystemsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "SystemsLinesRefetchQuery") {
+    systems(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_systems") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...SystemLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const SystemsLines: FunctionComponent<SystemsLinesProps> = ({
@@ -85,7 +85,7 @@ const SystemsLines: FunctionComponent<SystemsLinesProps> = ({
   paginationOptions,
   onLabelClick,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   SystemsLinesPaginationQuery,
   SystemsLines_data$key
   >({
@@ -96,22 +96,22 @@ const SystemsLines: FunctionComponent<SystemsLinesProps> = ({
     setNumberOfElements,
   });
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.systems?.edges ?? []}
-        globalCount={
-          data?.systems?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
-        LineComponent={SystemLine}
-        DummyLineComponent={SystemLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        onLabelClick={onLabelClick}
-      />
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.systems?.edges ?? []}
+      globalCount={
+        data?.systems?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
+      LineComponent={SystemLine}
+      DummyLineComponent={SystemLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
+    />
   );
 };
 

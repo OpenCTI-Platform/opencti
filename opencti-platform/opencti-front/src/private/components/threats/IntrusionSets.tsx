@@ -57,6 +57,7 @@ const IntrusionSets = () => {
     };
     return (
       <ListCards
+          helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

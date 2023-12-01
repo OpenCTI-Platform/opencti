@@ -27,14 +27,14 @@ export const incidentsLinesPaginationQuery = graphql`
     $filters: FilterGroup
   ) {
     ...IncidentsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -88,6 +88,7 @@ interface IncidentsLinesProps {
   ) => void;
   selectAll: boolean;
 }
+
 const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({
   setNumberOfElements,
   dataColumns,

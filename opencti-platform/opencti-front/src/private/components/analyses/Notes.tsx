@@ -25,6 +25,7 @@ interface NotesProps {
   authorId: string;
   onChangeOpenExports: () => void;
 }
+
 const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpenExports }) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -136,6 +137,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     return (
       <>
         <ListLines
+          helpers={storageHelpers}
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}

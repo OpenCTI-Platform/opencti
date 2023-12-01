@@ -16,7 +16,12 @@ import {
 } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { addFilter, cleanFilters, FilterGroup } from '../../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  FilterGroup,
+  removeIdFromFilterObject,
+} from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -28,6 +33,7 @@ interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   currentView: string
   enableContextualView: boolean,
 }
+
 const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsIndicatorsEntitiesViewProps> = ({
   entityId,
   relationshipTypes,
@@ -124,7 +130,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: paginationFilters,
+    filters: removeIdFromFilterObject(paginationFilters),
   };
 
   const {
@@ -141,6 +147,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   return (
     <>
       <ListLines
+          helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

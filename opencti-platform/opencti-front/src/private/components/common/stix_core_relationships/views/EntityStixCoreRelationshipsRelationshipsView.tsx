@@ -48,6 +48,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   role?: string,
   handleChangeView?: (viewMode: string) => void
 }
+
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
   entityId,
   entityLink,
@@ -218,119 +219,120 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   return (
         <>
             <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={storageHelpers.handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-              displayImport={true}
-              secondaryAction={true}
-              iconExtension={true}
-              keyword={searchTerm}
-              handleToggleSelectAll={handleToggleSelectAll}
-              selectAll={selectAll}
-              numberOfElements={numberOfElements}
-              filters={filters}
-              availableFilterKeys={availableFilterKeys}
-              availableEntityTypes={stixCoreObjectTypes}
-              availableRelationshipTypes={relationshipTypes}
-              handleToggleExports={storageHelpers.handleToggleExports}
-              openExports={openExports}
-              exportEntityType="stix-core-relationship"
-              noPadding={true}
-              handleChangeView={
-                  handleChangeView || storageHelpers.handleChangeView
-              }
-              enableNestedView={enableNestedView}
-              enableContextualView={enableContextualView}
-              disableCards={true}
-              paginationOptions={paginationOptions}
-              enableEntitiesView={true}
-              currentView={finalView}
+                helpers={storageHelpers}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={dataColumns}
+                handleSort={storageHelpers.handleSort}
+                handleSearch={storageHelpers.handleSearch}
+                handleAddFilter={storageHelpers.handleAddFilter}
+                handleRemoveFilter={storageHelpers.handleRemoveFilter}
+                handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+                handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+                displayImport={true}
+                secondaryAction={true}
+                iconExtension={true}
+                keyword={searchTerm}
+                handleToggleSelectAll={handleToggleSelectAll}
+                selectAll={selectAll}
+                numberOfElements={numberOfElements}
+                filters={filters}
+                availableFilterKeys={availableFilterKeys}
+                availableEntityTypes={stixCoreObjectTypes}
+                availableRelationshipTypes={relationshipTypes}
+                handleToggleExports={storageHelpers.handleToggleExports}
+                openExports={openExports}
+                exportEntityType="stix-core-relationship"
+                noPadding={true}
+                handleChangeView={
+                    handleChangeView || storageHelpers.handleChangeView
+                }
+                enableNestedView={enableNestedView}
+                enableContextualView={enableContextualView}
+                disableCards={true}
+                paginationOptions={paginationOptions}
+                enableEntitiesView={true}
+                currentView={finalView}
             >
-              <QueryRenderer
-                query={
-                  // eslint-disable-next-line no-nested-ternary
-                  allDirections
-                    ? entityStixCoreRelationshipsLinesAllQuery
-                    : isRelationReversed
-                      ? entityStixCoreRelationshipsLinesToQuery
-                      : entityStixCoreRelationshipsLinesFromQuery
-                }
-                variables={{ count: 25, ...paginationOptions }}
-                render={({ props }: { props: unknown }) =>
-                  /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
-                  (allDirections ? (
-                    <EntityStixCoreRelationshipsLinesAll
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      entityId={entityId}
-                      dataColumns={dataColumns}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ) : isRelationReversed ? (
-                    <EntityStixCoreRelationshipsLinesTo
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      dataColumns={dataColumns}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ) : (
-                    <EntityStixCoreRelationshipsLinesFrom
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      dataColumns={dataColumns}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ))
-                }
-              />
+                <QueryRenderer
+                    query={
+                        // eslint-disable-next-line no-nested-ternary
+                        allDirections
+                          ? entityStixCoreRelationshipsLinesAllQuery
+                          : isRelationReversed
+                            ? entityStixCoreRelationshipsLinesToQuery
+                            : entityStixCoreRelationshipsLinesFromQuery
+                    }
+                    variables={{ count: 25, ...paginationOptions }}
+                    render={({ props }: { props: unknown }) =>
+                    /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+                      (allDirections ? (
+                            <EntityStixCoreRelationshipsLinesAll
+                                data={props}
+                                paginationOptions={paginationOptions}
+                                entityLink={entityLink}
+                                entityId={entityId}
+                                dataColumns={dataColumns}
+                                initialLoading={props === null}
+                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                                onToggleEntity={onToggleEntity}
+                                selectedElements={selectedElements}
+                                deSelectedElements={deSelectedElements}
+                                selectAll={selectAll}
+                            />
+                      ) : isRelationReversed ? (
+                            <EntityStixCoreRelationshipsLinesTo
+                                data={props}
+                                paginationOptions={paginationOptions}
+                                entityLink={entityLink}
+                                dataColumns={dataColumns}
+                                initialLoading={props === null}
+                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                                onToggleEntity={onToggleEntity}
+                                selectedElements={selectedElements}
+                                deSelectedElements={deSelectedElements}
+                                selectAll={selectAll}
+                            />
+                      ) : (
+                            <EntityStixCoreRelationshipsLinesFrom
+                                data={props}
+                                paginationOptions={paginationOptions}
+                                entityLink={entityLink}
+                                dataColumns={dataColumns}
+                                initialLoading={props === null}
+                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                                onToggleEntity={onToggleEntity}
+                                selectedElements={selectedElements}
+                                deSelectedElements={deSelectedElements}
+                                selectAll={selectAll}
+                            />
+                      ))
+                    }
+                />
             </ListLines>
             <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={backgroundTaskFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-              variant="medium"
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={backgroundTaskFilters}
+                search={searchTerm}
+                handleClearSelectedElements={handleClearSelectedElements}
+                variant="medium"
             />
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCoreRelationshipCreationFromEntity
-              entityId={entityId}
-              allowedRelationshipTypes={relationshipTypes}
-              isRelationReversed={isRelationReversed}
-              targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
-              targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              paginationOptions={paginationOptions}
-              paddingRight={paddingRightButtonAdd ?? 220}
-            />
-          </Security>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntity
+                    entityId={entityId}
+                    allowedRelationshipTypes={relationshipTypes}
+                    isRelationReversed={isRelationReversed}
+                    targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
+                    targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
+                    defaultStartTime={defaultStartTime}
+                    defaultStopTime={defaultStopTime}
+                    paginationOptions={paginationOptions}
+                    paddingRight={paddingRightButtonAdd ?? 220}
+                />
+            </Security>
         </>
   );
 };

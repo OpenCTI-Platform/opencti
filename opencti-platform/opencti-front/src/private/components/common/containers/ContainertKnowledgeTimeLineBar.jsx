@@ -30,6 +30,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+// TODO Fix ContentKnowledge
 const ContentKnowledgeTimeLineBar = ({
   handleTimeLineSearch,
   timeLineSearchTerm,
@@ -55,75 +56,75 @@ const ContentKnowledgeTimeLineBar = ({
     };
   });
   return (
-    <UserContext.Consumer>
-      {({ bannerSettings }) => (
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              paddingLeft: navOpen ? 185 : 60,
-              bottom: bannerSettings.bannerHeightNumber,
-            },
-          }}
-        >
-          <div
-            style={{
-              height: 54,
-              verticalAlign: 'top',
-              transition: 'height 0.2s linear',
-            }}
-          >
-            <div
-              style={{
-                verticalAlign: 'top',
-                width: '100%',
-                height: 54,
-                paddingTop: 3,
-              }}
-            >
-              <div
-                style={{
-                  float: 'left',
+        <UserContext.Consumer>
+            {({ bannerSettings }) => (
+                <Drawer
+                    anchor="bottom"
+                    variant="permanent"
+                    classes={{ paper: classes.bottomNav }}
+                    PaperProps={{
+                      variant: 'elevation',
+                      elevation: 1,
+                      style: {
+                        paddingLeft: navOpen ? 185 : 60,
+                        bottom: bannerSettings.bannerHeightNumber,
+                      },
+                    }}
+                >
+                    <div
+                        style={{
+                          height: 54,
+                          verticalAlign: 'top',
+                          transition: 'height 0.2s linear',
+                        }}
+                    >
+                        <div
+                            style={{
+                              verticalAlign: 'top',
+                              width: '100%',
+                              height: 54,
+                              paddingTop: 3,
+                            }}
+                        >
+                            <div
+                                style={{
+                                  float: 'left',
 
-                  height: '100%',
-                  display: 'flex',
-                }}
-          >
-            <Tooltip
-              title={
-                timeLineDisplayRelationships
-                  ? t('Do not display relationships')
-                  : t('Display relationships')
-              }
-            >
+                                  height: '100%',
+                                  display: 'flex',
+                                }}
+                            >
+                                <Tooltip
+                                    title={
+                                        timeLineDisplayRelationships
+                                          ? t('Do not display relationships')
+                                          : t('Display relationships')
+                                    }
+                                >
               <span>
                 <IconButton
-                  color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
-                  size="large"
-                  onClick={() => handleToggleTimeLineDisplayRelationships()}
+                    color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={() => handleToggleTimeLineDisplayRelationships()}
                 >
-                  <RelationManyToMany />
+                  <RelationManyToMany/>
                 </IconButton>
               </span>
-            </Tooltip>
-            <Tooltip
-              title={
-                timeLineFunctionalDate
-                  ? t('Use technical dates')
-                  : t('Use functional dates')
-              }
-            >
+                                </Tooltip>
+                                <Tooltip
+                                    title={
+                                        timeLineFunctionalDate
+                                          ? t('Use technical dates')
+                                          : t('Use functional dates')
+                                    }
+                                >
               <span>
                 <IconButton
-                  color={timeLineFunctionalDate ? 'secondary' : 'primary'}
-                  size="large"
-                  onClick={() => handleToggleTimeLineFunctionalDate()}
+                    color={timeLineFunctionalDate ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={() => handleToggleTimeLineFunctionalDate()}
                 >
-                  <CalendarMultiselectOutline />
+                  <CalendarMultiselectOutline/>
                 </IconButton>
               </span>
             </Tooltip>

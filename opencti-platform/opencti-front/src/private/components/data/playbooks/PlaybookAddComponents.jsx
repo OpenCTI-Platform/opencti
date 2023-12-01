@@ -196,28 +196,28 @@ const PlaybookAddComponentsContent = ({
       ];
     }
     return (
-      <Select
-        variant="standard"
-        disabled={disabled}
-        value={actionsInputs[i]?.attribute}
-        onChange={(event) => {
-          handleChangeActionInput(i, 'attribute', event.target.value);
-          setValues(R.omit([`actions-${i}-value`], values));
-        }}
-      >
-        {options.length > 0 ? (
-          R.map(
-            (n) => (
-              <MenuItem key={n.value} value={n.value}>
-                {n.label}
-              </MenuItem>
-            ),
-            options,
-          )
-        ) : (
-          <MenuItem value="none">{t('None')}</MenuItem>
-        )}
-      </Select>
+            <Select
+                variant="standard"
+                disabled={disabled}
+                value={actionsInputs[i]?.attribute}
+                onChange={(event) => {
+                  handleChangeActionInput(i, 'attribute', event.target.value);
+                  setValues(R.omit([`actions-${i}-value`], values));
+                }}
+            >
+                {options.length > 0 ? (
+                  R.map(
+                    (n) => (
+                            <MenuItem key={n.value} value={n.value}>
+                                {n.label}
+                            </MenuItem>
+                    ),
+                    options,
+                  )
+                ) : (
+                    <MenuItem value="none">{t('None')}</MenuItem>
+                )}
+            </Select>
     );
   };
   const renderValuesOptions = (i) => {
@@ -225,100 +225,100 @@ const PlaybookAddComponentsContent = ({
     switch (actionsInputs[i]?.attribute) {
       case 'objectMarking':
         return (
-          <ObjectMarkingField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(
-              i,
-              'value',
-              value.map((n) => ({
-                label: n.label,
-                value: n.value,
-                patch_value: n.value,
-              })),
-            )
-            }
-          />
+                    <ObjectMarkingField
+                        name={`actions-${i}-value`}
+                        disabled={disabled}
+                        onChange={(_, value) => handleChangeActionInput(
+                          i,
+                          'value',
+                          value.map((n) => ({
+                            label: n.label,
+                            value: n.value,
+                            patch_value: n.value,
+                          })),
+                        )
+                        }
+                    />
         );
       case 'objectLabel':
         return (
-          <ObjectLabelField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(
-              i,
-              'value',
-              value.map((n) => ({
-                label: n.label,
-                value: n.value,
-                patch_value: n.label,
-              })),
-            )
-            }
-          />
+                    <ObjectLabelField
+                        name={`actions-${i}-value`}
+                        disabled={disabled}
+                        onChange={(_, value) => handleChangeActionInput(
+                          i,
+                          'value',
+                          value.map((n) => ({
+                            label: n.label,
+                            value: n.value,
+                            patch_value: n.label,
+                          })),
+                        )
+                        }
+                    />
         );
       case 'createdBy':
         return (
-          <CreatedByField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])
-            }
-          />
+                    <CreatedByField
+                        name={`actions-${i}-value`}
+                        disabled={disabled}
+                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
+                          {
+                            label: value.label,
+                            value: value.value,
+                            patch_value: value.value,
+                          },
+                        ])
+                        }
+                    />
         );
       case 'x_opencti_workflow_id':
         return (
-          <StatusField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])
-            }
-          />
+                    <StatusField
+                        name={`actions-${i}-value`}
+                        disabled={disabled}
+                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
+                          {
+                            label: value.label,
+                            value: value.value,
+                            patch_value: value.value,
+                          },
+                        ])
+                        }
+                    />
         );
       case 'x_opencti_detection':
         return (
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name={`actions-${i}-value`}
-            label={t('Value')}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])
-            }
-          />
+                    <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name={`actions-${i}-value`}
+                        label={t('Value')}
+                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
+                          { label: value, value, patch_value: value },
+                        ])
+                        }
+                    />
         );
       default:
         return (
-          <Field
-            component={TextField}
-            disabled={disabled}
-            type={
-              numberAttributes.includes(actionsInputs[i]?.attribute)
-                ? 'number'
-                : 'text'
-            }
-            variant="standard"
-            name={`actions-${i}-value`}
-            label={t('Value')}
-            fullWidth={true}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])
-            }
-          />
+                    <Field
+                        component={TextField}
+                        disabled={disabled}
+                        type={
+                            numberAttributes.includes(actionsInputs[i]?.attribute)
+                              ? 'number'
+                              : 'text'
+                        }
+                        variant="standard"
+                        name={`actions-${i}-value`}
+                        label={t('Value')}
+                        fullWidth={true}
+                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
+                          { label: value, value, patch_value: value },
+                        ])
+                        }
+                    />
         );
     }
   };
@@ -341,7 +341,7 @@ const PlaybookAddComponentsContent = ({
     resetForm();
     if (
       selectedNode?.data?.component?.id
-      && (action === 'config' || action === 'replace')
+            && (action === 'config' || action === 'replace')
     ) {
       onConfigReplace(selectedComponent, name, finalConfig);
     } else {
@@ -350,39 +350,39 @@ const PlaybookAddComponentsContent = ({
   };
   const renderLines = () => {
     const filterByKeyword = (n) => searchTerm === ''
-      || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+            || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+            || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     const components = R.pipe(
       R.filter(
         (n) => n.is_entry_point
-          === (selectedNode?.data?.component?.is_entry_point ?? false),
+                    === (selectedNode?.data?.component?.is_entry_point ?? false),
       ),
       R.filter(filterByKeyword),
     )(playbookComponents);
     return (
-      <div className={classes.lines}>
-        <List>
-          {components.map((component) => {
-            return (
-              <ListItem
-                key={component.id}
-                divider={true}
-                button={true}
-                clases={{ root: classes.item }}
-                onClick={() => setComponentId(component.id)}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={component.icon} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={component.name}
-                  secondary={component.description}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
-      </div>
+            <div className={classes.lines}>
+                <List>
+                    {components.map((component) => {
+                      return (
+                            <ListItem
+                                key={component.id}
+                                divider={true}
+                                button={true}
+                                clases={{ root: classes.item }}
+                                onClick={() => setComponentId(component.id)}
+                            >
+                                <ListItemIcon>
+                                    <ItemIcon type={component.icon}/>
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={component.name}
+                                    secondary={component.description}
+                                />
+                            </ListItem>
+                      );
+                    })}
+                </List>
+            </div>
     );
   };
   const renderConfig = () => {
@@ -399,9 +399,9 @@ const PlaybookAddComponentsContent = ({
     const initialValues = currentConfig
       ? {
         name:
-          selectedNode?.data?.component?.id === selectedComponent.id
-            ? selectedNode?.data?.name
-            : selectedComponent.name,
+                    selectedNode?.data?.component?.id === selectedComponent.id
+                      ? selectedNode?.data?.name
+                      : selectedComponent.name,
         ...currentConfig,
       }
       : {
@@ -723,10 +723,10 @@ const PlaybookAddComponentsContent = ({
     );
   };
   return (
-    <>
-      {isEmptyField(componentId) && renderLines()}
-      {isNotEmptyField(componentId) && renderConfig()}
-    </>
+        <>
+            {isEmptyField(componentId) && renderLines()}
+            {isNotEmptyField(componentId) && renderConfig()}
+        </>
   );
 };
 
@@ -749,30 +749,30 @@ const PlaybookAddComponents = ({
   };
   const open = !!(
     (action === 'config' || action === 'add' || action === 'replace')
-    && (selectedNode !== null || selectedEdge || null)
+        && (selectedNode !== null || selectedEdge || null)
   );
   return (
-    <Drawer
-      open={open}
-      title={t('Add components')}
-      onClose={handleClose}
-    >
-      {({ onClose }) => (
-        <>
-          {(selectedNode || selectedEdge) && (
-            <PlaybookAddComponentsContent
-              searchTerm={searchTerm}
-              playbookComponents={playbookComponents}
-              action={action}
-              selectedNode={selectedNode}
-              onConfigAdd={onConfigAdd}
-              onConfigReplace={onConfigReplace}
-              handleClose={onClose}
-            />
-          )}
-        </>
-      )}
-    </Drawer>
+        <Drawer
+            open={open}
+            title={t('Add components')}
+            onClose={handleClose}
+        >
+            {({ onClose }) => (
+                <>
+                    {(selectedNode || selectedEdge) && (
+                        <PlaybookAddComponentsContent
+                            searchTerm={searchTerm}
+                            playbookComponents={playbookComponents}
+                            action={action}
+                            selectedNode={selectedNode}
+                            onConfigAdd={onConfigAdd}
+                            onConfigReplace={onConfigReplace}
+                            handleClose={onClose}
+                        />
+                    )}
+                </>
+            )}
+        </Drawer>
   );
 };
 
