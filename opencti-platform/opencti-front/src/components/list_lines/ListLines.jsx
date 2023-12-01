@@ -701,7 +701,7 @@ ListLines.propTypes = {
   inline: PropTypes.bool,
   searchContext: PropTypes.object,
   handleExportCsv: PropTypes.func,
-  helpers: PropTypes.object,
+  helpers: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

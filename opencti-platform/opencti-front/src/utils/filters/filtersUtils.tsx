@@ -167,7 +167,7 @@ export const entityTypesFilters = [
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   return (
     filterGroup
-    && (filterGroup.filters.length > 0 || filterGroup.filterGroups.length > 0)
+    && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
   );
 };
 

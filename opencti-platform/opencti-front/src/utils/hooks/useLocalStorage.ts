@@ -2,7 +2,14 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { Filter, FilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  findFilterFromKey,
+  getDefaultOperatorFilter,
+  isFilterGroupNotEmpty,
+  isUniqFilter,
+} from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -412,7 +419,22 @@ export const usePaginationLocalStorage = <U>(
       handleRemoveRepresentationFilter({ viewStorage, setValue, id, valueId });
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
-      handleAddRepresentationFilter({ viewStorage, setValue, id, valueId });
+      if (valueId === null) { // handle clicking on 'no label' in entities list
+        const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
+        if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
+          handleAddFilterWithEmptyValue({ viewStorage,
+            setValue,
+            filter: {
+              id: uuid(),
+              key: 'objectLabel',
+              operator: 'nil',
+              values: [],
+              mode: 'and',
+            } });
+        }
+      } else {
+        handleAddRepresentationFilter({ viewStorage, setValue, id, valueId });
+      }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
       handleAddSingleValueFilter({ viewStorage, setValue, id, valueId });
