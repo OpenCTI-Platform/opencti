@@ -149,6 +149,7 @@ export const booleanFilters = [
   'revoked',
   'is_read',
   'x_opencti_reliability',
+  'instance_trigger',
 ];
 
 export const entityTypesFilters = [

@@ -825,6 +825,24 @@ const useSearchEntities = ({
         }));
         unionSetEntities('revoked', revokedEntities);
         break;
+      case 'trigger_type':
+        // eslint-disable-next-line no-case-declarations
+        const isTriggerTypeEntities = ['digest', 'live'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('trigger_type', isTriggerTypeEntities);
+        break;
+      case 'instance_trigger':
+        // eslint-disable-next-line no-case-declarations
+        const isInstanceTrigger = ['true', 'false'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('instance_trigger', isInstanceTrigger);
+        break;
       case 'is_read':
         // eslint-disable-next-line no-case-declarations
         const isReadEntities = ['true', 'false'].map((n) => ({

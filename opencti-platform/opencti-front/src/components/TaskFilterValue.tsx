@@ -50,7 +50,7 @@ const TaskFilterValue = ({
                 .replace('rel_', '')
                 .replace('.*', '')}`,
             )
-            : t(`filter_${currentFilter.key}`),
+            : t(currentFilter.key),
           20,
         )}`;
         const isOperatorNil = ['nil', 'not_nil'].includes(

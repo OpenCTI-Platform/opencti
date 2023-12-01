@@ -6,6 +6,7 @@ import {
   FilterGroup,
   GqlFilterGroup,
   initialFilterGroup,
+  removeIdFromFilterObject,
 } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
@@ -48,20 +49,9 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
               (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
             ) || [],
   };
-  const parsedQueryFilters: FilterGroup = {
-    ...filters,
-    filters: filters.filters
-      .filter((currentFilter) => !availableFilterKeys
-                || availableFilterKeys?.some((k) => currentFilter.key === k))
-      .map((filter) => {
-        const removeIdFromFilter = { ...filter };
-        delete removeIdFromFilter.id;
-        return removeIdFromFilter;
-      }),
-  };
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
-    { filters: parsedQueryFilters as unknown as GqlFilterGroup },
+    { filters: removeIdFromFilterObject(displayedFilters) as unknown as GqlFilterGroup },
   );
   return (
         <>

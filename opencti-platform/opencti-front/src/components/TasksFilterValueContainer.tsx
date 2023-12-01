@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilterGroup, GqlFilterGroup } from '../utils/filters/filtersUtils';
+import { FilterGroup, GqlFilterGroup, removeIdFromFilterObject } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import TaskFilterValue from './TaskFilterValue';
@@ -9,7 +9,7 @@ import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonCo
 const TasksFilterValueContainer = ({ filters }: { filters: FilterGroup }) => {
   const queryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
-    { filters: filters as unknown as GqlFilterGroup },
+    { filters: removeIdFromFilterObject(filters) as unknown as GqlFilterGroup },
   );
   return (
     <>
