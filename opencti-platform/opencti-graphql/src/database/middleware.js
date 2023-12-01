@@ -2127,7 +2127,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
   const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = inputs.map((input) => {
+  const revolvedInputs = updates.map((input) => {
     if (metaKeys.includes(input.key)) {
       const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
       return { ...input, value: resolvedValues };
