@@ -24,7 +24,7 @@ import {
 
 const dataColumns = {
   x_opencti_negative: {
-    label: 'filter_x_opencti_negative',
+    label: 'x_opencti_negative',
     width: '10%',
     isSortable: true,
   },

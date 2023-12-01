@@ -550,7 +550,7 @@ export const usePaginationLocalStorage = <U>(
     },
   };
 
-  const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => f.values.length > 0) ?? [];
+  const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0) ?? [];
   let filters;
   if (removeEmptyFilter.length > 0) {
     filters = {
