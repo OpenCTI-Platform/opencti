@@ -1571,12 +1571,13 @@ const prepareAttributesForUpdate = (instance, elements) => {
         return null;
       }
     }
-    // Aliases can't have the same name as entity name
+    // Aliases can't have the same name as entity name and an already existing normalized alias
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
+      const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return {
         key: input.key,
-        value: filteredValues
+        value: uniqAliases
       };
     }
     // No need to rework the input
