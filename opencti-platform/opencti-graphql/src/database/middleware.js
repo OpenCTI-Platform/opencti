@@ -1683,7 +1683,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         // No name change asked but aliases addition
         if (upsert) {
           // In upsert we cumulate with current aliases
-          aliasesInput.value = R.uniq([...aliasesInput.value, ...(instance[aliasField] || [])]);
+          aliasesInput.value = R.uniqBy((e) => normalizeName(e), [...aliasesInput.value, ...(instance[aliasField] || [])]);
         }
         // Internal ids alias must be generated again
         const aliasesId = generateAliasesId(R.uniq([instance.name, ...aliasesInput.value]), instance);
