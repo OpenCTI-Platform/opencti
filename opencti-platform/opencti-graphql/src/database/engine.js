@@ -105,6 +105,7 @@ const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const ES_RETRY_ON_CONFLICT = 5;
+const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 export const MAX_BULK_OPERATIONS = 250;
 export const BULK_TIMEOUT = '5m';
@@ -1105,6 +1106,43 @@ const elDataConverter = (esHit, withoutRels = false) => {
 };
 // endregion
 
+export const elConvertHits = async (data, opts = {}) => {
+  const { toMap = false, mapWithAllIds = false, withoutRels = false } = opts;
+  const convertedHitsMap = {};
+  const convertedHits = [];
+  let startProcessingTime = new Date().getTime();
+  for (let n = 0; n < data.length; n += 1) {
+    const hit = data[n];
+    const element = elDataConverter(hit, withoutRels);
+    if (toMap) {
+      convertedHitsMap[element.internal_id] = element;
+      if (mapWithAllIds) {
+        // Add the standard id key
+        if (element.standard_id) {
+          convertedHitsMap[element.standard_id] = element;
+        }
+        // Add the stix ids keys
+        (element.x_opencti_stix_ids ?? []).forEach((id) => {
+          convertedHitsMap[id] = element;
+        });
+      }
+    } else {
+      convertedHits.push(element);
+    }
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+  if (toMap) {
+    return convertedHitsMap;
+  }
+  return convertedHits;
+};
+
 export const elFindByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   const mustTerms = [];
   const markingRestrictions = await buildDataRestrictions(context, user);
@@ -1160,13 +1198,9 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
   const data = await elRawSearch(context, user, relationshipType, query).catch((e) => {
     throw DatabaseError('[SEARCH] Find by from and to fail', { error: e, query });
   });
-  const hits = [];
-  for (let index = 0; index < data.hits.hits.length; index += 1) {
-    const hit = data.hits.hits[index];
-    hits.push(elDataConverter(hit));
-  }
-  return hits;
+  return elConvertHits(data.hits.hits);
 };
+
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, onRelationship = null, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
@@ -1176,7 +1210,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const hits = {};
+  let hits = {};
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
@@ -1273,15 +1307,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       });
       const elements = data.hits.hits;
       if (elements.length > 0) {
-        for (let j = 0; j < elements.length; j += 1) {
-          const hit = elements[j];
-          const element = elDataConverter(hit, withoutRels);
-          hits[element.internal_id] = element;
-          if (mapWithAllIds) {
-            if (element.standard_id) hits[element.standard_id] = element;
-            (element.x_opencti_stix_ids ?? []).forEach((id) => { hits[id] = element; });
-          }
-        }
+        const convertedHits = await elConvertHits(elements, { withoutRels, mapWithAllIds, toMap: true });
+        // console.log(convertedHits);
+        hits = { ...hits, ...convertedHits };
         if (elements.length < MAX_SEARCH_SIZE) {
           hasNextPage = false;
         } else {
@@ -2326,8 +2354,8 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 };
 // endregion
 
-const buildSearchResult = (data, first, searchAfter, connectionFormat = true) => {
-  const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
+const buildSearchResult = async (data, first, searchAfter, connectionFormat = true) => {
+  const convertedHits = await elConvertHits(data.hits.hits);
   if (connectionFormat) {
     const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
     return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
