@@ -1639,22 +1639,26 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       const name = nameInput ? R.head(nameInput.value) : undefined;
       // Cleanup the alias input
       if (aliasesInput) {
-        aliasesInput.value = R.uniq((aliasesInput.value ?? []).filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+        const preparedAliases = (aliasesInput.value ?? []).filter((a) => isNotEmptyField(a)).map((a) => a.trim());
+        aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
       // In case of upsert name change, old name must be pushed in aliases
       // If aliases are also ask for modification, we need to change the input
       if (name && normalizeName(instance.name) !== normalizeName(name)) {
-        // If name change, we need to do some specific actions
+        // If name change, we need to add the old name in aliases
         const aliases = [...(instance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
-          aliases.push(instance.name);
+          aliases.push(...(aliasesInput ? aliasesInput.value : []));
+          if (!aliases.includes(normalizeName(instance.name))) {
+            aliases.push(instance.name);
+          }
+          const uniqAliases = R.uniqBy((e) => normalizeName(e), aliases);
           // If name changing is part of an upsert, the previous name must be copied into aliases
           if (aliasesInput) { // If aliases input also exists
-            aliases.push(...aliasesInput.value);
-            aliasesInput.value = R.uniq(aliases);
+            aliasesInput.value = uniqAliases;
           } else { // We need to create an extra input getting existing aliases
-            const generatedAliasesInput = { key: aliasField, value: R.uniq(aliases) };
+            const generatedAliasesInput = { key: aliasField, value: uniqAliases };
             preparedElements.push(generatedAliasesInput);
           }
         }
@@ -3129,13 +3133,11 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   }
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
-    if (input.aliases) {
-      const preparedAliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
-      data.aliases = preparedAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
-    }
-    if (input.x_opencti_aliases) {
-      const preparedXOpenctiAliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
-      data.x_opencti_aliases = preparedXOpenctiAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
+    const aliasField = resolveAliasesField(type).name;
+    if (input[aliasField]) {
+      const preparedAliases = input[aliasField].filter((a) => isNotEmptyField(a)).map((a) => a.trim());
+      const uniqAliases = R.uniqBy((e) => normalizeName(e), preparedAliases);
+      data[aliasField] = uniqAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }
