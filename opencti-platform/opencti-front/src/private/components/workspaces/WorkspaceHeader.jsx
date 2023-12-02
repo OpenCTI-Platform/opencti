@@ -389,7 +389,7 @@ const WorkspaceHeader = ({
               type={workspace.type}
               adjust={adjust}
               handleDownloadAsStixReport={handleDownloadAsStixReport}
-            handleExportDashboard={handleExportDashboard}/>
+              handleExportDashboard={handleExportDashboard}/>
           </div>
           {variant === 'investigation' && (
               <div className={classes.turnToReportOrCase}>

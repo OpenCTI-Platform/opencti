@@ -26794,7 +26794,9 @@ export type Workspace = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  toConfigurationExport: Scalars['String']['output'];
   toStixReportBundle?: Maybe<Scalars['String']['output']>;
+  toWidgetExport: Scalars['String']['output'];
   type?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -26809,6 +26811,11 @@ export type WorkspaceObjectsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type WorkspaceToWidgetExportArgs = {
+  widgetId: Scalars['ID']['input'];
 };
 
 export type WorkspaceAddInput = {
@@ -36621,7 +36628,9 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<WorkspaceToWidgetExportArgs, 'widgetId'>>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

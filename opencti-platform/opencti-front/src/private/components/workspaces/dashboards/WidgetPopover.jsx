@@ -9,13 +9,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import fileDownload from 'js-file-download';
+import handleWidgetExportJson from './widgetExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WidgetConfig from './WidgetConfig';
 import Transition from '../../../../components/Transition';
-import pjson from '../../../../../package.json';
 
 const useStyles = makeStyles({
   container: {
@@ -48,16 +47,7 @@ const WidgetPopover = ({
   };
 
   const handleExportWidget = () => {
-    const { id: _id, ...rest } = widget;
-    const widgetConfig = JSON.stringify({
-      openCTI_version: pjson.version,
-      type: 'widget',
-      configuration: { ...rest },
-    }, null, 2);
-    const blob = new Blob([widgetConfig], { type: 'text/json ' });
-    const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
-    const fileName = `${year}${month}${day}_octi_widget_${widget.type}`;
-    fileDownload(blob, fileName, 'application/json');
+    handleWidgetExportJson(workspace.id, widget);
   };
   return (
     <div className={classes.container}>
@@ -86,7 +76,7 @@ const WidgetPopover = ({
             widget={widget}
             workspace={workspace}
           />
-          <MenuItem onClick={handleExportWidget}>{t('Export JSON')}</MenuItem>
+          <MenuItem onClick={handleExportWidget}>{t('Export')}</MenuItem>
           <MenuItem onClick={handleOpenDuplicate}>{t('Duplicate')}</MenuItem>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>

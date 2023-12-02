@@ -497,7 +497,13 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
   context: AuthContext,
   user: AuthUser,
   ids: string[],
-  args?: { type?: string | string[], baseData?: boolean, baseFields?: string[] } & Record<string, string | string[] | boolean>
+  args?: {
+    type?: string | string[],
+    baseData?: boolean,
+    toMap?: boolean,
+    mapWithAllIds?: boolean,
+    baseFields?: string[]
+  } & Record<string, string | string[] | boolean>
 ) => {
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };

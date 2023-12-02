@@ -184,7 +184,7 @@ class ExportButtons extends Component {
             </ToggleButton>
           </Tooltip>
           {type === 'dashboard' && handleExportDashboard && (
-            <Tooltip title={t('Export to JSON')}>
+            <Tooltip title={t('Export')}>
               <ToggleButton onClick={handleExportDashboard.bind(this)} value={'Export-to-JSON'}>
                 <FileExportOutline fontSize="small" color="primary" />
               </ToggleButton>
