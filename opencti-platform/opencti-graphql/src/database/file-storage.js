@@ -11,12 +11,15 @@ import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, loadExportWorksAsProgressFiles } from '../domain/work';
-import { buildPagination } from './utils';
+import { buildPagination, isEmptyField, isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
+import { internalLoadById } from './middleware-loader';
+import { SYSTEM_USER } from '../utils/access';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -204,6 +207,32 @@ const guessMimeType = (fileId) => {
   }
   return mimeType;
 };
+
+export const checkFileAccess = async (context, user, scope, loadedFile) => {
+  const { entity_id, filename } = loadedFile.metaData;
+  if (isEmptyField(entity_id)) {
+    return true;
+  }
+  const userInstancePromise = internalLoadById(context, user, entity_id);
+  const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
+  const [instance, systemInstance] = await Promise.all([userInstancePromise, systemInstancePromise]);
+  if (isEmptyField(instance)) {
+    if (isNotEmptyField(systemInstance)) {
+      const data = buildContextDataForFile(systemInstance, loadedFile.id, filename);
+      await publishUserAction({
+        user,
+        event_type: 'file',
+        event_scope: scope,
+        event_access: 'extended',
+        status: 'error',
+        context_data: data
+      });
+    }
+    throw FunctionalError('FILE_ACCESS', { id: entity_id, file: loadedFile.id });
+  }
+  return true;
+};
+
 export const isFileObjectExcluded = (id) => {
   const fileName = getFileName(id);
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());

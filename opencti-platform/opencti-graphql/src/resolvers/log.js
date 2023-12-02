@@ -30,7 +30,7 @@ const logResolvers = {
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
     context_uri: (log, _, __) => (log.context_data.id ? `/dashboard/id/${log.context_data.id}` : undefined),
     event_status: (log, _, __) => log.event_status ?? 'success',
-    event_type: (log, _, __) => log.event_scope ?? log.event_type, // Retro compatibility
+    event_scope: (log, _, __) => log.event_scope ?? log.event_type, // Retro compatibility
   },
   // Backward compatibility
   ContextData: {

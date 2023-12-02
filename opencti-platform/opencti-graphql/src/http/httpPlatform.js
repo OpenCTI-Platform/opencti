@@ -16,7 +16,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, loadFile } from '../database/file-storage';
+import { checkFileAccess, downloadFile, getFileContent, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
@@ -49,6 +49,19 @@ const extractRefererPathFromReq = (req) => {
     }
   }
   return undefined;
+};
+
+const publishFileDownload = async (executeContext, auth, file) => {
+  const { filename, entity_id } = file.metaData;
+  const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
+  const data = buildContextDataForFile(entity, file.id, filename);
+  await publishUserAction({
+    user: auth,
+    event_type: 'file',
+    event_access: 'extended',
+    event_scope: 'download',
+    context_data: data
+  });
 };
 
 const publishFileRead = async (executeContext, auth, file) => {
@@ -152,7 +165,9 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(auth, file);
-      await publishFileRead(executeContext, auth, data);
+      await checkFileAccess(executeContext, auth, 'download', data);
+      // If file is attach to a specific instance, we need to contr
+      await publishFileDownload(executeContext, auth, data);
       const stream = await downloadFile(file);
       res.attachment(file);
       stream.pipe(res);
@@ -173,6 +188,7 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(auth, file);
+      await checkFileAccess(executeContext, auth, 'read', data);
       await publishFileRead(executeContext, auth, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
@@ -202,6 +218,7 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(auth, file);
+      await checkFileAccess(executeContext, auth, 'read', data);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
@@ -231,6 +248,8 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(auth, file);
+      await checkFileAccess(executeContext, auth, 'download', data);
+      await publishFileDownload(executeContext, auth, data);
       const { filename } = data.metaData;
       const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: `${filename}.zip` });

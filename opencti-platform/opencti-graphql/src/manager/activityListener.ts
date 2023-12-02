@@ -154,9 +154,16 @@ const initActivityManager = () => {
         }
       }
       if (action.event_type === 'file') {
+        const isFailAction = action.status === 'error';
+        const prefixMessage = isFailAction ? 'failure ' : '';
         if (action.event_scope === 'read') {
           const { file_name, entity_name } = action.context_data;
-          const message = `downloads from \`${entity_name}\` the file \`${file_name}\``;
+          const message = `${prefixMessage} reads from \`${entity_name}\` the file \`${file_name}\``;
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'download') {
+          const { file_name, entity_name } = action.context_data;
+          const message = `${prefixMessage}  downloads from \`${entity_name}\` the file \`${file_name}\``;
           await activityLogger(action, message);
         }
         if (action.event_scope === 'create') {
