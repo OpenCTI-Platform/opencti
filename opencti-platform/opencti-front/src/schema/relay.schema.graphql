@@ -9991,6 +9991,8 @@ type Workspace implements InternalObject & BasicObject {
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
   toStixReportBundle: String
+  toConfigurationExport: String!
+  toWidgetExport(widgetId: ID!): String!
 }
 
 enum WorkspacesOrdering {

@@ -1,32 +1,5 @@
 {
   "openCTI_version": "5.12.0",
   "type": "dashboard",
-  "configuration": {
-    "type": "list",
-    "perspective": "entities",
-    "dataSelection": [
-      {
-        "label": "",
-        "attribute": "entity_type",
-        "date_attribute": "created_at",
-        "perspective": "entities",
-        "isTo": true,
-        "filters": {},
-        "dynamicFrom": {},
-        "dynamicTo": {}
-      }
-    ],
-    "parameters": {
-      "title": "Entity List"
-    },
-    "layout": {
-      "w": 5,
-      "h": 8,
-      "x": 0,
-      "y": 0,
-      "i": "89d81abc-ea27-4b75-9f6d-0d7efc2c8e84",
-      "moved": false,
-      "static": false
-    }
-  }
+  "configuration": "ewogICAgInR5cGUiOiAibGlzdCIsCiAgICAicGVyc3BlY3RpdmUiOiAiZW50aXRpZXMiLAogICAgImRhdGFTZWxlY3Rpb24iOiBbCiAgICAgIHsKICAgICAgICAibGFiZWwiOiAiIiwKICAgICAgICAiYXR0cmlidXRlIjogImVudGl0eV90eXBlIiwKICAgICAgICAiZGF0ZV9hdHRyaWJ1dGUiOiAiY3JlYXRlZF9hdCIsCiAgICAgICAgInBlcnNwZWN0aXZlIjogImVudGl0aWVzIiwKICAgICAgICAiaXNUbyI6IHRydWUsCiAgICAgICAgImZpbHRlcnMiOiB7fSwKICAgICAgICAiZHluYW1pY0Zyb20iOiB7fSwKICAgICAgICAiZHluYW1pY1RvIjoge30KICAgICAgfQogICAgXSwKICAgICJwYXJhbWV0ZXJzIjogewogICAgICAidGl0bGUiOiAiRW50aXR5IExpc3QiCiAgICB9LAogICAgImxheW91dCI6IHsKICAgICAgInciOiA1LAogICAgICAiaCI6IDgsCiAgICAgICJ4IjogMCwKICAgICAgInkiOiAwLAogICAgICAiaSI6ICI4OWQ4MWFiYy1lYTI3LTRiNzUtOWY2ZC0wZDdlZmMyYzhlODQiLAogICAgICAibW92ZWQiOiBmYWxzZSwKICAgICAgInN0YXRpYyI6IGZhbHNlCiAgICB9CiAgfQ=="
 }

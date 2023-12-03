@@ -74,11 +74,13 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     commitImportMutation({
       variables: { file: importedFile },
       onCompleted: (data) => {
+        inputRef.current.value = null; // Reset the input uploader ref
         history.push(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
       },
       onError: (error) => {
+        inputRef.current.value = null; // Reset the input uploader ref
         handleError(error);
       },
     });
@@ -122,17 +124,17 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
               FabProps={{ color: 'secondary' }}
             >
               <SpeedDialAction
+                  title={t('Create dashboard')}
+                  icon={<InsertChartOutlined />}
+                  tooltipTitle={t('Create dashboard')}
+                  onClick={onOpen}
+                  FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+              <SpeedDialAction
                 title={t('Import dashboard')}
                 icon={<CloudUploadOutlined />}
                 tooltipTitle={t('Import dashboard')}
                 onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-              <SpeedDialAction
-                title={t('Create dashboard')}
-                icon={<InsertChartOutlined />}
-                tooltipTitle={t('Create dashboard')}
-                onClick={onOpen}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
             </SpeedDial>
