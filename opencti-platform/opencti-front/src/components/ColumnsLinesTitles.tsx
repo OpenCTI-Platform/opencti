@@ -87,14 +87,14 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
       <ListItemIcon> &nbsp; </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             {toPairs(dataColumns).map((dataColumn) => renderHeaderElement(
               dataColumn[0],
               dataColumn[1].label,
               dataColumn[1].width,
               dataColumn[1].isSortable,
             ))}
-          </div>
+          </>
         }
       />
     </ListItem>

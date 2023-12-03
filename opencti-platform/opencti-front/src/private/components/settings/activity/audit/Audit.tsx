@@ -190,7 +190,7 @@ const Audit = () => {
       });
   };
   const extraFields = (
-    <div style={{ float: 'left' }}>
+    <div style={{ marginLeft: 10 }}>
       <FormControlLabel
         value="start"
         control={
@@ -219,7 +219,7 @@ const Audit = () => {
         </Alert>
       )}
       <ListLines
-          helpers={storageHelpers}
+        helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

@@ -14,17 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent, useEffect } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import FileIndexingRequirements from '@components/settings/file_indexing/FileIndexingRequirements';
+import {
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
 import FileIndexingConfigurationAndMonitoring from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { interval } from 'rxjs';
+import Alert from '@mui/material/Alert';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 import { TEN_SECONDS } from '../../../../utils/Time';
+import { useFormatter } from '../../../../components/i18n';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -71,11 +77,13 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   refetch,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { t } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
-
-  const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery, queryRef);
-
+  const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(
+    fileIndexingConfigurationQuery,
+    queryRef,
+  );
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       refetch();
@@ -84,26 +92,55 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
       subscription.unsubscribe();
     };
   }, []);
-
   return (
-    <div>
-      {!isEnterpriseEdition && (
-        <EnterpriseEdition feature={'File indexing'} />
+    <>
+      {!isEnterpriseEdition ? (
+        <EnterpriseEdition feature="File indexing" />
+      ) : (
+        <>
+          {isModuleWarning ? (
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ position: 'relative' }}
+            >
+              {t(
+                'It seems that your OpenCTI stack is not supporting file indexing. Please ensure you meet',
+              )}{' '}
+              <strong>{t('one of the following requirements:')}</strong>
+              <ul>
+                <li>Elasticsearch &ge; 8.4</li>
+                <li>
+                  Elasticsearch &lt; 8.4 with{' '}
+                  <span style={{ fontFamily: 'Consolas, monaco, monospace' }}>
+                    ingest-attachment
+                  </span>{' '}
+                  plugin enabled
+                </li>
+                <li>
+                  OpenSearch with{' '}
+                  <span style={{ fontFamily: 'Consolas, monaco, monospace' }}>
+                    ingest-attachment
+                  </span>{' '}
+                  plugin
+                </li>
+              </ul>
+            </Alert>
+          ) : (
+            <FileIndexingConfigurationAndMonitoring
+              managerConfiguration={managerConfigurationByManagerId}
+            />
+          )}
+        </>
       )}
-      {isModuleWarning && (
-        <FileIndexingRequirements
-          isModuleWarning={isModuleWarning}
-        />
-      )}
-      {isEnterpriseEdition && !isModuleWarning && managerConfigurationByManagerId && (
-       <FileIndexingConfigurationAndMonitoring managerConfiguration={managerConfigurationByManagerId} />
-      )}
-    </div>
+    </>
   );
 };
 
 const FileIndexing = () => {
-  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(fileIndexingConfigurationQuery);
+  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(
+    fileIndexingConfigurationQuery,
+  );
   const queryArgs = {
     managerId: FILE_INDEX_MANAGER,
   };
@@ -117,12 +154,10 @@ const FileIndexing = () => {
 
   return (
     <>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <FileIndexingComponent queryRef={queryRef} refetch={refetch} />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
     </>
   );

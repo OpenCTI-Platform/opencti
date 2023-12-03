@@ -12,20 +12,32 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
+
 import React, { FunctionComponent, useEffect } from 'react';
-import Grid from '@mui/material/Grid';
-import FileIndexingConfiguration from '@components/settings/file_indexing/FileIndexingConfiguration';
 import FileIndexingMonitoring from '@components/settings/file_indexing/FileIndexingMonitoring';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import {
-  FileIndexingConfigurationQuery$data,
-} from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
+import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationAndMonitoringQuery } from './__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 
 const fileIndexingConfigurationAndMonitoringQuery = graphql`
-  query FileIndexingConfigurationAndMonitoringQuery($mimeTypes: [String!], $maxFileSize: Float, $excludedPaths: [String!], $includedPaths: [String!]) {
-    filesMetrics(mimeTypes: $mimeTypes, maxFileSize: $maxFileSize, excludedPaths: $excludedPaths, includedPaths: $includedPaths) {
+  query FileIndexingConfigurationAndMonitoringQuery(
+    $mimeTypes: [String!]
+    $maxFileSize: Float
+    $excludedPaths: [String!]
+    $includedPaths: [String!]
+  ) {
+    filesMetrics(
+      mimeTypes: $mimeTypes
+      maxFileSize: $maxFileSize
+      excludedPaths: $excludedPaths
+      includedPaths: $includedPaths
+    ) {
       globalCount
       globalSize
       metricsByMimeType {
@@ -52,33 +64,28 @@ interface FileIndexingConfigurationAndMonitoringComponentProps {
   queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
 }
 
-const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<FileIndexingConfigurationAndMonitoringComponentProps> = ({
-  managerConfiguration,
-  queryRef,
-}) => {
-  const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery, queryRef);
+const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<
+FileIndexingConfigurationAndMonitoringComponentProps
+> = ({ managerConfiguration, queryRef }) => {
+  const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(
+    fileIndexingConfigurationAndMonitoringQuery,
+    queryRef,
+  );
   const totalFiles = filesMetrics?.globalCount ?? 0;
   const managerConfigurationId = managerConfiguration?.id;
   const lastIndexationDate = managerConfiguration?.last_run_end_date;
   const isStarted = managerConfiguration?.manager_running || false;
-
   return (
-    <Grid container={true} spacing={3}>
-      <Grid item={true} xs={12}>
-        <FileIndexingMonitoring
-          totalFiles={totalFiles}
-          isStarted={isStarted}
-          managerConfigurationId={managerConfigurationId}
-          lastIndexationDate={lastIndexationDate}
-        />
-      </Grid>
-      <Grid item={true} xs={12} >
-        <FileIndexingConfiguration
-          filesMetrics={filesMetrics}
-          managerConfiguration={managerConfiguration}
-        />
-      </Grid>
-    </Grid>
+    <div style={{ flexGrow: 1, paddingBottom: 50 }}>
+      <FileIndexingMonitoring
+        totalFiles={totalFiles}
+        isStarted={isStarted}
+        managerConfigurationId={managerConfigurationId}
+        lastIndexationDate={lastIndexationDate}
+        filesMetrics={filesMetrics}
+        managerConfiguration={managerConfiguration}
+      />
+    </div>
   );
 };
 
@@ -86,20 +93,30 @@ interface FileIndexingConfigurationAndMonitoringProps {
   managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
 }
 
-const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConfigurationAndMonitoringProps> = ({
-  managerConfiguration,
-}) => {
-  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(fileIndexingConfigurationAndMonitoringQuery);
+const FileIndexingConfigurationAndMonitoring: FunctionComponent<
+FileIndexingConfigurationAndMonitoringProps
+> = ({ managerConfiguration }) => {
+  const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(
+    fileIndexingConfigurationAndMonitoringQuery,
+  );
   const manager_setting = managerConfiguration?.manager_setting;
   const entityTypes: string[] = manager_setting?.entity_types ?? [];
-  const includedPaths = entityTypes.map((entityType) => `import/${entityType}/`);
+  const includedPaths = entityTypes.map(
+    (entityType) => `import/${entityType}/`,
+  );
   if (manager_setting?.include_global_files && includedPaths.length > 0) {
     includedPaths.push('import/global/'); // add global to included paths
   }
   const queryArgs = {
-    mimeTypes: manager_setting?.accept_mime_types?.length > 0 ? manager_setting.accept_mime_types : fileIndexingDefaultMimeTypes,
-    maxFileSize: manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
-    excludedPaths: manager_setting?.include_global_files ? [] : ['import/global'],
+    mimeTypes:
+      manager_setting?.accept_mime_types?.length > 0
+        ? manager_setting.accept_mime_types
+        : fileIndexingDefaultMimeTypes,
+    maxFileSize:
+      manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
+    excludedPaths: manager_setting?.include_global_files
+      ? []
+      : ['import/global'],
     includedPaths,
   };
   useEffect(() => {
@@ -107,15 +124,13 @@ const FileIndexingConfigurationAndMonitoring: FunctionComponent<FileIndexingConf
   }, [manager_setting]);
   return (
     <>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <FileIndexingConfigurationAndMonitoringComponent
             queryRef={queryRef}
             managerConfiguration={managerConfiguration}
           />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
     </>
   );

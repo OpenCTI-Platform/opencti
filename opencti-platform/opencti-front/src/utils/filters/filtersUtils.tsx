@@ -57,12 +57,9 @@ export const directFilters = [
   'containers',
   'objectContains',
   'entity_type',
+  'container_type',
 ];
-export const inlineFilters = [
-  'is_read',
-  'trigger_type',
-  'instance_trigger',
-];
+export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 
 export const integerFilters = [
   'x_opencti_base_score',
@@ -258,7 +255,10 @@ export const filtersWithEntityType = (
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
-  if (value && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))) {
+  if (
+    value
+    && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))
+  ) {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }
@@ -559,7 +559,7 @@ export const constructHandleRemoveFilter = (
   if (filters) {
     const newBaseFilters = {
       ...filters,
-      filters: filters.filters.filter((f) => (f.key !== k || f.operator !== op)), // remove filter with key=k and operator=op
+      filters: filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
     };
     return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : undefined;
   }
@@ -640,14 +640,18 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
-export const removeIdFromFilterObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
+export const removeIdFromFilterObject = (
+  filters?: FilterGroup | null,
+): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
   return {
     ...filters,
     filters: filters.filters
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
+      .filter(
+        (f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0,
+      )
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;

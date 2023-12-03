@@ -138,7 +138,7 @@ const StixCoreObjectFileExportComponent = ({
         <span>
           <ToggleButton
             onClick={() => handleClickOpen()}
-            disabled={!isExportActive}
+            disabled={!isExportPossible}
             value="quick-export"
             aria-haspopup="true"
             color="primary"
