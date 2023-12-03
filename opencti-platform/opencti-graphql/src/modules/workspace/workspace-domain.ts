@@ -364,15 +364,15 @@ const convertWidgetsIds = async (context: AuthContext, user: AuthUser, widgetDef
   const resolvingIds: string[] = [];
   widgetDefinitions.forEach((widgetDefinition: any) => {
     widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (selection.filters) {
+      if (isNotEmptyField(selection.filters)) {
         const filterIds = extractFiltersIds(selection.filters as FilterGroup, from);
         resolvingIds.push(...filterIds);
       }
-      if (selection.dynamicFrom) {
+      if (isNotEmptyField(selection.dynamicFrom)) {
         const dynamicFromIds = extractFiltersIds(selection.dynamicFrom as FilterGroup, from);
         resolvingIds.push(...dynamicFromIds);
       }
-      if (selection.dynamicTo) {
+      if (isNotEmptyField(selection.dynamicTo)) {
         const dynamicToIds = extractFiltersIds(selection.dynamicTo as FilterGroup, from);
         resolvingIds.push(...dynamicToIds);
       }
@@ -384,13 +384,13 @@ const convertWidgetsIds = async (context: AuthContext, user: AuthUser, widgetDef
   const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
   widgetDefinitions.forEach((widgetDefinition: any) => {
     widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (selection.filters) {
+      if (isNotEmptyField(selection.filters)) {
         replaceFiltersIds(selection.filters as FilterGroup, idsMap, from);
       }
-      if (selection.dynamicFrom) {
+      if (isNotEmptyField(selection.dynamicFrom)) {
         replaceFiltersIds(selection.dynamicFrom as FilterGroup, idsMap, from);
       }
-      if (selection.dynamicTo) {
+      if (isNotEmptyField(selection.dynamicTo)) {
         replaceFiltersIds(selection.dynamicTo as FilterGroup, idsMap, from);
       }
     });
@@ -445,8 +445,9 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
 };
 
 export const workspaceImportConfiguration = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const authorizedMembers = initializeAuthorizedMembers([], user);
   const parsedData = await extractContentFrom(file);
+  checkConfigurationImport('dashboard', parsedData);
+  const authorizedMembers = initializeAuthorizedMembers([], user);
   const { manifest } = parsedData.configuration;
   // Manifest ids must be rewritten for filters
   const generatedManifest = await convertWorkspaceManifestIds(context, user, manifest, 'stix');
@@ -457,7 +458,6 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
     manifest: generatedManifest,
     authorized_members: authorizedMembers,
   };
-  checkConfigurationImport('dashboard', mappedData);
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
   const workspaceId = importWorkspaceCreation.id;
   await publishUserAction({
@@ -498,6 +498,7 @@ export const workspaceImportWidgetConfiguration = async (
   input: ImportWidgetInput,
 ) => {
   const parsedData = await extractContentFrom(input.file);
+  checkConfigurationImport('widget', parsedData);
   const widgetDefinition = JSON.parse(fromBase64(parsedData.configuration) || '{}');
   await convertWidgetsIds(context, user, [widgetDefinition], 'stix');
   const mappedData = {
@@ -506,7 +507,6 @@ export const workspaceImportWidgetConfiguration = async (
     widget: widgetDefinition,
   };
   const importedWidgetId = uuidv4();
-  checkConfigurationImport('widget', mappedData);
   const dashboardManifestObjects = JSON.parse(fromBase64(input.dashboardManifest) || '{}');
   const updatedObjects = {
     ...dashboardManifestObjects,
