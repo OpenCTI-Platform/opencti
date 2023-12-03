@@ -4796,10 +4796,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:9.0.5":
-  version: 9.0.5
-  resolution: "@types/uuid@npm:9.0.5"
-  checksum: 7577940949619768303c0bf0a7cc235fac3cfae1c0bb4a2e85bfb87b2eb1024955ab446f775394d259442cd769b663b6ce43c39bdfc955d946bf833804ddb421
+"@types/uuid@npm:9.0.7":
+  version: 9.0.7
+  resolution: "@types/uuid@npm:9.0.7"
+  checksum: c7321194aeba9ea173efd1e721403bdf4e7ae6945f8f8cdbc87c791f4b505ccf3dbc4a8883d90b394ef13b7c2dc778045792b05dbb23b3c746f8ea347804d448
   languageName: node
   linkType: hard
 
@@ -11011,7 +11011,7 @@ __metadata:
     "@types/ramda": 0.29.6
     "@types/tough-cookie": 4.0.3
     "@types/turndown": 5.0.2
-    "@types/uuid": 9.0.5
+    "@types/uuid": 9.0.7
     "@types/xml2js": 0.4.12
     "@typescript-eslint/eslint-plugin": 6.7.5
     "@typescript-eslint/parser": 6.7.5
