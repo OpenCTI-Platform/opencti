@@ -19,7 +19,7 @@
     "@rjsf/mui": "5.13.2",
     "@rjsf/utils": "5.13.2",
     "analytics": "0.8.9",
-    "apexcharts": "3.44.0",
+    "apexcharts": "3.44.1",
     "axios": "1.6.0",
     "ckeditor5-custom-build": "0.0.1",
     "classnames": "2.3.2",
