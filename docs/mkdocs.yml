@@ -57,22 +57,22 @@ extra:
 plugins:
   - mike:
       alias_type: symlink
-      canonical_version: latest  
+      canonical_version: latest
   - search
   - git-committers:
       repository: OpenCTI-Platform/docs
-      branch: main  
+      branch: main
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
   - glightbox
 
 # Extensions
-markdown_extensions: 
+markdown_extensions:
   - attr_list
   - md_in_html
   - tables
-  - admonition   
+  - admonition
   - def_list
   - pymdownx.inlinehilite
   - pymdownx.snippets
@@ -92,7 +92,7 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
-      alternate_style: true   
+      alternate_style: true
   - pymdownx.highlight:
       use_pygments: true
       anchor_linenums: true
@@ -101,7 +101,7 @@ markdown_extensions:
       auto_title: false
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg   
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.snippets:
@@ -159,7 +159,7 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
-    - Act on knowledge:    
+    - Act on knowledge:
       - Case management: usage/case-management.md
       - Notifications:
         - Notifications and alerting: usage/notifications.md
@@ -172,7 +172,7 @@ nav:
     - Sharing and exports:
       - Native feeds: usage/feeds.md
       - Export in structured format: usage/export-structured.md
-      - Export in documents: usage/export-documents.md      
+      - Export in documents: usage/export-documents.md
   - Administration:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md
@@ -196,6 +196,7 @@ nav:
         - Events: administration/audit/events.md
         - Configuration: administration/audit/configuration.md
         - Activity triggers: administration/audit/triggers.md
+      - File indexing:  administration/file-indexing.md
   - Reference:
     - Data:
       - Data model: reference/data-model.md
