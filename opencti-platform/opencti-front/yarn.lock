@@ -15073,7 +15073,7 @@ __metadata:
     react-grid-layout: 1.4.4
     react-intl: 6.5.5
     react-leaflet: 4.2.1
-    react-markdown: 9.0.0
+    react-markdown: 9.0.1
     react-material-ui-carousel: 3.4.2
     react-mde: 11.5.0
     react-otp-input: 3.1.0
@@ -16577,16 +16577,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-markdown@npm:9.0.0":
-  version: 9.0.0
-  resolution: "react-markdown@npm:9.0.0"
+"react-markdown@npm:9.0.1":
+  version: 9.0.1
+  resolution: "react-markdown@npm:9.0.1"
   dependencies:
     "@types/hast": ^3.0.0
     devlop: ^1.0.0
     hast-util-to-jsx-runtime: ^2.0.0
     html-url-attributes: ^3.0.0
     mdast-util-to-hast: ^13.0.0
-    micromark-util-sanitize-uri: ^2.0.0
     remark-parse: ^11.0.0
     remark-rehype: ^11.0.0
     unified: ^11.0.0
@@ -16595,7 +16594,7 @@ __metadata:
   peerDependencies:
     "@types/react": ">=18"
     react: ">=18"
-  checksum: 7057f60f0657d5c6210f02a2c80d537176d0d29c141e4b52a8f8fa335ee454248c37c29caf27e8bd28a180bc8e14b5522f63e2a61e3ec3ea5201a58ad43f43c6
+  checksum: ca1daa650d48b84a5a9771683cdb3f3d2d418247ce0faf73ede3207c65f2a21cdebb9df37afda67f6fc8f0f0a7b9ce00eb239781954a4d6c7ad88ea4df068add
   languageName: node
   linkType: hard
 
