@@ -3086,15 +3086,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@foliojs-fork/pdfkit@npm:^0.13.0":
-  version: 0.13.0
-  resolution: "@foliojs-fork/pdfkit@npm:0.13.0"
+"@foliojs-fork/pdfkit@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "@foliojs-fork/pdfkit@npm:0.14.0"
   dependencies:
     "@foliojs-fork/fontkit": ^1.9.1
     "@foliojs-fork/linebreak": ^1.1.1
-    crypto-js: ^4.0.0
+    crypto-js: ^4.2.0
     png-js: ^1.0.0
-  checksum: 84c49edd056835aeff10579a98a1ae8d35821855f4175eb3f6ea4b01f0ca4a2f314670e7a9adedaa75a2745ba452ad7911440c1e2bce13325188cce14c5c3940
+  checksum: c6836d679a41a379f9fdc2c69337f8835a4299240d7aaf4167a61c8726db9716d9b4efc56a8ff3a94ca1af4f2f9f3005527880734ccfdfc4cac597174bbc6547
   languageName: node
   linkType: hard
 
@@ -8054,7 +8054,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-js@npm:^4.0.0":
+"crypto-js@npm:^4.2.0":
   version: 4.2.0
   resolution: "crypto-js@npm:4.2.0"
   checksum: f051666dbc077c8324777f44fbd3aaea2986f198fe85092535130d17026c7c2ccf2d23ee5b29b36f7a4a07312db2fae23c9094b644cc35f7858b1b4fcaf27774
@@ -15057,7 +15057,7 @@ __metadata:
     mdi-material-ui: 7.7.0
     moment: 2.29.4
     moment-timezone: 0.5.43
-    pdfmake: 0.2.7
+    pdfmake: 0.2.8
     prettier: 3.1.0
     prop-types: 15.8.1
     qrcode: 1.5.3
@@ -15446,15 +15446,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.2.7":
-  version: 0.2.7
-  resolution: "pdfmake@npm:0.2.7"
+"pdfmake@npm:0.2.8":
+  version: 0.2.8
+  resolution: "pdfmake@npm:0.2.8"
   dependencies:
     "@foliojs-fork/linebreak": ^1.1.1
-    "@foliojs-fork/pdfkit": ^0.13.0
+    "@foliojs-fork/pdfkit": ^0.14.0
     iconv-lite: ^0.6.3
     xmldoc: ^1.1.2
-  checksum: cf85c53edb8b54a07839c5f09a2ff11d04bdbf0345d388f99cb2496b57921f22c48684050cd570c8b1cceff0ecfbf81a5b718034f94ef6a6e9a235cc3add6fe5
+  checksum: 35c20e5bae541eeb9e295f2e1ca41e7f7c2dfbe2a659286be27317337d7aa211bc70cda0293fc98615f5004763cc8118bbf12ad2710e50a30eb20b934a2f088e
   languageName: node
   linkType: hard
 
