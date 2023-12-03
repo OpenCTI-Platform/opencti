@@ -180,7 +180,8 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const ingestions = await findAllRssIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
+  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const ingestions = await findAllRssIngestions(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
@@ -249,7 +250,8 @@ const taxiiExecutor = async (context: AuthContext) => {
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
+  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];

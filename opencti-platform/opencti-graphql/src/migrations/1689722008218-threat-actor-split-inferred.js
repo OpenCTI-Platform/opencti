@@ -1,11 +1,10 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { elCount, elRawUpdateByQuery } from '../database/engine';
+import { elCount, elList, elRawUpdateByQuery } from '../database/engine';
 import {
   READ_ENTITIES_INDICES, READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
-import { elList } from '../database/middleware-loader';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { logApp } from '../config/conf';
 

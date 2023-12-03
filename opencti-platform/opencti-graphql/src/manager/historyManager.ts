@@ -199,7 +199,8 @@ const initHistoryManager = () => {
           filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
           filterGroups: [],
         },
-      }, true);
+        noFiltersChecking: true
+      });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

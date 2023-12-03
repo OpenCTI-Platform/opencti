@@ -16,8 +16,8 @@ export const findAllPaginated = async (context: AuthContext, user: AuthUser, opt
   return listEntitiesPaginated<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const findAllTaxiiIngestions = async (context: AuthContext, user: AuthUser, opts = {}, noFiltersChecking = false) => {
-  return listAllEntities<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts, noFiltersChecking);
+export const findAllTaxiiIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return listAllEntities<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {

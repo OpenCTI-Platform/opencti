@@ -1,7 +1,7 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import { elCount, elRawUpdateByQuery } from '../database/engine';
+import { elCount, elList, elRawUpdateByQuery } from '../database/engine';
 import {
   READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -10,7 +10,7 @@ import {
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
-import { elList, listAllEntities } from '../database/middleware-loader';
+import { listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';

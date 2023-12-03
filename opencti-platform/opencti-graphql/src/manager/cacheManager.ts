@@ -131,8 +131,8 @@ const platformRunningPlaybooks = (context: AuthContext) => {
       filters: [{ key: ['playbook_running'], values: ['true'] }],
       filterGroups: [],
     };
-    const opts = { filters, connectionFormat: false };
-    return findAllPlaybooks(context, SYSTEM_USER, opts, true);
+    const opts = { filters, noFiltersChecking: true, connectionFormat: false };
+    return findAllPlaybooks(context, SYSTEM_USER, opts);
   };
   return { values: null, fn: reloadPlaybooks };
 };

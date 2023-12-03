@@ -437,7 +437,7 @@ export const buildTargetEvents = async (
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters } = trigger;
   let finalFilters = filters ? JSON.parse(filters) : null;
-  if (useSideEventMatching) { // modifiy filters to look for instance trigger side events
+  if (useSideEventMatching) { // modify filters to look for instance trigger side events
     finalFilters = replaceFilterKey(JSON.parse(trigger.filters), CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
   }
   let triggerEventTypes = event_types;

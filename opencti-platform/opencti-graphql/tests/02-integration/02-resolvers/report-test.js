@@ -468,9 +468,9 @@ describe('Report resolver standard behavior', () => {
             }],
             filterGroups: [],
           },
+          noFiltersChecking: true
         },
       );
-
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
     });
 
