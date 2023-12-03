@@ -45,7 +45,7 @@ steps:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
   - name: api-coverage
-    image: robertstettner/drone-codecov
+    image: plugins/codecov
     settings:
       token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
       paths:
