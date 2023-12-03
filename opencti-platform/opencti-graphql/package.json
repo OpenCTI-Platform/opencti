@@ -164,7 +164,7 @@
     "@types/nconf": "0.10.6",
     "@types/ramda": "0.29.6",
     "@types/tough-cookie": "4.0.3",
-    "@types/turndown": "5.0.2",
+    "@types/turndown": "5.0.4",
     "@types/uuid": "9.0.7",
     "@types/xml2js": "0.4.14",
     "@typescript-eslint/eslint-plugin": "6.7.5",
