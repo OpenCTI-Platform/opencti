@@ -4621,10 +4621,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/tough-cookie@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@types/tough-cookie@npm:4.0.3"
-  checksum: f201be1bbca2f2d3572032513cdb9825845114d2604a7f4091af848eeee3228a573cdc5e8082b04468a2848bb1d058f1adbb97db822e22c975ebd6fcd851a453
+"@types/tough-cookie@npm:4.0.5":
+  version: 4.0.5
+  resolution: "@types/tough-cookie@npm:4.0.5"
+  checksum: f19409d0190b179331586365912920d192733112a195e870c7f18d20ac8adb7ad0b0ff69dad430dba8bc2be09593453a719cfea92dc3bda19748fd158fe1498d
   languageName: node
   linkType: hard
 
@@ -10767,7 +10767,7 @@ __metadata:
     "@types/graphql-upload": 16.0.5
     "@types/nconf": 0.10.6
     "@types/ramda": 0.29.6
-    "@types/tough-cookie": 4.0.3
+    "@types/tough-cookie": 4.0.5
     "@types/turndown": 5.0.4
     "@types/uuid": 9.0.7
     "@types/xml2js": 0.4.14
