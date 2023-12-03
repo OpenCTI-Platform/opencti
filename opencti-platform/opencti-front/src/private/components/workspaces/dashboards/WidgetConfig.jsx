@@ -423,6 +423,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
           dashboardManifest,
         },
       },
+      onCompleted: () => {
+        inputRef.current.value = ''; // Reset the input uploader ref
+      },
       onError: (error) => handleError(error),
     });
   };
@@ -1562,17 +1565,17 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               FabProps={{ color: 'secondary' }}
           >
             <SpeedDialAction
-                title={t('Import a widget')}
-                icon={<CloudUploadOutlined />}
-                tooltipTitle={t('Import a widget')}
-                onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-            <SpeedDialAction
                 title={t('Create a widget')}
                 icon={<WidgetsOutlined />}
                 tooltipTitle={t('Create a widget')}
                 onClick={() => setOpen(true)}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+                title={t('Import a widget')}
+                icon={<CloudUploadOutlined />}
+                tooltipTitle={t('Import a widget')}
+                onClick={() => inputRef.current?.click()}
                 FabProps={{ classes: { root: classes.speedDialButton } }}
             />
           </SpeedDial>
