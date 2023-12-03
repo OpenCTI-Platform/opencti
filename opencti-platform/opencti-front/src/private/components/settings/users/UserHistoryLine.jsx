@@ -100,9 +100,9 @@ class UserHistoryLineComponent extends Component {
     this.setState({ open: false });
   }
 
-  renderIcon(eventType, isRelation, eventMessage, commit) {
+  renderIcon(eventScope, isRelation, eventMessage, commit) {
     if (isRelation) {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -118,7 +118,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -135,7 +135,7 @@ class UserHistoryLineComponent extends Component {
         );
       }
     } else {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -151,7 +151,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'merge') {
+      if (eventScope === 'merge') {
         return (
           <Avatar
             sx={{
@@ -168,7 +168,7 @@ class UserHistoryLineComponent extends Component {
         );
       }
       if (
-        eventType === 'update'
+        eventScope === 'update'
         && (eventMessage.includes('replaces') || eventMessage.includes('updates'))
       ) {
         return (
@@ -186,7 +186,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMessage.includes('changes')) {
+      if (eventScope === 'update' && eventMessage.includes('changes')) {
         return (
           <Avatar
             sx={{
@@ -202,7 +202,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMessage.includes('adds')) {
+      if (eventScope === 'update' && eventMessage.includes('adds')) {
         return (
           <Avatar
             sx={{
@@ -218,7 +218,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMessage.includes('removes')) {
+      if (eventScope === 'update' && eventMessage.includes('removes')) {
         return (
           <Avatar
             sx={{
@@ -234,7 +234,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -248,7 +248,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'read') {
+      if (eventScope === 'read') {
         return (
           <Avatar
             sx={{
@@ -262,7 +262,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'download') {
+      if (eventScope === 'download') {
         return (
           <Avatar
             sx={{
@@ -297,7 +297,7 @@ class UserHistoryLineComponent extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(node.event_type, false, node.context_data?.message)}
+          {this.renderIcon(node.event_scope, false, node.context_data?.message)}
         </div>
         <div
           className={classes.content}
@@ -370,6 +370,7 @@ const UserHistoryLine = createFragmentContainer(UserHistoryLineComponent, {
     fragment UserHistoryLine_node on Log {
       id
       event_type
+      event_scope
       timestamp
       user {
         name

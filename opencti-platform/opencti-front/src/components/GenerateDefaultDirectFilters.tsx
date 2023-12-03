@@ -11,9 +11,9 @@ const GenerateDefaultDirectFilters: FunctionComponent<GenerateDefaultDirectFilte
   const displayedFilters = {
     ...filters,
     filters:
-            filters?.filters.filter(
-              (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
-            ) || [],
+      filters?.filters.filter(
+        (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
+      ) || [],
   };
   useEffect(() => {
     if (displayedFilters.filters.length === 0) {

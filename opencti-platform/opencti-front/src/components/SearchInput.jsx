@@ -55,7 +55,12 @@ class SearchInput extends Component {
   render() {
     const {
       t,
-      classes, onChange, onSubmit, variant, keyword, fullWidth,
+      classes,
+      onChange,
+      onSubmit,
+      variant,
+      keyword,
+      fullWidth,
       placeholder = `${t('Search these results')}...`,
     } = this.props;
     let classRoot = classes.searchRoot;

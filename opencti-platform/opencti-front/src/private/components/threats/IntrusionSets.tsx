@@ -57,7 +57,7 @@ const IntrusionSets = () => {
     };
     return (
       <ListCards
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -98,7 +98,6 @@ const IntrusionSets = () => {
                       item={true}
                       xs={3}
                       key={idx}
-                      style={{ marginTop: idx < 4 ? -22 : 0 }}
                     >
                       <GenericAttackCardDummy />
                     </Grid>

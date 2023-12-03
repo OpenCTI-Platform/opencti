@@ -9,7 +9,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import {
+  directFilters,
+  getDefaultFilterObject,
+} from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -34,15 +37,15 @@ const ListFilters = ({
   const { t } = useFormatter();
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
-  let icon = <FilterListOutlined fontSize={fontSize || 'medium'}/>;
+  let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
   let tooltip = t('Filters');
   let color = 'primary';
   if (type === 'from') {
-    icon = <RayStartArrow fontSize={fontSize || 'medium'}/>;
+    icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
     tooltip = t('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
-    icon = <RayEndArrow fontSize={fontSize || 'medium'}/>;
+    icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
     tooltip = t('Dynamic target filters');
     color = 'success';
   }
@@ -91,22 +94,23 @@ const ListFilters = ({
               }
               setInputValue(newValue);
             }}
-            renderInput={(params) => <TextField {...params}
-                                                variant="outlined"
-                                                size="small" label={t('Add filter')}/>
-            }
-            renderOption={(props, option) => <li {...props}>
-              {option.label}
-            </li>
-            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                size="small"
+                label={t('Add filter')}
+              />
+            )}
+            renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
           <Tooltip title={t('Clear filters')}>
             <IconButton
               color={color}
               onClick={handleClearFilters}
-              size={size || 'large'}
+              size={size || 'small'}
             >
-              {<FilterListOffOutlined/>}
+              <FilterListOffOutlined fontSize={size || 'small'} />
             </IconButton>
           </Tooltip>
         </>

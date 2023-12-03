@@ -125,9 +125,9 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
     this.setState({ displayExternalLink: false, externalLink: null });
   }
 
-  renderIcon(eventType, isRelation, eventMesage, commit) {
+  renderIcon(eventScope, isRelation, eventMesage, commit) {
     if (isRelation) {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -143,7 +143,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -160,7 +160,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
         );
       }
     } else {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -176,7 +176,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'merge') {
+      if (eventScope === 'merge') {
         return (
           <Avatar
             sx={{
@@ -192,7 +192,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces')) {
+      if (eventScope === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
             sx={{
@@ -208,7 +208,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes')) {
+      if (eventScope === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
             sx={{
@@ -224,7 +224,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds')) {
+      if (eventScope === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
             sx={{
@@ -240,7 +240,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes')) {
+      if (eventScope === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
             sx={{
@@ -256,7 +256,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -291,7 +291,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       <div className={classes.container}>
         <div className={classes.avatar}>
           {this.renderIcon(
-            node.event_type,
+            node.event_scope,
             isRelation,
             node.context_data.message,
           )}
@@ -464,6 +464,7 @@ const StixSightingRelationshipHistoryLine = createFragmentContainer(
       fragment StixSightingRelationshipHistoryLine_node on Log {
         id
         event_type
+          event_scope
         timestamp
         user {
           name

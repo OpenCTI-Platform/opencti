@@ -34,12 +34,10 @@ const ThreatActorsIndividual = () => {
       view: 'cards',
     },
   );
-
   const queryRef = useQueryLoading<ThreatActorsIndividualCardsPaginationQuery>(
     threatActorsIndividualCardsPaginationQuery,
     paginationOptions,
   );
-
   const renderCards = () => {
     const {
       numberOfElements,
@@ -62,7 +60,7 @@ const ThreatActorsIndividual = () => {
     };
     return (
       <ListCards
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -102,7 +100,6 @@ const ThreatActorsIndividual = () => {
                       item={true}
                       xs={3}
                       key={idx}
-                      style={{ marginTop: idx < 4 ? -22 : 0 }}
                     >
                       <GenericAttackCardDummy />
                     </Grid>

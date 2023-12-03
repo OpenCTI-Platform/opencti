@@ -3,7 +3,11 @@ import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { dateFilters, directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import {
+  dateFilters,
+  directFilters,
+  FiltersVariant,
+} from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { Theme } from '../../../../components/Theme';
@@ -17,27 +21,33 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export type FilterElementsInputValue = { key: string, values: string[], operator?: string };
+export type FilterElementsInputValue = {
+  key: string;
+  values: string[];
+  operator?: string;
+};
 
 export interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];
   searchContext: {
-    entityTypes: string[],
-    elementId?: string[]
+    entityTypes: string[];
+    elementId?: string[];
   };
   handleChangeKeyword: (event: React.ChangeEvent) => void;
   noDirectFilters?: boolean;
-  setInputValues: (value: {
-    key: string,
-    values: (string)[],
-    operator?: string
-  }[]) => void;
+  setInputValues: (
+    value: {
+      key: string;
+      values: string[];
+      operator?: string;
+    }[],
+  ) => void;
   inputValues: {
-    key: string,
-    values: (string)[],
-    operator?: string
+    key: string;
+    values: string[];
+    operator?: string;
   }[];
   defaultHandleAddFilter: HandleAddFilter;
   availableEntityTypes?: string[];
@@ -73,13 +83,16 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         if (key === 'valid_from') {
           return [{ key, operator: 'gt' }];
         }
-        return [{ key, operator: 'gt' }, { key, operator: 'lt' }];
+        return [
+          { key, operator: 'gt' },
+          { key, operator: 'lt' },
+        ];
       }
       return { key, operator: undefined };
     })
     .flat();
   return (
-    <div>
+    <>
       <Grid container={true} spacing={2}>
         {variant === FiltersVariant.dialog && (
           <Grid item={true} xs={12}>
@@ -93,45 +106,48 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
             />
           </Grid>
         )}
-        {displayedFilters
-          .map((filter, index) => {
-            const filterKey = filter.key;
-            if (dateFilters.includes(filterKey)) {
-              return (
-                <Grid key={`${filter.key}_${filter.operator}_${index}`} item={true} xs={6}>
-                  <FilterDate
-                    defaultHandleAddFilter={defaultHandleAddFilter}
-                    filterKey={filterKey}
-                    operator={filter.operator}
-                    inputValues={inputValues}
-                    setInputValues={setInputValues}
-                  />
-                </Grid>
-              );
-            }
+        {displayedFilters.map((filter, index) => {
+          const filterKey = filter.key;
+          if (dateFilters.includes(filterKey)) {
             return (
-              <Grid key={filterKey} item={true} xs={6}>
-                <FilterAutocomplete
-                  filterKey={filterKey}
-                  searchContext={searchContext}
+              <Grid
+                key={`${filter.key}_${filter.operator}_${index}`}
+                item={true}
+                xs={6}
+              >
+                <FilterDate
                   defaultHandleAddFilter={defaultHandleAddFilter}
+                  filterKey={filterKey}
+                  operator={filter.operator}
                   inputValues={inputValues}
                   setInputValues={setInputValues}
-                  availableEntityTypes={availableEntityTypes}
-                  availableRelationshipTypes={availableRelationshipTypes}
-                  availableRelationFilterTypes={availableRelationFilterTypes}
-                  allEntityTypes={allEntityTypes}
-                  openOnFocus={true}
                 />
               </Grid>
             );
-          })}
+          }
+          return (
+            <Grid key={filterKey} item={true} xs={6}>
+              <FilterAutocomplete
+                filterKey={filterKey}
+                searchContext={searchContext}
+                defaultHandleAddFilter={defaultHandleAddFilter}
+                inputValues={inputValues}
+                setInputValues={setInputValues}
+                availableEntityTypes={availableEntityTypes}
+                availableRelationshipTypes={availableRelationshipTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                allEntityTypes={allEntityTypes}
+                openOnFocus={true}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
       <div className={classes.helpertext}>
         {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}
         .
       </div>
-    </div>
+    </>
   );
 };
 
