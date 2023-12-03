@@ -5949,13 +5949,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.27.2":
-  version: 0.27.2
-  resolution: "axios@npm:0.27.2"
+"axios@npm:^1.6.0":
+  version: 1.6.2
+  resolution: "axios@npm:1.6.2"
   dependencies:
-    follow-redirects: ^1.14.9
+    follow-redirects: ^1.15.0
     form-data: ^4.0.0
-  checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
+    proxy-from-env: ^1.1.0
+  checksum: 4a7429e2b784be0f2902ca2680964391eae7236faa3967715f30ea45464b98ae3f1c6f631303b13dfe721b17126b01f486c7644b9ef276bfc63112db9fd379f8
   languageName: node
   linkType: hard
 
@@ -8369,7 +8370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.9, follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.15.0":
   version: 1.15.3
   resolution: "follow-redirects@npm:1.15.3"
   peerDependenciesMeta:
@@ -11241,7 +11242,7 @@ __metadata:
     opentelemetry-node-metrics: 3.0.0
     otplib: 12.0.1
     passport: 0.6.0
-    passport-auth0: 1.4.3
+    passport-auth0: 1.4.4
     passport-facebook: 3.0.0
     passport-github: 1.1.0
     passport-google-oauth: 2.0.0
@@ -11461,14 +11462,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-auth0@npm:1.4.3":
-  version: 1.4.3
-  resolution: "passport-auth0@npm:1.4.3"
+"passport-auth0@npm:1.4.4":
+  version: 1.4.4
+  resolution: "passport-auth0@npm:1.4.4"
   dependencies:
-    axios: ^0.27.2
+    axios: ^1.6.0
     passport-oauth: ^1.0.0
     passport-oauth2: ^1.6.0
-  checksum: 7658f58fd24831c67c783a9b0df3946bae9e6e42f8572747f17e77a2129d58ba21917a7531a4a328119b99a2a979ee857a1107c8e22e63e55739cdc1a8d1ccbc
+  checksum: 537c2a9d60fd3e8663cc5686bb34808412bccefaed8fa99c782f5e24fc2e103ddb14db1a8fdea38a89bd2eaa797d6f6a9c2d0309d83617dde9466ab1de4cf36b
   languageName: node
   linkType: hard
 
