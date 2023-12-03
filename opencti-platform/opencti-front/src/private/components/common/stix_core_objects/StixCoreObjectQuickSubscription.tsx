@@ -32,7 +32,7 @@ StixCoreObjectQuickSubscriptionProps
         {
           key: ['instance_trigger'],
           values: [true.toString()],
-          operator: 'match',
+          operator: 'eq',
           mode: 'or',
         },
       ],

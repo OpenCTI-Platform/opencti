@@ -51,7 +51,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
   if (observableTypes.length > 0) {
     additionnalFilters.push({
       key: 'x_opencti_main_observable_type',
-      operator: 'match',
+      operator: 'eq',
       values: observableTypes.map((type) => type.toLowerCase().replace(/\*/g, '')),
       mode: 'or',
     });

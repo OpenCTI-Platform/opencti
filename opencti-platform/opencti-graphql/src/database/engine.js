@@ -1543,15 +1543,9 @@ const buildLocalMustFilter = async (validFilter) => {
           throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
         }
         valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
-      } else if (operator === 'eq') {
-        valuesFiltering.push({
-          multi_match: {
-            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
-            query: values[i].toString(),
-          },
-        });
-      } else if (operator === 'not_eq') {
-        noValuesFiltering.push({
+      } else if (operator === 'eq' || operator === 'not_eq') {
+        const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+        targets.push({
           multi_match: {
             fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
             query: values[i].toString(),
@@ -1569,6 +1563,36 @@ const buildLocalMustFilter = async (validFilter) => {
           query_string: {
             query: `"${values[i].toString()}"`,
             fields: arrayKeys,
+          },
+        });
+      } else if (operator === 'contains' || operator === 'not_contains') {
+        const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
+        const val = specialElasticCharsEscape(values[i].toString());
+        targets.push({
+          query_string: {
+            query: `*${val}*`,
+            analyze_wildcard: true,
+            fields: arrayKeys,
+          },
+        });
+      } else if (operator === 'starts_with' || operator === 'not_starts_with') {
+        const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
+        const val = specialElasticCharsEscape(values[i].toString());
+        targets.push({
+          query_string: {
+            query: `${val}*`,
+            analyze_wildcard: true,
+            fields: arrayKeys.map((k) => `${k}.keyword`),
+          },
+        });
+      } else if (operator === 'ends_with' || operator === 'not_ends_with') {
+        const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
+        const val = specialElasticCharsEscape(values[i].toString());
+        targets.push({
+          query_string: {
+            query: `*${val}`,
+            analyze_wildcard: true,
+            fields: arrayKeys.map((k) => `${k}.keyword`),
           },
         });
       } else if (operator === 'script') {

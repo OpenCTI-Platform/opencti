@@ -90,9 +90,15 @@ enum FilterOperator {
   lte
   gt
   gte
-  wildcard
-  script
   match
+  wildcard
+  contains
+  not_contains
+  ends_with
+  not_ends_with
+  starts_with
+  not_starts_with
+  script
   nil
   not_nil
 }
