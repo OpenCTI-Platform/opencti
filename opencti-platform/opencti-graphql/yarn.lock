@@ -10341,9 +10341,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"migrate@npm:2.0.0":
-  version: 2.0.0
-  resolution: "migrate@npm:2.0.0"
+"migrate@npm:2.0.1":
+  version: 2.0.1
+  resolution: "migrate@npm:2.0.1"
   dependencies:
     chalk: ^4.1.2
     commander: ^2.20.3
@@ -10360,7 +10360,7 @@ __metadata:
     migrate-init: bin/migrate-init
     migrate-list: bin/migrate-list
     migrate-up: bin/migrate-up
-  checksum: d7e5f476d32c638e7c6ee15e36e0a049f69ad3cb011011623658defa656cba2c75c0128d005ed0a06ea6d6426200297d809d1338db63cd580c03e8d42001a7bd
+  checksum: 169b2dd03e8eda5581cf4c36db5dcf299e89f80453537edb47e0b3528d746356582b4ed3123648ca18a0b3863e026d41c5861cb50264503d56f31c8e9c8c11f8
   languageName: node
   linkType: hard
 
@@ -11093,7 +11093,7 @@ __metadata:
     jwt-decode: 3.1.2
     lru-cache: 7.18.3
     merge-graphql-schemas: 1.7.8
-    migrate: 2.0.0
+    migrate: 2.0.1
     mime-types: 2.1.35
     moment: 2.29.4
     moment-range: 4.0.2
