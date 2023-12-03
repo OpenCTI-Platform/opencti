@@ -4687,19 +4687,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/nconf@npm:0.10.4":
-  version: 0.10.4
-  resolution: "@types/nconf@npm:0.10.4"
-  checksum: d4df5f5cb190e18c6323fb07ca7b142977355e7d9e889f79b02819ee30522ad4887b686d32319d74908cc5a0a7fee27c5d6e1ca2fb065fe60f3a81c61ad98fac
+"@types/nconf@npm:0.10.6":
+  version: 0.10.6
+  resolution: "@types/nconf@npm:0.10.6"
+  checksum: 8c9999d2785f83d5db8a0c6a4dc161e64b2e170ea9d9e7e4b3a9bacfe68fb2a83c9994969d464c453971830c627eaf0834849933c480148f700c0d3cd0b9d449
   languageName: node
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
-  version: 20.10.2
-  resolution: "@types/node@npm:20.10.2"
+  version: 20.10.3
+  resolution: "@types/node@npm:20.10.3"
   dependencies:
     undici-types: ~5.26.4
-  checksum: c0c84e8270cdf7a47a18c0230c0321537cc59506adb0e3cba51949b6f1ad4879f2e2ec3a29161f2f5321ebb6415460712d9f0a25ac5c02be0f5435464fe77c23
+  checksum: 34a329494f0ea239af05eeb6f00f396963725b3eb9a2f79c5e6a6d37e823f2ab85e1079c2ee56723a37d8b89e7bbe2bd050c97144e5bb06dab93fd1cace65c97
   languageName: node
   linkType: hard
 
@@ -4789,10 +4789,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/turndown@npm:5.0.2":
-  version: 5.0.2
-  resolution: "@types/turndown@npm:5.0.2"
-  checksum: 70f40f2f048413640c5570a58d8bb76f1f8bc0c69a58aefe57b60b21138335762ec3eb11b0d25a114681aef28364c889bef0b74c03f452f9148c6c926264018b
+"@types/turndown@npm:5.0.4":
+  version: 5.0.4
+  resolution: "@types/turndown@npm:5.0.4"
+  checksum: 500ba3a40952a5e41d99e407d83df70066408eb78d92e5f1f5f27bf70939aad11dcb64ae36872289b9c11948aa9bc4242d63d4898ad4bd91e9a41e1eb368c24f
   languageName: node
   linkType: hard
 
@@ -4812,12 +4812,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/xml2js@npm:0.4.12":
-  version: 0.4.12
-  resolution: "@types/xml2js@npm:0.4.12"
+"@types/xml2js@npm:0.4.14":
+  version: 0.4.14
+  resolution: "@types/xml2js@npm:0.4.14"
   dependencies:
     "@types/node": "*"
-  checksum: 6197f6d51d70ba7e6d3169ef6d58adacfeddeb2d8cfe4d2bb24eda86223c7dd77c82896c3aa3c636b3b1442cebc6d05959d1e65fa206dac2caeb99aa2c943716
+  checksum: df9f106b9953dcdec7ba3304ebc56d6c2f61d49bf556d600bed439f94a1733f73ca0bf2d0f64330b402191622862d9d6058bab9d7e3dcb5b0fe51ebdc4372aac
   languageName: node
   linkType: hard
 
@@ -6301,9 +6301,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001565":
-  version: 1.0.30001565
-  resolution: "caniuse-lite@npm:1.0.30001565"
-  checksum: 7621f358d0e1158557430a111ca5506008ae0b2c796039ef53aeebf4e2ba15e5241cb89def21ea3a633b6a609273085835b44a522165d871fa44067cdf29cccd
+  version: 1.0.30001566
+  resolution: "caniuse-lite@npm:1.0.30001566"
+  checksum: 0f9084bf9f7d5c0a9ddb200c2baddb25dd2ad5a2f205f01e7b971f3e98e9a7bb23c2d86bae48237e9bc9782b682cffaaf3406d936937ab9844987dbe2a6401f2
   languageName: node
   linkType: hard
 
@@ -11007,12 +11007,12 @@ __metadata:
     "@types/ejs": 3.1.3
     "@types/express": 4.17.19
     "@types/graphql-upload": 16.0.5
-    "@types/nconf": 0.10.4
+    "@types/nconf": 0.10.6
     "@types/ramda": 0.29.6
     "@types/tough-cookie": 4.0.3
-    "@types/turndown": 5.0.2
+    "@types/turndown": 5.0.4
     "@types/uuid": 9.0.7
-    "@types/xml2js": 0.4.12
+    "@types/xml2js": 0.4.14
     "@typescript-eslint/eslint-plugin": 6.7.5
     "@typescript-eslint/parser": 6.7.5
     "@vitest/coverage-istanbul": 0.34.6
