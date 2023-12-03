@@ -39,10 +39,10 @@ When searching in bulk, OpenCTI is only looking for an exact match in some prope
 * `value`
 * `subject`
 * `abstract`
-* `hashes_MD5`
-* `hashes_SHA1`
-* `hashes_SHA256`
-* `hashes_SHA512`
+* `hashes.MD5`
+* `hashes.SHA-1`
+* `hashes.SHA-256`
+* `hashes.SHA-512`
 * `x_opencti_additional_names`
 
 When something is not found, it appears in the list as `Unknown` and will be excluded if you choose to export your search result in a JSON STIX bundle or in a CSV file.
