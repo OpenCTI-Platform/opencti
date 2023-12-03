@@ -21,6 +21,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/latest/administration/file-indexing/</loc>
+         <lastmod>2023-12-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/latest/administration/introduction/</loc>
          <lastmod>2023-12-03</lastmod>
          <changefreq>daily</changefreq>
@@ -317,6 +322,16 @@
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/feeds/</loc>
+         <lastmod>2023-12-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/latest/usage/filters-migration/</loc>
+         <lastmod>2023-12-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/latest/usage/filters/</loc>
          <lastmod>2023-12-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
