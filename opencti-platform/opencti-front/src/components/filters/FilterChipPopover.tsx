@@ -4,21 +4,31 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
 import { MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters } from '../../utils/filters/filtersUtils';
+import {
+  dateFilters,
+  Filter,
+  getAvailableOperatorForFilter,
+  integerFilters,
+} from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptions, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
+import {
+  getOptions,
+  getUseSearch,
+} from '../../utils/filters/SearchEntitiesUtil';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { truncate } from '../../utils/String';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
   open: boolean;
   params: FilterChipsParameter;
   filters: Filter[];
-  helpers?: UseLocalStorageHelpers
+  helpers?: UseLocalStorageHelpers;
 }
 
 export interface FilterChipsParameter {
@@ -27,7 +37,7 @@ export interface FilterChipsParameter {
 }
 
 const OperatorKeyValues: {
-  [key: string]: string
+  [key: string]: string;
 } = {
   eq: 'Equals',
   not_eq: 'Not equals',
@@ -45,31 +55,44 @@ interface BasicNumberInputProps {
   helpers?: UseLocalStorageHelpers;
   filterValues: string[];
 }
-const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({ filter, filterKey, helpers, filterValues }) => {
+const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
+  filter,
+  filterKey,
+  helpers,
+  filterValues,
+}) => {
   const { t } = useFormatter();
-  return <TextField
-    variant="outlined"
-    size="small"
-    fullWidth={true}
-    id={filter?.id ?? `${filterKey}-id`}
-    label={t(filterKey)}
-    type="number"
-    defaultValue={filterValues[0]}
-    autoFocus={true}
-    onKeyDown={(event) => {
-      if (event.key === 'Enter') {
-        helpers?.handleAddSingleValueFilter(filter?.id ?? '', (event.target as HTMLInputElement).value);
-      }
-    }}
-    onBlur={(event) => {
-      helpers?.handleAddSingleValueFilter(filter?.id ?? '', event.target.value);
-    }
-    }
-  />;
+  return (
+    <TextField
+      variant="outlined"
+      size="small"
+      fullWidth={true}
+      id={filter?.id ?? `${filterKey}-id`}
+      label={t(filterKey)}
+      type="number"
+      defaultValue={filterValues[0]}
+      autoFocus={true}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          helpers?.handleAddSingleValueFilter(
+            filter?.id ?? '',
+            (event.target as HTMLInputElement).value,
+          );
+        }
+      }}
+      onBlur={(event) => {
+        helpers?.handleAddSingleValueFilter(
+          filter?.id ?? '',
+          event.target.value,
+        );
+      }}
+    />
+  );
 };
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   params,
-  handleClose, open,
+  handleClose,
+  open,
   filters,
   helpers,
 }) => {
@@ -77,17 +100,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
-  const [inputValues, setInputValues] = useState<{
-    key: string,
-    values: string[],
-    operator?: string
-  }[]>([]);
+  const [inputValues, setInputValues] = useState<
+  {
+    key: string;
+    values: string[];
+    operator?: string;
+  }[]
+  >([]);
   const [cacheEntities, setCacheEntities] = useState<
-  Record<string, {
+  Record<
+  string,
+  {
     label: string;
     value: string;
-    type: string
-  }[]>
+    type: string;
+  }[]
+  >
   >({});
   const [entities, searchEntities] = getUseSearch();
   const { t } = useFormatter();
@@ -103,10 +131,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const handleChangeOperator = (event: SelectChangeEvent) => {
     helpers?.handleChangeOperatorFilters(filter?.id ?? '', event.target.value);
   };
-  const handleDateChange = (
-    _: string,
-    value: string,
-  ) => {
+  const handleDateChange = (_: string, value: string) => {
     helpers?.handleAddSingleValueFilter(filter?.id ?? '', value);
   };
 
@@ -114,57 +139,69 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     return dateFilters.includes(fKey) || integerFilters.includes(fKey);
   };
 
-  const BasicFilterDate = () => <FilterDate
-    defaultHandleAddFilter={handleDateChange}
-    filterKey={filterKey}
-    operator={filterOperator}
-    inputValues={inputValues}
-    setInputValues={setInputValues}
-  />;
+  const BasicFilterDate = () => (
+    <FilterDate
+      defaultHandleAddFilter={handleDateChange}
+      filterKey={filterKey}
+      operator={filterOperator}
+      inputValues={inputValues}
+      setInputValues={setInputValues}
+    />
+  );
   const getSpecificFilter = (fKey: string): ReactNode => {
     if (dateFilters.includes(fKey)) {
-      return <BasicFilterDate/>;
+      return <BasicFilterDate />;
     }
     if (integerFilters.includes(fKey)) {
-      return <BasicNumberInput filter={filter} filterKey={filterKey} filterValues={filterValues} helpers={helpers}/>;
+      return (
+        <BasicNumberInput
+          filter={filter}
+          filterKey={filterKey}
+          filterValues={filterValues}
+          helpers={helpers}
+        />
+      );
     }
     return null;
   };
 
-  return <Popover
-    open={open}
-    anchorEl={params.anchorEl}
-    onClose={handleClose}
-    anchorOrigin={{
-      vertical: 'bottom',
-      horizontal: 'left',
-    }}
-  >
-    <div
-      style={{
-        width: '250px',
-        padding: '8px',
+  return (
+    <Popover
+      open={open}
+      anchorEl={params.anchorEl}
+      onClose={handleClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
       }}
     >
-      <Select
-        labelId="change-operator-select-label"
-        id="change-operator-select"
-        value={filterOperator}
-        label="Operator"
-        sx={{ marginBottom: '12px' }}
-        onChange={handleChangeOperator}
+      <div
+        style={{
+          width: 250,
+          padding: 8,
+        }}
       >
-        {
-          getAvailableOperatorForFilter(filterKey).map((value) => <MenuItem key={value}
-                                                                            value={value}>{t(OperatorKeyValues[value])}</MenuItem>)
-        }
-      </Select>
-      {
-        isSpecificFilter(filterKey)
-          ? <>{getSpecificFilter(filterKey)}</>
-          : <>
-            {(!['not_nil', 'nil'].includes(filterOperator))
-              && <MUIAutocomplete
+        <Select
+          labelId="change-operator-select-label"
+          id="change-operator-select"
+          value={filterOperator}
+          label="Operator"
+          fullWidth={true}
+          onChange={handleChangeOperator}
+          style={{ marginBottom: 15 }}
+        >
+          {getAvailableOperatorForFilter(filterKey).map((value) => (
+            <MenuItem key={value} value={value}>
+              {t(OperatorKeyValues[value])}
+            </MenuItem>
+          ))}
+        </Select>
+        {isSpecificFilter(filterKey) ? (
+          <>{getSpecificFilter(filterKey)}</>
+        ) : (
+          <>
+            {!['not_nil', 'nil'].includes(filterOperator) && (
+              <MUIAutocomplete
                 disableCloseOnSelect
                 key={filterKey}
                 selectOnFocus={true}
@@ -178,7 +215,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   cacheEntities,
                   setCacheEntities,
                   event,
-                )}
+                )
+                }
                 renderInput={(paramsInput) => (
                   <TextField
                     {...paramsInput}
@@ -192,29 +230,44 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                       cacheEntities,
                       setCacheEntities,
                       event,
-                    )}
+                    )
+                    }
                   />
                 )}
                 renderOption={(props, option) => {
                   const checked = filterValues.includes(option.value);
-                  return <li {...props}
-                              onKeyDown={ (e) => {
-                                if (e.key === 'Enter') {
-                                  e.stopPropagation();
-                                }
-                              }}
-                             onClick={() => handleChange(!checked, option.value)}>
-                    <Checkbox
-                      checked={checked}
-                    />
-                    <ItemIcon type={option.type} color={option.color}/>
-                    <span style={{ padding: '0 4px' }}>{option.label}</span>
-                  </li>;
+                  return (
+                    <Tooltip title={option.label}>
+                      <li
+                        {...props}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.stopPropagation();
+                          }
+                        }}
+                        onClick={() => handleChange(!checked, option.value)}
+                        style={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      >
+                        <Checkbox checked={checked} />
+                        <ItemIcon type={option.type} color={option.color} />
+                        <span style={{ padding: '0 4px 0 4px' }}>
+                          {option.label}
+                        </span>
+                      </li>
+                    </Tooltip>
+                  );
                 }}
               />
-            }
+            )}
           </>
-      }
-    </div>
-  </Popover>;
+        )}
+      </div>
+    </Popover>
+  );
 };

@@ -41,7 +41,10 @@ class StixCoreObjectLatestHistory extends Component {
               filterGroups: [],
               filters: [
                 { key: 'context_data.id', values: [stixCoreObjectId] },
-                { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+                {
+                  key: 'event_type',
+                  values: ['mutation', 'create', 'update', 'delete', 'merge'],
+                },
               ],
             },
             first: 7,
@@ -65,7 +68,12 @@ class StixCoreObjectLatestHistory extends Component {
               >
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem key={`latest_history_skel_${i}`} dense={true} divider={true} button={false}>
+                    <ListItem
+                      key={`latest_history_skel_${i}`}
+                      dense={true}
+                      divider={true}
+                      button={false}
+                    >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
                       </ListItemIcon>

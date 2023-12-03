@@ -127,9 +127,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
     this.setState({ displayExternalLink: false, externalLink: null });
   }
 
-  renderIcon(eventType, isRelation, eventMesage, commit) {
+  renderIcon(eventScope, isRelation, eventMesage, commit) {
     if (isRelation) {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -145,7 +145,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -162,7 +162,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
         );
       }
     } else {
-      if (eventType === 'create') {
+      if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
@@ -178,7 +178,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'merge') {
+      if (eventScope === 'merge') {
         return (
           <Avatar
             sx={{
@@ -194,7 +194,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces')) {
+      if (eventScope === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
             sx={{
@@ -210,7 +210,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes')) {
+      if (eventScope === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
             sx={{
@@ -226,7 +226,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds')) {
+      if (eventScope === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
             sx={{
@@ -242,7 +242,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes')) {
+      if (eventScope === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
             sx={{
@@ -258,7 +258,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'delete') {
+      if (eventScope === 'delete') {
         return (
           <Avatar
             sx={{
@@ -291,6 +291,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
 
   render() {
     const { nsdt, classes, node, isRelation, t } = this.props;
+    console.log(node);
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
@@ -301,7 +302,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
             invisible={node.context_data.commit === null}
           >
             {this.renderIcon(
-              node.event_type,
+              node.event_scope,
               isRelation,
               node.context_data.message,
               node.context_data.commit,
@@ -476,6 +477,7 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
       fragment StixCoreObjectHistoryLine_node on Log {
         id
         event_type
+        event_scope
         timestamp
         user {
           name

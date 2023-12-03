@@ -30,19 +30,25 @@ import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = () => ({
   parameters: {
-    gap: '10px',
     display: 'flex',
-    flexWrap: 'wrap',
-    marginTop: '-10px',
     alignItems: 'center',
-    paddingBottom: '10px',
+    gap: 10,
+    marginTop: -10,
+    paddingBottom: 10,
+    flexWrap: 'wrap',
   },
   cardsContainer: {
-    marginTop: 10,
+    margin: '10px 0 0 -15px',
     paddingTop: 0,
   },
   sortFieldLabel: {
     fontSize: 14,
+  },
+  filler: {
+    flex: 'auto',
+  },
+  views: {
+    marginTop: -5,
   },
 });
 
@@ -82,9 +88,8 @@ class ListCards extends Component {
     } = this.props;
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     return (
-      <div>
+      <>
         <div className={classes.parameters}>
-          <GenerateDefaultDirectFilters filters={filters} availableFilterKeys={availableFilterKeys} helpers={helpers}/>
           <SearchInput
             variant="small"
             onSubmit={handleSearch.bind(this)}
@@ -102,8 +107,7 @@ class ListCards extends Component {
               }}
             />
           )}
-          <InputLabel
-            classes={{ root: classes.sortFieldLabel }}>
+          <InputLabel classes={{ root: classes.sortFieldLabel }}>
             {t('Sort by')}
           </InputLabel>
           <FormControl>
@@ -128,26 +132,18 @@ class ListCards extends Component {
           <IconButton
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
-            size="large"
+            size="small"
           >
-            {orderAsc ? <ArrowDownward/> : <ArrowUpward/>}
+            {orderAsc ? (
+              <ArrowDownward fontSize="small" />
+            ) : (
+              <ArrowUpward fontSize="small" />
+            )}
           </IconButton>
-        </div>
-        {isFilterGroupNotEmpty(filters)
-          && <FilterIconButton
-            helpers={helpers}
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
-          />
-        }
-
-        <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
+          <div className={classes.filler} />
+          <div className={classes.views}>
             {numberOfElements && (
-              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
+              <div style={{ float: 'left', padding: '7px 5px 0 0' }}>
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
@@ -166,19 +162,19 @@ class ListCards extends Component {
                     handleChangeView(value);
                   }
                 }}
-                style={{ margin: '7px 0 0 5px' }}
+                style={{ margin: '0 0 0 5px' }}
               >
                 {typeof handleChangeView === 'function' && (
                   <ToggleButton value="cards" aria-label="cards">
                     <Tooltip title={t('Cards view')}>
-                      <ViewModuleOutlined fontSize="small"/>
+                      <ViewModuleOutlined fontSize="small" />
                     </Tooltip>
                   </ToggleButton>
                 )}
                 {typeof handleChangeView === 'function' && (
                   <ToggleButton value="lines" aria-label="lines">
                     <Tooltip title={t('Lines view')}>
-                      <ViewListOutlined color="primary" fontSize="small"/>
+                      <ViewListOutlined color="primary" fontSize="small" />
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -209,7 +205,7 @@ class ListCards extends Component {
                           aria-label="export"
                           disabled={true}
                         >
-                          <FileDownloadOutlined fontSize="small"/>
+                          <FileDownloadOutlined fontSize="small" />
                         </ToggleButton>
                       </span>
                     </Tooltip>
@@ -218,8 +214,21 @@ class ListCards extends Component {
             )}
           </div>
         </div>
-        <div className="clearfix"/>
-        <div className={classes.cardsContainer}>{children}</div>
+        <GenerateDefaultDirectFilters
+          filters={filters}
+          availableFilterKeys={availableFilterKeys}
+          helpers={helpers}
+        />
+        {isFilterGroupNotEmpty(filters) && (
+          <FilterIconButton
+            helpers={helpers}
+            filters={filters}
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            redirection
+          />
+        )}
         {typeof handleToggleExports === 'function' && (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixDomainObjectsExports
@@ -231,7 +240,8 @@ class ListCards extends Component {
             />
           </Security>
         )}
-      </div>
+        <div className={classes.cardsContainer}>{children}</div>
+      </>
     );
   }
 }

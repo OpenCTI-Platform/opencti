@@ -7,7 +7,10 @@ import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, inlineFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  directFilters,
+  inlineFilters,
+} from '../../../../utils/filters/filtersUtils';
 import FilterAutocomplete from './FilterAutocomplete';
 import InlineFilters from './InlineFilters';
 
@@ -114,8 +117,9 @@ const ListFiltersWithoutLocalStorage = ({
         {filterElement}
       </Popover>
       {!noDirectFilters
-        && availableFilterKeys.filter((n) => directFilters.includes(n)).map(
-          (filterKey) => {
+        && availableFilterKeys
+          .filter((n) => directFilters.includes(n))
+          .map((filterKey) => {
             if (inlineFilters.includes(filterKey)) {
               return (
                 <div className={classes.booleanFilter} key={filterKey}>
@@ -143,8 +147,7 @@ const ListFiltersWithoutLocalStorage = ({
                 />
               </div>
             );
-          },
-        )}
+          })}
       <div className="clearfix" />
     </div>
   );

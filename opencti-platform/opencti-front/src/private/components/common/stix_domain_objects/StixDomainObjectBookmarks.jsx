@@ -57,7 +57,7 @@ class StixDomainObjectBookmarksComponent extends Component {
         </div>
       );
     }
-    return <div />;
+    return <span />;
   }
 }
 
@@ -77,7 +77,7 @@ export const stixDomainobjectBookmarksFragment = graphql`
   fragment StixDomainObjectBookmarks_bookmarks on Query
   @argumentDefinitions(types: { type: "[String]" }) {
     bookmarks(types: $types, first: 200)
-    @connection(key: "Pagination_bookmarks") {
+      @connection(key: "Pagination_bookmarks") {
       edges {
         node {
           id

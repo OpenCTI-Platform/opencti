@@ -59,74 +59,77 @@ const Campaigns = () => {
       },
     };
     return (
-            <ListCards
-                helpers={helpers}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={dataColumns}
-                handleSort={helpers.handleSort}
-                handleSearch={helpers.handleSearch}
-                handleAddFilter={helpers.handleAddFilter}
-                handleRemoveFilter={helpers.handleRemoveFilter}
-                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-                handleToggleExports={helpers.handleToggleExports}
-                openExports={openExports}
-                exportEntityType="Campaign"
-                keyword={searchTerm}
-                filters={filters}
-                paginationOptions={paginationOptions}
-                numberOfElements={numberOfElements}
-                availableFilterKeys={[
-                  'x_opencti_workflow_id',
-                  'objectLabel',
-                  'objectMarking',
-                  'createdBy',
-                  'source_reliability',
-                  'confidence',
-                  'creator_id',
-                  'created',
-                  'revoked',
-                  'targets',
-                ]}
-            >
-                {queryRef && (
-                    <React.Suspense
-                        fallback={
-                            <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
-                                {Array(20)
-                                  .fill(0)
-                                  .map((_, idx) => (
-                                        <Grid
-                                            item={true}
-                                            xs={3}
-                                            key={idx}
-                                            style={{ marginTop: idx < 4 ? -22 : 0 }}
-                                        >
-                                            <GenericAttackCardDummy/>
-                                        </Grid>
-                                  ))}
-                            </Grid>
-                        }
+      <ListCards
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType="Campaign"
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'x_opencti_workflow_id',
+          'objectLabel',
+          'objectMarking',
+          'createdBy',
+          'source_reliability',
+          'confidence',
+          'creator_id',
+          'created',
+          'revoked',
+          'targets',
+        ]}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <Grid
+                container={true}
+                spacing={3}
+                style={{ paddingLeft: 17 }}
+              >
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <Grid
+                      item={true}
+                      xs={3}
+                      key={idx}
                     >
-                        <CampaignsCards
-                            queryRef={queryRef}
-                            setNumberOfElements={helpers.handleSetNumberOfElements}
-                            onLabelClick={helpers.handleAddFilter}
-                        />
-                    </React.Suspense>
-                )}
-            </ListCards>
+                      <GenericAttackCardDummy />
+                    </Grid>
+                  ))}
+              </Grid>
+            }
+          >
+            <CampaignsCards
+              queryRef={queryRef}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              onLabelClick={helpers.handleAddFilter}
+            />
+          </React.Suspense>
+        )}
+      </ListCards>
     );
   };
 
   return (
-        <>
-            {renderCards()}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <CampaignCreation paginationOptions={paginationOptions}/>
-            </Security>
-        </>
+    <>
+      {renderCards()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <CampaignCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
   );
 };
 

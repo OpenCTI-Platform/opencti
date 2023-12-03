@@ -142,14 +142,13 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     .map((n) => n?.node?.to?.name)
     .join(', ');
   const handleBookmarksIds = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
     if (bookmarksIds?.includes(cardData.id)) {
       deleteBookMark(cardData.id, entityType);
     } else {
-      e.preventDefault();
       addBookmark(cardData.id, entityType);
     }
   };
-
   return (
     <Card classes={{ root: classes.card }} variant="outlined">
       <CardActionArea

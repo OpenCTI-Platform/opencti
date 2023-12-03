@@ -12,7 +12,10 @@ import {
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
 
 interface FiltersProps {
@@ -23,17 +26,17 @@ interface FiltersProps {
   availableFilterKeys: string[];
   noDirectFilters?: boolean;
   availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[],
-  availableRelationFilterTypes?: Record<string, string[]>,
+  availableRelationshipTypes?: string[];
+  availableRelationFilterTypes?: Record<string, string[]>;
   allEntityTypes?: boolean;
-  handleAddFilter?: HandleAddFilter,
-  handleRemoveFilter?: (key: string, id?: string) => void,
-  handleSwitchFilter?: HandleAddFilter,
+  handleAddFilter?: HandleAddFilter;
+  handleRemoveFilter?: (key: string, id?: string) => void;
+  handleSwitchFilter?: HandleAddFilter;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
   searchContext?: {
-    entityTypes: string[],
-    elementId?: string[]
+    entityTypes: string[];
+    elementId?: string[];
   };
   type?: string;
   helpers?: UseLocalStorageHelpers;
@@ -62,8 +65,12 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
-  const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>([]);
+  const [filters, setFilters] = useState<FilterGroup | undefined>(
+    initialFilterGroup,
+  );
+  const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>(
+    [],
+  );
   const [keyword, setKeyword] = useState('');
   const [searchScope, _] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
@@ -85,11 +92,13 @@ const Filters: FunctionComponent<FiltersProps> = ({
   setSearchEntitiesScope({
     searchContext: searchContext ?? { entityTypes: [] },
     searchScope,
-    setInputValues: setInputValues as (value: {
-      key: string,
-      values: string[],
-      operator?: string
-    }[]) => void,
+    setInputValues: setInputValues as (
+      value: {
+        key: string;
+        values: string[];
+        operator?: string;
+      }[],
+    ) => void,
     availableEntityTypes,
     availableRelationshipTypes,
     allEntityTypes,
@@ -103,16 +112,17 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setAnchorEl(null);
   };
   const defaultHandleAddFilter = handleAddFilter
-        || ((key, id, operator = 'eq', event = undefined) => {
-          if (event) {
-            event.stopPropagation();
-            event.preventDefault();
-          }
-          setFilters(constructHandleAddFilter(filters, key, id, operator));
-        });
-  const defaultHandleRemoveFilter = handleRemoveFilter || ((key, operator = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, key, operator));
-  });
+    || ((key, id, operator = 'eq', event = undefined) => {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      setFilters(constructHandleAddFilter(filters, key, id, operator));
+    });
+  const defaultHandleRemoveFilter = handleRemoveFilter
+    || ((key, operator = 'eq') => {
+      setFilters(constructHandleRemoveFilter(filters, key, operator));
+    });
   const handleSearch = () => {
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };
@@ -123,58 +133,59 @@ const Filters: FunctionComponent<FiltersProps> = ({
     );
   };
   const handleChangeKeyword = (event: ChangeEvent) => setKeyword((event.target as HTMLInputElement).value);
-
   const filterElement = (
-        <FiltersElement
-            variant={variant}
-            keyword={keyword}
-            availableFilterKeys={availableFilterKeys}
-            searchContext={searchContext ?? { entityTypes: [] }}
-            handleChangeKeyword={handleChangeKeyword}
-            noDirectFilters={noDirectFilters}
-            inputValues={inputValues}
-            setInputValues={setInputValues}
-            defaultHandleAddFilter={defaultHandleAddFilter}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            allEntityTypes={allEntityTypes}
-        />
+    <FiltersElement
+      variant={variant}
+      keyword={keyword}
+      availableFilterKeys={availableFilterKeys}
+      searchContext={searchContext ?? { entityTypes: [] }}
+      handleChangeKeyword={handleChangeKeyword}
+      noDirectFilters={noDirectFilters}
+      inputValues={inputValues}
+      setInputValues={setInputValues}
+      defaultHandleAddFilter={defaultHandleAddFilter}
+      availableEntityTypes={availableEntityTypes}
+      availableRelationshipTypes={availableRelationshipTypes}
+      availableRelationFilterTypes={availableRelationFilterTypes}
+      allEntityTypes={allEntityTypes}
+    />
   );
   if (variant === FiltersVariant.dialog) {
     return (
-            <DialogFilters
-                handleOpenFilters={handleOpenFilters}
-                disabled={disabled}
-                size={size}
-                fontSize={fontSize}
-                open={open}
-                filters={filters}
-                handleCloseFilters={handleCloseFilters}
-                defaultHandleRemoveFilter={defaultHandleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                handleSearch={handleSearch}
-                filterElement={filterElement}
-            />
+      <DialogFilters
+        handleOpenFilters={handleOpenFilters}
+        disabled={disabled}
+        size={size}
+        fontSize={fontSize}
+        open={open}
+        filters={filters}
+        handleCloseFilters={handleCloseFilters}
+        defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
+        handleSearch={handleSearch}
+        filterElement={filterElement}
+      />
     );
   }
   return (
-    <> { helpers
-      ? <ListFilters
-            size={size}
-            fontSize={fontSize}
-            handleOpenFilters={handleOpenFilters}
-            handleCloseFilters={handleCloseFilters}
-            open={open}
-            anchorEl={anchorEl}
-            availableFilterKeys={availableFilterKeys}
-            filterElement={filterElement}
-            variant={variant}
-            type={type}
-            helpers={helpers}
+    <>
+      {helpers ? (
+        <ListFilters
+          size={size}
+          fontSize={fontSize}
+          handleOpenFilters={handleOpenFilters}
+          handleCloseFilters={handleCloseFilters}
+          open={open}
+          anchorEl={anchorEl}
+          availableFilterKeys={availableFilterKeys}
+          filterElement={filterElement}
+          variant={variant}
+          type={type}
+          helpers={helpers}
         />
-      : <ListFiltersWithoutLocalStorage
+      ) : (
+        <ListFiltersWithoutLocalStorage
           size={size}
           fontSize={fontSize}
           handleOpenFilters={handleOpenFilters}
@@ -197,8 +208,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
           availableRelationFilterTypes={availableRelationFilterTypes}
           allEntityTypes={allEntityTypes}
         />
-      }
-      </>);
+      )}
+    </>
+  );
 };
 
 export default Filters;
