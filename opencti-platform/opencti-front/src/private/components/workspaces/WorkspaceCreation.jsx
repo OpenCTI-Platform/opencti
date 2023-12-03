@@ -74,12 +74,13 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     commitImportMutation({
       variables: { file: importedFile },
       onCompleted: (data) => {
-        inputRef.current.value = ''; // Reset the input uploader ref
+        inputRef.current.value = null; // Reset the input uploader ref
         history.push(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
       },
       onError: (error) => {
+        inputRef.current.value = null; // Reset the input uploader ref
         handleError(error);
       },
     });

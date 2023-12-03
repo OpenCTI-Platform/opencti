@@ -423,10 +423,13 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
           dashboardManifest,
         },
       },
-      onCompleted: () => {
-        inputRef.current.value = ''; // Reset the input uploader ref
+      updater: () => {
+        inputRef.current.value = null; // Reset the input uploader ref
       },
-      onError: (error) => handleError(error),
+      onError: (error) => {
+        inputRef.current.value = null; // Reset the input uploader ref
+        handleError(error);
+      },
     });
   };
   const handleClose = () => {
