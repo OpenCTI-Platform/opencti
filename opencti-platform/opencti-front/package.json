@@ -123,7 +123,7 @@
     "fs-extra": "11.2.0",
     "http-proxy-middleware": "2.0.6",
     "jsdom": "23.0.1",
-    "prettier": "3.0.3",
+    "prettier": "3.1.0",
     "react-test-renderer": "18.2.0",
     "relay-compiler": "15.0.0",
     "relay-test-utils": "15.0.0",
