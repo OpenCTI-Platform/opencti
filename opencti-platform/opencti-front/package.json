@@ -55,7 +55,7 @@
     "react-dom": "18.2.0",
     "react-force-graph-2d": "1.25.2",
     "react-force-graph-3d": "1.24.0",
-    "react-grid-layout": "1.4.2",
+    "react-grid-layout": "1.4.4",
     "react-intl": "6.5.0",
     "react-leaflet": "4.2.1",
     "react-markdown": "9.0.0",
