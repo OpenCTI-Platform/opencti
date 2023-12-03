@@ -439,7 +439,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
           this.state.selectedTimeRangeInterval,
-          this.state.keyword,
         ),
       },
       () => {
@@ -461,7 +460,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
         this.state.createdBy,
         [],
         selectedTimeRangeInterval,
-        this.state.keyword,
       ),
     });
   }
