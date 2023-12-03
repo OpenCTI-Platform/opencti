@@ -1927,7 +1927,6 @@ class InvestigationGraphComponent extends Component {
           this.state.createdBy,
           [],
           this.state.selectedTimeRangeInterval,
-          this.state.keyword,
         ),
       },
       () => {
@@ -1948,7 +1947,6 @@ class InvestigationGraphComponent extends Component {
         this.state.createdBy,
         [],
         interval,
-        this.state.keyword,
       ),
       selectedTimeRangeInterval: interval,
     });

@@ -1026,7 +1026,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
         this.state.selectedTimeRangeInterval,
-        this.state.keyword,
       ),
     });
   }
@@ -1139,7 +1138,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
         this.state.selectedTimeRangeInterval,
-        this.state.keyword,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
@@ -1171,7 +1169,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
               this.state.createdBy,
               ignoredStixCoreObjectsTypes,
               this.state.selectedTimeRangeInterval,
-              this.state.keyword,
             ),
           });
         });
@@ -1203,7 +1200,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
               this.state.createdBy,
               ignoredStixCoreObjectsTypes,
               this.state.selectedTimeRangeInterval,
-              this.state.keyword,
             ),
           });
         });
@@ -1302,7 +1298,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
           this.state.selectedTimeRangeInterval,
-          this.state.keyword,
         ),
       },
       () => {
@@ -1348,7 +1343,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         [],
         selectedTimeRangeInterval,
-        this.state.keyword,
       ),
     });
   }
