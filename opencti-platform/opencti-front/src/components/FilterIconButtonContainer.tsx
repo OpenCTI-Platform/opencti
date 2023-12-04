@@ -41,6 +41,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
       textDecorationLine: 'underline',
     },
   },
+  operator1ReadOnly: {
+    borderRadius: 5,
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.action?.selected,
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+  },
   operator2: {
     borderRadius: 5,
     fontFamily: 'Consolas, monaco, monospace',
@@ -53,6 +62,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
       backgroundColor: theme.palette.action?.disabled,
       textDecorationLine: 'underline',
     },
+  },
+  operator2ReadOnly: {
+    borderRadius: 5,
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.action?.selected,
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
   },
   operator3: {
     borderRadius: 5,
@@ -67,6 +85,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
       backgroundColor: theme.palette.action?.disabled,
       textDecorationLine: 'underline',
     },
+  },
+  operator3ReadOnly: {
+    borderRadius: 5,
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.action?.selected,
+    height: 20,
+    padding: '0 8px',
+    marginRight: 10,
+    marginLeft: 10,
+    cursor: 'pointer',
   },
   chipLabel: {
     lineHeight: '32px',
@@ -122,14 +150,6 @@ FilterIconButtonContainerProps
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
-  let classOperator = classes.operator1;
-  if (styleNumber === 2) {
-    classFilter = classes.filter2;
-    classOperator = classes.operator2;
-  } else if (styleNumber === 3) {
-    classFilter = classes.filter3;
-    classOperator = classes.operator3;
-  }
   const latestItemRef = useRef(null);
   const nbDisplayFilter = useRef(0);
 
@@ -205,11 +225,28 @@ FilterIconButtonContainerProps
         return null;
     }
   };
-  const isReadonlyFilter = helpers || handleRemoveFilter;
+  const isReadWriteFilter = !!(helpers || handleRemoveFilter);
+  let classOperator = classes.operator1;
+  if (!isReadWriteFilter) {
+    classOperator = classes.operator1ReadOnly;
+    if (styleNumber === 2) {
+      classFilter = classes.filter2;
+      classOperator = classes.operator2ReadOnly;
+    } else if (styleNumber === 3) {
+      classFilter = classes.filter3;
+      classOperator = classes.operator3ReadOnly;
+    }
+  } else if (styleNumber === 2) {
+    classFilter = classes.filter2;
+    classOperator = classes.operator2;
+  } else if (styleNumber === 3) {
+    classFilter = classes.filter3;
+    classOperator = classes.operator3;
+  }
   return (
     <Box
       sx={
-        !isReadonlyFilter
+        !isReadWriteFilter
           ? {
             display: 'flex',
             overflow: 'hidden',
@@ -288,13 +325,14 @@ FilterIconButtonContainerProps
                     helpers={helpers}
                     onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
                     }
+                    isReadWriteFilter={isReadWriteFilter}
                   />
                 }
                 disabled={
                   disabledPossible ? displayedFilters.length === 1 : undefined
                 }
                 onDelete={
-                  isReadonlyFilter
+                  isReadWriteFilter
                     ? () => manageRemoveFilter(
                       currentFilter.id,
                       filterKey,

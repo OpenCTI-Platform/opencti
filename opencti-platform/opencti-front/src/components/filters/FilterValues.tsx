@@ -22,6 +22,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
       backgroundColor: theme.palette.text?.disabled,
     },
   },
+  inlineOperatorReadOnly: {
+    display: 'inline-block',
+    height: '100%',
+    borderRadius: 0,
+    margin: '0 5px 0 5px',
+    padding: '0 5px 0 5px',
+    cursor: 'pointer',
+    backgroundColor: theme.palette.action?.disabled,
+    fontFamily: 'Consolas, monaco, monospace',
+  },
   label: {
     cursor: 'pointer',
     '&:hover': {
@@ -39,6 +49,7 @@ interface FilterValuesProps {
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   helpers?: UseLocalStorageHelpers;
+  isReadWriteFilter?: boolean;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -50,6 +61,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   handleSwitchLocalMode,
   onClickLabel,
   helpers,
+  isReadWriteFilter,
 }) => {
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
@@ -88,7 +100,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         )}
         {last(filterValues) !== id && (
           <div
-            className={classes.inlineOperator}
+            className={
+              isReadWriteFilter
+                ? classes.inlineOperator
+                : classes.inlineOperatorReadOnly
+            }
             onClick={() => handleSwitchLocalMode?.(currentFilter)}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
