@@ -41,6 +41,7 @@ export const CONNECTIONS_FILTER = 'connections';
 export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
+export const STATUS_TEMPLATE_FILTER = 'status_template_id';
 
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
@@ -74,6 +75,7 @@ export const specialFilterKeys = [
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   SOURCE_RELIABILITY_FILTER, // reliability of the author
+  STATUS_TEMPLATE_FILTER,
 ];
 
 // nested filter keys also authorized in some elastic query cases (ex: retention policy query checking)

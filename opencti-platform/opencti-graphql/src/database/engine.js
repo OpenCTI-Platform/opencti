@@ -73,14 +73,19 @@ import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import {
+  IDS_FILTER,
+  SOURCE_RELIABILITY_FILTER,
+  STATUS_TEMPLATE_FILTER,
+  TYPE_FILTER, WORKFLOW_FILTER
+} from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 
 const ELK_ENGINE = 'elk';
@@ -1906,6 +1911,33 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
+const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
+  const { key, mode = 'or', operator = 'eq', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== STATUS_TEMPLATE_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  // in case we want to filter by status template (template of a workflow status)
+  // we need to find all statuses filtered by status template and filter on these statuses
+  const statusFilter = {
+    mode: 'and',
+    filters: [{ key: ['template_id'], operator, values, mode }],
+    filterGroups: [],
+  };
+  const opts = { types: [ENTITY_TYPE_STATUS], filters: statusFilter, connectionFormat: false };
+  const statuses = await elList(context, user, READ_INDEX_INTERNAL_OBJECTS, opts); // the statuses with template id matching the filter
+  // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
+  const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+  const newFilter = {
+    key: [WORKFLOW_FILTER],
+    values: statusIds,
+    mode: 'or',
+    operator: 'eq',
+  };
+
+  return { newFilter, newFilterGroup: undefined };
+};
+
 /**
  * Complete the filter if needed for several special filter keys
  * 3 keys need this preprocessing before building the query:
@@ -1950,6 +1982,16 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       // in case we want to filter by source reliability (reliability of author)
       // we need to find all authors filtered by reliability and filter on these authors
       const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+      if (newFilter) {
+        finalFilters.push(newFilter);
+      }
+      if (newFilterGroup) {
+        finalFilterGroups.push(newFilterGroup);
+      }
+    } else if (arrayKeys.includes(STATUS_TEMPLATE_FILTER)) {
+      // in case we want to filter by status template (template of a workflow status)
+      // we need to find all statuses filtered by status template and filter on these statuses
+      const { newFilter, newFilterGroup } = await adaptFilterToStatusTemplateFilterKey(context, user, filter);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
