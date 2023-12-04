@@ -12,12 +12,12 @@ import {
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
-  handleAddFilterWithEmptyValue,
-  handleAddRepresentationFilter,
-  handleAddSingleValueFilter,
-  handleChangeOperatorFilters,
-  handleRemoveFilter,
-  handleRemoveRepresentationFilter, handleSwitchLocalMode,
+  handleAddFilterWithEmptyValueUtil,
+  handleAddRepresentationFilterUtil,
+  handleAddSingleValueFilterUtil,
+  handleChangeOperatorFiltersUtil,
+  handleRemoveFilterUtil,
+  handleRemoveRepresentationFilterUtil, handleSwitchLocalModeUtil,
 } from '../filters/filtersLocalStorageUtil';
 import { LocalStorage } from './useLocalStorageModel';
 
@@ -283,7 +283,7 @@ export const usePaginationLocalStorage = <U>(
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterById: (id?: string) => {
-      handleRemoveFilter({ viewStorage, setValue, id });
+      handleRemoveFilterUtil({ viewStorage, setValue, id });
     },
     handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
       if (viewStorage.filters) {
@@ -415,28 +415,28 @@ export const usePaginationLocalStorage = <U>(
       id: string,
       valueId: string,
     ) => {
-      handleRemoveRepresentationFilter({ viewStorage, setValue, id, valueId });
+      handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          handleAddFilterWithEmptyValue({ viewStorage,
+          handleAddFilterWithEmptyValueUtil({ viewStorage,
             setValue,
             filter: {
               id: uuid(),
               key: 'objectLabel',
-              operator: 'nil',
+              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
               values: [],
               mode: 'and',
             } });
         }
       } else {
-        handleAddRepresentationFilter({ viewStorage, setValue, id, valueId });
+        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      handleAddSingleValueFilter({ viewStorage, setValue, id, valueId });
+      handleAddSingleValueFilterUtil({ viewStorage, setValue, id, valueId });
     },
     handleSwitchFilter: (
       k: string,
@@ -496,7 +496,7 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      handleSwitchLocalMode({ viewStorage, setValue, filter });
+      handleSwitchLocalModeUtil({ viewStorage, setValue, filter });
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
@@ -543,10 +543,10 @@ export const usePaginationLocalStorage = <U>(
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      handleAddFilterWithEmptyValue({ viewStorage, setValue, filter });
+      handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      handleChangeOperatorFilters({ viewStorage, setValue, id, operator });
+      handleChangeOperatorFiltersUtil({ viewStorage, setValue, id, operator });
     },
   };
 
