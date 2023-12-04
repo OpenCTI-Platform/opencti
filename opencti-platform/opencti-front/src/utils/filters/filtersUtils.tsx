@@ -71,6 +71,7 @@ export const integerFilters = [
 export const textFilters = [
   'name',
   'description',
+  'value',
 ];
 
 // filters that can have 'eq' or 'not_eq' operator

@@ -195,6 +195,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     return null;
   };
 
+  const noValueOperator = !['not_nil', 'nil'].includes(filterOperator);
   return (
     <Popover
       open={open}
@@ -226,12 +227,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             </MenuItem>
           ))}
         </Select>
-        {isSpecificFilter(filterKey) ? (
-          <>{getSpecificFilter(filterKey)}</>
-        ) : (
-          <>
-            {!['not_nil', 'nil'].includes(filterOperator) && (
-              <MUIAutocomplete
+        { noValueOperator && isSpecificFilter(filterKey) && <>
+          {getSpecificFilter(filterKey)}
+        </>
+        }
+        { noValueOperator && !isSpecificFilter(filterKey)
+            && <MUIAutocomplete
                 disableCloseOnSelect
                 key={filterKey}
                 selectOnFocus={true}
@@ -248,55 +249,53 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 )
                 }
                 renderInput={(paramsInput) => (
-                  <TextField
-                    {...paramsInput}
-                    label={t(filterKey)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth={true}
-                    autoFocus={true}
-                    onFocus={(event) => searchEntities(
-                      filterKey,
-                      cacheEntities,
-                      setCacheEntities,
-                      event,
-                    )
-                    }
-                  />
+                    <TextField
+                        {...paramsInput}
+                        label={t(filterKey)}
+                        variant="outlined"
+                        size="small"
+                        fullWidth={true}
+                        autoFocus={true}
+                        onFocus={(event) => searchEntities(
+                          filterKey,
+                          cacheEntities,
+                          setCacheEntities,
+                          event,
+                        )
+                        }
+                    />
                 )}
                 renderOption={(props, option) => {
                   const checked = filterValues.includes(option.value);
                   return (
-                    <Tooltip title={option.label}>
-                      <li
-                        {...props}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.stopPropagation();
-                          }
-                        }}
-                        onClick={() => handleChange(!checked, option.value)}
-                        style={{
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          padding: 0,
-                          margin: 0,
-                        }}
-                      >
-                        <Checkbox checked={checked} />
-                        <ItemIcon type={option.type} color={option.color} />
-                        <span style={{ padding: '0 4px 0 4px' }}>
+                      <Tooltip title={option.label}>
+                        <li
+                            {...props}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.stopPropagation();
+                              }
+                            }}
+                            onClick={() => handleChange(!checked, option.value)}
+                            style={{
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              padding: 0,
+                              margin: 0,
+                            }}
+                        >
+                          <Checkbox checked={checked} />
+                          <ItemIcon type={option.type} color={option.color} />
+                          <span style={{ padding: '0 4px 0 4px' }}>
                           {option.label}
                         </span>
-                      </li>
-                    </Tooltip>
+                        </li>
+                      </Tooltip>
                   );
                 }}
-              />
-            )}
-          </>
-        )}
+            />
+        }
       </div>
     </Popover>
   );
