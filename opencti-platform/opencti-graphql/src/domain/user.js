@@ -17,12 +17,10 @@ import {
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import {
-  elConvertHits,
   elDelete,
   elFindByIds,
   elLoadBy,
   elRawDeleteByQuery,
-  elRawSearch,
   elSearchByQuery
 } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
@@ -708,28 +706,25 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
     }
   };
   const hitConvertionOpts = { withoutRels: true, toMap: false };
-  const convertedResults = await elSearchByQuery(context, authUser, null, queryToFindUserWorkspace, hitConvertionOpts).catch((err) => {
+  const workspaceResults = await elSearchByQuery(context, authUser, null, queryToFindUserWorkspace, hitConvertionOpts).catch((err) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
 
-  for (let index = 0; index < convertedResults.length; index += 1) {
-    const hit = convertedResults[index];
-
+  workspaceResults.forEach((currentWorkspace) => {
     let currentUserIsAdmin = false;
     let anotherUserIsAdmin = false;
 
-    for (let authIndex = 0; authIndex < hit.authorized_members.length; authIndex += 1) {
-      const oneMember = hit.authorized_members[authIndex];
+    currentWorkspace.authorized_members.forEach((oneMember) => {
       if (oneMember.id === userId && oneMember.access_right === 'admin') {
         currentUserIsAdmin = true;
       } else if (oneMember.access_right === 'admin') {
         anotherUserIsAdmin = true;
       }
-    }
+    });
     if (currentUserIsAdmin && !anotherUserIsAdmin) {
-      elDelete(INDEX_INTERNAL_OBJECTS, hit.id);
+      elDelete(INDEX_INTERNAL_OBJECTS, currentWorkspace.id);
     }
-  }
+  });
 };
 
 export const deleteAllTriggerAndDigestByUser = async (userId) => {
