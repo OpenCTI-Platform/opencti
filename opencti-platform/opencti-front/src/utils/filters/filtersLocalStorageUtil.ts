@@ -23,7 +23,7 @@ const updateFilters = (viewStorage: LocalStorage, setValue: Dispatch<SetStateAct
     setFiltersValue(setValue, newBaseFilters);
   }
 };
-export const handleAddFilterWithEmptyValue = ({ viewStorage, setValue, filter }: FiltersLocalStorageUtilProps<{
+export const handleAddFilterWithEmptyValueUtil = ({ viewStorage, setValue, filter }: FiltersLocalStorageUtilProps<{
   filter: Filter
 }>) => {
   if (viewStorage.filters) {
@@ -38,7 +38,7 @@ export const handleAddFilterWithEmptyValue = ({ viewStorage, setValue, filter }:
   }
 };
 
-export const handleChangeOperatorFilters = ({ viewStorage, setValue, id, operator }: FiltersLocalStorageUtilProps<{
+export const handleChangeOperatorFiltersUtil = ({ viewStorage, setValue, id, operator }: FiltersLocalStorageUtilProps<{
   id: string,
   operator: string
 }>) => {
@@ -51,7 +51,7 @@ export const handleChangeOperatorFilters = ({ viewStorage, setValue, id, operato
     : f));
 };
 
-export const handleSwitchLocalMode = ({ viewStorage, setValue, filter }: FiltersLocalStorageUtilProps<{
+export const handleSwitchLocalModeUtil = ({ viewStorage, setValue, filter }: FiltersLocalStorageUtilProps<{
   filter: Filter
 }>) => {
   updateFilters(viewStorage, setValue, (f) => (f.id === filter.id
@@ -59,14 +59,14 @@ export const handleSwitchLocalMode = ({ viewStorage, setValue, filter }: Filters
     : f));
 };
 
-export const handleAddRepresentationFilter = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
   valueId: string
 }>) => {
   updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [...f.values, valueId] } : f));
 };
 
-export const handleAddSingleValueFilter = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
   valueId?: string
 }>) => {
@@ -77,7 +77,7 @@ export const handleAddSingleValueFilter = ({ viewStorage, setValue, id, valueId 
   }
 };
 
-export const handleRemoveRepresentationFilter = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
   valueId: string
 }>) => {
@@ -89,7 +89,7 @@ export const handleRemoveRepresentationFilter = ({ viewStorage, setValue, id, va
     : f));
 };
 
-export const handleRemoveFilter = ({ viewStorage, setValue, id }: FiltersLocalStorageUtilProps<{ id?: string }>) => {
+export const handleRemoveFilterUtil = ({ viewStorage, setValue, id }: FiltersLocalStorageUtilProps<{ id?: string }>) => {
   if (viewStorage.filters) {
     const newBaseFilters: FilterGroup = {
       ...viewStorage.filters,

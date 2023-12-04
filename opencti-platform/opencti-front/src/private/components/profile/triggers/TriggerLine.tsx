@@ -2,14 +2,17 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
+import {
+  BackupTableOutlined,
+  CampaignOutlined,
+  MoreVert,
+} from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -28,7 +31,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -36,9 +41,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
+    paddingRight: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -74,29 +82,29 @@ interface TriggerLineProps {
 }
 
 const triggerLineFragment = graphql`
-    fragment TriggerLine_node on Trigger {
-        id
-        name
-        trigger_type
-        event_types
-        description
-        filters
-        created
-        modified
-        notifiers {
-            id
-            name
-        }
-        period
-        trigger_time
-        triggers {
-            id
-            name
-        }
-        isDirectAdministrator
-        currentUserAccessRight
-        instance_trigger
+  fragment TriggerLine_node on Trigger {
+    id
+    name
+    trigger_type
+    event_types
+    description
+    filters
+    created
+    modified
+    notifiers {
+      id
+      name
     }
+    period
+    trigger_time
+    triggers {
+      id
+      name
+    }
+    isDirectAdministrator
+    currentUserAccessRight
+    instance_trigger
+  }
 `;
 
 export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
@@ -116,7 +124,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const time = currentTime.length > 1
     ? formatTimeForToday(currentTime[1])
     : formatTimeForToday(currentTime[0]);
-
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -128,7 +135,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.trigger_type.width }}
@@ -157,9 +164,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               {data.notifiers
                 && data.notifiers.length > 0
                 && data.notifiers
-                  .map<React.ReactNode>((n) => (
-                    <code>{n.name}</code>
-                ))
+                  .map<React.ReactNode>((n) => <code>{n.name}</code>)
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             <div
@@ -187,14 +192,21 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 ))}
             </div>
-            {data.trigger_type === 'live' && filters && (
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-                redirection
-              />
+            {data.trigger_type === 'live' && (
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                {filters && (
+                  <FilterIconButton
+                    filters={filters}
+                    dataColumns={dataColumns}
+                    classNameNumber={3}
+                    styleNumber={3}
+                    redirection
+                  />
+                )}
+              </div>
             )}
             {data.trigger_type === 'digest' && (
               <div
@@ -206,45 +218,45 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   label={
                     <span>
                       <strong>{t('Period: ')}</strong>
-                                            {data.period}
+                      {data.period}
                     </span>
-                                    }
-                                />
-                                {currentTime.length > 1 && (
-                                    <Chip
-                                        classes={{ root: classes.chipInList3 }}
-                                        label={
-                                            <span>
-                        <strong>{t('Day: ')}</strong>
-                                                {day}
-                      </span>
-                                        }
-                                    />
-                                )}
-                                {data.trigger_time && data.trigger_time.length > 0 && (
-                                    <Chip
-                                        classes={{ root: classes.chipInList3 }}
-                                        label={
-                                            <span>
-                        <strong>{t('Time: ')}</strong>
-                                                {nt(time)}
-                      </span>
-                                        }
-                                    />
-                                )}
-                            </div>
-            )}
-                    </div>
-                }
-            />
-            <ListItemIcon classes={{ root: classes.goIcon }}>
-                <TriggerPopover
-                    id={data.id}
-                    paginationOptions={paginationOptions}
-                    disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
+                  }
                 />
-            </ListItemIcon>
-        </ListItem>
+                {currentTime.length > 1 && (
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={
+                      <span>
+                        <strong>{t('Day: ')}</strong>
+                        {day}
+                      </span>
+                    }
+                  />
+                )}
+                {data.trigger_time && data.trigger_time.length > 0 && (
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={
+                      <span>
+                        <strong>{t('Time: ')}</strong>
+                        {nt(time)}
+                      </span>
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </>
+        }
+      />
+      <ListItemSecondaryAction>
+        <TriggerPopover
+          id={data.id}
+          paginationOptions={paginationOptions}
+          disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
+        />
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 
@@ -255,35 +267,33 @@ export const TriggerLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-        <ListItem classes={{ root: classes.item }} divider={true}>
-            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Skeleton animation="wave" variant="circular" width={30} height={30}/>
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="90%"
-                                    height={20}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                }
-            />
-            <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-                <IconButton disabled={true} aria-haspopup="true" size="large">
-                    <MoreVert/>
-                </IconButton>
-            </ListItemSecondaryAction>
-        </ListItem>
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="50%"
+                />
+              </div>
+            ))}
+          </>
+        }
+      />
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <MoreVert />
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };

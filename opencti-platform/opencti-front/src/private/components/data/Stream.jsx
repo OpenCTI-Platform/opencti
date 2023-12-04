@@ -69,10 +69,6 @@ class Stream extends Component {
         width: '20%',
         isSortable: true,
       },
-      filters: {
-        label: 'Filters',
-        width: '35%',
-      },
       id: {
         label: 'Stream ID',
         width: '15%',
@@ -87,6 +83,10 @@ class Stream extends Component {
         label: 'Status',
         width: '10%',
         isSortable: true,
+      },
+      filters: {
+        label: 'Filters',
+        width: '35%',
       },
     };
     return (
