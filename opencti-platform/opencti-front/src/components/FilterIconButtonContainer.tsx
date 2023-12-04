@@ -24,7 +24,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
     fontSize: 12,
     height: 20,
-    marginRight: 7,
     borderRadius: 10,
     lineHeight: '32px',
   },

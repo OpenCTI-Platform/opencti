@@ -49,10 +49,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     paddingRight: 10,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
@@ -197,20 +193,22 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 ))}
             </div>
-            <div
-              className={classes.filtersItem}
-              style={{ width: dataColumns.filters.width }}
-            >
-              {data.trigger_type === 'live' && filters && (
-                <FilterIconButton
-                  filters={filters}
-                  dataColumns={dataColumns}
-                  classNameNumber={3}
-                  styleNumber={3}
-                  redirection
-                />
-              )}
-            </div>
+            {data.trigger_type === 'live' && (
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                {filters && (
+                  <FilterIconButton
+                    filters={filters}
+                    dataColumns={dataColumns}
+                    classNameNumber={3}
+                    styleNumber={3}
+                    redirection
+                  />
+                )}
+              </div>
+            )}
             {data.trigger_type === 'digest' && (
               <div
                 className={classes.bodyItem}
@@ -252,13 +250,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
           </>
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemSecondaryAction>
         <TriggerPopover
           id={data.id}
           paginationOptions={paginationOptions}
           disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
         />
-      </ListItemIcon>
+      </ListItemSecondaryAction>
     </ListItem>
   );
 };
