@@ -241,7 +241,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               variant="text"
               availableFilterKeys={[
                 'entity_type',
-                'x_opencti_workflow_id',
+                'status_template_id',
                 'objectAssignee',
                 'objects',
                 'objectMarking',

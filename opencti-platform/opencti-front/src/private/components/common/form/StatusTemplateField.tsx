@@ -32,7 +32,7 @@ interface StatusTemplateFieldProps {
   helpertext: string;
 }
 
-const StatusTemplateFieldQuery = graphql`
+export const StatusTemplateFieldQuery = graphql`
   query StatusTemplateFieldSearchQuery($search: String) {
     statusTemplates(search: $search) {
       edges {

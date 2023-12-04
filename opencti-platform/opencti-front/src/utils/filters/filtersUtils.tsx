@@ -81,6 +81,7 @@ export const EqFilters = [
   'objectMarking',
   'entity_type',
   'x_opencti_workflow_id',
+  'status_template_id',
   'malware_types',
   'incident_type',
   'context',

@@ -456,7 +456,7 @@ const FeedEditionContainer = (props) => {
                       <Filters
                         variant="text"
                         availableFilterKeys={[
-                          'x_opencti_workflow_id',
+                          'status_template_id',
                           'objectAssignee',
                           'objects',
                           'objectMarking',

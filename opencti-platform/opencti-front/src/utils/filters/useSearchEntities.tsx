@@ -25,6 +25,10 @@ import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/f
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '@components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '@components/common/form/ObjectParticipantField';
 import { useTheme } from '@mui/styles';
+import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
+import {
+  StatusTemplateFieldSearchQuery$data,
+} from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -829,6 +833,27 @@ const useSearchEntities = ({
               .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
               .sort((a, b) => a.group.localeCompare(b.group));
             unionSetEntities(filterKey, statusEntities);
+          });
+        break;
+      case 'status_template_id':
+        fetchQuery(StatusTemplateFieldQuery, {
+          first: 500,
+        })
+          .toPromise()
+          .then((data) => {
+            const statusTemplateEntities = (
+              (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges
+              ?? []
+            )
+              .filter((n) => !R.isNil(n?.node))
+              .map((n) => ({
+                label: n?.node.name,
+                color: n?.node.color,
+                value: n?.node.id,
+                type: 'Vocabulary',
+              }))
+              .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+            unionSetEntities('status_template_id', statusTemplateEntities);
           });
         break;
       case 'x_opencti_main_observable_type':
