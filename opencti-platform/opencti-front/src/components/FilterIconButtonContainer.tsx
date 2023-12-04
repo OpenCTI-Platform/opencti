@@ -32,7 +32,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 5,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
-    padding: '5px 8px 0 8px',
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.action?.disabled,
@@ -43,7 +45,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 5,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
-    padding: '5px 8px 0 8px',
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.action?.disabled,
@@ -54,7 +58,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 5,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
-    padding: '5px 8px 0 8px',
+    height: 20,
+    padding: '0 8px',
     marginRight: 10,
     marginLeft: 10,
     cursor: 'pointer',
@@ -208,7 +213,6 @@ FilterIconButtonContainerProps
           ? {
             display: 'flex',
             overflow: 'hidden',
-            marginRight: '30px',
           }
           : {
             marginTop: displayedFilters.length === 0 ? 0 : '10px',
@@ -266,6 +270,7 @@ FilterIconButtonContainerProps
               <Chip
                 color={chipColor}
                 ref={isNotLastFilter ? null : latestItemRef}
+                classes={{ root: classFilter, label: classes.chipLabel }}
                 variant={
                   currentFilter.values.length === 0
                   && !['nil', 'not_nil'].includes(filterOperator)
