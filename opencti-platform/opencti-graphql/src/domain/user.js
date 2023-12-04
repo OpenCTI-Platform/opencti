@@ -3,6 +3,7 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
+import { findReturnStatement } from 'eslint-plugin-react/lib/util/ast';
 import {
   BUS_TOPICS,
   ENABLED_DEMO_MODE,
@@ -24,18 +25,28 @@ import {
   elSearchByQuery
 } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllRelations,
+  listEntities,
+  listEntitiesPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import {
-  buildPagination, INDEX_INTERNAL_OBJECTS,
+  buildPagination,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INTERNAL_OBJECTS
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { findAll as findAllWorkspace } from '../modules/workspace/workspace-domain';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
@@ -691,39 +702,67 @@ export const meEditField = async (context, user, userId, inputs, password = null
   }
   return userEditField(context, user, userId, inputs);
 };
+
+const isUserTheLastAdmin = (userId, authorized_members) => {
+  let currentUserIsAdmin = false;
+  let anotherUserIsAdmin = false;
+
+  authorized_members.forEach((oneMember) => {
+    if (oneMember.id === userId && oneMember.access_right === 'admin') {
+      currentUserIsAdmin = true;
+    } else if (oneMember.access_right === 'admin') {
+      anotherUserIsAdmin = true;
+    }
+  });
+  console.log(`is user ${userId} last admin for => `, authorized_members);
+  console.log('is user last admin ? ', currentUserIsAdmin && !anotherUserIsAdmin);
+  return currentUserIsAdmin && !anotherUserIsAdmin;
+};
+
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
-  const queryToFindUserWorkspace = {
+  const userToDeleteAuth = await findById(context, authUser, userId);
+
+  // TODO find the correct filters to get user's workspace only (and not all workspaces)
+  /*
+   * args {
+   *   first: 25,
+   *   orderBy: 'name',
+   *   orderMode: 'desc',
+   *   filters: { mode: 'and', filters: [ [Object] ], filterGroups: [] }
+   * }
+   */
+
+  const args = {
+    first: 25,
+    orderBy: 'name',
+    orderMode: 'desc',
+    filters: { mode: 'and', filters: [], filterGroups: [] }
+  };
+  const workspacesToDelete = await findAllWorkspace(context, userToDeleteAuth, args);
+  console.log('workspacesToDelete', workspacesToDelete);
+
+  // TODO loop on pagination....
+  const workspaceToDeleteIds = workspacesToDelete.edges
+    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.node.authorized_members))
+    .map((workspaceEntity) => workspaceEntity.node.id);
+  console.log('***************************');
+  console.log('workspaceToDeleteIds', workspaceToDeleteIds);
+
+  return await elRawDeleteByQuery({
     index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
     body: {
       query: {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-            { term: { 'authorized_members.id.keyword': { value: userId } } }
+            { terms: { id: workspaceToDeleteIds } }
           ]
         }
       }
     }
-  };
-  const hitConvertionOpts = { withoutRels: true, toMap: false };
-  const workspaceResults = await elSearchByQuery(context, authUser, null, queryToFindUserWorkspace, hitConvertionOpts).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
-  });
-
-  workspaceResults.forEach((currentWorkspace) => {
-    let currentUserIsAdmin = false;
-    let anotherUserIsAdmin = false;
-
-    currentWorkspace.authorized_members.forEach((oneMember) => {
-      if (oneMember.id === userId && oneMember.access_right === 'admin') {
-        currentUserIsAdmin = true;
-      } else if (oneMember.access_right === 'admin') {
-        anotherUserIsAdmin = true;
-      }
-    });
-    if (currentUserIsAdmin && !anotherUserIsAdmin) {
-      elDelete(INDEX_INTERNAL_OBJECTS, currentWorkspace.id);
-    }
+  }).catch((err) => {
+    throw DatabaseError(`[DELETE] Error deleting Trigger for user ${userId} elastic.`, { error: err });
   });
 };
 
