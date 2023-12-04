@@ -382,6 +382,7 @@ const WorkspaceHeader = ({
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
             handleDashboardDuplication={handleDashboardDuplication}
+            variant={variant}
           />
         </div>
         {variant === 'investigation' && (
@@ -462,7 +463,6 @@ const WorkspaceHeader = ({
                 </IconButton>
               </Tooltip>
             )}
-
             <Slide
               direction="left"
               in={openTag}
@@ -489,7 +489,6 @@ const WorkspaceHeader = ({
                 </Formik>
               </div>
             </Slide>
-
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={openTags}

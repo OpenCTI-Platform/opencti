@@ -180,11 +180,12 @@ class ExportButtons extends Component {
       investigationAddFromContainer,
       history,
       handleDashboardDuplication,
+      variant,
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-          {handleDashboardDuplication && (
+          {handleDashboardDuplication && variant === 'dashboard' && (
             <Tooltip title={t('Duplicate the dashboard')}>
               <ToggleButton
                 sx={{ padding: '2px' }}
