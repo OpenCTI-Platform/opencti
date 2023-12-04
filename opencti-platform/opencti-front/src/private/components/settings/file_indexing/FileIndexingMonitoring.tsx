@@ -284,43 +284,6 @@ FileIndexingMonitoringComponentProps
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Information')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Indexing manager start')}
-                </Typography>
-                {fldt(managerConfiguration?.last_run_start_date)}
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Last indexation')}
-                </Typography>
-                {fldt(lastIndexationDate)}
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Total files in S3')}
-                </Typography>
-                <span style={{ fontWeight: 600, fontSize: 20 }}>
-                  {n(totalFiles)}
-                </span>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Files volumes in S3')}
-                </Typography>
-                <span style={{ fontWeight: 600, fontSize: 20 }}>
-                  {b(dataToIndex)}
-                </span>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-        <Grid item={true} xs={4}>
-          <Typography variant="h4" gutterBottom={true}>
             {t('Control')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -365,6 +328,43 @@ FileIndexingMonitoringComponentProps
                 >
                   {t('Reset')}
                 </Button>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Indexing manager start')}
+                </Typography>
+                {fldt(managerConfiguration?.last_run_start_date)}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Last indexation')}
+                </Typography>
+                {fldt(lastIndexationDate)}
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item={true} xs={4}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Information')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Total files in S3')}
+                </Typography>
+                <span style={{ fontWeight: 600, fontSize: 20 }}>
+                  {n(totalFiles)}
+                </span>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Files volumes in S3')}
+                </Typography>
+                <span style={{ fontWeight: 600, fontSize: 20 }}>
+                  {b(dataToIndex)}
+                </span>
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
