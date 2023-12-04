@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
 import {
@@ -41,6 +41,11 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   chipColor,
   helpers,
 }) => {
+  const hasRenderedRef = useRef(false);
+  const setHasRenderedRef = () => {
+    hasRenderedRef.current = true;
+  };
+
   const displayedFilters = {
     ...filters,
     filters:
@@ -56,6 +61,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       ) as unknown as GqlFilterGroup,
     },
   );
+
   return (
     <>
       {filtersRepresentativesQueryRef && (
@@ -71,6 +77,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
             filters={displayedFilters}
             filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
             helpers={helpers}
+            hasRenderedRef={hasRenderedRef.current}
+            setHasRenderedRef={setHasRenderedRef}
           />
         </React.Suspense>
       )}

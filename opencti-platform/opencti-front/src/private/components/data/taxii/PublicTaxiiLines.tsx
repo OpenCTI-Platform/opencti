@@ -24,7 +24,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>(() => ({
   bodyItem: {
@@ -105,7 +105,7 @@ const dataColumns: DataColumns = {
       const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
         <>
-          {nodeFilters && isFilterGroupNotEmpty(nodeFilters) && <FilterIconButton
+          {nodeFilters && <FilterIconButton
             filters={nodeFilters}
             dataColumns={this}
             classNameNumber={3}

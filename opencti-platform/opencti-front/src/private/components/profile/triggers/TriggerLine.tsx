@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
 import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -187,7 +187,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 ))}
             </div>
-            {data.trigger_type === 'live' && filters && isFilterGroupNotEmpty(filters) && (
+            {data.trigger_type === 'live' && filters && (
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}

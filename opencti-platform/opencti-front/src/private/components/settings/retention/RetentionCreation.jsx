@@ -18,7 +18,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -246,8 +246,7 @@ const RetentionCreation = (props) => {
                 />
               </div>
               <div className="clearfix" />
-              {isFilterGroupNotEmpty(filters)
-                && <FilterIconButton
+              <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
@@ -256,7 +255,6 @@ const RetentionCreation = (props) => {
                   styleNumber={2}
                   redirection
                 />
-              }
               <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button

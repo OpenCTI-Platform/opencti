@@ -28,7 +28,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -289,11 +289,11 @@ const SyncCreation = ({ paginationOptions }) => {
                                         <Typography>{description}</Typography>
                                       </Grid>
                                       <Grid key={filters} item xs={12}>
-                                        {isFilterGroupNotEmpty(streamsFilters) && <FilterIconButton
+                                        <FilterIconButton
                                           filters={streamsFilters}
                                           classNameNumber={3}
                                           styleNumber={3}
-                                        />}
+                                        />
                                       </Grid>
                                     </Grid>
                                   }

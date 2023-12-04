@@ -19,7 +19,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -267,8 +267,7 @@ const TaxiiCollectionEditionContainer = (props) => {
             />
           </div>
           <div className="clearfix" />
-          {isFilterGroupNotEmpty(filters)
-            && <FilterIconButton
+          <FilterIconButton
               filters={filters}
               handleRemoveFilter={handleRemoveFilter}
               handleSwitchLocalMode={handleSwitchLocalMode}
@@ -276,7 +275,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               classNameNumber={2}
               styleNumber={2}
               redirection
-          />}
+          />
         </Form>
       )}
     </Formik>

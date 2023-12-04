@@ -17,7 +17,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
   Filter,
-  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
+  filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
 } from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
@@ -258,15 +258,14 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
                 />
               </div>
               <div className="clearfix" />
-              {filters && isFilterGroupNotEmpty(filters)
+              {filters
                 && <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
                   classNameNumber={2}
-              />
-              }
+              />}
             </Form>
           )}
         </Formik>

@@ -17,7 +17,6 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
   initialFilterGroup,
-  isFilterGroupNotEmpty,
 } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
@@ -240,7 +239,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={defaultHandleAddFilter}
           />
-          {isFilterGroupNotEmpty(filters) && (
+
             <FilterIconButton
               helpers={helpers}
               filters={filters}
@@ -248,7 +247,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
               className={5}
               redirection
             />
-          )}
           <div className="clearfix" />
         </div>
         <QueryRenderer
