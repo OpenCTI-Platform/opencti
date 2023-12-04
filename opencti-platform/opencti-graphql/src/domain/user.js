@@ -16,13 +16,13 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
+import { elDelete, elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import {
-  buildPagination,
+  buildPagination, INDEX_INTERNAL_OBJECTS,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INTERNAL_OBJECTS
@@ -686,7 +686,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
-  const workspace = await elRawSearch(context, authUser, null, {
+  const workspaceResult = await elRawSearch(context, authUser, null, {
     index: READ_INDEX_INTERNAL_OBJECTS,
     body: {
       query: {
@@ -701,10 +701,28 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   }).catch((err) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
-  console.log('workspace', workspace);
+  for (let index = 0; index < workspaceResult.hits.hits.length; index += 1) {
+    const hit = workspaceResult.hits.hits[index];
+
+    let currentUserIsAdmin = false;
+    let anotherUserIsAdmin = false;
+
+    for (let authIndex = 0; authIndex < hit._source.authorized_members.length; authIndex += 1) {
+      const oneMember = hit._source.authorized_members[authIndex];
+      if (oneMember.id === userId && oneMember.access_right === 'admin') {
+        currentUserIsAdmin = true;
+      } else if (oneMember.access_right === 'admin') {
+        anotherUserIsAdmin = true;
+      }
+    }
+    if (currentUserIsAdmin && !anotherUserIsAdmin) {
+      console.log('Need to be deleted =>', hit);
+      elDelete(INDEX_INTERNAL_OBJECTS, hit._id);
+    }
+  }
 };
 
-export const deleteAllTrigerAndDigestByUser = async (userId) => {
+export const deleteAllTriggerAndDigestByUser = async (userId) => {
   return await elRawDeleteByQuery({
     index: READ_INDEX_INTERNAL_OBJECTS,
     refresh: true,
@@ -763,7 +781,7 @@ export const userDelete = async (context, user, userId) => {
       throw ForbiddenAccess();
     }
   }
-  await deleteAllTrigerAndDigestByUser(userId);
+  await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
 
