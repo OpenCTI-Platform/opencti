@@ -136,9 +136,6 @@ nav:
     - Explore knowledge:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
-      - Filters:
-        - Filters knowledge: usage/filters.md
-        - Filter migration for OpnCTI 5.12: usage/filters-migration.md
       - Explore by entity types:
         - Analysis: usage/exploring-analysis.md
         - Cases: usage/exploring-cases.md
@@ -205,6 +202,9 @@ nav:
       - Knowledge graph: reference/graph.md
     - APIs and feeds:
       - GraphQL API: reference/api.md
+      - Filters:
+        - Filters knowledge: reference/filters.md
+        - Filter migration for 5.12: reference/filters-migration.md
       - Data Streaming: reference/streaming.md
       - TAXII Feeds: reference/taxii-feeds.md
       - CSV Feeds: reference/csv-feeds.md

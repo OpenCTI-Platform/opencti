@@ -24,6 +24,11 @@ Also, using the `Advanced search` button, it is possible to directly put filters
 
 ![Advanced search](assets/advanced-search.png)
 
+!!! info "Advanced filters"
+
+    You have access to advanced filters all accross the UI, if you want to know more about how to use these 
+    filters with the API or the Python library, [don't hesitate to read the dedicated page](../reference/filters.md)
+
 ### Full text search in files content
 
 !!! tip "Enterprise edition"

@@ -1,22 +1,23 @@
 # Filters format migration for OpenCTI 5.12
 
 The version 5.12 of OpenCTI introduces breaking changes to the [filters format](./filters.md) used in the API.
-This documentation describes how you can migrate your scripts or programs that call the OpenCTI API, when updating from a version of OpenCTI inferior to 5.12.     
+This documentation describes how you can migrate your scripts or programs that call the OpenCTI API, when updating from a version of OpenCTI inferior to 5.12.
 
 ## Context: why this migration?
 
-Before OpenCTI 5.12, it was not possible to construct complex filters combinations: we couldn't embed filters within filters, 
+Before OpenCTI 5.12, it was not possible to construct complex filters combinations: we couldn't embed filters within filters,
 using different boolean modes (and/or), filter on all available attributes or relations for a given entity type, or even test for empty fields of any sort.
 
 Legacy of years of development, the former format and filtering mechanics were not adapted for such task, and a profound refactoring was necessary to make it happen.
 
 Here are the main pain points we identified beforehand:
-- the filters frontend and backend formats were very different, requiring careful conversions
-- the filter keys were enums, i.e. the keys would belong to static lists of keys, depending on each given entity type and maintained by hands
-- the operator (`eq`, `not_eq`, etc.) was _inside_ the key (e.g. `entity_type_not_eq`), limiting operator combination and requiring error-prone parsing
-- the frontend format imposed a unique form of combination (`and` between filters, `or` between values inside each filter, and nothing else possible)
-- the flat list structure made impossible filter imbrication by nature
-- Filters and query options were mixed in GQL queries for the same purpose (for instance, option `types` analog to a filter on key `entity_type`)
+
+* the filters frontend and backend formats were very different, requiring careful conversions
+* the filter keys were enums, i.e. the keys would belong to static lists of keys, depending on each given entity type and maintained by hands
+* the operator (`eq`, `not_eq`, etc.) was _inside_ the key (e.g. `entity_type_not_eq`), limiting operator combination and requiring error-prone parsing
+* the frontend format imposed a unique form of combination (`and` between filters, `or` between values inside each filter, and nothing else possible)
+* the flat list structure made impossible filter imbrication by nature
+* Filters and query options were mixed in GQL queries for the same purpose (for instance, option `types` analog to a filter on key `entity_type`)
 
 ```ts
 // filter formats in OpenCTI <= 5.11
@@ -48,7 +49,7 @@ const filters = [
 The new format brings a lot of short-term benefits and is compatible with our long-term vision of the filtering capabilities in OpenCTI.
 We chose a simple recursive structure that allow complex combination of any sort with respect to basic boolean logic.
 
-The list of operator is fixed and can be extended during future developments. 
+The list of operator is fixed and can be extended during future developments.
 
 
 ```ts
@@ -85,18 +86,18 @@ const filters = {
 };
 ```
 
-Because changing filters format impacts almost everything in the platform, we decided to do a complete refactoring once and for all. 
-We want this migration process to be clear and easy.   
+Because changing filters format impacts almost everything in the platform, we decided to do a complete refactoring once and for all.
+We want this migration process to be clear and easy.
 
 ## What has been changed
 
 The new filter implementation bring major changes in the way filters are processed and executed.
 
 - We change the filters formats (see `FilterGroup` type above):
-    - In the frontend, an operator and a mode are stored for each key
-    - The new format enables filters imbrication thanks to the new attribute 'filterGroups'
-    - The keys are of type string (no more static list of enums)
-    - The 'values' attribute can no longer contain null values (use the `nil` operator instead)
+  - In the frontend, an operator and a mode are stored for each key
+  - The new format enables filters imbrication thanks to the new attribute 'filterGroups'
+  - The keys are of type string (no more static list of enums)
+  - The 'values' attribute can no longer contain null values (use the `nil` operator instead)
 
 - We also renamed some filter keys, to be consistent with the entities schema definitions.
 
@@ -106,7 +107,7 @@ The new filter implementation bring major changes in the way filters are process
 
 ## How to migrate your own filters
 
-We wrote a migration script to convert all filters created and stored in database prior to version 5.12 
+We wrote a migration script to convert all filters created and stored in database prior to version 5.12
 (filters contained in streams, taxii collections, feeds, triggers, playbooks, dashboards).
 These filters will thus be migrated automatically when starting your updated platform.
 
@@ -114,13 +115,15 @@ However, you might have your own connectors, queries, or python scripts that use
 If this is the case, you must change the filter format if you want to run the code against OpenCTI 5.12.
 
 To convert filters prior to version 5.12 in the new format:
+
 - update the `key` field if it has been changed in 5.12 (see the full list below)
 - rename the field `filterMode` in `mode`
 - `operator` unchanged
 - if `values` does not contain `null`, you can keep the array as-is
 
 Now you can build your new `FilterGroup` object with:
-- `mode: 'and'` 
+
+- `mode: 'and'`
 - `filters` = array of converted filters (following previous steps),
 - `filterGroups: []`
 
@@ -149,10 +152,10 @@ const newFilters = {
 if `values` contains a `null` value (for instance `['XXX', null]`), you need to convert the filter using the new `nil` / `not_nil` operators.
 This will happen if you have old filters on labels with the "no label" value, which is actually a `null` in `values`.
 
-- Extract one filter dedicated to `null`
-  - `operator: 'nil'` if operator was `'eq'`, `operator = 'not_nil'` if operator was `not_eq`
-  - `values = []`
-- extract another filter for all the other values
+* Extract one filter dedicated to `null`
+  * `operator: 'nil'` if operator was `'eq'`, `operator = 'not_nil'` if operator was `not_eq`
+  * `values = []`
+* extract another filter for all the other values
 
 ```ts
 // "Must have a label that is not Label1 or Label2"
@@ -183,20 +186,20 @@ const newFilters = {
 }
 ```
 
-To preserve the logic of your old filter you might need to compose nested filter groups. 
+To preserve the logic of your old filter you might need to compose nested filter groups.
 This could happen for instance when using `eq` operator with `null` values for one filter, combined in `and` mode with other filters
 
 for example:
 
 > "All Reports that have either the label "label1" or "label2", or no label at all"
 >
-> `(entity_type = Report) AND (label = "No label" OR label1 OR label2)`.
+> `(entity_type = Report) AND (label = "No label" OR label1 OR label2)`
 
 Cannot be expressed a simple list of filters, it requires a `filterGroup`. This case is detailed in the examples below.
 
 ### Filter keys that have been renamed
 
-Make sure you address all the filter keys that require conversion, following the map below: 
+Make sure you address all the filter keys that require conversion, following the map below:
 
 ```ts
 // array of [oldKey, newKey] for the renamed keys
@@ -221,7 +224,7 @@ Let's start with a simple case:
 
 > All Reports with label "label1" or "label2"
 >
->  (entity_type = Report) AND (label = label1 OR label2)
+>  `(entity_type = Report) AND (label = label1 OR label2)`
 
 
 ```ts
@@ -263,8 +266,8 @@ const newFilters = {
 And now for a more complex case involving filter group nesting:
 
 > "All Reports that have either the label "label1" or "label2", or no label at all"
-> 
-> (entity_type = Report) AND (label = "No label" OR label1 OR label2)
+>
+> `(entity_type = Report) AND (label = "No label" OR label1 OR label2)`
 
 
 ```ts
