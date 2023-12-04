@@ -84,7 +84,7 @@ const createIndividualThreatCategories = async (context) => {
       filters: [{ key: 'category', values: [group] }],
       filterGroups: [],
     };
-    const args = { connectionFormat: false, filters };
+    const args = { connectionFormat: false, filters, noFiltersChecking: true };
     const vocabsFromGroup = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], args);
     const groupExistingVocabs = (vocabsFromGroup ?? []).map((v) => ({ key: v.name, description: v.description, aliases: v.aliases }));
     const groupVocabToMaintains = groupExistingVocabs.filter((g) => !individualVocabKeys.includes(g.key));

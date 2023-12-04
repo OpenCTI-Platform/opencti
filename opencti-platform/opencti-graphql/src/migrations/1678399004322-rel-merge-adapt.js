@@ -17,6 +17,7 @@ export const up = async (next) => {
       filters: [{ key: 'event_type', values: ['merge'] }],
       filterGroups: [],
     },
+    noFiltersChecking: true,
     orderBy: 'created_at',
     orderMode: 'asc'
   });

@@ -53,6 +53,7 @@ export const up = async (next) => {
     indices: [READ_INDEX_STIX_META_OBJECTS],
     connectionFormat: false,
     filters,
+    noFiltersChecking: true,
   });
 
   const updateVocabulary = async (vocabulary) => {

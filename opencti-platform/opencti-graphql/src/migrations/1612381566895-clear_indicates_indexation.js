@@ -30,7 +30,7 @@ export const up = async (next) => {
     filters: [{ key: buildRefRelationKey(RELATION_INDICATES), values: ['EXISTS'] }],
     filterGroups: [],
   };
-  const opts = { types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], filters, callback };
+  const opts = { types: [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], filters, noFiltersChecking: true, callback };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   // Apply operations.
   let currentProcessing = 0;
