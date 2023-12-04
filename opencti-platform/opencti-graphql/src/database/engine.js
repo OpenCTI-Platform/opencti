@@ -2286,17 +2286,17 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       }
     );
 };
-export const elList = async (context, user, indexName, options = {}, noFiltersChecking = false) => {
-  const convertedFilters = (noFiltersChecking || !options.filters)
-    ? options.filters
-    : checkAndConvertFilters(options.filters);
-  const { first = MAX_SEARCH_SIZE, infinite = false } = options;
+export const elList = async (context, user, indexName, opts = {}) => {
+  const { first = MAX_SEARCH_SIZE, maxSize = undefined } = opts;
+  const { filters, noFiltersChecking = false } = opts;
+  const convertedFilters = noFiltersChecking ? filters : checkAndConvertFilters(filters);
+  let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
-  let searchAfter = options.after;
+  let searchAfter = opts.after;
   const listing = [];
   const publish = async (elements) => {
-    const { callback } = options;
+    const { callback } = opts;
     if (callback) {
       const callbackResult = await callback(elements);
       continueProcess = callbackResult === true || callbackResult === undefined;
@@ -2306,15 +2306,18 @@ export const elList = async (context, user, indexName, options = {}, noFiltersCh
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const opts = { ...options, filters: convertedFilters, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(context, user, indexName, opts);
-    if (!infinite && (elements.length === 0 || elements.length < first)) {
+    const paginateOpts = { ...opts, filters: convertedFilters, first, after: searchAfter, connectionFormat: false };
+    const elements = await elPaginate(context, user, indexName, paginateOpts);
+    emitSize += elements.length;
+    const noMoreElements = elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE);
+    const moreThanMax = maxSize ? emitSize >= maxSize : false;
+    if (noMoreElements || moreThanMax) {
       if (elements.length > 0) {
         await publish(elements);
       }
       hasNextPage = false;
     } else if (elements.length > 0) {
-      const { sort } = R.last(elements);
+      const { sort } = elements[elements.length - 1];
       searchAfter = offsetToCursor(sort);
       await publish(elements);
     }

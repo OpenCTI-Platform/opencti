@@ -199,7 +199,8 @@ const initActivityManager = () => {
           filters: [{ key: ['event_access'], values: ['EXISTS'] }],
           filterGroups: [],
         },
-      }, true);
+        noFiltersChecking: true
+      });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

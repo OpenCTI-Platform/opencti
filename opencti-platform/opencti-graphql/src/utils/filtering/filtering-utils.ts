@@ -19,6 +19,7 @@ import {
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
+import { UnsupportedError } from '../../config/errors';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -217,7 +218,7 @@ const getRelationsConvertedNames = (relationNames: string[]) => {
  * - convert relation refs key if any
  * @param filterGroup
  */
-export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
+export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
   if (!filterGroup) {
     return undefined;
   }
@@ -247,7 +248,7 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup) => {
         }
       });
       if (incorrectKeys.length > 0) {
-        throw Error(`incorrect filter keys: ${incorrectKeys} not existing in any schema definition`);
+        throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
       }
     }
 

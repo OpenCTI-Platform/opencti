@@ -27,7 +27,7 @@ import { ALREADY_DELETED_ERROR, TYPE_LOCK_ERROR } from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { elList, internalLoadById } from '../database/middleware-loader';
+import { internalLoadById } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -48,6 +48,7 @@ import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
 import { FilterMode, FilterOperator } from '../generated/graphql';
+import { elList } from '../database/engine';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -192,7 +193,8 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
   };
-  await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
+  const opts = { filters, noFiltersChecking: true, callback };
+  await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
 export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<DataEvent>, forRules: Array<RuleRuntime> = []) => {

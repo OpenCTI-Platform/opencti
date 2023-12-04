@@ -309,8 +309,9 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     filters,
     types: [relationType],
     connectionFormat: false,
+    noFiltersChecking: true,
     search,
-  }, true);
+  });
   // For each relation resolved the target entity
   // Filter on element id if necessary
   let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
@@ -391,11 +392,9 @@ export const listThings = async (context, user, thingsTypes, args = {}) => {
   const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
-export const listAllThings = async (context, user, thingsTypes, args = {}, noFiltersChecking = false) => {
-  const { indices = READ_DATA_INDICES } = args;
-  const convertedFilters = (noFiltersChecking || !args.filters)
-    ? args.filters
-    : checkAndConvertFilters(args.filters);
+export const listAllThings = async (context, user, thingsTypes, args = {}) => {
+  const { indices = READ_DATA_INDICES, noFiltersChecking = false } = args;
+  const convertedFilters = noFiltersChecking ? args.filters : checkAndConvertFilters(args.filters);
   const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args, filters: convertedFilters });
   return elList(context, user, indices, paginateArgs);
 };
@@ -1055,8 +1054,9 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
       filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
       filterGroups: [],
     },
+    noFiltersChecking: true,
     connectionFormat: false,
-  }, true);
+  });
 };
 export const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
@@ -1879,9 +1879,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         filters: [{ key: 'user_email', values: [initial.contact_information] }],
         filterGroups: [],
       },
+      noFiltersChecking: true,
       connectionFormat: false
     };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
     if (users.length > 0) {
       throw FunctionalError('Cannot update an individual corresponding to a user');
     }
@@ -2108,9 +2109,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
           filterGroups: [],
         },
+        noFiltersChecking: true,
         connectionFormat: false
       };
-      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args, true);
+      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
       if (individuals.length > 0) {
         const individualId = R.head(individuals).id;
         const patch = {
@@ -3388,9 +3390,10 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         filters: [{ key: 'user_email', values: [element.contact_information] }],
         filterGroups: [],
       },
+      noFiltersChecking: true,
       connectionFormat: false
     };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args, true);
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
     if (users.length > 0) {
       throw FunctionalError('Cannot delete an individual corresponding to a user');
     }

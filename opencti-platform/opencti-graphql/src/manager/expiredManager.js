@@ -41,7 +41,7 @@ const revokedInstances = async (context) => {
     ],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, callback };
+  const opts = { filters, noFiltersChecking: true, connectionFormat: false, callback };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
 };
 

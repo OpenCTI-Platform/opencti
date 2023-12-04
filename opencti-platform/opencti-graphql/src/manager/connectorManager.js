@@ -3,8 +3,7 @@ import { lockResource, redisDeleteWorks, redisGetConnectorStatus, redisGetWork }
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
-import { elDeleteInstances, elUpdate } from '../database/engine';
-import { elList } from '../database/middleware-loader';
+import { elDeleteInstances, elList, elUpdate } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { INDEX_HISTORY } from '../database/utils';
 import { now, sinceNowInDays } from '../utils/format';
@@ -66,6 +65,7 @@ const closeOldWorks = async (context, connector) => {
     };
     await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
       filters,
+      noFiltersChecking: true,
       types: ['Work'],
       connectionFormat: false,
       callback: queryCallback
@@ -93,6 +93,7 @@ const deleteCompletedWorks = async (context, connector) => {
   await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
     filters,
     types: ['Work'],
+    noFiltersChecking: true,
     connectionFormat: false,
     callback: queryCallback
   });

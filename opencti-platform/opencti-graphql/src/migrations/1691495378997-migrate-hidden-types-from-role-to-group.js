@@ -1,9 +1,8 @@
 import { Promise } from 'bluebird';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { elRawUpdateByQuery, elReplace, ES_MAX_CONCURRENCY } from '../database/engine';
+import { elRawUpdateByQuery, elList, elReplace, ES_MAX_CONCURRENCY } from '../database/engine';
 import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, } from '../database/utils';
 import { DatabaseError } from '../config/errors';
-import { elList } from '../database/middleware-loader';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_ROLE } from '../schema/internalRelationship';

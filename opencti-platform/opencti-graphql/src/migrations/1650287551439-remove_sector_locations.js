@@ -19,7 +19,7 @@ export const up = async (next) => {
     filters: [{ key: 'fromType', values: [ENTITY_TYPE_IDENTITY_SECTOR] }],
     filterGroups: [],
   };
-  const opts = { types: [RELATION_LOCATED_AT], filters, callback };
+  const opts = { types: [RELATION_LOCATED_AT], filters, noFiltersChecking: true, callback };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, opts);
   logApp.info(`[MIGRATION] Cleaning located-at relationships between Sectors and Locations done in ${new Date() - start} ms`);
   next();

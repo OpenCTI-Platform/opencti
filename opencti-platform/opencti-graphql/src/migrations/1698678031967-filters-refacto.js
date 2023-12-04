@@ -186,9 +186,9 @@ export const up = async (next) => {
           }
         ],
         filterGroups: [],
-      }
-    },
-    true,
+      },
+      noFiltersChecking: true
+    }
   );
 
   let tasksFiltersConvertor = {};

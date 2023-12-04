@@ -92,7 +92,8 @@ const findTaskToExecute = async (context) => {
       filters: [{ key: 'completed', values: [false] }],
       filterGroups: [],
     },
-  }, true);
+    noFiltersChecking: true
+  });
   if (tasks.length === 0) {
     return null;
   }
@@ -329,10 +330,15 @@ const executeUnshare = async (context, user, actionContext, element) => {
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
     // resolve all containers of this element
-    const args = { filters:
-        { mode: 'and', filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }], filterGroups: [] },
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }],
+        filterGroups: []
+      },
+      noFiltersChecking: true
     };
-    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args, true);
+    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
     const grantedTo = containers.map((n) => n[buildRefRelationKey(RELATION_GRANTED_TO)]).flat();
     if (!grantedTo.includes(target)) {
       await deleteRelationsByFromAndTo(context, user, element.id, target, RELATION_GRANTED_TO, ABSTRACT_BASIC_RELATIONSHIP);

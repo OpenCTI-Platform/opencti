@@ -150,7 +150,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: removedIds, operator: FilterOperator.Wildcard }],
         filterGroups: [],
       };
-      const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, indices: READ_DATA_INDICES };
+      const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES };
       const targets = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
       deletedTargets.push(...targets);
     }

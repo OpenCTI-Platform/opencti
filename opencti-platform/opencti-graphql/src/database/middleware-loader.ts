@@ -1,13 +1,12 @@
 import * as R from 'ramda';
 import {
   buildPagination,
-  offsetToCursor,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
 } from './utils';
-import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
+import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -33,8 +32,6 @@ import {
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
-const MAX_SEARCH_SIZE = 5000;
-
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
     key: string; // nested filters handle special cases for elastic, it's an internal format
@@ -55,7 +52,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
   useWildcardPrefix?: boolean;
   useWildcardSuffix?: boolean;
   first?: number | null;
-  infinite?: boolean;
   after?: string | undefined | null;
   orderBy?: any,
   orderMode?: InputMaybe<OrderingMode>;
@@ -65,7 +61,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 type InternalListEntities = <T extends BasicStoreCommon>
-(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>, noFiltersChecking?: boolean) => Promise<Array<T>>;
+(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
@@ -85,43 +81,11 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
-  ids?: Array<string>;
-  indices?: Array<string>;
+  ids?: Array<string>
+  indices?: Array<string>
+  noFiltersChecking?: boolean
   includeAuthorities?: boolean | null
 }
-
-export const elList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {
-  const { first = MAX_SEARCH_SIZE, infinite = false } = options;
-  let hasNextPage = true;
-  let continueProcess = true;
-  let searchAfter = options.after;
-  const listing: Array<T> = [];
-  const publish = async (elements: Array<T>) => {
-    const { callback } = options;
-    if (callback) {
-      const callbackResult = await callback(elements);
-      continueProcess = callbackResult || callbackResult === undefined;
-    } else {
-      listing.push(...elements);
-    }
-  };
-  while (continueProcess && hasNextPage) {
-    // Force options to prevent connection format and manage search after
-    const opts = { ...options, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(context, user, indices, opts);
-    if (!infinite && (elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE))) {
-      if (elements.length > 0) {
-        await publish(elements);
-      }
-      hasNextPage = false;
-    } else if (elements.length > 0) {
-      const { sort } = elements[elements.length - 1];
-      searchAfter = offsetToCursor(sort);
-      await publish(elements);
-    }
-  }
-  return listing;
-};
 
 // relations
 interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
@@ -456,10 +420,10 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}, noFiltersChecking = false) => {
+export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const { filters } = args;
-  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkAndConvertFilters(filters);
+  const { filters, noFiltersChecking } = args;
+  const convertedFilters = noFiltersChecking ? filters : checkAndConvertFilters(filters);
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
@@ -468,9 +432,9 @@ export const listEntities: InternalListEntities = async (context, user, entityTy
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<Array<T>> => {
-  const { indices = READ_ENTITIES_INDICES } = args;
-  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkAndConvertFilters(args.filters);
+  args: EntityOptions<T> = {}): Promise<Array<T>> => {
+  const { indices = READ_ENTITIES_INDICES, noFiltersChecking = false } = args;
+  const filters = noFiltersChecking ? args.filters : checkAndConvertFilters(args.filters);
   const paginateArgs = buildEntityFilters({ entityTypes, filters, ...args });
   return elList(context, user, indices, paginateArgs);
 };

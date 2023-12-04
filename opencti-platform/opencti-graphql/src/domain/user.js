@@ -1104,8 +1104,8 @@ export const buildCompleteUser = async (context, client) => {
     filters: [{ key: 'contact_information', values: [client.user_email] }],
     filterGroups: [],
   };
-  const args = { filters: contactInformationFilter, connectionFormat: false };
-  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args, true);
+  const args = { filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
+  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
   const organizationsPromise = batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
   const userGroupsPromise = listThroughGetTo(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
