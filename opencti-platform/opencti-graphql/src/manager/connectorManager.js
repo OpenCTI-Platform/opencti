@@ -65,6 +65,7 @@ const closeOldWorks = async (context, connector) => {
     };
     await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
       filters,
+      noFiltersChecking: true,
       types: ['Work'],
       connectionFormat: false,
       callback: queryCallback
