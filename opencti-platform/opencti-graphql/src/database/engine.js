@@ -531,6 +531,12 @@ const elCreateCoreSettings = async () => {
   });
 };
 const elCreateIndexTemplate = async (index) => {
+  const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
+  // Compat with platform initiated prior 5.9.X
+  const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
+  if (isExistByName || isExist) {
+    return null;
+  }
   let settings;
   if (engine instanceof ElkClient) {
     settings = {
@@ -551,7 +557,7 @@ const elCreateIndexTemplate = async (index) => {
     };
   }
   const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
-  await engine.indices.putIndexTemplate({
+  const createdTemplate = await engine.indices.putIndexTemplate({
     name: index,
     create: false,
     body: {
@@ -747,6 +753,7 @@ const elCreateIndexTemplate = async (index) => {
   }).catch((e) => {
     throw DatabaseError('[SEARCH] Error creating index template', { error: e });
   });
+  return createdTemplate;
 };
 export const elUpdateMapping = async (properties) => {
   const indices = await elPlatformIndices();
