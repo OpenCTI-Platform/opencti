@@ -252,8 +252,7 @@ const TaxiiCollectionCreation = (props) => {
                 />
               </div>
               <div className="clearfix" />
-              {isFilterGroupNotEmpty(filters)
-                && <FilterIconButton
+              <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
@@ -261,7 +260,7 @@ const TaxiiCollectionCreation = (props) => {
                   classNameNumber={2}
                   styleNumber={2}
                   redirection
-              />}
+              />
               <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button

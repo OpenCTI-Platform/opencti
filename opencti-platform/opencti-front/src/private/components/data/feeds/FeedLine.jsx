@@ -14,7 +14,7 @@ import Skeleton from '@mui/material/Skeleton';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
     <Slide direction="up" ref={ref} {...props} />
@@ -95,12 +95,12 @@ class FeedLineLineComponent extends Component {
               >
                 {node.feed_attributes.map((n) => n.attribute).join(', ')}
               </div>
-              {isFilterGroupNotEmpty(filters) && <FilterIconButton
+               <FilterIconButton
                 filters={filters}
                 classNameNumber={3}
                 styleNumber={3}
                 dataColumns={dataColumns}
-              />}
+              />
             </div>
           }
         />

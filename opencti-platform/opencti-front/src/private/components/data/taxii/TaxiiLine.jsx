@@ -15,7 +15,7 @@ import TaxiiPopover from './TaxiiPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
     <Slide direction="up" ref={ref} {...props} />
@@ -103,12 +103,12 @@ class TaxiiLineLineComponent extends Component {
               >
                 <ItemCopy content={node.id} variant="inLine" />
               </div>
-              {isFilterGroupNotEmpty(filters) && <FilterIconButton
+              <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
                 classNameNumber={3}
                 styleNumber={3}
-              />}
+              />
             </>
           }
         />

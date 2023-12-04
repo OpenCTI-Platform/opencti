@@ -51,7 +51,6 @@ import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
 import Transition from '../Transition';
 import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
-import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   container: {
@@ -457,17 +456,15 @@ class ListLines extends Component {
           availableFilterKeys={availableFilterKeys}
           helpers={helpers}
         />
-        {isFilterGroupNotEmpty(filters) && (
-          <FilterIconButton
-            helpers={helpers}
-            availableFilterKeys={availableFilterKeys}
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
-          />
-        )}
+        <FilterIconButton
+          helpers={helpers}
+          availableFilterKeys={availableFilterKeys}
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          redirection
+        />
         {message && (
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
@@ -711,7 +708,7 @@ ListLines.propTypes = {
   inline: PropTypes.bool,
   searchContext: PropTypes.object,
   handleExportCsv: PropTypes.func,
-  helpers: PropTypes.func,
+  helpers: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

@@ -30,7 +30,6 @@ import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRel
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
-import { isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   container: {
@@ -189,13 +188,13 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             handleSwitchLocalMode={handleSwitchLocalMode}
             handleSwitchGlobalMode={handleSwitchGlobalMode}
           />
-          {isFilterGroupNotEmpty(filters) && <FilterIconButton
+          <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
             classNameNumber={6}
             styleNumber={2}
             redirection
-          />}
+          />
           <div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               <Tooltip title={t('Matrix view')}>

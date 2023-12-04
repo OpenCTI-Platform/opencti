@@ -27,7 +27,7 @@ import {
   deserializeFilterGroupForFrontend,
   Filter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
@@ -489,15 +489,14 @@ TriggerEditionOverviewProps
                       <div className="clearfix"/>
                   </div>
               }
-              {isFilterGroupNotEmpty(filters)
-                && <FilterIconButton
+              <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   classNameNumber={2}
                   redirection
-              />}
+              />
             </span>
                     }
                 </Form>

@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   bodyItem: {
@@ -105,7 +105,7 @@ const dataColumns: DataColumns = {
       const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
         <>
-          {nodeFilters && isFilterGroupNotEmpty(nodeFilters) && <FilterIconButton
+          {nodeFilters && <FilterIconButton
             filters={nodeFilters}
             dataColumns={this}
             classNameNumber={3}

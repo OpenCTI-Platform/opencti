@@ -87,6 +87,8 @@ interface FilterIconButtonContainerProps {
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
   chipColor?: ChipOwnProps['color'];
   helpers?: UseLocalStorageHelpers;
+  hasRenderedRef: boolean;
+  setHasRenderedRef: () => void;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -102,6 +104,8 @@ FilterIconButtonContainerProps
   chipColor,
   handleRemoveFilter,
   helpers,
+  hasRenderedRef,
+  setHasRenderedRef,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -122,7 +126,7 @@ FilterIconButtonContainerProps
   }
   const latestItemRef = useRef(null);
   const nbDisplayFilter = useRef(0);
-  const hasRenderedRef = useRef(false);
+
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
   );
@@ -136,7 +140,7 @@ FilterIconButtonContainerProps
     // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
     useEffect(() => {
       if (
-        hasRenderedRef.current
+        hasRenderedRef
         && latestItemRef.current
         && nbDisplayFilter.current < displayedFilters.length
       ) {
@@ -144,9 +148,10 @@ FilterIconButtonContainerProps
           filterId: displayedFilters[displayedFilters.length - 1].id,
           anchorEl: latestItemRef.current as unknown as HTMLElement,
         });
+      } else {
+        setHasRenderedRef();
       }
       nbDisplayFilter.current = displayedFilters.length;
-      hasRenderedRef.current = true;
     }, [displayedFilters]);
   }
   const handleClose = () => {
@@ -194,7 +199,6 @@ FilterIconButtonContainerProps
         return null;
     }
   };
-
   const isReadonlyFilter = helpers || handleRemoveFilter;
   return (
     <Box
@@ -206,7 +210,7 @@ FilterIconButtonContainerProps
             marginRight: '30px',
           }
           : {
-            marginTop: '10px',
+            marginTop: displayedFilters.length === 0 ? 0 : '10px',
             gap: '10px',
             display: 'flex',
             flexWrap: 'wrap',

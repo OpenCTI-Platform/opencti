@@ -27,7 +27,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
+  filtersAfterSwitchLocalMode,
   initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
@@ -479,8 +479,7 @@ const PlaybookAddComponentsContent = ({
                           />
                         </div>
                         <div className="clearfix" />
-                        {isFilterGroupNotEmpty(filters)
-                          && <FilterIconButton
+                        <FilterIconButton
                             filters={filters}
                             handleRemoveFilter={handleRemoveFilter}
                             handleSwitchGlobalMode={handleSwitchGlobalMode}
@@ -488,7 +487,7 @@ const PlaybookAddComponentsContent = ({
                             classNameNumber={2}
                             styleNumber={2}
                             redirection
-                        />}
+                        />
                         <div className="clearfix" />
                       </div>
                     );

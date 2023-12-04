@@ -25,7 +25,6 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
-import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = () => ({
@@ -219,16 +218,14 @@ class ListCards extends Component {
           availableFilterKeys={availableFilterKeys}
           helpers={helpers}
         />
-        {isFilterGroupNotEmpty(filters) && (
-          <FilterIconButton
-            helpers={helpers}
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
-          />
-        )}
+        <FilterIconButton
+          helpers={helpers}
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          redirection
+        />
         {typeof handleToggleExports === 'function' && (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixDomainObjectsExports
@@ -268,7 +265,7 @@ ListCards.propTypes = {
   paginationOptions: PropTypes.object,
   numberOfElements: PropTypes.object,
   availableFilterKeys: PropTypes.array,
-  helpers: PropTypes.func,
+  helpers: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);

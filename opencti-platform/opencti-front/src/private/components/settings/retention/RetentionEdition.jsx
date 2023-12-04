@@ -17,7 +17,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode, isFilterGroupNotEmpty,
+  filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -227,8 +227,7 @@ const RetentionEditionContainer = (props) => {
               />
             </div>
             <div className="clearfix" />
-            {isFilterGroupNotEmpty(filters)
-              && <FilterIconButton
+            <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
                 handleSwitchGlobalMode={handleSwitchGlobalMode}
@@ -237,7 +236,6 @@ const RetentionEditionContainer = (props) => {
                 styleNumber={2}
                 redirection
               />
-            }
             <div className={classes.buttons}>
               <Button
                 variant="contained"

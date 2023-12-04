@@ -15,7 +15,7 @@ import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
     <Slide direction="up" ref={ref} {...props} />
@@ -90,14 +90,13 @@ class StreamLineLineComponent extends Component {
               >
                 {node.description}
               </div>
-              {isFilterGroupNotEmpty(filters)
-                && <FilterIconButton
+              <FilterIconButton
                   filters={filters}
                   dataColumns={dataColumns}
                   classNameNumber={3}
                   styleNumber={3}
-                />
-              }
+              />
+
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.id.width, paddingRight: 10 }}

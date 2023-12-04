@@ -17,7 +17,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -229,8 +229,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
             />
           </div>
           <div className="clearfix" />
-          {isFilterGroupNotEmpty(filters)
-            && <FilterIconButton
+          <FilterIconButton
               filters={filters}
               classNameNumber={2}
               styleNumber={2}
@@ -238,7 +237,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
               handleSwitchLocalMode={handleSwitchLocalMode}
               handleSwitchGlobalMode={handleSwitchGlobalMode}
               redirection
-          />}
+          />
         </Form>
       )}
     </Formik>

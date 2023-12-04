@@ -46,7 +46,7 @@ import { Theme } from '../../../../components/Theme';
 import {
   findFilterFromKey,
   initialFilterGroup,
-  isFilterGroupNotEmpty,
+
   removeFilter,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -442,14 +442,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           >
             <SettingsOutlined />
           </IconButton>
-          {isFilterGroupNotEmpty(filters)
-            && <FilterIconButton
+            <FilterIconButton
                   helpers={helpers}
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}
               classNameNumber={8}
             ></FilterIconButton>
-          }
           <Popover
             classes={{ paper: classes.container }}
             open={openTimeField}

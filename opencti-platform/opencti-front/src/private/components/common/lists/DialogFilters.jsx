@@ -9,7 +9,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 const DialogFilters = ({
   handleOpenFilters,
@@ -46,7 +45,7 @@ const DialogFilters = ({
       >
         <DialogTitle>{t('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
-          {isFilterGroupNotEmpty(filters) && (
+
             <FilterIconButton
               filters={filters}
               handleRemoveFilter={defaultHandleRemoveFilter}
@@ -56,7 +55,6 @@ const DialogFilters = ({
               classNameNumber={4}
               styleNumber={2}
             />
-          )}
           {filterElement}
         </DialogContent>
         <DialogActions>

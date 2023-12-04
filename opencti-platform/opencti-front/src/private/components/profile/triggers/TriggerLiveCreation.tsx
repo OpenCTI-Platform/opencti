@@ -32,7 +32,7 @@ import {
   Filter,
   FilterGroup,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  initialFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
@@ -339,15 +339,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      {isFilterGroupNotEmpty(filters)
-        && <FilterIconButton
+      <FilterIconButton
           filters={filters}
           handleRemoveFilter={handleRemoveFilter}
           handleSwitchGlobalMode={handleSwitchGlobalMode}
           handleSwitchLocalMode={handleSwitchLocalMode}
           classNameNumber={2}
           redirection
-      />}
+      />
     </React.Fragment>
   );
 
