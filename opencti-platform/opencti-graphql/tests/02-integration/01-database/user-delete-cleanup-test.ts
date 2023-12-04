@@ -139,6 +139,19 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
     expect(sharedInvestigationData.authorized_members.length).toBe(2);
 
+    // AND user having a workspace with view only rights
+    const adminInvestigationInput: WorkspaceAddInput = {
+      name: 'investigation-owned-by-admin',
+      description: 'this investigation is owned by the admin, do not delete.',
+      type: 'investigation'
+    };
+
+    const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
+    const adminInvestigationAuthMembers: MemberAccessInput[] = adminInvestigationData.authorized_members;
+    adminInvestigationAuthMembers.push({ id: userToDeletedAuth.id, access_right: 'view' });
+    await editAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
+    expect(adminInvestigationData.authorized_members.length).toBe(2);
+
     // ******************************************
     // WHEN the user is deleted
     await userDelete(adminContext, ADMIN_USER, userToDeletedAuth.id);
@@ -159,5 +172,8 @@ describe('Testing user delete on cascade [issue/3720]', () => {
 
     const investigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, privateInvestigationData.id);
     expect(investigationThatShouldBeGone, 'This Investigation was for the deleted user only, should be cleaned-up').toBeUndefined();
+
+    const adminInvestigationThatStay = await findWorkspaceById(adminContext, ADMIN_USER, adminInvestigationData.id);
+    expect(adminInvestigationThatStay, 'User is view only on this investigation owned by admin, it should not be deleted with the user.').toBeDefined();
   });
 });

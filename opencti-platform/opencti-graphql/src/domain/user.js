@@ -694,7 +694,6 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
-  console.log(' ********************************************************* START');
   const queryToFindUserWorkspace = {
     index: READ_INDEX_INTERNAL_OBJECTS,
     body: {
@@ -713,11 +712,8 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
 
-  // const convertedResults = await elConvertHits(workspaceResult.hits.hits, { withoutRels: true, toMap: false });
-
   for (let index = 0; index < convertedResults.length; index += 1) {
     const hit = convertedResults[index];
-    console.log('hit =>', hit);
 
     let currentUserIsAdmin = false;
     let anotherUserIsAdmin = false;
@@ -731,11 +727,9 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
       }
     }
     if (currentUserIsAdmin && !anotherUserIsAdmin) {
-      console.log('Need to be deleted =>', hit);
       elDelete(INDEX_INTERNAL_OBJECTS, hit.id);
     }
   }
-  console.log(' ********************************************************* END');
 };
 
 export const deleteAllTriggerAndDigestByUser = async (userId) => {
