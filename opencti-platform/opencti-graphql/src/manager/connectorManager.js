@@ -93,6 +93,7 @@ const deleteCompletedWorks = async (context, connector) => {
   await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
     filters,
     types: ['Work'],
+    noFiltersChecking: true,
     connectionFormat: false,
     callback: queryCallback
   });
