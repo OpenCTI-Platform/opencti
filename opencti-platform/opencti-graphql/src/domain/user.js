@@ -16,7 +16,7 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elDelete, elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
+import { elConvertHits, elDelete, elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
@@ -686,6 +686,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
+  console.log(' ********************************************************* START');
   const workspaceResult = await elRawSearch(context, authUser, null, {
     index: READ_INDEX_INTERNAL_OBJECTS,
     body: {
@@ -701,14 +702,18 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   }).catch((err) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
-  for (let index = 0; index < workspaceResult.hits.hits.length; index += 1) {
-    const hit = workspaceResult.hits.hits[index];
+
+  const convertedResults = await elConvertHits(workspaceResult.hits.hits, { withoutRels: true, toMap: false });
+
+  for (let index = 0; index < convertedResults.length; index += 1) {
+    const hit = convertedResults[index];
+    console.log('hit =>', hit);
 
     let currentUserIsAdmin = false;
     let anotherUserIsAdmin = false;
 
-    for (let authIndex = 0; authIndex < hit._source.authorized_members.length; authIndex += 1) {
-      const oneMember = hit._source.authorized_members[authIndex];
+    for (let authIndex = 0; authIndex < hit.authorized_members.length; authIndex += 1) {
+      const oneMember = hit.authorized_members[authIndex];
       if (oneMember.id === userId && oneMember.access_right === 'admin') {
         currentUserIsAdmin = true;
       } else if (oneMember.access_right === 'admin') {
@@ -717,9 +722,10 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
     }
     if (currentUserIsAdmin && !anotherUserIsAdmin) {
       console.log('Need to be deleted =>', hit);
-      elDelete(INDEX_INTERNAL_OBJECTS, hit._id);
+      elDelete(INDEX_INTERNAL_OBJECTS, hit.id);
     }
   }
+  console.log(' ********************************************************* END');
 };
 
 export const deleteAllTriggerAndDigestByUser = async (userId) => {
