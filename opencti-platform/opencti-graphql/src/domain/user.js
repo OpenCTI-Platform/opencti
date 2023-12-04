@@ -16,7 +16,15 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elConvertHits, elDelete, elFindByIds, elLoadBy, elRawDeleteByQuery, elRawSearch } from '../database/engine';
+import {
+  elConvertHits,
+  elDelete,
+  elFindByIds,
+  elLoadBy,
+  elRawDeleteByQuery,
+  elRawSearch,
+  elSearchByQuery
+} from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
@@ -687,7 +695,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
 };
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   console.log(' ********************************************************* START');
-  const workspaceResult = await elRawSearch(context, authUser, null, {
+  const queryToFindUserWorkspace = {
     index: READ_INDEX_INTERNAL_OBJECTS,
     body: {
       query: {
@@ -699,11 +707,13 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
         }
       }
     }
-  }).catch((err) => {
+  };
+  const hitConvertionOpts = { withoutRels: true, toMap: false };
+  const convertedResults = await elSearchByQuery(context, authUser, null, queryToFindUserWorkspace, hitConvertionOpts).catch((err) => {
     throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
   });
 
-  const convertedResults = await elConvertHits(workspaceResult.hits.hits, { withoutRels: true, toMap: false });
+  // const convertedResults = await elConvertHits(workspaceResult.hits.hits, { withoutRels: true, toMap: false });
 
   for (let index = 0; index < convertedResults.length; index += 1) {
     const hit = convertedResults[index];
