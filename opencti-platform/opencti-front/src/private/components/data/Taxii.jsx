@@ -71,12 +71,12 @@ class Taxii extends Component {
       },
       id: {
         label: 'Collection',
-        width: '20%',
+        width: '25%',
         isSortable: true,
       },
       filters: {
         label: 'Filters',
-        width: '50%',
+        width: '45%',
       },
     };
     return (

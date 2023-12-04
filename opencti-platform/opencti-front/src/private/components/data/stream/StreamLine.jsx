@@ -31,7 +31,9 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -39,9 +41,10 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-
-  filterItem: {
+  filtersItem: {
     height: 40,
+    display: 'flex',
+    alignItems: 'center',
     float: 'left',
     paddingRight: 10,
   },
@@ -97,17 +100,6 @@ class StreamLineLineComponent extends Component {
                 {node.description}
               </div>
               <div
-                className={classes.filterItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                  && <FilterIconButton
-                    filters={filters}
-                    dataColumns={dataColumns}
-                    classNameNumber={3}
-                    styleNumber={3}
-                  />
-              </div>
-              <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.id.width, paddingRight: 10 }}
               >
@@ -132,6 +124,17 @@ class StreamLineLineComponent extends Component {
                   label={node.stream_live ? t('Started') : t('Stopped')}
                   status={node.stream_live}
                 />
+              </div>
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                  <FilterIconButton
+                    filters={filters}
+                    dataColumns={dataColumns}
+                    classNameNumber={3}
+                    styleNumber={3}
+                  />
               </div>
             </div>
           }

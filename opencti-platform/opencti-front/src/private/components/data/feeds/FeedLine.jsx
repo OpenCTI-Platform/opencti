@@ -30,12 +30,21 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   goIcon: {
@@ -95,12 +104,17 @@ class FeedLineLineComponent extends Component {
               >
                 {node.feed_attributes.map((n) => n.attribute).join(', ')}
               </div>
-               <FilterIconButton
-                filters={filters}
-                classNameNumber={3}
-                styleNumber={3}
-                dataColumns={dataColumns}
-              />
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                  <FilterIconButton
+                  filters={filters}
+                  classNameNumber={3}
+                  styleNumber={3}
+                  dataColumns={dataColumns}
+                />
+              </div>
             </div>
           }
         />

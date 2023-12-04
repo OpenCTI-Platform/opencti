@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 const useStyles = makeStyles<Theme>((theme) => ({
   containerInline: {
     position: 'relative',
-    padding: '2px 12px 2px 5px',
+    padding: '2px 25px 2px 5px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -34,7 +34,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   iconInline: {
     position: 'absolute',
-    right: 10,
+    right: 5,
+    top: 4,
     cursor: 'pointer',
     '&:hover': {
       color: theme.palette.primary.main,

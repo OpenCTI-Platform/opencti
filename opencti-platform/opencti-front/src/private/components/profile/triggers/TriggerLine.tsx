@@ -28,12 +28,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   goIcon: {
@@ -187,15 +196,20 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 ))}
             </div>
-            {data.trigger_type === 'live' && filters && (
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-                redirection
-              />
-            )}
+            <div
+              className={classes.filtersItem}
+              style={{ width: dataColumns.filters.width }}
+            >
+              {data.trigger_type === 'live' && filters && (
+                <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
+                  redirection
+                />
+              )}
+            </div>
             {data.trigger_type === 'digest' && (
               <div
                 className={classes.bodyItem}

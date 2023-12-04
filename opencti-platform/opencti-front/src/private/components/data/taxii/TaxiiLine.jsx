@@ -31,12 +31,21 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   goIcon: {
@@ -103,12 +112,17 @@ class TaxiiLineLineComponent extends Component {
               >
                 <ItemCopy content={node.id} variant="inLine" />
               </div>
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-              />
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+               <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
+                />
+              </div>
             </>
           }
         />
