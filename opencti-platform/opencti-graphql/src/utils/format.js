@@ -18,6 +18,9 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
 
+//----------------------------------------------------------------------------------------------------------------------
+// Date formatting
+
 const moment = extendMoment(Moment);
 
 export const FROM_START = 0;
@@ -26,6 +29,7 @@ export const UNTIL_END = 100000000000000;
 export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
+
 export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
 export const nowTime = () => timeFormat(now());
@@ -50,7 +54,9 @@ export const escape = (chars) => {
   }
   return chars;
 };
+
 export const buildPeriodFromDates = (a, b) => moment.range(a, b);
+
 export const computeRangeIntersection = (a, b) => {
   const range = a.intersect(b);
   if (range) {
@@ -61,6 +67,7 @@ export const computeRangeIntersection = (a, b) => {
   const maxStop = moment.max([b.end, b.end]);
   return { start: minStart.toISOString(), end: maxStop.toISOString() };
 };
+
 export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
 export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');
 
@@ -76,6 +83,17 @@ export const hashValue = (stixCyberObservable) => {
   }
   return null;
 };
+
+// Moment.js parsing is only compatible with ISO-8601 and RFC-2822 date formats
+// see https://momentjs.com/docs/#/parsing/string/
+// We handle cases that might happen in the platform (data ingestion for instance)
+export const sanitizeForMomentParsing = (date) => date
+  .replace('CET', '+0100') // reported in RSS feeds
+  .replace('CEST', '+0200'); // reported in RSS feeds
+  // add more if needed.
+
+//----------------------------------------------------------------------------------------------------------------------
+
 // TODO for now this list is duplicated in Front, think about updating it aswell
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
@@ -266,5 +284,7 @@ export const runtimeFieldObservableValueScript = () => {
     }
   `;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 export const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
