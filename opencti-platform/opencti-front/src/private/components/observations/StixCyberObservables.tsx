@@ -189,6 +189,7 @@ const StixCyberObservables: FunctionComponent = () => {
                       'createdBy',
                       'sightedBy',
                       'creator_id',
+                      'value',
                     ]}
                 >
                     <QueryRenderer

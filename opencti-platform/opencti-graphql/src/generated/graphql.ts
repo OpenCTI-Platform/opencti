@@ -7056,6 +7056,8 @@ export enum FilterMode {
 }
 
 export enum FilterOperator {
+  Contains = 'contains',
+  EndsWith = 'ends_with',
   Eq = 'eq',
   Gt = 'gt',
   Gte = 'gte',
@@ -7063,9 +7065,13 @@ export enum FilterOperator {
   Lte = 'lte',
   Match = 'match',
   Nil = 'nil',
+  NotContains = 'not_contains',
+  NotEndsWith = 'not_ends_with',
   NotEq = 'not_eq',
   NotNil = 'not_nil',
+  NotStartsWith = 'not_starts_with',
   Script = 'script',
+  StartsWith = 'starts_with',
   Wildcard = 'wildcard'
 }
 
