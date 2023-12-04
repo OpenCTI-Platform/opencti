@@ -125,4 +125,5 @@ export const specialFilterKeysWhoseValueToResolve = [
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   WORKFLOW_FILTER,
+  STATUS_TEMPLATE_FILTER,
 ];
