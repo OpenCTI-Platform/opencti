@@ -648,7 +648,7 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   }
   if (textFilters.includes(filterKey)) {
     return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
-      'starts_with', 'not_starts_with', 'not_ends_with', 'ends_with'];
+      'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
   }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
