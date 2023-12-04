@@ -183,7 +183,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
             'created_at',
             'objects',
             'name',
-            'description',
           ]}
         >
           {queryRef && (

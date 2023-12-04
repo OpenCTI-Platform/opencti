@@ -9,7 +9,7 @@ import {
 } from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
-import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { fromBase64, toBase64, isEmptyField, READ_DATA_INDICES, isNotEmptyField } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -234,8 +234,8 @@ export const up = async (next) => {
   let workspacesManifestConvertor = {};
   workspaces
     .forEach((workspace) => {
-      if (workspace.manifest) {
-        const decodedManifest = JSON.parse(atob(workspace.manifest)); // atob is used to decode B64 strings
+      if (isNotEmptyField(workspace.manifest)) {
+        const decodedManifest = JSON.parse(fromBase64(workspace.manifest));
         const { widgets } = decodedManifest;
         const widgetEntries = Object.entries(widgets);
         const newWidgets = {};
@@ -263,7 +263,7 @@ export const up = async (next) => {
           ...decodedManifest,
           widgets: newWidgets,
         };
-        const newEncodedManifest = btoa(JSON.stringify(newManifest));
+        const newEncodedManifest = toBase64(JSON.stringify(newManifest));
         workspacesManifestConvertor = {
           ...workspacesManifestConvertor,
           [workspace.internal_id]: newEncodedManifest,
