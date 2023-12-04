@@ -15,7 +15,10 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  filtersWithEntityType,
+  initialFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -109,10 +112,13 @@ const Relationships = () => {
         width: '8%',
       },
     };
-    const toolBarFilters = filtersWithEntityType(filters, 'stix-core-relationship');
+    const toolBarFilters = filtersWithEntityType(
+      filters,
+      'stix-core-relationship',
+    );
     return (
       <>
-      <ListLines
+        <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -129,7 +135,6 @@ const Relationships = () => {
           selectAll={selectAll}
           exportEntityType="stix-core-relationship"
           disableCards={true}
-          secondaryAction={true}
           iconExtension={true}
           noPadding={true}
           keyword={searchTerm}
@@ -148,18 +153,21 @@ const Relationships = () => {
             'creator_id',
           ]}
         >
-        {queryRef && (
-              <React.Suspense
-                fallback={
-                  <>
-                    {Array(20)
-                      .fill(0)
-                      .map((_, idx) => (
-                        <RelationshipsStixCoreRelationshipLineDummy key={idx} dataColumns={dataColumns} />
-                      ))}
-                  </>
-                }
-              >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <RelationshipsStixCoreRelationshipLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
               <RelationshipsStixCoreRelationshipsLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -180,13 +188,12 @@ const Relationships = () => {
                 search={searchTerm}
                 handleClearSelectedElements={handleClearSelectedElements}
               />
-          </React.Suspense>
-        )}
-      </ListLines>
+            </React.Suspense>
+          )}
+        </ListLines>
       </>
     );
   };
-
   return <ExportContextProvider>{renderLines()}</ExportContextProvider>;
 };
 

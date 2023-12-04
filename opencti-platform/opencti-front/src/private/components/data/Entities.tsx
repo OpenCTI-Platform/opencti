@@ -57,10 +57,8 @@ const Entities = () => {
     entitiesStixDomainObjectsLinesQuery,
     paginationOptions,
   );
-
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -98,7 +96,6 @@ const Entities = () => {
         width: '8%',
       },
     };
-
     return (
       <>
         <ListLines
@@ -125,7 +122,6 @@ const Entities = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          secondaryAction={true}
           availableFilterKeys={[
             'entity_type',
             'objectLabel',
@@ -180,11 +176,7 @@ const Entities = () => {
       </>
     );
   };
-  return (
-    <ExportContextProvider>
-      <div>{renderLines()}</div>
-    </ExportContextProvider>
-  );
+  return <ExportContextProvider>{renderLines()}</ExportContextProvider>;
 };
 
 export default Entities;
