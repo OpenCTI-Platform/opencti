@@ -71,6 +71,7 @@ const ExportPopover = ({
         }}
         aria-haspopup="true"
         size="small"
+        className="noDrag"
       >
         <FileDownloadOutlined fontSize="small" />
       </IconButton>

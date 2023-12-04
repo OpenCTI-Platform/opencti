@@ -2,7 +2,6 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
@@ -28,12 +27,14 @@ interface WorkspaceDuplicationDialogProps {
   duplicating: boolean;
   handleCloseDuplicate: () => void;
   setDuplicating: (value: boolean) => void;
-  updater?: (store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>) => void;
+  updater?: (
+    store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>,
+  ) => void;
   paginationOptions?: {
     search: string;
     orderBy: string;
     orderMode: string;
-    filters: Array<{ key: string, values: Array<string> }>;
+    filters: Array<{ key: string; values: Array<string> }>;
   };
 }
 
@@ -59,12 +60,14 @@ WorkspaceDuplicationDialogProps
   paginationOptions,
 }) => {
   const { t } = useFormatter();
-  const duplicatedDashboardInitialName = useMemo(() => `${workspace.name} - ${t('copy')}`, [t, workspace.name]);
+  const duplicatedDashboardInitialName = useMemo(
+    () => `${workspace.name} - ${t('copy')}`,
+    [t, workspace.name],
+  );
   const [newName, setNewName] = useState(duplicatedDashboardInitialName);
   const [commitDuplicatedWorkspaceCreation] = useMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
     workspaceDuplicationDialogDuplicatedWorkspaceCreation,
   );
-
   const submitDashboardDuplication = (submittedWorkspace: {
     name: string;
     type: string;
@@ -90,60 +93,53 @@ WorkspaceDuplicationDialogProps
         if (isDashboardView) {
           MESSAGING$.notifySuccess(
             <span>
-            {t('The dashboard has been duplicated. You can manage it')}{' '}
-              <Link to={`/dashboard/workspaces/dashboards/${data.workspaceDuplicate?.id}`}>
-              {t('here')}
-            </Link>
-            .
-          </span>,
+              {t('The dashboard has been duplicated. You can manage it')}{' '}
+              <Link
+                to={`/dashboard/workspaces/dashboards/${data.workspaceDuplicate?.id}`}
+              >
+                {t('here')}
+              </Link>
+              .
+            </span>,
           );
         }
       },
     });
   };
-
   const handleSubmitDuplicate = (submittedNewName: string) => {
     setDuplicating(true);
     submitDashboardDuplication({ ...workspace, name: submittedNewName });
   };
-
   return (
     <Dialog
       open={displayDuplicate}
       PaperProps={{ elevation: 1 }}
-      keepMounted={true}
       TransitionComponent={Transition}
       onClose={handleCloseDuplicate}
+      fullWidth={true}
+      maxWidth="xs"
     >
-      <DialogTitle>{t('Duplicate')}</DialogTitle>
-      <DialogContent sx={{ height: 130 }}>
-        <DialogContentText>
-          {t('Do you want to duplicate this workspace?')}
-          <TextField
-            error={!newName}
-            autoFocus
-            margin="dense"
-            id="duplicated_dashboard_name"
-            label={t('New name')}
-            type="text"
-            fullWidth
-            variant="standard"
-            helperText={!newName ? `${t('This field is required')}` : ''}
-            defaultValue={newName}
-            onChange={(event) => {
-              event.preventDefault();
-              setNewName(
-                event.target.value,
-              );
-            }
-            }
-          />
-        </DialogContentText>
+      <DialogTitle>{t('Duplicate the dashboard')}</DialogTitle>
+      <DialogContent>
+        <TextField
+          error={!newName}
+          autoFocus
+          margin="dense"
+          id="duplicated_dashboard_name"
+          label={t('New name')}
+          type="text"
+          fullWidth
+          variant="standard"
+          helperText={!newName ? `${t('This field is required')}` : ''}
+          defaultValue={newName}
+          onChange={(event) => {
+            event.preventDefault();
+            setNewName(event.target.value);
+          }}
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDuplicate}>
-          {t('Cancel')}
-        </Button>
+        <Button onClick={handleCloseDuplicate}>{t('Cancel')}</Button>
         <Button
           color="secondary"
           onClick={() => handleSubmitDuplicate(newName)}

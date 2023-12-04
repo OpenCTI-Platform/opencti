@@ -807,6 +807,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           cols={12}
           isDraggable={false}
           isResizable={false}
+          draggableCancel=".noDrag"
         >
           {R.values(manifest.widgets).map((widget) => (
             <Paper

@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import { ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
-import { FileDelimitedOutline, FileExportOutline, FilePdfBox } from 'mdi-material-ui';
+import {
+  ContentCopyOutlined,
+  ExploreOutlined,
+  GetAppOutlined,
+  ImageOutlined,
+} from '@mui/icons-material';
+import {
+  FileDelimitedOutline,
+  FileExportOutline,
+  FilePdfBox,
+} from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
@@ -12,6 +21,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { withRouter } from 'react-router-dom';
+import IconButton from '@mui/material/IconButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -169,10 +179,29 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       history,
+      handleDashboardDuplication,
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+          {handleDashboardDuplication && (
+            <Tooltip title={t('Duplicate the dashboard')}>
+              <ToggleButton
+                sx={{ padding: '2px' }}
+                size="small"
+                value="duplicate-dashboard"
+              >
+                <IconButton
+                  aria-label="copy"
+                  onClick={handleDashboardDuplication.bind(this)}
+                  color="primary"
+                  size="small"
+                >
+                  <ContentCopyOutlined fontSize="small" />
+                </IconButton>
+              </ToggleButton>
+            </Tooltip>
+          )}
           <Tooltip title={t('Export to image')}>
             <ToggleButton onClick={this.handleOpenImage.bind(this)}>
               <ImageOutlined fontSize="small" color="primary" />
@@ -185,14 +214,23 @@ class ExportButtons extends Component {
           </Tooltip>
           {type === 'dashboard' && handleExportDashboard && (
             <Tooltip title={t('Export')}>
-              <ToggleButton onClick={handleExportDashboard.bind(this)} value={'Export-to-JSON'}>
+              <ToggleButton
+                onClick={handleExportDashboard.bind(this)}
+                value={'Export-to-JSON'}
+              >
                 <FileExportOutline fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
           )}
           {investigationAddFromContainer && (
             <Tooltip title={t('Start an investigation')}>
-              <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId, history)}>
+              <ToggleButton
+                onClick={investigationAddFromContainer.bind(
+                  this,
+                  containerId,
+                  history,
+                )}
+              >
                 <ExploreOutlined fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>

@@ -45,7 +45,6 @@ const WidgetPopover = ({
     setDisplayDuplicate(true);
     setAnchorEl(null);
   };
-
   const handleExportWidget = () => {
     handleWidgetExportJson(workspace.id, widget);
   };
@@ -59,6 +58,7 @@ const WidgetPopover = ({
         }}
         aria-haspopup="true"
         size="small"
+        className="noDrag"
       >
         <MoreVert fontSize="small" />
       </IconButton>

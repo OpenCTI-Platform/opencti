@@ -22,7 +22,6 @@ import {
   MoveToInboxOutlined,
   LockPersonOutlined,
   Delete,
-  ContentCopyOutlined,
 } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
@@ -39,7 +38,11 @@ import Dialog from '@mui/material/Dialog';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
@@ -64,10 +67,6 @@ const useStyles = makeStyles(() => ({
   turnToReportOrCase: {
     margin: '-8px 4px 0 0',
     float: 'right',
-  },
-  duplicate: {
-    float: 'right',
-    margin: '-8px 4px 0 0',
   },
   export: {
     float: 'right',
@@ -145,7 +144,7 @@ const WorkspaceHeader = ({
     const currentTags = getCurrentTags();
     if (
       (currentTags === null || !currentTags.includes(newTag))
-        && newTag !== ''
+      && newTag !== ''
     ) {
       commitMutation({
         mutation: workspaceMutation,
@@ -216,104 +215,47 @@ const WorkspaceHeader = ({
   const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
 
   return (
-      <>
-        <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-            classes={{ root: classes.title }}
-            style={{ marginRight: userCanEdit ? 0 : 10 }}
-          >
-            {workspace.name}
-          </Typography>
-          <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
-            <div className={classes.popover}>
-              <WorkspacePopover workspace={workspace} />
-            </div>
-          </Security>
-          {variant === 'dashboard' && (
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              hasAccess={userCanEdit}
-              placeholder={
-                <div style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}>
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    style={{ width: 194, marginRight: 20 }}
-                  >
-                    <InputLabel id="relative" variant="outlined">
-                      {t('Relative time')}
-                    </InputLabel>
-                    <Select
-                      labelId="relative"
-                      value={relativeDate ?? ''}
-                      onChange={(value) => handleDateChange('relativeDate', value)}
-                      disabled={true}
-                      variant="outlined"
-                    >
-                      <MenuItem value="none">{t('None')}</MenuItem>
-                      <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                      <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                      <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                      <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
-                      <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                      <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <DatePicker
-                    value={R.propOr(null, 'startDate', config)}
-                    disableToolbar={true}
-                    autoOk={true}
-                    label={t('Start date')}
-                    clearable={true}
-                    disableFuture={true}
-                    disabled={true}
-                    onChange={(value) => handleDateChange('startDate', value)}
-                    renderInput={(params) => (
-                      <TextField
-                        style={{ marginRight: 20 }}
-                        variant="outlined"
-                        size="small"
-                        {...params}
-                      />
-                    )}
-                  />
-                  <DatePicker
-                    value={R.propOr(null, 'endDate', config)}
-                    disableToolbar={true}
-                    autoOk={true}
-                    label={t('End date')}
-                    clearable={true}
-                    disabled={true}
-                    disableFuture={true}
-                    onChange={(value) => handleDateChange('endDate', value)}
-                    renderInput={(params) => (
-                      <TextField
-                        style={{ marginRight: 20 }}
-                        variant="outlined"
-                        size="small"
-                        {...params}
-                      />
-                    )}
-                  />
-                </div>
-              }
-            >
-              <div style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}>
+    <>
+      <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+          style={{ marginRight: userCanEdit ? 0 : 10 }}
+        >
+          {workspace.name}
+        </Typography>
+        <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
+          <div className={classes.popover}>
+            <WorkspacePopover workspace={workspace} />
+          </div>
+        </Security>
+        {variant === 'dashboard' && (
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            hasAccess={userCanEdit}
+            placeholder={
+              <div
+                style={{
+                  display: 'flex',
+                  margin: '-5px 0 0 5px',
+                  float: 'left',
+                }}
+              >
                 <FormControl
+                  variant="outlined"
                   size="small"
                   style={{ width: 194, marginRight: 20 }}
-                  variant="outlined"
                 >
                   <InputLabel id="relative" variant="outlined">
                     {t('Relative time')}
                   </InputLabel>
                   <Select
                     labelId="relative"
-                    value={relativeDate ?? relativeDate}
-                    onChange={(value) => handleDateChange('relativeDate', value)}
-                    label={t('Relative time')}
+                    value={relativeDate ?? ''}
+                    onChange={(value) => handleDateChange('relativeDate', value)
+                    }
+                    disabled={true}
                     variant="outlined"
                   >
                     <MenuItem value="none">{t('None')}</MenuItem>
@@ -332,7 +274,7 @@ const WorkspaceHeader = ({
                   label={t('Start date')}
                   clearable={true}
                   disableFuture={true}
-                  disabled={!!relativeDate}
+                  disabled={true}
                   onChange={(value) => handleDateChange('startDate', value)}
                   renderInput={(params) => (
                     <TextField
@@ -345,264 +287,319 @@ const WorkspaceHeader = ({
                 />
                 <DatePicker
                   value={R.propOr(null, 'endDate', config)}
+                  disableToolbar={true}
                   autoOk={true}
                   label={t('End date')}
                   clearable={true}
-                  disabled={!!relativeDate}
+                  disabled={true}
                   disableFuture={true}
                   onChange={(value) => handleDateChange('endDate', value)}
                   renderInput={(params) => (
-                    <TextField variant="outlined" size="small" {...params} />
+                    <TextField
+                      style={{ marginRight: 20 }}
+                      variant="outlined"
+                      size="small"
+                      {...params}
+                    />
                   )}
                 />
               </div>
-            </Security>
-          )}
-          <div className={classes.duplicate}>
-            <Tooltip title={t('Duplicate dashboard')}>
-              <ToggleButtonGroup size="small" color="primary" exclusive={true}>
-                <ToggleButton sx={{ padding: '2px' }} size="small" value={'duplicate-dashboard'}>
-                  <IconButton
-                    aria-label="copy"
-                    disabled={!workspace}
-                    onClick={() => handleDashboardDuplication()}
-                    color="primary"
+            }
+          >
+            <div
+              style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}
+            >
+              <FormControl
+                size="small"
+                style={{ width: 194, marginRight: 20 }}
+                variant="outlined"
+              >
+                <InputLabel id="relative" variant="outlined">
+                  {t('Relative time')}
+                </InputLabel>
+                <Select
+                  labelId="relative"
+                  value={relativeDate ?? relativeDate}
+                  onChange={(value) => handleDateChange('relativeDate', value)}
+                  label={t('Relative time')}
+                  variant="outlined"
+                >
+                  <MenuItem value="none">{t('None')}</MenuItem>
+                  <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                  <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                  <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                  <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
+                  <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
+                  <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                </Select>
+              </FormControl>
+              <DatePicker
+                value={R.propOr(null, 'startDate', config)}
+                disableToolbar={true}
+                autoOk={true}
+                label={t('Start date')}
+                clearable={true}
+                disableFuture={true}
+                disabled={!!relativeDate}
+                onChange={(value) => handleDateChange('startDate', value)}
+                renderInput={(params) => (
+                  <TextField
+                    style={{ marginRight: 20 }}
+                    variant="outlined"
                     size="small"
-                  >
-                    <ContentCopyOutlined fontSize="small" />
-                  </IconButton>
+                    {...params}
+                  />
+                )}
+              />
+              <DatePicker
+                value={R.propOr(null, 'endDate', config)}
+                autoOk={true}
+                label={t('End date')}
+                clearable={true}
+                disabled={!!relativeDate}
+                disableFuture={true}
+                onChange={(value) => handleDateChange('endDate', value)}
+                renderInput={(params) => (
+                  <TextField variant="outlined" size="small" {...params} />
+                )}
+              />
+            </div>
+          </Security>
+        )}
+        <WorkspaceDuplicationDialog
+          workspace={workspace}
+          displayDuplicate={displayDuplicate}
+          handleCloseDuplicate={handleCloseDuplicate}
+          duplicating={duplicating}
+          setDuplicating={setDuplicating}
+        />
+        <div className={classes.export}>
+          <ExportButtons
+            domElementId="container"
+            name={workspace.name}
+            type={workspace.type}
+            adjust={adjust}
+            handleDownloadAsStixReport={handleDownloadAsStixReport}
+            handleExportDashboard={handleExportDashboard}
+            handleDashboardDuplication={handleDashboardDuplication}
+          />
+        </div>
+        {variant === 'investigation' && (
+          <div className={classes.turnToReportOrCase}>
+            <Tooltip title={t('Add to a container')}>
+              <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+                <ToggleButton
+                  aria-label="Label"
+                  onClick={handleOpenTurnToReportOrCaseContainer}
+                  size="small"
+                  value="add-to-a-container"
+                >
+                  <MoveToInboxOutlined color="primary" fontSize="small" />
                 </ToggleButton>
               </ToggleButtonGroup>
             </Tooltip>
           </div>
-          <WorkspaceDuplicationDialog
-            workspace={workspace}
-            displayDuplicate={displayDuplicate}
-            handleCloseDuplicate={handleCloseDuplicate}
-            duplicating={duplicating}
-            setDuplicating={setDuplicating}
-          />
-          <div className={classes.export}>
-            <ExportButtons
-              domElementId="container"
-              name={workspace.name}
-              type={workspace.type}
-              adjust={adjust}
-              handleDownloadAsStixReport={handleDownloadAsStixReport}
-              handleExportDashboard={handleExportDashboard}/>
-          </div>
-          {variant === 'investigation' && (
-              <div className={classes.turnToReportOrCase}>
-                <Tooltip title={t('Add to a container')}>
-                  <ToggleButtonGroup size="small" color="primary" exclusive={true}>
-                    <ToggleButton
-                      aria-label="Label"
-                      onClick={handleOpenTurnToReportOrCaseContainer}
-                      size="small"
-                      value="add-to-a-container"
-                    >
-                      <MoveToInboxOutlined color="primary" fontSize="small" />
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </Tooltip>
-              </div>
-          )}
-          <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
-            <div className={classes.manageAccess}>
-              <Tooltip title={t('Manage access restriction')}>
-                <ToggleButtonGroup size="small" color="warning" exclusive={true}>
-                  <ToggleButton
-                    aria-label="Label"
-                    onClick={handleOpenManageAccess}
-                    size="small"
-                    value="manage-access"
-                  >
-                    <LockPersonOutlined fontSize="small" color="warning" />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Tooltip>
-              <WorkspaceManageAccessDialog
-                workspaceId={workspace.id}
-                open={displayManageAccess}
-                authorizedMembersData={workspace}
-                owner={workspace.owner}
-                handleClose={handleCloseManageAccess}
-              />
-            </div>
-          </Security>
-            <div className={classes.tags}>
-              {R.take(2, tags).map(
-                (tag) => tag.length > 0 && (
-                  <Chip
-                    key={tag}
-                    classes={{ root: classes.tag }}
-                    label={tag}
-                    onDelete={() => deleteTag(tag)}
-                  />
-                ),
-              )}
-              <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
-                {tags.length > 1 ? (
-                  <IconButton
-                    color="primary"
-                    aria-tag="More"
-                    onClick={handleToggleOpenTags}
-                    size="large"
-                    style={{ fontSize: 14, marginRight: '7px' }}
-                  >
-                    <DotsHorizontalCircleOutline fontSize="small" />
-                  </IconButton>
-                ) : (
-                  <Tooltip title={t('Add tag')}>
-                    <IconButton
-                      style={{ float: 'left', marginTop: '-5px' }}
-                      color={openTag ? 'primary' : 'secondary'}
-                      aria-tag="Tag"
-                      onClick={handleOpenTag}
-                      size="large"
-                    >
-                      {openTag ? (
-                        <CloseOutlined fontSize="small" />
-                      ) : (
-                        <AddOutlined fontSize="small" />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                )}
-
-                <Slide
-                  direction="left"
-                  in={openTag}
-                  mountOnEnter={true}
-                  unmountOnExit={true}
+        )}
+        <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
+          <div className={classes.manageAccess}>
+            <Tooltip title={t('Manage access restriction')}>
+              <ToggleButtonGroup size="small" color="warning" exclusive={true}>
+                <ToggleButton
+                  aria-label="Label"
+                  onClick={handleOpenManageAccess}
+                  size="small"
+                  value="manage-access"
                 >
-                  <div style={{ float: 'left', marginTop: -5 }}>
-                    <Formik
-                      initialValues={{ new_tag: '' }}
-                      onSubmit={onSubmitCreateTag}
-                    >
-                      <Form style={{ float: 'right' }}>
+                  <LockPersonOutlined fontSize="small" color="warning" />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Tooltip>
+            <WorkspaceManageAccessDialog
+              workspaceId={workspace.id}
+              open={displayManageAccess}
+              authorizedMembersData={workspace}
+              owner={workspace.owner}
+              handleClose={handleCloseManageAccess}
+            />
+          </div>
+        </Security>
+        <div className={classes.tags}>
+          {R.take(2, tags).map(
+            (tag) => tag.length > 0 && (
+                <Chip
+                  key={tag}
+                  classes={{ root: classes.tag }}
+                  label={tag}
+                  onDelete={() => deleteTag(tag)}
+                />
+            ),
+          )}
+          <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
+            {tags.length > 1 ? (
+              <IconButton
+                color="primary"
+                aria-tag="More"
+                onClick={handleToggleOpenTags}
+                size="large"
+                style={{ fontSize: 14, marginRight: '7px' }}
+              >
+                <DotsHorizontalCircleOutline fontSize="small" />
+              </IconButton>
+            ) : (
+              <Tooltip title={t('Add tag')}>
+                <IconButton
+                  style={{ float: 'left', marginTop: '-5px' }}
+                  color={openTag ? 'primary' : 'secondary'}
+                  aria-tag="Tag"
+                  onClick={handleOpenTag}
+                  size="large"
+                >
+                  {openTag ? (
+                    <CloseOutlined fontSize="small" />
+                  ) : (
+                    <AddOutlined fontSize="small" />
+                  )}
+                </IconButton>
+              </Tooltip>
+            )}
+
+            <Slide
+              direction="left"
+              in={openTag}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
+              <div style={{ float: 'left', marginTop: -5 }}>
+                <Formik
+                  initialValues={{ new_tag: '' }}
+                  onSubmit={onSubmitCreateTag}
+                >
+                  <Form style={{ float: 'right' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="new_tag"
+                      autoFocus={true}
+                      placeholder={t('New tag')}
+                      onChange={handleChangeNewTags}
+                      value={newTag}
+                      className={classes.tagsInput}
+                    />
+                  </Form>
+                </Formik>
+              </div>
+            </Slide>
+
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={openTags}
+              TransitionComponent={Transition}
+              onClose={handleToggleOpenTags}
+              fullWidth={true}
+            >
+              <DialogTitle>
+                {t('Entity tags')}
+                <Formik
+                  initialValues={{ new_tag: '' }}
+                  onSubmit={onSubmitCreateTag}
+                >
+                  {({ submitForm }) => (
+                    <Form style={{ float: 'right' }}>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="new_tag"
+                        autoFocus={true}
+                        placeholder={t('New tag')}
+                        className={classes.tagsInput}
+                        onChange={handleChangeNewTags}
+                        value={newTag}
+                        onKeyDown={(e) => {
+                          if (e.keyCode === 13) {
+                            return submitForm();
+                          }
+                          return true;
+                        }}
+                      />
+                    </Form>
+                  )}
+                </Formik>
+              </DialogTitle>
+              <DialogContent dividers={true}>
+                <List>
+                  {tags.map(
+                    (label) => label.length > 0 && (
+                        <ListItem
+                          key={label}
+                          disableGutters={true}
+                          dense={true}
+                        >
+                          <ListItemText primary={label} />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              edge="end"
+                              aria-label="delete"
+                              onClick={() => deleteTag(label)}
+                              size="large"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                    ),
+                  )}
+                </List>
+                <div
+                  style={{
+                    display: openTagsCreate ? 'block' : 'none',
+                  }}
+                >
+                  <Formik
+                    initialValues={{ new_tag: '' }}
+                    onSubmit={onSubmitCreateTag}
+                  >
+                    {({ submitForm }) => (
+                      <Form>
                         <Field
                           component={TextField}
                           variant="standard"
                           name="new_tag"
                           autoFocus={true}
-                          placeholder={t('New tag')}
+                          fullWidth={true}
+                          placeholder={t('New tags')}
+                          className={classes.tagsInput}
                           onChange={handleChangeNewTags}
                           value={newTag}
-                          className={classes.tagsInput}
+                          onKeyDown={(e) => {
+                            if (e.keyCode === 13) {
+                              return submitForm();
+                            }
+                            return true;
+                          }}
                         />
                       </Form>
-                    </Formik>
-                  </div>
-                </Slide>
-
-                <Dialog
-                  PaperProps={{ elevation: 1 }}
-                  open={openTags}
-                  TransitionComponent={Transition}
-                  onClose={handleToggleOpenTags}
-                  fullWidth={true}
-                >
-                  <DialogTitle>
-                    {t('Entity tags')}
-                    <Formik
-                      initialValues={{ new_tag: '' }}
-                      onSubmit={onSubmitCreateTag}
-                    >
-                      {({ submitForm }) => (
-                        <Form style={{ float: 'right' }}>
-                          <Field
-                            component={TextField}
-                            variant="standard"
-                            name="new_tag"
-                            autoFocus={true}
-                            placeholder={t('New tag')}
-                            className={classes.tagsInput}
-                            onChange={handleChangeNewTags}
-                            value={newTag}
-                            onKeyDown={(e) => {
-                              if (e.keyCode === 13) {
-                                return submitForm();
-                              }
-                              return true;
-                            }}
-                          />
-                        </Form>
-                      )}
-                    </Formik>
-                  </DialogTitle>
-                  <DialogContent dividers={true}>
-                    <List>
-                      {(tags).map(
-                        (label) => label.length > 0 && (
-                          <ListItem key={label} disableGutters={true} dense={true}>
-                            <ListItemText primary={label} />
-                            <ListItemSecondaryAction>
-                              <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={() => deleteTag(label)}
-                                size="large"
-                              >
-                                <Delete />
-                              </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        ),
-                      )}
-                    </List>
-                    <div
-                      style={{
-                        display: openTagsCreate ? 'block' : 'none',
-                      }}
-                    >
-                      <Formik
-                        initialValues={{ new_tag: '' }}
-                        onSubmit={onSubmitCreateTag}
-                      >
-                        {({ submitForm }) => (
-                          <Form>
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="new_tag"
-                              autoFocus={true}
-                              fullWidth={true}
-                              placeholder={t('New tags')}
-                              className={classes.tagsInput}
-                              onChange={handleChangeNewTags}
-                              value={newTag}
-                              onKeyDown={(e) => {
-                                if (e.keyCode === 13) {
-                                  return submitForm();
-                                }
-                                return true;
-                              }}
-                            />
-                          </Form>
-                        )}
-                      </Formik>
-                    </div>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleToggleOpenTags} color="primary">
-                      {t('Close')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Security>
-            </div>
-          {variant === 'investigation' && (
-            <WorkspaceTurnToContainerDialog
-              workspace={workspace}
-              open={displayTurnToReportOrCaseContainer}
-              handleClose={handleCloseTurnToReportOrCaseContainer}
-            />
-          )}
-          <div className="clearfix" />
+                    )}
+                  </Formik>
+                </div>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleToggleOpenTags} color="primary">
+                  {t('Close')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Security>
         </div>
-      </>
+        {variant === 'investigation' && (
+          <WorkspaceTurnToContainerDialog
+            workspace={workspace}
+            open={displayTurnToReportOrCaseContainer}
+            handleClose={handleCloseTurnToReportOrCaseContainer}
+          />
+        )}
+        <div className="clearfix" />
+      </div>
+    </>
   );
 };
 

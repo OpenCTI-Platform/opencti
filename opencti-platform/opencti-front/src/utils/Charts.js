@@ -663,7 +663,6 @@ export const donutChartOptions = (
   if (chartColors.length > 0) {
     dataLabelsColors = chartColors.map((n) => (n === '#ffffff' ? '#000000' : theme.palette.text.primary));
   }
-
   let chartFinalColors = chartColors;
   if (chartFinalColors.length === 0) {
     chartFinalColors = colors(temp);
