@@ -137,7 +137,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon
             color={color}
-            type={data.context_data?.entity_type ?? data.event_type}
+            type={data.context_data?.entity_type ?? data.event_scope}
           />
         </ListItemIcon>
         <ListItemText
