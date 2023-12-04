@@ -56,6 +56,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.action?.selected,
     padding: '5px 8px 0 8px',
     marginRight: 10,
+    marginLeft: 10,
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.action?.disabled,

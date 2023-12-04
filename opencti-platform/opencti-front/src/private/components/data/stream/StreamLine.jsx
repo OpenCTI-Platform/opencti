@@ -39,6 +39,12 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
+
+  filterItem: {
+    height: 40,
+    float: 'left',
+    paddingRight: 10,
+  },
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -90,13 +96,17 @@ class StreamLineLineComponent extends Component {
               >
                 {node.description}
               </div>
-              <FilterIconButton
-                  filters={filters}
-                  dataColumns={dataColumns}
-                  classNameNumber={3}
-                  styleNumber={3}
-              />
-
+              <div
+                className={classes.filterItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                  && <FilterIconButton
+                    filters={filters}
+                    dataColumns={dataColumns}
+                    classNameNumber={3}
+                    styleNumber={3}
+                  />
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.id.width, paddingRight: 10 }}
