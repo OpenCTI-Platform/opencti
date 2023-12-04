@@ -58,8 +58,6 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = entityData.indicator_pattern;
   } else if (isNotEmptyField(entityData.source_name)) {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
-  } else if (isNotEmptyField(entityData.kill_chain_name)) {
-    mainValue = entityData.kill_chain_name;
   } else if (isNotEmptyField(entityData.phase_name)) {
     mainValue = entityData.phase_name;
   } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
