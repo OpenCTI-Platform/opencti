@@ -537,8 +537,11 @@ const elCreateIndexTemplate = async (index) => {
   if (isExistByName || isExist) {
     return null;
   }
-  let settings;
-  if (engine instanceof ElkClient) {
+  let settings = {};
+  const componentTemplateExist = await engine.cluster.existsComponentTemplate({ name: `${ES_INDEX_PREFIX}-core-settings` });
+  if (!componentTemplateExist) {
+    await elCreateCoreSettings();
+  } else if (engine instanceof ElkClient) {
     settings = {
       index: {
         lifecycle: {
