@@ -219,12 +219,12 @@ class ListCards extends Component {
           helpers={helpers}
         />
         <FilterIconButton
-            helpers={helpers}
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
+          helpers={helpers}
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          redirection
         />
         {typeof handleToggleExports === 'function' && (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>

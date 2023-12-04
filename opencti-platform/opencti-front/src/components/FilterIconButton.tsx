@@ -45,7 +45,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const setHasRenderedRef = () => {
     hasRenderedRef.current = true;
   };
-
   const displayedFilters = {
     ...filters,
     filters:
@@ -61,7 +60,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       ) as unknown as GqlFilterGroup,
     },
   );
-
   return (
     <>
       {filtersRepresentativesQueryRef && (

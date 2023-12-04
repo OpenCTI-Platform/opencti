@@ -199,7 +199,6 @@ FilterIconButtonContainerProps
         return null;
     }
   };
-
   const isReadonlyFilter = helpers || handleRemoveFilter;
   return (
     <Box
@@ -211,7 +210,7 @@ FilterIconButtonContainerProps
             marginRight: '30px',
           }
           : {
-            marginTop: '10px',
+            marginTop: displayedFilters.length === 0 ? 0 : '10px',
             gap: '10px',
             display: 'flex',
             flexWrap: 'wrap',

@@ -456,15 +456,15 @@ class ListLines extends Component {
           availableFilterKeys={availableFilterKeys}
           helpers={helpers}
         />
-          <FilterIconButton
-            helpers={helpers}
-            availableFilterKeys={availableFilterKeys}
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            redirection
-          />
+        <FilterIconButton
+          helpers={helpers}
+          availableFilterKeys={availableFilterKeys}
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          redirection
+        />
         {message && (
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
