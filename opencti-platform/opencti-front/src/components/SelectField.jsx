@@ -5,7 +5,6 @@ import MuiSelect from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import { fieldToTextField } from 'formik-mui';
 
 const fieldToSelect = ({
   disabled,
