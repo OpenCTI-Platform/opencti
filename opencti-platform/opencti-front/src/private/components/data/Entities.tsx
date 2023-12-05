@@ -168,7 +168,6 @@ const Entities = () => {
                 search={searchTerm}
                 filters={filters}
                 handleClearSelectedElements={handleClearSelectedElements}
-                variant="large"
               />
             </React.Suspense>
           )}

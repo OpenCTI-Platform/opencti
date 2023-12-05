@@ -61,14 +61,21 @@ import Checkbox from '@mui/material/Checkbox';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
@@ -250,9 +257,9 @@ const toolBarContainersQuery = graphql`
     containers(
       search: $search
       filters: {
-          mode: and
-          filters: [{ key: "entity_type", values: ["Container"] }]
-          filterGroups: []
+        mode: and
+        filters: [{ key: "entity_type", values: ["Container"] }]
+        filterGroups: []
       }
     ) {
       edges {
@@ -359,7 +366,14 @@ class ToolBar extends Component {
     // Get enrich type
     let enrichType;
     if (this.props.selectAll) {
-      enrichType = this.props.type;
+      enrichType = this.props.type
+        ?? R.head(
+          findFilterFromKey(
+            this.props.filters?.filters ?? [],
+            'entity_type',
+            'eq',
+          )?.values ?? [],
+        );
     } else {
       const selected = this.props.selectedElements;
       const selectedTypes = R.uniq(
@@ -599,7 +613,9 @@ class ToolBar extends Component {
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
-    const jsonFilters = serializeFilterGroupForBackend(removeIdFromFilterObject(filters));
+    const jsonFilters = serializeFilterGroupForBackend(
+      removeIdFromFilterObject(filters),
+    );
     const finalActions = R.map(
       (n) => ({
         type: n.type,
@@ -878,7 +894,11 @@ class ToolBar extends Component {
     this.setState({ actionsInputs });
     fetchQuery(statusFieldStatusesSearchQuery, {
       first: 10,
-      filters: { mode: 'and', filterGroups: [], filters: [{ key: 'type', values: [this.props.type] }] },
+      filters: {
+        mode: 'and',
+        filterGroups: [],
+        filters: [{ key: 'type', values: [this.props.type] }],
+      },
       orderBy: 'order',
       orderMode: 'asc',
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1230,7 +1250,8 @@ class ToolBar extends Component {
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
     const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
-    const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
+    const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values
+      ?? [];
     const typesAreNotUpdatable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1265,7 +1286,10 @@ class ToolBar extends Component {
     // region enrich
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
-    const isAllEnrichSelect = selectAll && entityTypeFilterValues.length === 1;
+    const isAllEnrichSelect = selectAll
+      && entityTypeFilterValues.length === 1
+      && R.head(entityTypeFilterValues) !== 'Stix-Cyber-Observable'
+      && R.head(entityTypeFilterValues) !== 'Stix-Domain-Object';
     const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))
       || (entityTypeFilterValues.length === 1
         && notEnrichableTypes.includes(entityTypeFilterValues[0]))

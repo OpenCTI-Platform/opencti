@@ -168,43 +168,43 @@ const RootIncidentComponent = ({ queryRef }) => {
               exact
               path="/dashboard/events/incidents/:incidentId/content"
               render={(routeProps) => (
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={incident}
-                  />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={incident}
+                />
               )}
             />
             <Route
               exact
               path="/dashboard/events/incidents/:incidentId/analyses"
               render={(routeProps) => (
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    {...routeProps}
-                    stixDomainObjectOrStixCoreRelationship={incident}
-                  />
+                <StixCoreObjectOrStixCoreRelationshipContainers
+                  {...routeProps}
+                  stixDomainObjectOrStixCoreRelationship={incident}
+                />
               )}
             />
             <Route
               exact
               path="/dashboard/events/incidents/:incidentId/files"
               render={(routeProps) => (
-                  <FileManager
-                    {...routeProps}
-                    id={incidentId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={incident}
-                  />
+                <FileManager
+                  {...routeProps}
+                  id={incidentId}
+                  connectorsImport={connectorsForImport}
+                  connectorsExport={connectorsForExport}
+                  entity={incident}
+                />
               )}
             />
             <Route
               exact
               path="/dashboard/events/incidents/:incidentId/history"
               render={(routeProps) => (
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={incidentId}
-                  />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={incidentId}
+                />
               )}
             />
           </Switch>
@@ -240,12 +240,10 @@ const RootIncident = () => {
           ]}
         />
       </Route>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootIncidentComponent queryRef={queryRef} />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

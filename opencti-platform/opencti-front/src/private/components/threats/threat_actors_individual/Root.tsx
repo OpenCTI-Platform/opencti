@@ -262,7 +262,7 @@ const Root = () => {
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootThreatActorIndividualComponent
             queryRef={queryRef}
             threatActorIndividualId={threatActorIndividualId}
