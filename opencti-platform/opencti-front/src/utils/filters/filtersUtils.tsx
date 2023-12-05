@@ -642,8 +642,8 @@ export const getDefaultFilterObject = (key: string): Filter => {
 };
 
 export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
-  if (EqFilters.includes(filterKey)) {
-    return ['eq', 'not_eq', 'nil', 'not_nil'];
+  if (filtersUsedAsApiParameters.includes(filterKey)) {
+    return ['eq'];
   }
   if (dateFilters.includes(filterKey)) {
     return ['gt', 'gte', 'lt', 'lte'];
