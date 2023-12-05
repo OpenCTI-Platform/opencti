@@ -17,7 +17,11 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE
 } from '../../../src/schema/stixDomainObject';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import {
+  IDS_FILTER,
+  RELATION_FROM_FILTER,
+  SOURCE_RELIABILITY_FILTER
+} from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
@@ -1202,6 +1206,43 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
+    // --- 17. filters with not supported keys --- //
+    // bad_filter_key = XX
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'bad_filter_key',
+              operator: 'eq',
+              values: ['Report'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.errors.length).toEqual(1);
+    // fromId = XXX (API filters are passed via options)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.errors.length).toEqual(1);
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
