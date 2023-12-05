@@ -177,7 +177,7 @@ const CaseTemplateTasks = () => {
     { id: caseTemplateId },
   );
   const taskFilters = [
-    { key: 'taskContains', values: [caseTemplateId], operator: 'eq', mode: 'or' },
+    { key: 'tasks', values: [caseTemplateId], operator: 'eq', mode: 'or' },
   ];
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
     LOCAL_STORAGE_KEY,
