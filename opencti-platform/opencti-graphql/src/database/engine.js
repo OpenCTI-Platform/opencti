@@ -239,11 +239,6 @@ export const searchEngineInit = async () => {
 };
 export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 
-export const elSearchByQuery = async (context, user, types, query, opts) => {
-  const queryResult = await elRawSearch(context, user, types, query);
-  return elConvertHits(queryResult.hits.hits, opts);
-};
-
 export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = async () => engine.search(query).then((r) => {
     const parsedSearch = oebp(r);
