@@ -26,7 +26,7 @@ import ReportKnowledgeTimeLine, {
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  emptyFilterGroup,
+  emptyFilterGroup, filtersAfterSwitchLocalMode,
 } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, {
@@ -218,6 +218,19 @@ class ReportKnowledgeComponent extends Component {
     this.setState({ timeLineFilters: newFilters }, () => this.saveView());
   }
 
+  handleSwitchFilterLocalMode(localFilter) {
+    const newFilters = filtersAfterSwitchLocalMode(this.state.timeLineFilters, localFilter);
+    this.setState({ timeLineFilters: newFilters }, () => this.saveView());
+  }
+
+  handleSwitchFilterGlobalMode() {
+    const newFilters = {
+      ...this.state.timeLineFilters,
+      mode: this.state.timeLineFilters.mode === 'and' ? 'or' : 'and',
+    };
+    this.setState({ timeLineFilters: newFilters }, () => this.saveView());
+  }
+
   handleTimeLineSearch(value) {
     this.setState({ timeLineSearchTerm: value }, () => this.saveView());
   }
@@ -344,6 +357,8 @@ class ReportKnowledgeComponent extends Component {
                 handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
                   this,
                 )}
+                handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
+                handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
               />
               <QueryRenderer
                 query={reportKnowledgeTimeLineQuery}

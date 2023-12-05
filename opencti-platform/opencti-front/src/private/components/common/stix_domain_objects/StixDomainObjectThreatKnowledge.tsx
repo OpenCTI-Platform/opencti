@@ -505,6 +505,8 @@ StixDomainObjectThreatKnowledgeProps
         helpers={helpers}
         filters={filters}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         classNameNumber={8}
       />
       <QueryRenderer
