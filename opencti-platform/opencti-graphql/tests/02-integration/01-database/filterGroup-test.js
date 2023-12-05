@@ -1027,6 +1027,48 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.errors[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
     // --- 15. combinations of operators and modes with the special filter key 'source_reliability' --- //
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: undefined,
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(41);
+    // (source_reliability is empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: SOURCE_RELIABILITY_FILTER,
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 41 entities - 9 entities with a source reliability = 32
+    // (source_reliability is not empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: SOURCE_RELIABILITY_FILTER,
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 9 entities with a source reliability
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
