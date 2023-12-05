@@ -3,7 +3,6 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { findReturnStatement } from 'eslint-plugin-react/lib/util/ast';
 import {
   BUS_TOPICS,
   ENABLED_DEMO_MODE,
@@ -18,11 +17,9 @@ import {
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import {
-  elDelete,
   elFindByIds,
   elLoadBy,
   elRawDeleteByQuery,
-  elSearchByQuery
 } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import {
@@ -32,7 +29,6 @@ import {
   listAllEntitiesForFilter,
   listAllRelations,
   listEntities,
-  listEntitiesPaginated,
   storeLoadById
 } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
@@ -45,7 +41,6 @@ import {
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { findAll as findAllWorkspace } from '../modules/workspace/workspace-domain';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
@@ -60,6 +55,7 @@ import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

@@ -13,7 +13,7 @@ import type {
   TriggerLiveAddInput,
   WorkspaceAddInput
 } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById, findById as findUserById, userDelete } from '../../../src/domain/user';
+import { addUser, assignGroupToUser, findById as findUserById, userDelete } from '../../../src/domain/user';
 import { addWorkspace, editAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type {
   NotificationAddInput,
