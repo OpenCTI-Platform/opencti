@@ -72,7 +72,7 @@ import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, MEMBE
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
@@ -1876,7 +1876,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   };
   const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
-  // we construct a new filter that will match against the creator internal_id respecting the filtering
+  // we construct a new filter that matches against the creator internal_id respecting the filtering
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
   if (operator === 'nil') {
     // the entities we want don't have an author OR have an author that doesn't have a reliability
@@ -1919,14 +1919,9 @@ const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
   }
   // in case we want to filter by status template (template of a workflow status)
   // we need to find all statuses filtered by status template and filter on these statuses
-  const statusFilter = {
-    mode: 'and',
-    filters: [{ key: ['template_id'], operator, values, mode }],
-    filterGroups: [],
-  };
-  const opts = { types: [ENTITY_TYPE_STATUS], filters: statusFilter, connectionFormat: false };
-  const statuses = await elList(context, user, READ_INDEX_INTERNAL_OBJECTS, opts); // the statuses with template id matching the filter
-  // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
+  let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS); // get all the statuses
+  statuses = statuses.filter((status) => values.includes(status.template_id)); // keep the statuses with template id matching the filter
+  // we construct a new filter that matches against the status internal_id respecting the filtering (= those in the listed statuses)
   const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
   const newFilter = {
     key: [WORKFLOW_FILTER],
