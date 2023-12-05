@@ -1917,20 +1917,34 @@ const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
   if (arrayKeys[0] !== STATUS_TEMPLATE_FILTER || arrayKeys.length > 1) {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
-  // in case we want to filter by status template (template of a workflow status)
-  // we need to find all statuses filtered by status template and filter on these statuses
-  let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS); // get all the statuses
-  statuses = statuses.filter((status) => values.includes(status.template_id)); // keep the statuses with template id matching the filter
-  // we construct a new filter that matches against the status internal_id respecting the filtering (= those in the listed statuses)
-  const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
-  const newFilter = {
-    key: [WORKFLOW_FILTER],
-    values: statusIds,
-    mode: 'or',
-    operator: 'eq',
-  };
+  // case 1: operator = nil or no_nil
+  if (operator === 'nil' || operator === 'not_nil') { // no status template -> no status // at least a status template -> at least a status
+    const newFilter = {
+      ...filter,
+      key: [WORKFLOW_FILTER], // we just have to change the key
+    };
+    return { newFilter, newFilterGroup: undefined };
+  }
+  // case 2: operator = eq or no_eq
+  if (operator === 'eq' || operator === 'not_eq') {
+    // in case we want to filter by status template (template of a workflow status)
+    // we need to find all statuses filtered by status template and filter on these statuses
+    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS); // get all the statuses
+    statuses = statuses.filter((status) => values.includes(status.template_id)); // keep the statuses with template id corresponding to the filter values
+    // we construct a new filter that matches against the status internal_id with a template id in the filters values
+    // !!! it works to do the mode/operator filter on the status (and not on the template)
+    // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
+    const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+    const newFilter = {
+      key: [WORKFLOW_FILTER],
+      values: statusIds,
+      mode,
+      operator,
+    };
 
-  return { newFilter, newFilterGroup: undefined };
+    return { newFilter, newFilterGroup: undefined };
+  }
+  throw Error(`The operators supported for a filter with key=status_template_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
 };
 
 /**
