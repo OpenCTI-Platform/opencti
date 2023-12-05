@@ -18,7 +18,6 @@ const fieldToSelect = ({
   return {
     disabled: disabled ?? isSubmitting,
     error: showError,
-    formError: showError ? fieldError : undefined,
     onBlur: () => {},
     onChange: fieldOnChange ?? (() => {}),
     onClose: onClose ?? (async (e) => {
@@ -67,6 +66,8 @@ const SelectField = (props) => {
     [setTouched, onSubmit, name],
   );
   const [, meta] = useField(name);
+  const { value, ...otherProps } = fieldToSelect(props);
+
   return (
     <FormControl
       style={props.containerstyle}
@@ -79,7 +80,8 @@ const SelectField = (props) => {
         {props.label}
       </InputLabel>
       <MuiSelect
-        {...fieldToSelect(props)}
+        {...otherProps}
+        value={value ?? ''}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

@@ -63,7 +63,7 @@ const MarkdownField = (props) => {
         {label}
       </InputLabel>
       <ReactMde
-        value={field.value}
+        value={field.value ?? ''}
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={controlledSelectedTab || selectedTab}

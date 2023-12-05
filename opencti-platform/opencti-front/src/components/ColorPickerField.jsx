@@ -62,13 +62,15 @@ const ColorPickerField = (props) => {
     }
   };
 
+  const { value, ...otherProps } = fieldToTextField(props);
+
   return (
     <>
       <MuiTextField
-        {...fieldToTextField(props)}
+        {...otherProps}
+        value={value ?? ''}
         error={!isNil(meta.error)}
         helperText={!isNil(meta.error) ? meta.error : props.helperText}
-        ref={anchorEl}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

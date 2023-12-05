@@ -40,9 +40,12 @@ const TextField = (props) => {
     [onSubmit, setTouched, name],
   );
   const [, meta] = useField(name);
+  const { value, ...otherProps } = fieldToTextField(props);
+
   return (
     <MuiTextField
-      {...fieldToTextField(props)}
+      {...otherProps}
+      value={value ?? ''}
       error={!isNil(meta.error)}
       helperText={
         // eslint-disable-next-line no-nested-ternary

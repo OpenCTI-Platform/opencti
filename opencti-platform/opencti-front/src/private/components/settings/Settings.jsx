@@ -484,7 +484,7 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="inList"
                                   neutralLabel={
-                                    settings.platform_cluster.instances_number
+                                    `${settings.platform_cluster.instances_number}`
                                   }
                                   status={null}
                                 />
@@ -513,7 +513,6 @@ const Settings = () => {
                                   component={Switch}
                                   variant="standard"
                                   name="platform_whitemark"
-                                  fullWidth={true}
                                   disabled={!isEnterpriseEdition}
                                   checked={
                                     settings.platform_whitemark
