@@ -41,7 +41,6 @@ import {
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
@@ -710,8 +709,6 @@ const isUserTheLastAdmin = (userId, authorized_members) => {
       anotherUserIsAdmin = true;
     }
   });
-  console.log(`is user ${userId} last admin for => `, authorized_members);
-  console.log('is user last admin ? ', currentUserIsAdmin && !anotherUserIsAdmin);
   return currentUserIsAdmin && !anotherUserIsAdmin;
 };
 
