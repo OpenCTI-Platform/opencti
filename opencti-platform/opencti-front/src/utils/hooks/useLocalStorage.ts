@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import {
+  extractAllValueFromFilters,
   Filter,
   FilterGroup,
   findFilterFromKey,
@@ -73,10 +74,10 @@ const localStorageToPaginationOptions = (
     basePagination.orderBy = sortBy;
   }
   let convertedFilters = filters?.filters as Filter[];
-  const fromId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromId'))?.values : undefined;
-  const toId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toId'))?.values : undefined;
-  const fromTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromTypes'))?.values : undefined;
-  const toTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toTypes'))?.values : undefined;
+  const fromId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromId')?.values : undefined;
+  const toId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toId')?.values : undefined;
+  const fromTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromTypes')?.values : undefined;
+  const toTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toTypes')?.values : undefined;
   convertedFilters = convertedFilters?.filter(
     (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
   );

@@ -43,10 +43,9 @@ import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import {
-  findFilterFromKey,
   emptyFilterGroup,
   removeFilter,
-  removeIdFromFilterObject,
+  removeIdFromFilterObject, extractAllValueFromFilters,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
@@ -198,7 +197,7 @@ StixDomainObjectThreatKnowledgeProps
   )}/${stixDomainObjectId}/knowledge`;
   const buildPaginationOptions = () => {
     let toTypes: string[];
-    const entityTypeFilters = findFilterFromKey(
+    const entityTypeFilters = extractAllValueFromFilters(
       filters?.filters ?? [],
       'elementTargetTypes',
     );

@@ -209,6 +209,21 @@ export const findFilterFromKey = (
   return null;
 };
 
+export const extractAllValueFromFilters = (filters: Filter[], key: string): Filter | null => {
+  const extractFilter: Filter = {
+    key,
+    mode: 'or',
+    operator: 'eq',
+    values: [],
+  };
+  filters.forEach((filter) => {
+    if (filter.key === key) {
+      extractFilter.values.push(...filter.values);
+    }
+  });
+  return extractFilter.values.length > 0 ? extractFilter : null;
+};
+
 export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
