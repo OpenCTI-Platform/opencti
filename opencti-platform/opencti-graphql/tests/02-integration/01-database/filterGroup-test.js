@@ -17,7 +17,11 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE
 } from '../../../src/schema/stixDomainObject';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import {
+  IDS_FILTER,
+  RELATION_FROM_FILTER,
+  SOURCE_RELIABILITY_FILTER
+} from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
@@ -1027,6 +1031,48 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.errors[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
     // --- 15. combinations of operators and modes with the special filter key 'source_reliability' --- //
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: undefined,
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(41);
+    // (source_reliability is empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: SOURCE_RELIABILITY_FILTER,
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 41 entities - 9 entities with a source reliability = 32
+    // (source_reliability is not empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: SOURCE_RELIABILITY_FILTER,
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 9 entities with a source reliability
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
@@ -1160,6 +1206,43 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
+    // --- 17. filters with not supported keys --- //
+    // bad_filter_key = XX
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'bad_filter_key',
+              operator: 'eq',
+              values: ['Report'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.errors.length).toEqual(1);
+    // fromId = XXX (API filters are passed via options)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.errors.length).toEqual(1);
   });
   it('should test environnement deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
