@@ -200,7 +200,7 @@ StixDomainObjectThreatKnowledgeProps
     let toTypes: string[];
     const entityTypeFilters = findFilterFromKey(
       filters?.filters ?? [],
-      'entity_type',
+      'elementTargetTypes',
     );
     if (entityTypeFilters && entityTypeFilters.values.length > 0) {
       if (entityTypeFilters.values.filter((id) => id === 'all').length > 0) {
@@ -231,7 +231,7 @@ StixDomainObjectThreatKnowledgeProps
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
     const finalFilters = filters
-      ? removeFilter(filters, 'entity_type')
+      ? removeFilter(filters, 'elementTargetTypes')
       : undefined;
     const finalPaginationOptions = {
       ...rawPaginationOptions,
@@ -439,7 +439,7 @@ StixDomainObjectThreatKnowledgeProps
         <Filters
           helpers={helpers}
           availableFilterKeys={[
-            'entity_type',
+            'elementTargetTypes',
             'objectMarking',
             'createdBy',
             'objectLabel',

@@ -2352,6 +2352,7 @@ const i18n = {
       'ends with': 'termina con',
       'not ends with': 'no termina con',
       'Add filter': 'Agregar filtro',
+      elementTargetTypes: 'Tipos de objetivo',
     },
     'fr-fr': {
       // Titles
@@ -4713,6 +4714,7 @@ const i18n = {
       'ends with': 'se termine par',
       'not ends with': 'ne se termine pas par',
       'Add filter': 'Ajouter un filtre',
+      elementTargetTypes: 'Types de cible',
     },
     'ja-jp': {
       // Titles
@@ -6976,6 +6978,7 @@ const i18n = {
       'ends with': 'で終わる',
       'not ends with': 'で終わらない',
       'Add filter': 'フィルターを追加',
+      elementTargetTypes: 'ターゲットタイプ',
     },
     'zh-cn': {
       // Titles
@@ -9125,6 +9128,7 @@ const i18n = {
       'ends with': '以...结尾',
       'not ends with': '不以...结尾',
       'Add filter': '添加过滤器',
+      elementTargetTypes: '目标类型',
     },
     'en-us': {
       gt: 'Greater than',
@@ -9573,6 +9577,7 @@ const i18n = {
       info_authorizedmembers_knowledge_off: 'By deactivating Access Restriction, specific accesses you created will be removed and Access Restriction will be lift off for this Entity. But the Entity will still be covered by Marking Definition and Organization sharing.',
       'I would like to use a EE feature ...':
         "I would like to use a EE feature ({feature}) but I don't have EE activated.\nI would like to discuss with you about activating EE.",
+      elementTargetTypes: 'Target Types',
     },
   },
 };

@@ -117,6 +117,7 @@ export const filtersUsedAsApiParameters = [
   'fromTypes',
   'toId',
   'toTypes',
+  'elementTargetTypes',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators

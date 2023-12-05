@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
 import { Theme } from '../Theme';
-import { Filter } from '../../utils/filters/filtersUtils';
+import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -71,6 +71,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const classes = useStyles();
   const deactivatePopoverMenu = !helpers;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
+  const isFiltersUsedAsApiParameters = filtersUsedAsApiParameters.includes(filterKey);
   if (isOperatorNil) {
     return (
       <>
@@ -101,11 +102,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         {last(filterValues) !== id && (
           <div
             className={
-              isReadWriteFilter
+              (isReadWriteFilter && !isFiltersUsedAsApiParameters)
                 ? classes.inlineOperator
                 : classes.inlineOperatorReadOnly
             }
-            onClick={() => handleSwitchLocalMode?.(currentFilter)}
+            onClick={(isReadWriteFilter && !isFiltersUsedAsApiParameters) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
           </div>
