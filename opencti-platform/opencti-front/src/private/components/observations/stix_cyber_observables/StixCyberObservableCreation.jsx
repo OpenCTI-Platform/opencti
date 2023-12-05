@@ -262,16 +262,16 @@ const StixCyberObservableCreation = ({
     let adaptedValues = values;
     // Potential dicts
     if (
-      adaptedValues['hashes.MD5']
+      adaptedValues.hashes_MD5
       || adaptedValues['hashes_SHA-1']
       || adaptedValues['hashes_SHA-256']
       || adaptedValues['hashes_SHA-512']
     ) {
       adaptedValues.hashes = [];
-      if (adaptedValues['hashes.MD5'].length > 0) {
+      if (adaptedValues.hashes_MD5.length > 0) {
         adaptedValues.hashes.push({
           algorithm: 'MD5',
-          hash: adaptedValues['hashes.MD5'],
+          hash: adaptedValues.hashes_MD5,
         });
       }
       if (adaptedValues['hashes_SHA-1'].length > 0) {
@@ -301,7 +301,7 @@ const StixCyberObservableCreation = ({
       dissoc('objectLabel'),
       dissoc('externalReferences'),
       dissoc('createIndicator'),
-      dissoc('hashes.MD5'),
+      dissoc('hashes_MD5'),
       dissoc('hashes_SHA-1'),
       dissoc('hashes_SHA-256'),
       dissoc('hashes_SHA-512'),
@@ -390,13 +390,13 @@ const StixCyberObservableCreation = ({
                     dense={true}
                     onClick={() => selectType(subType.label)}
                   >
-                    <ListItemText primary={subType.tlabel}/>
+                    <ListItemText primary={subType.tlabel} />
                   </ListItemButton>
                 ))}
               </List>
             );
           }
-          return <div/>;
+          return <div />;
         }}
       />
     );
@@ -440,7 +440,7 @@ const StixCyberObservableCreation = ({
               } else if (includes(attribute.value, booleanAttributes)) {
                 initialValues[attribute.value] = false;
               } else if (attribute.value === 'hashes') {
-                initialValues['hashes.MD5'] = '';
+                initialValues.hashes_MD5 = '';
                 initialValues['hashes_SHA-1'] = '';
                 initialValues['hashes_SHA-256'] = '';
                 initialValues['hashes_SHA-512'] = '';
@@ -494,7 +494,7 @@ const StixCyberObservableCreation = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                name="hashes.MD5"
+                                name="hashes_MD5"
                                 label={t('hash_md5')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
@@ -629,7 +629,7 @@ const StixCyberObservableCreation = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <CustomFileUploader setFieldValue={setFieldValue}/>
+                    <CustomFileUploader setFieldValue={setFieldValue} />
                     <Field
                       component={SwitchField}
                       type="checkbox"
@@ -661,7 +661,7 @@ const StixCyberObservableCreation = ({
               </Formik>
             );
           }
-          return <div/>;
+          return <div />;
         }}
       />
     );
@@ -676,7 +676,7 @@ const StixCyberObservableCreation = ({
           aria-label="Add"
           className={classes.createButton}
         >
-          <Add/>
+          <Add />
         </Fab>
         <Drawer
           open={status.open}
@@ -694,7 +694,7 @@ const StixCyberObservableCreation = ({
               size="large"
               color="primary"
             >
-              <Close fontSize="small" color="primary"/>
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
@@ -716,7 +716,7 @@ const StixCyberObservableCreation = ({
             aria-label="Add"
             className={classes.createButtonContextual}
           >
-            <Add/>
+            <Add />
           </Fab>
         )}
         <Dialog
