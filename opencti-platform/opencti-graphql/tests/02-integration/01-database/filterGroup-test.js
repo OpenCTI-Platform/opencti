@@ -692,6 +692,24 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
     // --- 13. combinations of operators and modes with entity_type filter (test the correct injection of parent types) --- //
+    // (entity_type is empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'nil',
+              values: [],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
     // (entity_type = Malware)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {

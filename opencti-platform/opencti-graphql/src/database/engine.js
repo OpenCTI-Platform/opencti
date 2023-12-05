@@ -1687,6 +1687,22 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   let newFilter;
   let newFilterGroup;
 
+  if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
+    newFilterGroup = {
+      mode: 'and',
+      filters: [
+        filter,
+        {
+          ...filter,
+          key: 'parent_types',
+        }
+      ],
+      filterGroups: [],
+    };
+    return { newFilter, newFilterGroup };
+  }
+
+  // at this point, operator !== nil and operator !== not_nil
   if (mode === 'or') {
     // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
     // and we will search in both entity_types and parent_types
@@ -1739,6 +1755,30 @@ const adaptFilterToIdsFilterKey = (filter) => {
 
   const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
 
+  if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
+    newFilterGroup = {
+      mode: 'and',
+      filters: [
+        {
+          ...filter,
+          key: ID_INTERNAL,
+        },
+        {
+          ...filter,
+          key: ID_STANDARD,
+        },
+        {
+          ...filter,
+          key: IDS_STIX,
+        }
+      ],
+      filterGroups: [],
+    };
+    return { newFilter, newFilterGroup };
+  }
+
+  // at this point, operator !== nil and operator !== not_nil
+
   if (mode === 'or') {
     // elastic multi-key is a 'or'
     newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
@@ -1768,6 +1808,23 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   }
   // at this point arrayKey === ['source_reliability']
 
+  let newFilter;
+  let newFilterGroup;
+
+  if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
+    newFilterGroup = {
+      mode: 'and',
+      filters: [
+        {
+          ...filter,
+          key: 'rel_created-by.internal_id',
+        }
+      ],
+      filterGroups: [],
+    };
+    return { newFilter, newFilterGroup };
+  }
+
   // in case we want to filter by source reliability (reliability of author)
   // we need to find all authors filtered by reliability and filter on these authors
   const authorTypes = [
@@ -1784,7 +1841,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
   // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
-  const newFilter = {
+  newFilter = {
     key: ['rel_created-by.internal_id'],
     values: authorIds,
     mode: 'or',
