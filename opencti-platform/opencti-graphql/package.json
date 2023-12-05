@@ -33,9 +33,9 @@
     "node": ">= 16.*"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.431.0",
-    "@aws-sdk/credential-provider-node": "3.431.0",
-    "@aws-sdk/lib-storage": "3.431.0",
+    "@aws-sdk/client-s3": "3.465.0",
+    "@aws-sdk/credential-provider-node": "3.465.0",
+    "@aws-sdk/lib-storage": "3.465.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@elastic/elasticsearch": "8.10.0",
     "@elastic/transport": "8.3.4",
