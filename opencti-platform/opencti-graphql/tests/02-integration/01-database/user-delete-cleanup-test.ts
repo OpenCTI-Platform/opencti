@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, AMBER_GROUP, AMBER_STRICT_GROUP } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_STRICT_GROUP } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -27,10 +27,7 @@ import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
  * @param username
  */
 const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser, username: string) => {
-  console.log('username:', username);
-
   const userToDeleteId: string = generateStandardId(ENTITY_TYPE_USER, { user_email: `${username}@opencti.io` });
-  // const userToDeleteInternalId: string = generateInternalId();
 
   const simpleUser = {
     id: userToDeleteId,
@@ -41,9 +38,7 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
     lastname: 'opencti'
   };
   const userAdded = await addUser(adminContext, adminUser, simpleUser);
-  console.log('userAdded:', userAdded);
-  const groupResult = await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
-  console.log('groupResult:', groupResult);
+  await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
   return findById(adminContext, adminUser, userAdded.id);
 };
 
@@ -70,10 +65,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     // AND an admin ADMIN_USER having rights to create/delete users
     const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false };
     const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbedeletedsoon');
-    console.log('USER FOR TEST', userToDeletedAuth);
-
     const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false };
-    // await assignGroupToUser(adminContext, ADMIN_USER, userToDeletedAuth.id, 'Default');
 
     // AND user having a Trigger
     const newTrigger = await createTriggerForUser(userToDeleteContext, userToDeletedAuth);
@@ -92,8 +84,6 @@ describe('Testing user delete on cascade [issue/3720]', () => {
 
     const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
     expect(privateInvestigationData.authorized_members.length).toBe(1);
-    const privateInvestigationData2 = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
-    expect(privateInvestigationData2.authorized_members.length).toBe(1);
 
     // AND user having an Investigation shared to ALL with admin rights
     const sharedWithAdminRightsInvestigationInput: WorkspaceAddInput = {
@@ -103,9 +93,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     };
     let sharedWithAdminRightsInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationInput);
     const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.authorized_members;
-
     sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
-    console.log('** 🦄 sharedIAuthMembers', sharedIAuthMembers);
 
     await editAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id, sharedIAuthMembers);
     sharedWithAdminRightsInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
@@ -120,7 +108,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     let sharedInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.authorized_members;
     sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
-    console.log('ADMIN ??? => sharedInvestigationAuthMembers', sharedInvestigationAuthMembers);
+
     await editAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
     sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
     expect(sharedInvestigationData.authorized_members.length).toBe(2);

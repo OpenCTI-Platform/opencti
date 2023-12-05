@@ -19,7 +19,7 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import {
   elFindByIds,
   elLoadBy,
-  elRawDeleteByQuery,
+  elRawDeleteByQuery
 } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
 import {
@@ -41,7 +41,7 @@ import {
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { findAll as findAllWorkspace } from '../modules/workspace/workspace-domain';
+import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
@@ -718,48 +718,31 @@ const isUserTheLastAdmin = (userId, authorized_members) => {
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const userToDeleteAuth = await findById(context, authUser, userId);
 
-  // TODO find the correct filters to get user's workspace only (and not all workspaces)
-  /*
-   * args {
-   *   first: 25,
-   *   orderBy: 'name',
-   *   orderMode: 'desc',
-   *   filters: { mode: 'and', filters: [ [Object] ], filterGroups: [] }
-   * }
-   */
+  const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE], { connectionFormat: false });
 
-  const args = {
-    first: 25,
-    orderBy: 'name',
-    orderMode: 'desc',
-    filters: { mode: 'and', filters: [], filterGroups: [] }
-  };
-  const workspacesToDelete = await findAllWorkspace(context, userToDeleteAuth, args);
-  console.log('workspacesToDelete', workspacesToDelete);
+  const workspaceToDeleteIds = workspacesToDelete
+    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.authorized_members))
+    .map((workspaceEntity) => workspaceEntity.internal_id);
 
-  // TODO loop on pagination....
-  const workspaceToDeleteIds = workspacesToDelete.edges
-    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.node.authorized_members))
-    .map((workspaceEntity) => workspaceEntity.node.id);
-  console.log('***************************');
-  console.log('workspaceToDeleteIds', workspaceToDeleteIds);
-
-  return await elRawDeleteByQuery({
-    index: READ_INDEX_INTERNAL_OBJECTS,
-    refresh: true,
-    body: {
-      query: {
-        bool: {
-          must: [
-            { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-            { terms: { id: workspaceToDeleteIds } }
-          ]
+  if (workspaceToDeleteIds.length > 0) {
+    await elRawDeleteByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: 'Workspace' } } },
+              { terms: { 'internal_id.keyword': workspaceToDeleteIds } }
+            ]
+          }
         }
       }
-    }
-  }).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting Trigger for user ${userId} elastic.`, { error: err });
-  });
+    }).catch((err) => {
+      throw DatabaseError(`[DELETE] Error deleting Workspace for user ${userId} elastic.`, { error: err });
+    });
+  }
+  return true;
 };
 
 export const deleteAllTriggerAndDigestByUser = async (userId) => {
