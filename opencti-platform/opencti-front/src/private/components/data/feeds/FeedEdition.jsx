@@ -456,7 +456,7 @@ const FeedEditionContainer = (props) => {
                       <Filters
                         variant="text"
                         availableFilterKeys={[
-                          'status_template_id',
+                          'workflow_id',
                           'objectAssignee',
                           'objects',
                           'objectMarking',

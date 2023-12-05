@@ -202,7 +202,7 @@ const RetentionEditionContainer = (props) => {
                 variant="text"
                 availableFilterKeys={[
                   'entity_type',
-                  'x_opencti_workflow_id',
+                  'workflow_id',
                   'objectAssignee',
                   'objects',
                   'objectMarking',

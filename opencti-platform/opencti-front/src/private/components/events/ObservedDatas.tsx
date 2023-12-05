@@ -148,7 +148,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
-            'x_opencti_workflow_id',
+            'workflow_id',
             'objectLabel',
             'objectMarking',
             'createdBy',

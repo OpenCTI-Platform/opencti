@@ -83,7 +83,6 @@ import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filterin
 import {
   IDS_FILTER,
   SOURCE_RELIABILITY_FILTER,
-  STATUS_TEMPLATE_FILTER,
   TYPE_FILTER, WORKFLOW_FILTER
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
@@ -1914,14 +1913,14 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
 const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  if (arrayKeys[0] !== STATUS_TEMPLATE_FILTER || arrayKeys.length > 1) {
+  if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   // case 1: operator = nil or no_nil
   if (operator === 'nil' || operator === 'not_nil') { // no status template -> no status // at least a status template -> at least a status
     const newFilter = {
       ...filter,
-      key: [WORKFLOW_FILTER], // we just have to change the key
+      key: ['x_opencti_workflow_id'], // we just have to change the key
     };
     return { newFilter, newFilterGroup: undefined };
   }
@@ -1936,7 +1935,7 @@ const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
     // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
     const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
     const newFilter = {
-      key: [WORKFLOW_FILTER],
+      key: ['x_opencti_workflow_id'],
       values: statusIds,
       mode,
       operator,
@@ -1944,7 +1943,7 @@ const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
 
     return { newFilter, newFilterGroup: undefined };
   }
-  throw Error(`The operators supported for a filter with key=status_template_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
+  throw Error(`The operators supported for a filter with key=workflow_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
 };
 
 /**
@@ -1997,7 +1996,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (newFilterGroup) {
         finalFilterGroups.push(newFilterGroup);
       }
-    } else if (arrayKeys.includes(STATUS_TEMPLATE_FILTER)) {
+    } else if (arrayKeys.includes(WORKFLOW_FILTER)) {
       // in case we want to filter by status template (template of a workflow status)
       // we need to find all statuses filtered by status template and filter on these statuses
       const { newFilter, newFilterGroup } = await adaptFilterToStatusTemplateFilterKey(context, user, filter);

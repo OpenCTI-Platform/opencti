@@ -158,7 +158,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           iconExtension={true}
           availableFilterKeys={[
             'note_types',
-            'x_opencti_workflow_id',
+            'workflow_id',
             'objectLabel',
             'objectMarking',
             'createdBy',

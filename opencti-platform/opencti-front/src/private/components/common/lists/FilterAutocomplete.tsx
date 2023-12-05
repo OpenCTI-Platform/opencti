@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
+import { EqFilters } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -129,13 +129,10 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
           event,
         );
       } else {
-        const group = !onlyGroupOrganization.includes(filterKey)
-          ? value.group
-          : undefined;
         defaultHandleAddFilter(
           filterKey,
           value.value,
-          value.value === null ? 'nil' : group,
+          value.value === null ? 'nil' : undefined,
           event,
         );
       }

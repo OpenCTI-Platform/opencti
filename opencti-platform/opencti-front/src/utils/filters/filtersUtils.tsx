@@ -36,7 +36,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-export const onlyGroupOrganization = ['x_opencti_workflow_id'];
+export const onlyGroupOrganization = ['workflow_id'];
 
 export const directFilters = [
   'is_read',
@@ -80,8 +80,7 @@ export const EqFilters = [
   'createdBy',
   'objectMarking',
   'entity_type',
-  'x_opencti_workflow_id',
-  'status_template_id',
+  'workflow_id',
   'malware_types',
   'incident_type',
   'context',

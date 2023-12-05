@@ -226,7 +226,7 @@ const TaxiiCollectionCreation = (props) => {
                   variant="text"
                   availableFilterKeys={[
                     'entity_type',
-                    'status_template_id',
+                    'workflow_id',
                     'objectAssignee',
                     'objects',
                     'objectMarking',

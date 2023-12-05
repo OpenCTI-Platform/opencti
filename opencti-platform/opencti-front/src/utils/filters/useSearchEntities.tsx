@@ -806,36 +806,7 @@ const useSearchEntities = ({
       case 'source':
         buildOptionsFromAttributesSearchQuery(filterKey);
         break;
-
-      case 'x_opencti_workflow_id':
-        fetchQuery(statusFieldStatusesSearchQuery, {
-          first: 500,
-          filters: isNotEmptyField(entityType) ? {
-            mode: 'and',
-            filterGroups: [],
-            filters: [{ key: 'type', values: [entityType] }],
-          } : undefined,
-        })
-          .toPromise()
-          .then((data) => {
-            const statusEntities = (
-              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? []
-            )
-              .filter((n) => !R.isNil(n.node.template))
-              .map((n) => ({
-                label: n.node.template?.name,
-                color: n.node.template?.color,
-                value: n.node.id,
-                order: n.node.order,
-                group: n.node.type,
-                type: 'Vocabulary',
-              }))
-              .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
-              .sort((a, b) => a.group.localeCompare(b.group));
-            unionSetEntities(filterKey, statusEntities);
-          });
-        break;
-      case 'status_template_id':
+      case 'workflow_id':
         fetchQuery(StatusTemplateFieldQuery, {
           first: 500,
         })
@@ -853,7 +824,7 @@ const useSearchEntities = ({
                 type: 'Vocabulary',
               }))
               .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-            unionSetEntities('status_template_id', statusTemplateEntities);
+            unionSetEntities('workflow_id', statusTemplateEntities);
           });
         break;
       case 'x_opencti_main_observable_type':

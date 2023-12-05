@@ -128,7 +128,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
             'toTypes',
             'objectLabel',
             'objectMarking',
-            'x_opencti_workflow_id',
+            'workflow_id',
             'created',
             'createdBy',
             'x_opencti_negative',

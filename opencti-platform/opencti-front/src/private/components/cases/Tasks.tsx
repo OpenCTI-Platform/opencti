@@ -75,7 +75,7 @@ const Tasks = () => {
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
-          'x_opencti_workflow_id',
+          'workflow_id',
           'objectAssignee',
           'objectParticipant',
           'objectMarking',

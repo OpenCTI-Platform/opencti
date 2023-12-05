@@ -192,7 +192,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           'report_types',
           'container_type',
           'confidence',
-          'x_opencti_workflow_id',
+          'workflow_id',
           'objectLabel',
           'createdBy',
           'objectMarking',

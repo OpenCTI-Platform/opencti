@@ -168,7 +168,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           iconExtension={true}
           availableFilterKeys={[
             'context',
-            'x_opencti_workflow_id',
+            'workflow_id',
             'objectLabel',
             'objectMarking',
             'createdBy',

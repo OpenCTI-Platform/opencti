@@ -158,7 +158,7 @@ const entitiesFilters = [
   'objectLabel',
   'createdBy',
   'creator_id',
-  'x_opencti_workflow_id',
+  'workflow_id',
   'objectAssignee',
   'objectParticipant',
   'objects',
