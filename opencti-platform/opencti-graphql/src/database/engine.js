@@ -1827,8 +1827,8 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
   // we construct a new filter that will match against the creator internal_id respecting the filtering
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
-  if (operator === 'nil' || operator === 'not_nil') {
-    // the entities we want [don't have (resp. have) an author] OR [have an author that doesn't have (resp. have) a reliability]
+  if (operator === 'nil') {
+    // the entities we want don't have an author OR have an author that doesn't have a reliability
     newFilterGroup = {
       mode: 'or',
       filters: [
@@ -1848,7 +1848,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
       filterGroups: [],
     };
   } else {
-    // the entities we want have an author that respect the reliability filtering
+    // the entities we want have an author that respect the reliability filtering (= an author of the authorIds list)
     newFilter = {
       key: ['rel_created-by.internal_id'],
       values: authorIds,
