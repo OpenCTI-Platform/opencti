@@ -61,10 +61,6 @@ export const specialFilterKeys = [
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
-  RELATION_FROM_FILTER, // nested relation for the from of a relationship
-  RELATION_TO_FILTER, // nested relation for the to of a relationship
-  RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
-  RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   CONTEXT_ENTITY_ID_FILTER,
