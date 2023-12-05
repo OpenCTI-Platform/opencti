@@ -15,7 +15,7 @@ import { NotifierLineDummy } from './notifiers/NotifierLine';
 import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -37,7 +37,7 @@ const Notifiers = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

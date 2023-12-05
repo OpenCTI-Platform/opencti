@@ -16,7 +16,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
@@ -58,7 +58,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'published',
       orderAsc: false,

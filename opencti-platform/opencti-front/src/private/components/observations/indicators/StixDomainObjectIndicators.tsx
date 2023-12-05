@@ -18,7 +18,7 @@ import ToolBar from '../../data/ToolBar';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixDomainObjectIndicatorsProps {
   stixDomainObjectId: string,
@@ -59,7 +59,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StixDomainObjectIndicatorsLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,

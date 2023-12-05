@@ -17,7 +17,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -133,7 +133,7 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
         ...filters,
         mode: filters.mode === 'and' ? 'or' : 'and',
       }
-      : initialFilterGroup;
+      : emptyFilterGroup;
     const variables = {
       id: streamCollection.id,
       input: { key: 'filters', value: serializeFilterGroupForBackend(newFiltersContent) },

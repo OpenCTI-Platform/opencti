@@ -28,7 +28,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -99,7 +99,7 @@ const PlaybookAddComponentsContent = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
-  const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : initialFilterGroup);
+  const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup);
 
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],

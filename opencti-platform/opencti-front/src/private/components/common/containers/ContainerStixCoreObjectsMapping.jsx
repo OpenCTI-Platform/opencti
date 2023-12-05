@@ -9,7 +9,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -43,7 +43,7 @@ const ContainerStixCoreObjectsMapping = ({
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: false,

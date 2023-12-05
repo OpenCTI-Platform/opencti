@@ -24,7 +24,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import {
   StixCyberObservableLine_node$data,
 } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
@@ -37,7 +37,7 @@ const StixCyberObservables: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,

@@ -16,7 +16,7 @@ import {
   ObservedDatasLinesPaginationQuery$variables,
 } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
@@ -59,7 +59,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       sortBy: 'last_observed',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
     additionnalFilters,
   );

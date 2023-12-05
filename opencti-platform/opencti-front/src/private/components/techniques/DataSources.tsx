@@ -11,7 +11,7 @@ import {
   DataSourcesLinesPaginationQuery$variables,
 } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
@@ -23,7 +23,7 @@ const DataSources: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',

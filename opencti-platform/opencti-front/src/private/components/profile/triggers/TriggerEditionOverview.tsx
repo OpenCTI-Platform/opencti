@@ -27,7 +27,7 @@ import {
   deserializeFilterGroupForFrontend,
   Filter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
@@ -145,7 +145,7 @@ TriggerEditionOverviewProps
         ...filters,
         mode: filters.mode === 'and' ? 'or' : 'and',
       }
-      : initialFilterGroup;
+      : emptyFilterGroup;
     commitFieldPatch({
       variables: {
         id: trigger.id,

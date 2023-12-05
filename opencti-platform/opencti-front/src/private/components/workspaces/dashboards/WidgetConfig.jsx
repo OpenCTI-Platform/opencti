@@ -66,7 +66,7 @@ import {
   findFilterFromKey,
   findFilterIndexFromKey,
   findFiltersFromKeys,
-  initialFilterGroup, isFilterGroupNotEmpty,
+  emptyFilterGroup, isFilterGroupNotEmpty,
   isUniqFilter,
 } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
@@ -400,9 +400,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     date_attribute: 'created_at',
     perspective: null,
     isTo: true,
-    filters: initialFilterGroup,
-    dynamicFrom: initialFilterGroup,
-    dynamicTo: initialFilterGroup,
+    filters: emptyFilterGroup,
+    dynamicFrom: emptyFilterGroup,
+    dynamicTo: emptyFilterGroup,
   };
   const [dataSelection, setDataSelection] = useState(
     widget?.dataSelection ?? [initialSelection],
@@ -499,7 +499,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       ...n,
       perspective: selectedPerspective,
       filters:
-                selectedPerspective === n.perspective ? n.filters : initialFilterGroup,
+                selectedPerspective === n.perspective ? n.filters : emptyFilterGroup,
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
@@ -513,9 +513,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         attribute: 'entity_type',
         date_attribute: 'created_at',
         perspective: subPerspective,
-        filters: initialFilterGroup,
-        dynamicFrom: initialFilterGroup,
-        dynamicTo: initialFilterGroup,
+        filters: emptyFilterGroup,
+        dynamicFrom: emptyFilterGroup,
+        dynamicTo: emptyFilterGroup,
       },
     ]);
   };

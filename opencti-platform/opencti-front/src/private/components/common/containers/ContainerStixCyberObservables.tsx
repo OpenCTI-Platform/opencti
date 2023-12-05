@@ -29,7 +29,7 @@ import {
 } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import {
   GqlFilterGroup,
-  initialFilterGroup, removeIdFromFilterObject,
+  emptyFilterGroup, removeIdFromFilterObject,
 } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
@@ -83,7 +83,7 @@ ContainerStixCyberObservablesComponentProps
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,

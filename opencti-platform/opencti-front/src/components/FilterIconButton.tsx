@@ -5,7 +5,7 @@ import {
   Filter,
   FilterGroup,
   GqlFilterGroup,
-  initialFilterGroup,
+  emptyFilterGroup,
   removeIdFromFilterObject,
 } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
@@ -31,7 +31,7 @@ interface FilterIconButtonProps {
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableFilterKeys,
-  filters = initialFilterGroup,
+  filters = emptyFilterGroup,
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,

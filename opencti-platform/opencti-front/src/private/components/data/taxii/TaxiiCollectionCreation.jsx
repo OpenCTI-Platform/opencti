@@ -20,7 +20,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
@@ -109,7 +109,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const TaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState(initialFilterGroup);
+  const [filters, setFilters] = useState(emptyFilterGroup);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);

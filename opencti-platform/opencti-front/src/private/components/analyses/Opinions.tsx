@@ -16,7 +16,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'opinions';
 
@@ -39,7 +39,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
   } = usePaginationLocalStorage<OpinionsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

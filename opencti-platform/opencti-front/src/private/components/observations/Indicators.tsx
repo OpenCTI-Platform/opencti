@@ -21,7 +21,7 @@ import {
 } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { filtersWithEntityType, findFilterFromKey, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, findFilterFromKey, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -42,7 +42,7 @@ const Indicators = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

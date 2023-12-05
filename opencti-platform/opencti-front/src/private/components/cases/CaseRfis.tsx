@@ -16,7 +16,7 @@ import {
   CaseRfiLinesCasesPaginationQuery$variables,
 } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -39,7 +39,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

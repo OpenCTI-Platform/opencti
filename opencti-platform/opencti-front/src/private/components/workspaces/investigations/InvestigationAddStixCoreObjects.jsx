@@ -13,7 +13,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter, filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 
@@ -47,7 +47,7 @@ const InvestigationAddStixCoreObjects = (props) => {
         }],
         filterGroups: [],
       }
-      : initialFilterGroup,
+      : emptyFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
@@ -167,7 +167,7 @@ const InvestigationAddStixCoreObjects = (props) => {
           }],
           filterGroups: [],
         }
-        : initialFilterGroup,
+        : emptyFilterGroup,
     );
   };
 

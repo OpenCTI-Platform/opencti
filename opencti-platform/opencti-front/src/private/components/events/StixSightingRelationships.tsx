@@ -19,7 +19,7 @@ import {
   filtersWithEntityType,
   findFilterFromKey,
   GqlFilterGroup,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
@@ -79,7 +79,7 @@ const StixSightingRelationships = () => {
   } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'last_seen',
       orderAsc: false,

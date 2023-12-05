@@ -45,7 +45,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { Theme } from '../../../../components/Theme';
 import {
   findFilterFromKey,
-  initialFilterGroup,
+  emptyFilterGroup,
 
   removeFilter,
 } from '../../../../utils/filters/filtersUtils';
@@ -149,7 +149,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
   const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

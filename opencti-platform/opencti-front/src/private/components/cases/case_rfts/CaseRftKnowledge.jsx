@@ -16,7 +16,7 @@ import {
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledgeGraph, {
@@ -136,7 +136,7 @@ class CaseRftKnowledgeComponent extends Component {
         params,
       ),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
-      timeLineFilters: propOr(initialFilterGroup, 'timeLineFilters', params),
+      timeLineFilters: propOr(emptyFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }

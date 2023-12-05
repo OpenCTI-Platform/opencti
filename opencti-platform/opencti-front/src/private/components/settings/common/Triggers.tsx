@@ -21,7 +21,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { GqlFilterGroup, initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { GqlFilterGroup, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -58,7 +58,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
