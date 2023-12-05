@@ -72,7 +72,6 @@ export const findAll = (
   user: AuthUser,
   args: QueryWorkspacesArgs,
 ) => {
-  console.log('[Workspace] findAll, args', args);
   return listEntitiesPaginated<BasicStoreEntityWorkspace>(
     context,
     user,
