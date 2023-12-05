@@ -39,7 +39,7 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
   };
   const userAdded = await addUser(adminContext, adminUser, simpleUser);
   await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
-  return findById(adminContext, adminUser, userAdded.id);
+  return findUserById(adminContext, adminUser, userAdded.id);
 };
 
 const createTriggerForUser = async (context: AuthContext, user: AuthUser) => {
