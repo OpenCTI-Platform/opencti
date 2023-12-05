@@ -3164,7 +3164,8 @@ const WorkbenchFileContentComponent = ({
                                     values: [
                                       object.name
                                         || object.value
-                                        || object.definition,
+                                        || object.definition
+                                        || object.country,
                                     ],
                                   },
                                 ],
