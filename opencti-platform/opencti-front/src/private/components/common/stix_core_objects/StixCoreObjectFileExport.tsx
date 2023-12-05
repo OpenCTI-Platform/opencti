@@ -270,9 +270,11 @@ const StixCoreObjectFileExportComponent = ({
 const StixCoreObjectFileExport = ({
   id,
   type,
+  redirectToContent,
 }: {
   id: string;
   type: string;
+  redirectToContent?: boolean;
 }) => {
   const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
@@ -297,6 +299,7 @@ const StixCoreObjectFileExport = ({
             id={id}
             type={type}
             queryRef={queryRef}
+            redirectToContent={redirectToContent}
           />
         </React.Suspense>
       )}
