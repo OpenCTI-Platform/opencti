@@ -46,6 +46,7 @@ import {
   findFilterFromKey,
   emptyFilterGroup,
   removeFilter,
+  removeIdFromFilterObject,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
@@ -238,7 +239,7 @@ StixDomainObjectThreatKnowledgeProps
       elementWithTargetTypes: toTypes.filter(
         (x) => x.toLowerCase() !== stixDomainObjectType,
       ),
-      filters: finalFilters,
+      filters: removeIdFromFilterObject(finalFilters),
     };
     if (viewType === 'timeline') {
       finalPaginationOptions.relationship_type = nestedRelationships
