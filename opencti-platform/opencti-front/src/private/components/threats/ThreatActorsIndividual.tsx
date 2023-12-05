@@ -14,7 +14,7 @@ import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
@@ -26,7 +26,7 @@ const ThreatActorsIndividual = () => {
         number: 0,
         symbol: '',
       },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,

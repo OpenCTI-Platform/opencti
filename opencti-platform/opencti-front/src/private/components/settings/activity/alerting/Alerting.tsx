@@ -20,7 +20,7 @@ import ActivityMenu from '../../ActivityMenu';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import { Theme } from '../../../../../components/Theme';
-import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
@@ -140,7 +140,7 @@ const Alerting: FunctionComponent = () => {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',

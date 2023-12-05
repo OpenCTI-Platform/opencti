@@ -19,7 +19,7 @@ import {
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -170,7 +170,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         ...filters,
         mode: filters.mode === 'and' ? 'or' : 'and',
       }
-      : initialFilterGroup;
+      : emptyFilterGroup;
     const variables = {
       id: props.taxiiCollection.id,
       input: { key: 'filters', value: serializeFilterGroupForBackend(newFiltersContent) },

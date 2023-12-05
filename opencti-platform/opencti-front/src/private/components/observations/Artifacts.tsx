@@ -16,7 +16,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
@@ -29,7 +29,7 @@ const Artifacts: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,

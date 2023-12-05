@@ -11,7 +11,7 @@ import {
   CitiesLinesPaginationQuery,
   CitiesLinesPaginationQuery$variables,
 } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'cities';
 
@@ -23,7 +23,7 @@ const Cities: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',

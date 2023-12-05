@@ -6,7 +6,7 @@ import StixDomainObjectAttackPatternsKillChain, {
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -33,7 +33,7 @@ const StixDomainObjectAttackPatterns = ({
   } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     openExports: false,
-    filters: initialFilterGroup,
+    filters: emptyFilterGroup,
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;

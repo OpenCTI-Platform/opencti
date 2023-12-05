@@ -11,7 +11,7 @@ import {
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 
@@ -23,7 +23,7 @@ const Positions: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',

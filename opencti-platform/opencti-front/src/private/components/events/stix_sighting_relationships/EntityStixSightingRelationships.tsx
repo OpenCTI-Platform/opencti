@@ -16,7 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, initialFilterGroup, removeIdFromFilterObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, emptyFilterGroup, removeIdFromFilterObject } from '../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -52,7 +52,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
       sortBy: 'first_seen',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

@@ -32,7 +32,7 @@ import {
   Filter,
   FilterGroup,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
@@ -133,7 +133,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
+  const [filters, setFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
   const [instanceFilters, setInstanceFilters] = useState<FilterAutocompleteInputValue[]>([]);
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
@@ -148,14 +148,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 
   const onReset = () => {
     handleClose?.();
-    setFilters(initialFilterGroup);
+    setFilters(emptyFilterGroup);
     setInstanceTrigger(false);
     setInstanceFilters([]);
   };
   const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
     setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
     setInstanceTrigger(!instance_trigger);
-    setFilters(initialFilterGroup);
+    setFilters(emptyFilterGroup);
   };
   const handleAddFilter = (k: string, id: string, op = 'eq') => {
     setFilters(constructHandleAddFilter(filters, k, id, op));

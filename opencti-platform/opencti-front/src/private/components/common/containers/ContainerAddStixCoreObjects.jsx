@@ -22,7 +22,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+²  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 
@@ -85,25 +85,28 @@ const ContainerAddStixCoreObjects = (props) => {
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
+
+  const targetEntityTypesFilterGroup = {
+    mode: 'and',
+    filterGroups: [],
+    filters: [
+      {
+        key: 'entity_type',
+        values: targetStixCoreObjectTypes,
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+  };
+
   const [filters, setFilters] = useState(
     targetStixCoreObjectTypes
         && !(
           targetStixCoreObjectTypes.includes('Stix-Domain-Object')
             || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
         )
-      ? {
-        mode: 'and',
-        filterGroups: [],
-        filters: [
-          {
-            key: 'entity_type',
-            values: targetStixCoreObjectTypes,
-            operator: 'eq',
-            mode: 'or',
-          },
-        ],
-      }
-      : initialFilterGroup,
+      ? targetEntityTypesFilterGroup
+      : emptyFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
@@ -464,13 +467,8 @@ const ContainerAddStixCoreObjects = (props) => {
               targetStixCoreObjectTypes.includes('Stix-Domain-Object')
                 || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
             )
-        ? {
-          key: 'entity_type',
-          values: targetStixCoreObjectTypes,
-          operator: 'eq',
-          mode: 'or',
-        }
-        : initialFilterGroup,
+        ? targetEntityTypesFilterGroup
+        : emptyFilterGroup,
     );
   };
   return (

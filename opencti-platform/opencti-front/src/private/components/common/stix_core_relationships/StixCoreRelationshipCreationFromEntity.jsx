@@ -30,7 +30,7 @@ import {
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
   findFilterFromKey,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
@@ -280,7 +280,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
           mode: 'or',
         }],
       }
-      : initialFilterGroup,
+      : emptyFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,

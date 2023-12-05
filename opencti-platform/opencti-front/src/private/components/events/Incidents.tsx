@@ -16,7 +16,7 @@ import {
   IncidentsLinesPaginationQuery,
   IncidentsLinesPaginationQuery$variables,
 } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -31,7 +31,7 @@ const Incidents: FunctionComponent = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

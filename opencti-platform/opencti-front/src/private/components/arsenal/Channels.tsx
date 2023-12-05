@@ -11,7 +11,7 @@ import {
   ChannelsLinesPaginationQuery,
   ChannelsLinesPaginationQuery$variables,
 } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'channels';
 
@@ -23,7 +23,7 @@ const Channels = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
 

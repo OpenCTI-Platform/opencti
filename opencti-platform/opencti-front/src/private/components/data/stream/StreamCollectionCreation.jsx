@@ -19,7 +19,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -108,7 +108,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const StreamCollectionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState(initialFilterGroup);
+  const [filters, setFilters] = useState(emptyFilterGroup);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -162,7 +162,7 @@ const StreamCollectionCreation = (props) => {
     <Drawer
       title={t('Create a stream')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => setFilters(initialFilterGroup)}
+      onClose={() => setFilters(emptyFilterGroup)}
     >
       {({ onClose }) => (
         <Formik

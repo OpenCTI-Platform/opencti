@@ -22,7 +22,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -69,7 +69,7 @@ const ContainerStixDomainObjects = ({
   } = usePaginationLocalStorage<ContainerStixDomainObjectsLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: false,

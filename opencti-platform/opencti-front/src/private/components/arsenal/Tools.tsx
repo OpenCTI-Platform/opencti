@@ -11,7 +11,7 @@ import {
   ToolsLinesPaginationQuery,
   ToolsLinesPaginationQuery$variables,
 } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'tools';
 
@@ -23,7 +23,7 @@ const Tools = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
 

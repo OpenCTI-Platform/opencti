@@ -16,7 +16,7 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -39,7 +39,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

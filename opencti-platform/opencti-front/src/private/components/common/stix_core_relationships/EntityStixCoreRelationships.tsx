@@ -5,7 +5,7 @@ import EntityStixCoreRelationshipsRelationshipsView from './views/EntityStixCore
 import EntityStixCoreRelationshipsEntitiesView from './views/EntityStixCoreRelationshipsEntitiesView';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -60,7 +60,7 @@ EntityStixCoreRelationshipsProps
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       view: 'entities',
     },
   );

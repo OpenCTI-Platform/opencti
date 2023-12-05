@@ -18,7 +18,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -91,7 +91,7 @@ const RetentionCreationValidation = (t) => Yup.object().shape({
 
 const RetentionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState(initialFilterGroup);
+  const [filters, setFilters] = useState(emptyFilterGroup);
   const [verified, setVerified] = useState(false);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -170,7 +170,7 @@ const RetentionCreation = (props) => {
     <Drawer
       title={t('Create a retention policy')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => setFilters(initialFilterGroup)}
+      onClose={() => setFilters(emptyFilterGroup)}
     >
       {({ onClose }) => (
         <Formik

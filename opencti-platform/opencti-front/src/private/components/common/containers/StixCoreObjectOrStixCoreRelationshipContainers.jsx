@@ -16,7 +16,7 @@ import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
@@ -80,7 +80,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,

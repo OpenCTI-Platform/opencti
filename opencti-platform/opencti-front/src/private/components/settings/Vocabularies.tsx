@@ -18,7 +18,7 @@ import VocabularyCreation from './attributes/VocabularyCreation';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -44,7 +44,7 @@ const Vocabularies = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       sortBy: 'name',
       orderAsc: true,
       searchTerm: '',

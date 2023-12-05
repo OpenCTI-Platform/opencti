@@ -35,7 +35,7 @@ import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
-import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>(() => ({
@@ -107,7 +107,7 @@ const Audit = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'timestamp',
       orderAsc: false,

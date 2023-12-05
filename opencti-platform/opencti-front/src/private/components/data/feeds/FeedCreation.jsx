@@ -37,7 +37,7 @@ import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
   filtersAfterSwitchLocalMode,
-  initialFilterGroup,
+  emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -175,14 +175,14 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 const FeedCreation = (props) => {
   const { t, classes } = props;
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [filters, setFilters] = useState(initialFilterGroup);
+  const [filters, setFilters] = useState(emptyFilterGroup);
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleClose = () => {
     setSelectedTypes([]);
-    setFilters(initialFilterGroup);
+    setFilters(emptyFilterGroup);
     setFeedAttributes({ 0: {} });
   };
 

@@ -7,7 +7,7 @@ import {
   Filter,
   FilterGroup,
   FiltersVariant,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
@@ -66,7 +66,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [filters, setFilters] = useState<FilterGroup | undefined>(
-    initialFilterGroup,
+    emptyFilterGroup,
   );
   const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>(
     [],

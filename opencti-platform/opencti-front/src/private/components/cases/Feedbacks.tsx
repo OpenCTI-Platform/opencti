@@ -13,7 +13,7 @@ import {
   FeedbacksLinesPaginationQuery$variables,
 } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -36,7 +36,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

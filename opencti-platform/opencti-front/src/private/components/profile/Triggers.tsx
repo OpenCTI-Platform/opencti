@@ -9,7 +9,7 @@ import {
 } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';
 
@@ -20,7 +20,7 @@ const Triggers: FunctionComponent = () => {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',

@@ -23,7 +23,7 @@ export type Filter = {
   mode: string;
 };
 
-export const initialFilterGroup = {
+export const emptyFilterGroup = {
   mode: 'and',
   filters: [],
   filterGroups: [],
@@ -336,7 +336,7 @@ export const serializeFilterGroupForBackend = (
   filterGroup?: FilterGroup | null,
 ): string => {
   if (!filterGroup) {
-    return JSON.stringify(initialFilterGroup);
+    return JSON.stringify(emptyFilterGroup);
   }
   return JSON.stringify(sanitizeFilterGroupKeysForBackend(filterGroup));
 };

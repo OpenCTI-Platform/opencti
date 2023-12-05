@@ -26,7 +26,7 @@ import IncidentKnowledgeTimeLine, {
 import {
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  initialFilterGroup,
+  emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, {
@@ -139,7 +139,7 @@ class IncidentKnowledgeComponent extends Component {
         params,
       ),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
-      timeLineFilters: propOr(initialFilterGroup, 'timeLineFilters', params),
+      timeLineFilters: propOr(emptyFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }

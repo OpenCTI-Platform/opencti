@@ -12,7 +12,7 @@ import {
   TasksLinesPaginationQuery$variables,
 } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
-import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
@@ -28,7 +28,7 @@ const Tasks = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

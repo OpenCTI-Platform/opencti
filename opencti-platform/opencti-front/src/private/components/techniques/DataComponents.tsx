@@ -11,7 +11,7 @@ import {
 } from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
-import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'dataComponents';
 
@@ -23,7 +23,7 @@ const DataComponents: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,

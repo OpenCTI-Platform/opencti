@@ -19,7 +19,7 @@ import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
-import { initialFilterGroup } from '../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
 
@@ -40,7 +40,7 @@ const Search = () => {
       sortBy: '_score',
       orderAsc: false,
       openExports: false,
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
     },
   );
   const {

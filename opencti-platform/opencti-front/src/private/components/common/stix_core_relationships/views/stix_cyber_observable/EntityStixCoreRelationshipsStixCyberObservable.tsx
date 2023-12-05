@@ -6,7 +6,7 @@ import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationshipsEntitiesView';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
-import { initialFilterGroup } from '../../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -35,7 +35,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: initialFilterGroup,
+      filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
