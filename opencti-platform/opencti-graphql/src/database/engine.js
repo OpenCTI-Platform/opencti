@@ -1811,20 +1811,6 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   let newFilter;
   let newFilterGroup;
 
-  if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
-    newFilterGroup = {
-      mode: 'and',
-      filters: [
-        {
-          ...filter,
-          key: 'rel_created-by.internal_id',
-        }
-      ],
-      filterGroups: [],
-    };
-    return { newFilter, newFilterGroup };
-  }
-
   // in case we want to filter by source reliability (reliability of author)
   // we need to find all authors filtered by reliability and filter on these authors
   const authorTypes = [
@@ -1839,16 +1825,39 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   };
   const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
-  // we construct a new filter that will match against the creator internal_id respecting the filtering (= those in the listed authors)
+  // we construct a new filter that will match against the creator internal_id respecting the filtering
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
-  newFilter = {
-    key: ['rel_created-by.internal_id'],
-    values: authorIds,
-    mode: 'or',
-    operator: 'eq',
-  };
+  if (operator === 'nil' || operator === 'not_nil') {
+    // the entities we want [don't have (resp. have) an author] OR [have an author that doesn't have (resp. have) a reliability]
+    newFilterGroup = {
+      mode: 'or',
+      filters: [
+        {
+          key: ['rel_created-by.internal_id'],
+          values: authorIds,
+          mode: 'or',
+          operator: 'eq',
+        },
+        {
+          key: ['rel_created-by.internal_id'],
+          values: [],
+          mode: 'or',
+          operator,
+        },
+      ],
+      filterGroups: [],
+    };
+  } else {
+    // the entities we want have an author that respect the reliability filtering
+    newFilter = {
+      key: ['rel_created-by.internal_id'],
+      values: authorIds,
+      mode: 'or',
+      operator: 'eq',
+    };
+  }
 
-  return { newFilter, newFilterGroup: undefined };
+  return { newFilter, newFilterGroup };
 };
 
 /**
