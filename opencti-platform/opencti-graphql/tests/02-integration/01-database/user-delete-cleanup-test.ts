@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER } from '../../utils/testQuery';
-import { generateInternalId, generateStandardId } from '../../../src/schema/identifier';
+import { ADMIN_USER, AMBER_GROUP, AMBER_STRICT_GROUP } from '../../utils/testQuery';
+import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import {
@@ -14,9 +14,6 @@ import type {
   WorkspaceAddInput
 } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById, findById as findUserById, userDelete } from '../../../src/domain/user';
-import { ACCOUNT_STATUS_ACTIVE } from '../../../src/config/conf';
-import { ADMINISTRATOR_ROLE } from '../../../src/utils/access';
-import type { StoreMarkingDefinition } from '../../../src/types/store';
 import { addWorkspace, editAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type {
   NotificationAddInput,
@@ -30,6 +27,8 @@ import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
  * @param username
  */
 const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser, username: string) => {
+  console.log('username:', username);
+
   const userToDeleteId: string = generateStandardId(ENTITY_TYPE_USER, { user_email: `${username}@opencti.io` });
   // const userToDeleteInternalId: string = generateInternalId();
 
@@ -41,46 +40,11 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
     firstname: username,
     lastname: 'opencti'
   };
-  const createdUser = await addUser(adminContext, adminUser, simpleUser);
-
-  // TODO what is the type here ??
-  return createdUser;
-};
-
-/**
- * Create a AuthUser from user information that have been used to create the user in elastic.
- * // TODO there is probably a better way to have a AuthUser from a User...
- * @param user
- */
-const getAuthUserForTest = async (user: any) => {
-  const userToDeletedAuth: AuthUser = {
-    administrated_organizations: [],
-    entity_type: 'User',
-    id: user.id,
-    internal_id: generateInternalId(),
-    individual_id: generateInternalId(),
-    organizations: [],
-    name: user.name,
-    user_email: user.user_email,
-    roles: [ADMINISTRATOR_ROLE],
-    groups: [],
-    capabilities: [
-      { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, // required for Trigger management
-      { name: 'SETTINGS_SETACCESSES' },
-      { name: 'EXPLORE_EXUPDATE_EXDELETE' },
-      { name: 'EXPLORE_EXUPDATE' }
-    ],
-    all_marking: [] as StoreMarkingDefinition[],
-    allowed_organizations: [],
-    inside_platform_organization: true,
-    allowed_marking: [{ standard_id: user.id, internal_id: user.id }] as StoreMarkingDefinition[],
-    default_marking: [],
-    origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
-    api_token: generateInternalId(),
-    account_status: ACCOUNT_STATUS_ACTIVE,
-    account_lock_after_date: undefined
-  };
-  return userToDeletedAuth;
+  const userAdded = await addUser(adminContext, adminUser, simpleUser);
+  console.log('userAdded:', userAdded);
+  const groupResult = await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
+  console.log('groupResult:', groupResult);
+  return findById(adminContext, adminUser, userAdded.id);
 };
 
 const createTriggerForUser = async (context: AuthContext, user: AuthUser) => {
@@ -105,12 +69,11 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     // GIVEN a user
     // AND an admin ADMIN_USER having rights to create/delete users
     const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false };
-    const userToDelete = await createUserForTest(adminContext, ADMIN_USER, 'iwillbedeletedsoon');
-    const userToDeletedAuth = await getAuthUserForTest(userToDelete);
-    // const userToDeletedAuth = await findById(adminContext, ADMIN_USER, userToDelete.id);
+    const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbedeletedsoon');
+    console.log('USER FOR TEST', userToDeletedAuth);
 
     const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false };
-    await assignGroupToUser(adminContext, ADMIN_USER, userToDeletedAuth.id, 'Default');
+    // await assignGroupToUser(adminContext, ADMIN_USER, userToDeletedAuth.id, 'Default');
 
     // AND user having a Trigger
     const newTrigger = await createTriggerForUser(userToDeleteContext, userToDeletedAuth);
@@ -148,8 +111,8 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     sharedWithAdminRightsInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
     expect(sharedWithAdminRightsInvestigationData.authorized_members.length).toBe(2);
 
-    // AND .. TODO fix the user used for tests
-    /* const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
+    // AND an investigation shared but the user is the last admin
+    const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-shared-read-only',
       description: 'this investigation will be shared to another user with view rights.',
       type: 'investigation'
@@ -158,9 +121,9 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.authorized_members;
     sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
     console.log('ADMIN ??? => sharedInvestigationAuthMembers', sharedInvestigationAuthMembers);
-    await editAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id, sharedInvestigationAuthMembers);
+    await editAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
     sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
-    expect(sharedInvestigationData.authorized_members.length).toBe(2); */
+    expect(sharedInvestigationData.authorized_members.length).toBe(2);
 
     // AND user having a workspace with view only rights
     const adminInvestigationInput: WorkspaceAddInput = {
@@ -194,8 +157,10 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     expect(investigationThatStay, 'Other user have admin access to this Investigation, it should not be deleted with the user.').toBeDefined();
 
     const investigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, privateInvestigationData.id);
-    // TODO make it work :)
-    // expect(investigationThatShouldBeGone, 'This Investigation was for the deleted user only, should be cleaned-up').toBeUndefined();
+    expect(investigationThatShouldBeGone, 'This Investigation was for the deleted user only, should be cleaned-up').toBeUndefined();
+
+    const sharedInvestigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
+    expect(sharedInvestigationThatShouldBeGone, 'This Investigation was shared but no one else is admin, should be cleaned-up').toBeUndefined();
 
     const adminInvestigationThatStay = await findWorkspaceById(adminContext, ADMIN_USER, adminInvestigationData.id);
     expect(adminInvestigationThatStay, 'User is view only on this investigation owned by admin, it should not be deleted with the user.').toBeDefined();

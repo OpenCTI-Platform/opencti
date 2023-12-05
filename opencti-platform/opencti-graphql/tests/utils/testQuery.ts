@@ -107,7 +107,7 @@ export const ROLE_SECURITY: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
   name: 'Access knowledge/exploration/settings and edit/delete',
   description: 'Knowledge/exploration/settings edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES']
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES', 'EXPLORE_EXUPDATE']
 };
 
 // Groups
