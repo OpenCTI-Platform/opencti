@@ -32,23 +32,22 @@ Its title will be formatted like this:  `<date: year month day>_octi_dashboard_<
 
 ### Attributes of an export
 Here is the expected configuration file content:
-
+- for dashboards
 ```JSON
 {
   "openCTI_version": "5.12.0",
   "type": "dashboard",
-  "configuration": {
-    "manifest": "eyJ3aWRn(...)bmZpZyI6e319",
-    "name": "Hello Dashboard From Import"
-  }
+  "configuration": "eyJ3aWRn(...)bmZpZyI6e319"
 }
 ```
-
-When exporting a dashboard / widget configuration, all filters will be exported as are.
-Instance filters are based on your platform entities (internal ids).
-This means that after importing a configuration from another user's platform, you will have to manually edit the filters.
-
-Our team is currently working to manage instance filters.
+- for widgets
+```JSON
+{
+  "openCTI_version": "5.12.0",
+  "type": "widget",
+  "configuration": "eyJ0eXB(...)iOmZhbHNlfX0"
+}
+```
 
 #### Access
 
@@ -117,7 +116,7 @@ The new dashboard can be found in the dashboards list.
 ## Exporting widgets configuration
 
 Users can export a widget from the dashboard view.
-Click on the burger menu in the top right corner of the widget. Select the `Export JSON` option and save your widget configuration.
+Click on the burger menu in the top right corner of the widget. Select the `Export` option and save your widget configuration.
 
 ![export-widget-json-option](assets/export-widget-json-option.png)  
 *Export JSON option for widgets*
@@ -125,7 +124,7 @@ Click on the burger menu in the top right corner of the widget. Select the `Expo
 ## Importing widgets configuration
 
 Users can import a widget from the dashboard view.
-Click on the burger menu in the top right corner of the widget. Select the `Export JSON` option and save your widget configuration.
+Click on the burger menu in the top right corner of the widget. Select the `Export` option and save your widget configuration.
 
 Hover the `Add` button (+) in the right bottom corner.
 Click on the `Import dashboard` button (cloud with an upward arrow).
