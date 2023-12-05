@@ -30,7 +30,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -190,10 +190,8 @@ class StixDomainObjectContentComponent extends Component {
       props.location,
       LOCAL_STORAGE_KEY,
     );
-
     const files = getFiles(props.stixDomainObject);
     const exportFiles = getExportFiles(props.stixDomainObject);
-
     let currentFileId = R.head(files)?.id;
     let isLoading = false;
     let onProgressExportFileName;
@@ -207,7 +205,6 @@ class StixDomainObjectContentComponent extends Component {
       }
       currentFileId = params.currentFileId;
     }
-
     this.state = {
       currentFileId,
       totalPdfPageNumber: null,
@@ -246,15 +243,12 @@ class StixDomainObjectContentComponent extends Component {
       }
       const currentFile = files.find((f) => f.id === currentFileId);
       const currentFileType = currentFile && currentFile.metaData.mimetype;
-
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
       }
-
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
-
       return Axios.get(url).then((res) => {
         const content = res.data;
         return this.setState({
@@ -528,13 +522,12 @@ class StixDomainObjectContentComponent extends Component {
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
         />
-
         {isLoading ? (
-          <Loader variant="container" />
+          <Loader variant={LoaderVariant.inElement} />
         ) : (
           <>
             {currentFileType === 'text/plain' && (
-              <div>
+              <>
                 <StixDomainObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
@@ -556,10 +549,10 @@ class StixDomainObjectContentComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
-              </div>
+              </>
             )}
             {currentFileType === 'text/html' && (
-              <div>
+              <>
                 <StixDomainObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
@@ -586,10 +579,10 @@ class StixDomainObjectContentComponent extends Component {
                     }}
                   />
                 </div>
-              </div>
+              </>
             )}
             {currentFileType === 'text/markdown' && (
-              <div>
+              <>
                 <StixDomainObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
@@ -624,11 +617,10 @@ class StixDomainObjectContentComponent extends Component {
                     }}
                   />
                 </div>
-              </div>
+              </>
             )}
-
             {currentFileType === 'application/pdf' && (
-              <div>
+              <>
                 <StixDomainObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
                   handleZoomOut={this.handleZoomOut.bind(this)}
@@ -658,7 +650,7 @@ class StixDomainObjectContentComponent extends Component {
                     ))}
                   </Document>
                 </div>
-              </div>
+              </>
             )}
             {!currentFile && (
               <div

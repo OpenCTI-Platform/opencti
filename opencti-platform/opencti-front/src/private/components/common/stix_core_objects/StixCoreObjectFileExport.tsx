@@ -97,6 +97,8 @@ const StixCoreObjectFileExportComponent = ({
         setSubmitting(false);
         resetForm();
         MESSAGING$.notifySuccess('Export successfully started');
+        console.log(redirectToContent);
+        console.log(values.format);
         navigate({
           pathname:
             values.format === 'application/pdf' && redirectToContent
@@ -270,9 +272,11 @@ const StixCoreObjectFileExportComponent = ({
 const StixCoreObjectFileExport = ({
   id,
   type,
+  redirectToContent,
 }: {
   id: string;
   type: string;
+  redirectToContent?: boolean;
 }) => {
   const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
@@ -297,6 +301,7 @@ const StixCoreObjectFileExport = ({
             id={id}
             type={type}
             queryRef={queryRef}
+            redirectToContent={redirectToContent}
           />
         </React.Suspense>
       )}
