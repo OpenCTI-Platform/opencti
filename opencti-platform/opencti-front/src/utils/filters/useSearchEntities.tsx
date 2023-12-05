@@ -337,6 +337,32 @@ const useSearchEntities = ({
       operator: 'eq',
     };
     setInputValues([newInputValue]);
+
+    const queryVocabulary = (key: string, filterCategories: string[]) => {
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'category', values: filterCategories, operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      };
+      fetchQuery(vocabularySearchQuery, {
+        filters,
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const entityValues = (
+            ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.name,
+              type: 'Vocabulary',
+            })));
+          unionSetEntities(key, entityValues);
+        });
+    };
+
     switch (filterKey) {
       case 'toSightingId':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -863,63 +889,13 @@ const useSearchEntities = ({
         unionSetEntities('event_scope', eventScopeEntities);
         break;
       case 'priority':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'priority',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const priorityEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('priority', priorityEntities);
-          });
+        queryVocabulary('priority', ['case_priority_ov']);
         break;
       case 'severity':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'severity',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const severityEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('severity', severityEntities);
-          });
+        queryVocabulary('severity', ['case_severity_ov', 'incident_severity_ov']);
         break;
       case 'pattern_type':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'pattern_type',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'pattern_type',
-              (
-                (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                  ?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              })),
-            );
-          });
+        queryVocabulary('pattern_type', ['pattern_type_ov']);
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
@@ -960,23 +936,7 @@ const useSearchEntities = ({
           });
         break;
       case 'malware_types':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'malware_types',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const attackVectorEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('malware_types', attackVectorEntities);
-          });
+        queryVocabulary('malware_types', ['malware_type_ov']);
         break;
       case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
@@ -1032,22 +992,7 @@ const useSearchEntities = ({
         break;
       case 'x_opencti_reliability':
       case 'source_reliability':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'reliability_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              filterKey,
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('source_reliability', ['reliability_ov']);
         break;
       case 'source':
         fetchQuery(attributesSearchQuery, {
@@ -1087,110 +1032,22 @@ const useSearchEntities = ({
           });
         break;
       case 'indicator_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'indicator_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'indicator_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('indicator_types', ['indicator_type_ov']);
         break;
       case 'incident_type':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'incident_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'incident_type',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('incident_type', ['incident_type_ov']);
         break;
       case 'report_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'report_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'report_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('report_types', ['report_types_ov']);
         break;
       case 'channel_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'channel_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'channel_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('channel_types', ['channel_types_ov']);
         break;
       case 'event_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'event_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'event_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('event_types', ['event_type_ov']);
         break;
       case 'context':
-        fetchQuery(vocabularySearchQuery, { category: 'grouping_context_ov' })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'context',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('context', ['grouping_context_ov']);
         break;
       // region entity and relation types
       case 'contextEntityType':
@@ -1398,22 +1255,7 @@ const useSearchEntities = ({
         unionSetEntities('x_opencti_negative', negativeValue);
         break;
       case 'note_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'note_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'note_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        queryVocabulary('note_types', ['note_types_ov']);
         break;
       default:
         break;
