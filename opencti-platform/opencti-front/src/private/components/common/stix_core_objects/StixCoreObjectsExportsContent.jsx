@@ -34,15 +34,14 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   });
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
-  let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct types filters
-  if (paginationOptions?.types && paginationOptions.types.length > 0) {
-    const filtersForExport = [
-      ...paginationOptionsForExport.filters,
-      { key: 'entity_type', values: paginationOptions.types },
-    ];
+  let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct types filters
+  if (paginationOptions?.filters && paginationOptions?.types && paginationOptions.types.length > 0) {
     paginationOptionsForExport = {
       ...paginationOptions,
-      filters: filtersForExport,
+      filters: [
+        ...paginationOptionsForExport.filters,
+        { key: 'entity_type', values: paginationOptionsForExport.types },
+      ],
     };
   }
   return (

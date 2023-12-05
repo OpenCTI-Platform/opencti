@@ -38,10 +38,10 @@ class StixDomainObjectsExportsContentComponent extends Component {
   render() {
     const { t, data, exportEntityType, paginationOptions, context } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
-    let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
+    let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct elementId
     if (paginationOptions?.fromId) {
       // for relationships contained in entity>Knowledge>Sightings
-      const filtersForExport = paginationOptionsForExport.filters ? {
+      const filtersForExport = paginationOptionsForExport?.filters ? {
         mode: paginationOptionsForExport.filters.mode,
         filterGroups: paginationOptionsForExport.filters.filterGroups,
         filters: [
