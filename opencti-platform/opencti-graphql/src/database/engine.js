@@ -1910,14 +1910,15 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
-const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
+// worflow_id filter values can be both status ids and status templates ids
+const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   // case 1: operator = nil or no_nil
-  if (operator === 'nil' || operator === 'not_nil') { // no status template -> no status // at least a status template -> at least a status
+  if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     const newFilter = {
       ...filter,
       key: ['x_opencti_workflow_id'], // we just have to change the key
@@ -1926,10 +1927,11 @@ const adaptFilterToStatusTemplateFilterKey = async (context, user, filter) => {
   }
   // case 2: operator = eq or no_eq
   if (operator === 'eq' || operator === 'not_eq') {
-    // in case we want to filter by status template (template of a workflow status)
-    // we need to find all statuses filtered by status template and filter on these statuses
-    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS); // get all the statuses
-    statuses = statuses.filter((status) => values.includes(status.template_id)); // keep the statuses with template id corresponding to the filter values
+    // worflow_id filter values can be both status ids and templates ids of a status
+    // get all the statuses
+    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+    // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
+    statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
     // we construct a new filter that matches against the status internal_id with a template id in the filters values
     // !!! it works to do the mode/operator filter on the status (and not on the template)
     // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
@@ -1999,7 +2001,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     } else if (arrayKeys.includes(WORKFLOW_FILTER)) {
       // in case we want to filter by status template (template of a workflow status)
       // we need to find all statuses filtered by status template and filter on these statuses
-      const { newFilter, newFilterGroup } = await adaptFilterToStatusTemplateFilterKey(context, user, filter);
+      const { newFilter, newFilterGroup } = await adaptFilterToWorkflowFilterKey(context, user, filter);
       if (newFilter) {
         finalFilters.push(newFilter);
       }
