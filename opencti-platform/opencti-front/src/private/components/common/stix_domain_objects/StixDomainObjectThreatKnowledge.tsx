@@ -5,7 +5,11 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
-import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
+import {
+  DescriptionOutlined,
+  DeviceHubOutlined,
+  SettingsOutlined,
+} from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IconButton from '@mui/material/IconButton';
@@ -17,12 +21,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  StixDomainObjectThreatKnowledgeReportsNumberQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
-import {
-  StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
+import { StixDomainObjectThreatKnowledgeReportsNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
+import { StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
 import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
@@ -33,8 +33,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsHorizontalBars from '../../analyses/reports/StixCoreObjectReportsHorizontalBars';
-import StixCoreObjectStixCoreRelationshipsCloud
-  from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
+import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -46,7 +45,6 @@ import { Theme } from '../../../../components/Theme';
 import {
   findFilterFromKey,
   emptyFilterGroup,
-
   removeFilter,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -82,54 +80,54 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   export: {
     float: 'right',
-    marginTop: -60,
   },
   filters: {
     float: 'left',
-    margin: '10px 0 0 15px',
-  },
-  filter: {
-    marginRight: 10,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 5,
+    flexWrap: 'wrap',
+    margin: '5px 0 0 5px',
   },
 }));
 
 const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
-    query StixDomainObjectThreatKnowledgeReportsNumberQuery(
-        $objectId: String
-        $endDate: DateTime
-    ) {
-        reportsNumber(objectId: $objectId, endDate: $endDate) {
-            total
-            count
-        }
+  query StixDomainObjectThreatKnowledgeReportsNumberQuery(
+    $objectId: String
+    $endDate: DateTime
+  ) {
+    reportsNumber(objectId: $objectId, endDate: $endDate) {
+      total
+      count
     }
+  }
 `;
 
 const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
-    query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
-        $elementId: [String]
-        $elementWithTargetTypes: [String]
-        $relationship_type: [String]
-        $fromId: [String]
-        $fromTypes: [String]
-        $toId: [String]
-        $toTypes: [String]
-        $endDate: DateTime
+  query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $relationship_type: [String]
+    $fromId: [String]
+    $fromTypes: [String]
+    $toId: [String]
+    $toTypes: [String]
+    $endDate: DateTime
+  ) {
+    stixCoreRelationshipsNumber(
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      relationship_type: $relationship_type
+      fromId: $fromId
+      fromTypes: $fromTypes
+      toId: $toId
+      toTypes: $toTypes
+      endDate: $endDate
     ) {
-        stixCoreRelationshipsNumber(
-            elementId: $elementId
-            elementWithTargetTypes: $elementWithTargetTypes
-            relationship_type: $relationship_type
-            fromId: $fromId
-            fromTypes: $fromTypes
-            toId: $toId
-            toTypes: $toTypes
-            endDate: $endDate
-        ) {
-            total
-            count
-        }
+      total
+      count
     }
+  }
 `;
 
 interface StixDomainObjectThreatKnowledgeProps {
@@ -138,15 +136,17 @@ interface StixDomainObjectThreatKnowledgeProps {
   displayObservablesStats: boolean;
 }
 
-const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatKnowledgeProps> = ({
-  stixDomainObjectId,
-  stixDomainObjectType,
-  displayObservablesStats,
-}) => {
+const StixDomainObjectThreatKnowledge: FunctionComponent<
+StixDomainObjectThreatKnowledgeProps
+> = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
   const { n, t } = useFormatter();
   const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
-  const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: rawPaginationOptions,
+  } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       filters: emptyFilterGroup,
@@ -156,9 +156,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
       openExports: false,
     },
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
   const [viewType, setViewType] = useState('timeline');
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
@@ -173,12 +171,14 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
 
   const handleChangeTimeField = (event: SelectChangeEvent) => {
     setTimeField(event.target.value);
-    setNestedRelationships(event.target.value === 'functional'
-      ? false
-      : nestedRelationships);
+    setNestedRelationships(
+      event.target.value === 'functional' ? false : nestedRelationships,
+    );
   };
 
-  const handleChangeNestedRelationships = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeNestedRelationships = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setNestedRelationships(event.target.checked);
     setTimeField(event.target.checked ? 'technical' : timeField);
   };
@@ -197,7 +197,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
   )}/${stixDomainObjectId}/knowledge`;
   const buildPaginationOptions = () => {
     let toTypes: string[];
-    const entityTypeFilters = findFilterFromKey(filters?.filters ?? [], 'entity_type');
+    const entityTypeFilters = findFilterFromKey(
+      filters?.filters ?? [],
+      'entity_type',
+    );
     if (entityTypeFilters && entityTypeFilters.values.length > 0) {
       if (entityTypeFilters.values.filter((id) => id === 'all').length > 0) {
         toTypes = [];
@@ -226,7 +229,9 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
     } else {
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
-    const finalFilters = filters ? removeFilter(filters, 'entity_type') : undefined;
+    const finalFilters = filters
+      ? removeFilter(filters, 'entity_type')
+      : undefined;
     const finalPaginationOptions = {
       ...rawPaginationOptions,
       elementId: stixDomainObjectId,
@@ -262,25 +267,24 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
                 objectId: stixDomainObjectId,
                 endDate: monthsAgo(1),
               }}
-              render={({ props }: { props: StixDomainObjectThreatKnowledgeReportsNumberQuery$data }) => {
+              render={({
+                props,
+              }: {
+                props: StixDomainObjectThreatKnowledgeReportsNumberQuery$data;
+              }) => {
                 if (props && props.reportsNumber) {
                   const { total } = props.reportsNumber;
                   const difference = total - props.reportsNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>
-                        {t('Total reports')}
-                      </div>
+                      <div className={classes.title}>{t('Total reports')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference
                         difference={difference}
                         description={t('30 days')}
                       />
                       <div className={classes.icon}>
-                        <DescriptionOutlined
-                          color="inherit"
-                          fontSize="large"
-                        />
+                        <DescriptionOutlined color="inherit" fontSize="large" />
                       </div>
                     </CardContent>
                   );
@@ -311,7 +315,11 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
                   : 'Indicator',
                 endDate: monthsAgo(1),
               }}
-              render={({ props }: { props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data }) => {
+              render={({
+                props,
+              }: {
+                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data;
+              }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
                   const { total } = props.stixCoreRelationshipsNumber;
                   const difference = total - props.stixCoreRelationshipsNumber.count;
@@ -363,7 +371,11 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
                 elementId: stixDomainObjectId,
                 endDate: monthsAgo(1),
               }}
-              render={({ props }: { props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data }) => {
+              render={({
+                props,
+              }: {
+                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data;
+              }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
                   const { total } = props.stixCoreRelationshipsNumber;
                   const difference = total - props.stixCoreRelationshipsNumber.count;
@@ -417,81 +429,68 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
         indicatorColor="primary"
         textColor="primary"
         onChange={(_, value) => handleChangeViewType(value)}
-        style={{ margin: '0 0 20px 0' }}
+        style={{ float: 'left' }}
       >
         <Tab label={t('Timeline')} value="timeline" />
         <Tab label={t('Global kill chain')} value="killchain" />
-        <div className={classes.filters}>
-          <Filters
-              helpers={helpers}
-            availableFilterKeys={[
-              'entity_type',
-              'objectMarking',
-              'createdBy',
-              'objectLabel',
-              'created',
-            ]}
-            handleAddFilter={helpers.handleAddFilter}
-            allEntityTypes={true}
-          />
-          <IconButton
-            color="primary"
-            onClick={handleOpenTimeField}
-            style={{ float: 'left', marginTop: -5 }}
-            size="large"
-          >
-            <SettingsOutlined />
-          </IconButton>
-            <FilterIconButton
-                  helpers={helpers}
-              filters={filters}
-              handleRemoveFilter={helpers.handleRemoveFilter}
-              classNameNumber={8}
-            ></FilterIconButton>
-          <Popover
-            classes={{ paper: classes.container }}
-            open={openTimeField}
-            anchorEl={anchorEl}
-            onClose={handleCloseTimeField}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            elevation={1}
-          >
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel id="timeField">
-                {t('Date reference')}
-              </InputLabel>
-              <Select
-                labelId="timeField"
-                value={timeField === null ? '' : timeField}
-                onChange={handleChangeTimeField}
-                fullWidth={true}
-              >
-                <MenuItem value="technical">{t('Technical date')}</MenuItem>
-                <MenuItem value="functional">{t('Functional date')}</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControlLabel
-              style={{ marginTop: 20 }}
-              control={
-                <Switch
-                  checked={nestedRelationships}
-                  onChange={handleChangeNestedRelationships}
-                  name="nested-relationships"
-                  color="primary"
-                />
-              }
-              label={t('Display nested relationships')}
-            />
-          </Popover>
-        </div>
       </Tabs>
+      <div className={classes.filters}>
+        <Filters
+          helpers={helpers}
+          availableFilterKeys={[
+            'entity_type',
+            'objectMarking',
+            'createdBy',
+            'objectLabel',
+            'created',
+          ]}
+          handleAddFilter={helpers.handleAddFilter}
+          allEntityTypes={true}
+        />
+        <IconButton color="primary" onClick={handleOpenTimeField} size="small">
+          <SettingsOutlined fontSize="small" />
+        </IconButton>
+        <Popover
+          classes={{ paper: classes.container }}
+          open={openTimeField}
+          anchorEl={anchorEl}
+          onClose={handleCloseTimeField}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          elevation={1}
+        >
+          <FormControl style={{ width: '100%' }}>
+            <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+            <Select
+              labelId="timeField"
+              value={timeField === null ? '' : timeField}
+              onChange={handleChangeTimeField}
+              fullWidth={true}
+            >
+              <MenuItem value="technical">{t('Technical date')}</MenuItem>
+              <MenuItem value="functional">{t('Functional date')}</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControlLabel
+            style={{ marginTop: 20 }}
+            control={
+              <Switch
+                checked={nestedRelationships}
+                onChange={handleChangeNestedRelationships}
+                name="nested-relationships"
+                color="primary"
+              />
+            }
+            label={t('Display nested relationships')}
+          />
+        </Popover>
+      </div>
       <div className={classes.export}>
         <ExportButtons
           domElementId="container"
@@ -500,10 +499,21 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<StixDomainObjectThreatK
           }
         />
       </div>
+      <div className="clearfix" />
+      <FilterIconButton
+        helpers={helpers}
+        filters={filters}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        classNameNumber={8}
+      />
       <QueryRenderer
         query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
         variables={{ first: 500, ...paginationOptions }}
-        render={({ props }: { props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data }) => {
+        render={({
+          props,
+        }: {
+          props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
+        }) => {
           if (props) {
             if (viewType === 'killchain') {
               return (
