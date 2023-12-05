@@ -191,6 +191,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
             classNameNumber={6}
             styleNumber={2}
             redirection

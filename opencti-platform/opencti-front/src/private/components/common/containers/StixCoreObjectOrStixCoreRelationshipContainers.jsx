@@ -239,11 +239,12 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={defaultHandleAddFilter}
           />
-
             <FilterIconButton
               helpers={helpers}
               filters={filters}
               handleRemoveFilter={helpers.handleRemoveFilter}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
               className={5}
               redirection
             />
