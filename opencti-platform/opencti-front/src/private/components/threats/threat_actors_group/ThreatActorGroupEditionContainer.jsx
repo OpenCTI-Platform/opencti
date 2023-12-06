@@ -7,12 +7,14 @@ import { useFormatter } from '../../../../components/i18n';
 import ThreatActorGroupEditionOverview from './ThreatActorGroupEditionOverview';
 import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import ThreatActorGroupDelete from './ThreatActorGroupDelete';
 
 const ThreatActorGroupEditionContainer = ({
   handleClose,
   threatActorGroup,
   open,
+  controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
   const { editContext } = threatActorGroup;
@@ -23,7 +25,7 @@ const ThreatActorGroupEditionContainer = ({
       title={t_i18n('Update a threat actor group')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      controlledDial={controlledDial}
       context={editContext}
     >
       <>
@@ -49,6 +51,9 @@ const ThreatActorGroupEditionContainer = ({
             handleClose={handleClose}
           />
         )}
+        {!useIsEnforceReference('Threat-Actor-Group')
+          && <ThreatActorGroupDelete id={threatActorGroup.id} />
+        }
       </>
     </Drawer>
   );

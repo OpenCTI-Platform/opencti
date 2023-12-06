@@ -1,14 +1,15 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { Add } from '@mui/icons-material';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -38,6 +39,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -133,6 +138,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: (response) => {
@@ -141,6 +147,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
@@ -280,12 +287,23 @@ const GroupingCreation = ({
 }: {
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Grouping')} <Add />
+        </Button>
+      )}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

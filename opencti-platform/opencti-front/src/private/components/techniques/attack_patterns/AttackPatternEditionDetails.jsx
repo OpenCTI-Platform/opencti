@@ -14,6 +14,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import AttackPatternDelete from './AttackPatternDelete';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionDetailsFieldPatchMutation(
@@ -211,6 +212,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
               open={false}
               values={values.references}
               id={attackPattern.id}
+              deleteBtn={<AttackPatternDelete id={attackPattern.id} />}
             />
           )}
         </Form>

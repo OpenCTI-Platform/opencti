@@ -9,11 +9,11 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
 import { RootReportQuery$data } from './__generated__/RootReportQuery.graphql';
-import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -25,7 +25,8 @@ import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomain
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { BYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ReportEdition from './ReportEdition';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -124,9 +125,11 @@ const RootReport = () => {
                   />
                   <ContainerHeader
                     container={report}
-                    PopoverComponent={
-                      <ReportPopover id={reportId} />
-                    }
+                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <ReportEdition
+                        reportId={reportId}
+                      />
+                    </Security>}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}

@@ -6,10 +6,11 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -36,6 +37,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -155,6 +160,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -163,6 +169,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -276,6 +283,7 @@ const AttackPatternCreation = ({
   paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_attackPatterns',
@@ -286,7 +294,17 @@ const AttackPatternCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an attack pattern')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Attack-Pattern')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <AttackPatternCreationForm

@@ -25,10 +25,6 @@ const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
   },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
 }));
 
 const subscription = graphql`

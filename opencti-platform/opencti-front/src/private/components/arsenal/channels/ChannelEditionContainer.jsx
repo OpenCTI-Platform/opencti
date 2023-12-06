@@ -3,12 +3,13 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import ChannelEditionOverview from './ChannelEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import ChannelDelete from './ChannelDelete';
 
 const ChannelEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, channel, open } = props;
+  const { handleClose, channel, open, controlledDial } = props;
   const { editContext } = channel;
 
   return (
@@ -16,15 +17,20 @@ const ChannelEditionContainer = (props) => {
       title={t_i18n('Update a channel')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <ChannelEditionOverview
-        channel={channel}
-        enableReferences={useIsEnforceReference('Channel')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <ChannelEditionOverview
+          channel={channel}
+          enableReferences={useIsEnforceReference('Channel')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Channel')
+          && <ChannelDelete id={channel.id} />
+        }
+      </>
     </Drawer>
   );
 };

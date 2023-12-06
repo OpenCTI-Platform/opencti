@@ -13,20 +13,20 @@ const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
   },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
+  editButton: {
+    float: 'right',
+    // marginTop: '-13px',
   },
 }));
 
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
-  PopoverComponent: ReactElement<{ id: string }>;
+  EditComponent: ReactElement<{ id: string }>;
 }
 
 const ExternalReferenceHeaderComponent: FunctionComponent<
 ExternalReferenceHeaderComponentProps
-> = ({ externalReference, PopoverComponent }) => {
+> = ({ externalReference, EditComponent }) => {
   const classes = useStyles();
 
   return (
@@ -39,8 +39,8 @@ ExternalReferenceHeaderComponentProps
         {truncate(externalReference.source_name, 80)}
       </Typography>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <div className={classes.popover}>
-          {React.cloneElement(PopoverComponent, { id: externalReference.id })}
+        <div className={classes.editButton}>
+          {EditComponent}
         </div>
       </Security>
       <div className="clearfix" />

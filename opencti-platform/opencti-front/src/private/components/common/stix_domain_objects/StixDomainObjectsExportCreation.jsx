@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -14,7 +13,6 @@ import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
-import Fab from '@mui/material/Fab';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -27,24 +25,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = () => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-});
 
 export const StixDomainObjectsExportCreationMutation = graphql`
   mutation StixDomainObjectsExportCreationMutation(
@@ -136,7 +116,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 
   render() {
-    const { classes, t, data } = this.props;
+    const { t, data } = this.props;
     const connectorsExport = propOr([], 'connectorsForExport', data);
     const exportScopes = uniq(
       flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -157,15 +137,18 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 }
                 aria-label="generate-export"
               >
-                <Fab
-                  onClick={this.handleOpen.bind(this)}
-                  color="secondary"
-                  aria-label="Add"
-                  className={classes.createButton}
-                  disabled={!isExportPossible}
-                >
-                  <Add />
-                </Fab>
+                <span>
+                  <Button
+                    onClick={this.handleOpen.bind(this)}
+                    color="primary"
+                    size="small"
+                    variant="contained"
+                    aria-label={t('Add')}
+                    disabled={!isExportPossible}
+                  >
+                    {t('Add')} <Add />
+                  </Button>
+                </span>
               </Tooltip>
               <Formik
                 enableReinitialize={true}
@@ -301,7 +284,6 @@ const StixDomainObjectsExportCreations = createFragmentContainer(
 );
 
 StixDomainObjectsExportCreations.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   exportContext: PropTypes.object,
@@ -311,5 +293,4 @@ StixDomainObjectsExportCreations.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles),
 )(StixDomainObjectsExportCreations);

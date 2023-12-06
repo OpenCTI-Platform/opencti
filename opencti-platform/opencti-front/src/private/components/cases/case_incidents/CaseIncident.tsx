@@ -6,9 +6,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -19,7 +17,6 @@ import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
-import CaseIncidentEdition from './CaseIncidentEdition';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -187,9 +184,6 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
         stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
         defaultMarkings={caseIncidentData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentEdition caseId={caseIncidentData.id} />
-      </Security>
     </>
   );
 };

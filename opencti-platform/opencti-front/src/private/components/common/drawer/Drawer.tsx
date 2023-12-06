@@ -159,10 +159,13 @@ const Drawer = ({
             onClick={handleClose}
             size="large"
             color="primary"
+            data-testid="CloseDrawer"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2">{title}</Typography>
+          <Typography style={{ width: '90%' }} variant="subtitle2">
+            {title}
+          </Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

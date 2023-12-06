@@ -32,6 +32,7 @@ const styles = (theme) => ({
   },
   search: {
     float: 'right',
+    display: 'flex',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -111,6 +112,11 @@ class StixCyberObservableAddIndicators extends Component {
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <IndicatorCreation
+                display={open}
+                contextual
+                paginationOptions={paginationOptions}
+              />
             </div>
           </div>
           <div className={classes.container}>
@@ -137,7 +143,6 @@ class StixCyberObservableAddIndicators extends Component {
             />
           </div>
         </Drawer>
-        <IndicatorCreation display={open} contextual paginationOptions={paginationOptions} />
       </>
     );
   }

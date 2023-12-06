@@ -2,16 +2,16 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { MESSAGING$ } from 'src/relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -38,10 +38,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
+    marginLeft: '5px',
   },
   buttons: {
     marginTop: 20,
@@ -49,6 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -172,12 +173,16 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Note')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -316,7 +321,17 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a note')}
-        variant={DrawerVariant.create}
+        controlledDial={({ onOpen }) => (
+          <Button
+            className={classes.createBtn}
+            color='primary'
+            size='small'
+            variant='contained'
+            onClick={onOpen}
+          >
+            {t_i18n('Create')} {t_i18n('entity_Note')} <Add />
+          </Button>
+        )}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>
@@ -325,14 +340,17 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
+        <Button
           onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
+          color='primary'
+          size='small'
+          variant='contained'
+          aria-label={t_i18n('Create a note')}
           className={classes.createButtonContextual}
+          disableElevation
         >
-          <Add />
-        </Fab>
+          {t_i18n('Create')} <Add />
+        </Button>
         <Dialog
           open={open}
           onClose={() => setOpen(false)}

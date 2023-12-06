@@ -135,6 +135,9 @@ const Incidents: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IncidentCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -179,9 +182,6 @@ const Incidents: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

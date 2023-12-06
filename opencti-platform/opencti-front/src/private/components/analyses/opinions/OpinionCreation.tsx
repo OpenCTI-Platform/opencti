@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -132,6 +132,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -140,6 +141,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Opinion')} ${t_i18n('successfully created')}`);
       },
     });
   };

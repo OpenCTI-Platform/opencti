@@ -137,6 +137,9 @@ const Notes: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+            <NoteCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -181,9 +184,6 @@ const Notes: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-        <NoteCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

@@ -16,7 +16,7 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -221,6 +221,7 @@ const StixCyberObservableCreation = ({
   paginationOptions,
   defaultCreatedBy = null,
   defaultMarkingDefinitions = null,
+  controlledDial,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -322,6 +323,7 @@ const StixCyberObservableCreation = ({
       ),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       setSubmitting,
@@ -329,6 +331,7 @@ const StixCyberObservableCreation = ({
         setSubmitting(false);
         resetForm();
         localHandleClose();
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Stix-Cyber-Observable')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -645,14 +648,20 @@ const StixCyberObservableCreation = ({
   const renderClassic = () => {
     return (
       <>
-        <Fab
-          onClick={handleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
+        {!controlledDial && (
+          <Fab
+            onClick={handleOpen}
+            color="primary"
+            aria-label="Add"
+            className={classes.createButton}
+          >
+            <Add />
+          </Fab>
+        )}
+        {controlledDial
+          ? controlledDial({ onOpen: () => handleOpen() })
+          : undefined
+        }
         <Drawer
           open={status.open}
           anchor="right"
@@ -684,7 +693,7 @@ const StixCyberObservableCreation = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {!speeddial && (
+        {!speeddial && !controlledDial && (
           <Fab
             onClick={handleOpen}
             color="primary"
@@ -694,6 +703,10 @@ const StixCyberObservableCreation = ({
             <Add />
           </Fab>
         )}
+        {controlledDial
+          ? controlledDial({ onOpen: () => handleOpen() })
+          : undefined
+        }
         <Dialog
           open={speeddial ? open : status.open}
           PaperProps={{ elevation: 1 }}

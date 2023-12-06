@@ -15,7 +15,7 @@ import Slide from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { MESSAGING$, commitMutation } from '../../../../relay/environment';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 
 const styles = (theme) => ({
@@ -87,6 +87,7 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   submitDelete() {
+    const { t } = this.props;
     this.setState({ deleting: true });
     commitMutation({
       mutation: stixCoreRelationshipPopoverDeletionMutation,
@@ -106,12 +107,16 @@ class StixCoreRelationshipPopover extends Component {
           ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
         }
       },
+      onError: (error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
         if (typeof this.props.onDelete === 'function') {
           this.props.onDelete();
         }
+        MESSAGING$.notifySuccess(t('Relationship successfully deleted'));
       },
     });
   }

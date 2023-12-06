@@ -8,6 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { MESSAGING$ } from 'src/relay/environment';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -211,6 +212,10 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
+  const handleToastUpdate = () => {
+    MESSAGING$.notifySuccess(t_i18n('Relationship successfully edited'));
+  };
+
   const { editContext } = stixCoreRelationship;
 
   const basicShape = {
@@ -252,6 +257,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
           id: stixCoreRelationship.id,
           input: { key: name, value: value ?? '' },
         },
+        onCompleted: handleToastUpdate,
       });
     }
   };
@@ -285,6 +291,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
       },
       onCompleted: () => {
         setSubmitting(false);
+        handleToastUpdate();
         handleClose();
       },
     });
@@ -465,7 +472,9 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
         {typeof handleDelete === 'function' && (
           <Button
             variant="contained"
-            onClick={() => handleDelete()}
+            onClick={() => {
+              handleDelete();
+            }}
             classes={{ root: classes.button }}
           >
             {t_i18n('Delete')}

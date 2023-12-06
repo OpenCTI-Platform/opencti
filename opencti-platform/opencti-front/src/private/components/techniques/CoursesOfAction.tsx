@@ -83,6 +83,9 @@ const CoursesOfAction = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -116,9 +119,6 @@ const CoursesOfAction = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CourseOfActionCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

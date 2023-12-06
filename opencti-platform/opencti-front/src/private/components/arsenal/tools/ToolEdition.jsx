@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
+import { compose } from 'ramda';
+import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ToolEditionContainer from './ToolEditionContainer';
 import { toolEditionOverviewFocus } from './ToolEditionOverview';
@@ -26,7 +30,7 @@ class ToolEdition extends Component {
   }
 
   render() {
-    const { toolId } = this.props;
+    const { t, toolId } = this.props;
     return (
       <QueryRenderer
         query={toolEditionQuery}
@@ -34,7 +38,22 @@ class ToolEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <ToolEditionContainer tool={props.tool} handleClose={this.handleClose.bind(this)} />
+              <ToolEditionContainer
+                tool={props.tool}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
+              />
             );
           }
           return <Loader variant="inElement" />;
@@ -50,4 +69,4 @@ ToolEdition.propTypes = {
   theme: PropTypes.object,
 };
 
-export default ToolEdition;
+export default compose(inject18n)(ToolEdition);

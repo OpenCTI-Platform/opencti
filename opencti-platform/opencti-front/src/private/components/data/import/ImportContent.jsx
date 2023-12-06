@@ -24,7 +24,6 @@ import DialogActions from '@mui/material/DialogActions';
 import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import Fab from '@mui/material/Fab';
 import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/SelectField';
@@ -320,36 +319,58 @@ class ImportContentComponent extends Component {
     return (
       <>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 0 }}
-        >
-          <Grid item={true} xs={8}>
-            <div style={{ height: '100%' }} className="break">
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Uploaded files')}
-              </Typography>
-              <div style={{ float: 'left', marginTop: -15 }}>
-                <FileUploader
-                  onUploadSuccess={() => relay.refetch()}
-                  size="medium"
-                />
-                <FreeTextUploader
-                  onUploadSuccess={() => relay.refetch()}
-                  size="medium"
-                />
-              </div>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} variant="outlined">
-                {importFilesEdges.length ? (
-                  <List>
-                    {importFilesEdges.map((file) => file?.node && (
+        <div className={classes.container}>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {t('Data import')}
+          </Typography>
+          <Button
+            color='primary'
+            size='small'
+            variant='contained'
+            disableElevation
+            onClick={this.handleOpenCreate.bind(this)}
+            aria-label='Create a workbench'
+            sx={{
+              float: 'right',
+            }}
+          >
+            {t('Create a workbench')} <Add />
+          </Button>
+          <div className="clearfix" />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 0 }}
+          >
+            <Grid item={true} xs={8}>
+              <div style={{ height: '100%' }} className="break">
+                <Typography
+                  variant="h4"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Uploaded files')}
+                </Typography>
+                <div style={{ float: 'left', marginTop: -15 }}>
+                  <FileUploader
+                    onUploadSuccess={() => relay.refetch()}
+                    size="medium"
+                  />
+                  <FreeTextUploader
+                    onUploadSuccess={() => relay.refetch()}
+                    size="medium"
+                  />
+                </div>
+                <div className="clearfix" />
+                <Paper classes={{ root: classes.paper }} variant="outlined">
+                  {importFilesEdges.length ? (
+                    <List>
+                      {importFilesEdges.map((file) => file?.node && (
                       <FileLine
                         key={file.node.id}
                         file={file.node}
@@ -358,7 +379,75 @@ class ImportContentComponent extends Component {
                         }
                         handleOpenImport={this.handleOpenImport.bind(this)}
                       />
-                    ))}
+                      ))}
+                    </List>
+                  ) : (
+                    <div
+                      style={{ display: 'table', height: '100%', width: '100%' }}
+                    >
+                      <span
+                        style={{
+                          display: 'table-cell',
+                          verticalAlign: 'middle',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {t('No file for the moment')}
+                      </span>
+                    </div>
+                  )}
+                </Paper>
+              </div>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Enabled import connectors')}
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                variant="outlined"
+                style={{ marginTop: 12 }}
+              >
+                {connectors.length ? (
+                  <List>
+                    {connectors.map((connector) => {
+                      const connectorScope = connector.connector_scope.join(',');
+                      return (
+                        <ListItemButton
+                          component={Link}
+                          to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                          key={connector.id}
+                          dense={true}
+                          divider={true}
+                          classes={{ root: classes.item }}
+                        >
+                          <Tooltip
+                            title={
+                            connector.active
+                              ? t('This connector is active')
+                              : t('This connector is disconnected')
+                          }
+                          >
+                            <ListItemIcon
+                              style={{
+                                color: connector.active ? '#4caf50' : '#f44336',
+                              }}
+                            >
+                              <Extension/>
+                            </ListItemIcon>
+                          </Tooltip>
+                          <Tooltip title={connectorScope}>
+                            <ListItemText
+                              primary={connector.name}
+                              secondary={truncate(connectorScope, 30)}
+                            />
+                          </Tooltip>
+                          {connector.updated_at && (<ListItemSecondaryAction>
+                            <ListItemText primary={nsdt(connector.updated_at)}/>
+                          </ListItemSecondaryAction>)}
+                        </ListItemButton>
+                      );
+                    })}
                   </List>
                 ) : (
                   <div
@@ -371,207 +460,139 @@ class ImportContentComponent extends Component {
                         textAlign: 'center',
                       }}
                     >
-                      {t('No file for the moment')}
+                      {t('No enrichment connectors on this platform')}
                     </span>
                   </div>
                 )}
               </Paper>
-            </div>
-          </Grid>
-          <Grid item={true} xs={4}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Enabled import connectors')}
-            </Typography>
-            <Paper
-              classes={{ root: classes.paper }}
-              variant="outlined"
-              style={{ marginTop: 12 }}
-            >
-              {connectors.length ? (
-                <List>
-                  {connectors.map((connector) => {
-                    const connectorScope = connector.connector_scope.join(',');
-                    return (
-                      <ListItemButton
-                        component={Link}
-                        to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-                        key={connector.id}
-                        dense={true}
-                        divider={true}
-                        classes={{ root: classes.item }}
-                      >
-                        <Tooltip
-                          title={
-                            connector.active
-                              ? t('This connector is active')
-                              : t('This connector is disconnected')
-                          }
-                        >
-                          <ListItemIcon
-                            style={{
-                              color: connector.active ? '#4caf50' : '#f44336',
-                            }}
-                          >
-                            <Extension/>
-                          </ListItemIcon>
-                        </Tooltip>
-                        <Tooltip title={connectorScope}>
-                          <ListItemText
-                            primary={connector.name}
-                            secondary={truncate(connectorScope, 30)}
-                          />
-                        </Tooltip>
-                        {connector.updated_at && (<ListItemSecondaryAction>
-                          <ListItemText primary={nsdt(connector.updated_at)}/>
-                        </ListItemSecondaryAction>)}
-                      </ListItemButton>
-                    );
-                  })}
-                </List>
-              ) : (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
+            </Grid>
+            <Grid item={true} xs={12} style={{ marginTop: 40 }}>
+              <div style={{ height: '100%' }} className="break">
+                <Typography
+                  variant="h4"
+                  gutterBottom={true}
+                  style={{ marginBottom: 15 }}
                 >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {t('No enrichment connectors on this platform')}
-                  </span>
-                </div>
-              )}
-            </Paper>
-          </Grid>
-          <Grid item={true} xs={12} style={{ marginTop: 40 }}>
-            <div style={{ height: '100%' }} className="break">
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ marginBottom: 15 }}
-              >
-                {t('Analyst workbenches')}
-              </Typography>
-              <Paper classes={{ root: classes.paper }} variant="outlined">
-                <List>
-                  <ListItem
-                    classes={{ root: classes.itemHead }}
-                    divider={false}
-                    style={{ paddingTop: 0 }}
-                  >
-                    <ListItemIcon>
-                      <span
-                        style={{
-                          padding: '0 8px 0 8px',
-                          fontWeight: 700,
-                          fontSize: 12,
-                        }}
-                      >
+                  {t('Analyst workbenches')}
+                </Typography>
+                <Paper classes={{ root: classes.paper }} variant="outlined">
+                  <List>
+                    <ListItem
+                      classes={{ root: classes.itemHead }}
+                      divider={false}
+                      style={{ paddingTop: 0 }}
+                    >
+                      <ListItemIcon>
+                        <span
+                          style={{
+                            padding: '0 8px 0 8px',
+                            fontWeight: 700,
+                            fontSize: 12,
+                          }}
+                        >
                         &nbsp;
-                      </span>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div>
-                          {this.SortHeader('name', 'Name', false)}
-                          {this.SortHeader('creator_name', 'Creator', false)}
-                          {this.SortHeader('labels', 'Labels', false)}
-                          {this.SortHeader(
-                            'lastModified',
-                            'Modification date',
-                            false,
-                          )}
-                        </div>
+                        </span>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <div>
+                            {this.SortHeader('name', 'Name', false)}
+                            {this.SortHeader('creator_name', 'Creator', false)}
+                            {this.SortHeader('labels', 'Labels', false)}
+                            {this.SortHeader(
+                              'lastModified',
+                              'Modification date',
+                              false,
+                            )}
+                          </div>
                       }
-                    />
-                    <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
-                  </ListItem>
-                  {pendingFilesEdges.map((file) => (
-                    <WorkbenchFileLine
-                      key={file.node.id}
-                      file={file.node}
-                      connectors={
+                      />
+                      <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
+                    </ListItem>
+                    {pendingFilesEdges.map((file) => (
+                      <WorkbenchFileLine
+                        key={file.node.id}
+                        file={file.node}
+                        connectors={
                         importConnsPerFormat[file.node.metaData.mimetype]
                       }
-                      handleOpenImport={this.handleOpenValidate.bind(this)}
-                    />
-                  ))}
-                </List>
-              </Paper>
-            </div>
+                        handleOpenImport={this.handleOpenValidate.bind(this)}
+                      />
+                    ))}
+                  </List>
+                </Paper>
+              </div>
+            </Grid>
           </Grid>
-        </Grid>
-        <div>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
-            validationSchema={importValidation(t, !!this.state.selectedConnector?.configurations)}
-            onSubmit={this.onSubmitImport.bind(this)}
-            onReset={this.handleCloseImport.bind(this)}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '0 0 20px 0' }}>
-                <Dialog
-                  open={fileToImport}
-                  PaperProps={{ elevation: 1 }}
-                  keepMounted={true}
-                  onClose={this.handleCloseImport.bind(this)}
-                  fullWidth={true}
-                >
-                  <DialogTitle>{t('Launch an import')}</DialogTitle>
-                  <DialogContent>
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="connector_id"
-                      label={t('Connector')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                      onChange={handleSelectConnector}
-                    >
-                      {connectors.map((connector) => {
-                        const disabled = !fileToImport
+          <div>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
+              validationSchema={importValidation(t, !!this.state.selectedConnector?.configurations)}
+              onSubmit={this.onSubmitImport.bind(this)}
+              onReset={this.handleCloseImport.bind(this)}
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
+                <Form style={{ margin: '0 0 20px 0' }}>
+                  <Dialog
+                    open={fileToImport}
+                    PaperProps={{ elevation: 1 }}
+                    keepMounted={true}
+                    onClose={this.handleCloseImport.bind(this)}
+                    fullWidth={true}
+                  >
+                    <DialogTitle>{t('Launch an import')}</DialogTitle>
+                    <DialogContent>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="connector_id"
+                        label={t('Connector')}
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                        onChange={handleSelectConnector}
+                      >
+                        {connectors.map((connector) => {
+                          const disabled = !fileToImport
                           || (connector.connector_scope.length > 0
                             && !R.includes(
                               fileToImport.metaData.mimetype,
                               connector.connector_scope,
                             ));
-                        return (
-                          <MenuItem
-                            key={connector.id}
-                            value={connector.id}
-                            disabled={disabled || !connector.active}
-                          >
-                            {connector.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Field>
-                    {this.state.selectedConnector?.configurations?.length > 0
-                      ? <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="configuration"
-                          label={t('Configuration')}
-                          fullWidth={true}
-                          containerstyle={{ marginTop: 20, width: '100%' }}
-                        >
-                        {this.state.selectedConnector.configurations?.map((config) => {
                           return (
                             <MenuItem
-                              key={config.id}
-                              value={config.configuration}
+                              key={connector.id}
+                              value={connector.id}
+                              disabled={disabled || !connector.active}
                             >
-                              {config.name}
+                              {connector.name}
                             </MenuItem>
                           );
                         })}
                       </Field>
-                      : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
+                      {this.state.selectedConnector?.configurations?.length > 0
+                        ? <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="configuration"
+                            label={t('Configuration')}
+                            fullWidth={true}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                          >
+                          {this.state.selectedConnector.configurations?.map((config) => {
+                            return (
+                              <MenuItem
+                                key={config.id}
+                                value={config.configuration}
+                              >
+                                {config.name}
+                              </MenuItem>
+                            );
+                          })}
+                        </Field>
+                        : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
-                    {this.state.selectedConnector?.connector_scope?.includes('text/csv')
+                      {this.state.selectedConnector?.connector_scope?.includes('text/csv')
                       && (
                         <>
                           <ObjectMarkingField
@@ -584,98 +605,91 @@ class ImportContentComponent extends Component {
                         </>
                       )
                     }
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting || !this.state.selectedConnector}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ connector_id: '' }}
-            validationSchema={importValidation(t)}
-            onSubmit={this.onSubmitValidate.bind(this)}
-            onReset={this.handleCloseValidate.bind(this)}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '0 0 20px 0' }}>
-                <Dialog
-                  open={fileToValidate}
-                  PaperProps={{ elevation: 1 }}
-                  keepMounted={true}
-                  onClose={this.handleCloseValidate.bind(this)}
-                  fullWidth={true}
-                >
-                  <DialogTitle>{t('Validate and send for import')}</DialogTitle>
-                  <DialogContent>
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="connector_id"
-                      label={t('Connector')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    >
-                      {connectors.map((connector, i) => {
-                        const disabled = !fileToValidate
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleReset} disabled={isSubmitting}>
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting || !this.state.selectedConnector}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Form>
+              )}
+            </Formik>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{ connector_id: '' }}
+              validationSchema={importValidation(t)}
+              onSubmit={this.onSubmitValidate.bind(this)}
+              onReset={this.handleCloseValidate.bind(this)}
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
+                <Form style={{ margin: '0 0 20px 0' }}>
+                  <Dialog
+                    open={fileToValidate}
+                    PaperProps={{ elevation: 1 }}
+                    keepMounted={true}
+                    onClose={this.handleCloseValidate.bind(this)}
+                    fullWidth={true}
+                  >
+                    <DialogTitle>{t('Validate and send for import')}</DialogTitle>
+                    <DialogContent>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="connector_id"
+                        label={t('Connector')}
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                      >
+                        {connectors.map((connector, i) => {
+                          const disabled = !fileToValidate
                           || (connector.connector_scope.length > 0
                             && !R.includes(
                               fileToValidate.metaData.mimetype,
                               connector.connector_scope,
                             ));
-                        return (
-                          <MenuItem
-                            key={i}
-                            value={connector.id}
-                            disabled={disabled || !connector.active}
-                          >
-                            {connector.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Field>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
-          <WorkbenchFileCreator
-            handleCloseCreate={this.handleCloseCreate.bind(this)}
-            openCreate={displayCreate}
-            onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
-          />
+                          return (
+                            <MenuItem
+                              key={i}
+                              value={connector.id}
+                              disabled={disabled || !connector.active}
+                            >
+                              {connector.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleReset} disabled={isSubmitting}>
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Form>
+              )}
+            </Formik>
+            <WorkbenchFileCreator
+              handleCloseCreate={this.handleCloseCreate.bind(this)}
+              openCreate={displayCreate}
+              onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
+            />
+          </div>
         </div>
-        <Fab
-          onClick={this.handleOpenCreate.bind(this)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
       </>
     );
   }

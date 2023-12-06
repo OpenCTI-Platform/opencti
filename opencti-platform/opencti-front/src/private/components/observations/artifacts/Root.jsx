@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from '../stix_cyber_observables/StixCyberObservable';
@@ -20,6 +22,9 @@ import FileManager from '../../common/files/FileManager';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import StixCyberObservableEdition from '../stix_cyber_observables/StixCyberObservableEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -42,6 +47,8 @@ const rootArtifactQuery = graphql`
       standard_id
       entity_type
       observable_value
+      created_at
+      updated_at
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableHeader_stixCyberObservable
       ...StixCyberObservableDetails_stixCyberObservable
@@ -85,172 +92,182 @@ class RootArtifact extends Component {
     } = this.props;
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
-      <>
-        <QueryRenderer
-          query={rootArtifactQuery}
-          variables={{ id: observableId, relationship_type: 'indicates' }}
-          render={({ props }) => {
-            if (props) {
-              if (props.stixCyberObservable) {
-                const { stixCyberObservable } = props;
-                return (
-                  <>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Observations') },
-                      { label: t('Artifacts'), link: '/dashboard/observations/artifacts' },
-                      { label: stixCyberObservable.observable_value, current: true },
-                    ]}
-                    />
-                    <StixCyberObservableHeader
-                      stixCyberObservable={stixCyberObservable}
-                      isArtifact={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
+      <QueryRenderer
+        query={rootArtifactQuery}
+        variables={{ id: observableId, relationship_type: 'indicates' }}
+        render={({ props }) => {
+          if (props) {
+            if (props.stixCyberObservable) {
+              const { stixCyberObservable } = props;
+              return (
+                <RelateComponentContextProvider>
+                  <Breadcrumbs variant="object" elements={[
+                    { label: t('Observations') },
+                    { label: t('Artifacts'), link: '/dashboard/observations/artifacts' },
+                    { label: stixCyberObservable.observable_value, current: true },
+                  ]}
+                  />
+                  <StixCyberObservableHeader
+                    stixCyberObservable={stixCyberObservable}
+                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <StixCyberObservableEdition
+                        stixCyberObservableId={stixCyberObservable.id}
+                        isArtifact={true}
+                      />
+                    </Security>}
+                    RelateComponent={<CreateRelationshipButtonComponent
+                      id={stixCyberObservable.id}
+                      defaultStartTime={stixCyberObservable.created_at}
+                      defaultStopTime={stixCyberObservable.updated_at}
+                                     />}
+                  />
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      marginBottom: 4,
+                    }}
+                  >
+                    <Tabs
+                      value={
+                        location.pathname.includes(
+                          `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`,
+                        )
+                          ? `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`
+                          : location.pathname
+                      }
                     >
-                      <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`,
-                          )
-                            ? `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`
-                            : location.pathname
-                        }
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
-                          label={t('Overview')}
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
+                        label={t('Overview')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
+                        label={t('Knowledge')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
+                        label={t('Analyses')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
+                        label={t('Sightings')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
+                        label={t('Data')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
+                        value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
+                        label={t('History')}
+                      />
+                    </Tabs>
+                  </Box>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <StixCyberObservable
+                          stixCyberObservable={stixCyberObservable}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
-                          label={t('Knowledge')}
+                      }
+                    />
+                    <Route
+                      path="/knowledge"
+                      element={
+                        <StixCyberObservableKnowledge
+                          stixCyberObservable={stixCyberObservable}
+                          connectorsForImport={props.connectorsForImport}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
-                          label={t('Analyses')}
+                      }
+                    />
+                    <Route
+                      path="/sightings"
+                      element={
+                        <EntityStixSightingRelationships
+                          entityId={observableId}
+                          entityLink={link}
+                          noRightBar={true}
+                          noPadding={true}
+                          stixCoreObjectTypes={[
+                            'Region',
+                            'Country',
+                            'City',
+                            'Position',
+                            'Sector',
+                            'Organization',
+                            'Individual',
+                            'System',
+                          ]}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
-                          label={t('Sightings')}
+                      }
+                    />
+                    <Route
+                      path="/files"
+                      element={
+                        <FileManager
+                          id={observableId}
+                          connectorsImport={props.connectorsForImport}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.stixCyberObservable}
+                          isArtifact={true}
+                          directDownload={true}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
-                          label={t('Data')}
+                      }
+                    />
+                    <Route
+                      path="/history"
+                      element={
+                        <StixCoreObjectHistory
+                          stixCoreObjectId={observableId}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
-                          label={t('History')}
+                      }
+                    />
+                    <Route
+                      path="/knowledge/relations/:relationId"
+                      element={
+                        <StixCoreRelationship
+                          entityId={observableId}
                         />
-                      </Tabs>
-                    </Box>
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={(
-                          <StixCyberObservable
-                            stixCyberObservable={stixCyberObservable}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <StixCyberObservableKnowledge
-                            stixCyberObservable={stixCyberObservable}
-                            connectorsForImport={props.connectorsForImport}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/sightings"
-                        element={(
-                          <EntityStixSightingRelationships
-                            entityId={observableId}
-                            entityLink={link}
-                            noRightBar={true}
-                            noPadding={true}
-                            stixCoreObjectTypes={[
-                              'Region',
-                              'Country',
-                              'City',
-                              'Position',
-                              'Sector',
-                              'Organization',
-                              'Individual',
-                              'System',
-                            ]}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
-                          <FileManager
-                            id={observableId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.stixCyberObservable}
-                            isArtifact={true}
-                            directDownload={true}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={(
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={observableId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/relations/:relationId"
-                        element={(
-                          <StixCoreRelationship
-                            entityId={observableId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/sightings/:sightingId"
-                        element={(
-                          <StixSightingRelationship
-                            entityId={observableId}
-                            paddingRight
-                          />
-                        )}
-                      />
-                    </Routes>
-                  </>
-                );
-              }
-              return <ErrorNotFound />;
+                      }
+                    />
+                    <Route
+                      path="/knowledge/sightings/:sightingId"
+                      render={
+                        <StixSightingRelationship
+                          entityId={observableId}
+                          paddingRight
+                        />
+                      }
+                    />
+                  </Routes>
+                </RelateComponentContextProvider>
+              );
             }
-            return <Loader />;
-          }}
-        />
-      </>
+            return <ErrorNotFound />;
+          }
+          return <Loader />;
+        }}
+      />
     );
   }
 }
 
 RootArtifact.propTypes = {
+  t: PropTypes.func,
+  location: PropTypes.object,
   children: PropTypes.node,
   params: PropTypes.object,
 };

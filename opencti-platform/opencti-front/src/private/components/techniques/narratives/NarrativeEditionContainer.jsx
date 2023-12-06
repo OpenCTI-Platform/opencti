@@ -3,12 +3,13 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import NarrativeEditionOverview from './NarrativeEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import NarrativeDelete from './NarrativeDelete';
 
 const NarrativeEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, narrative, open } = props;
+  const { handleClose, narrative, open, controlledDial } = props;
   const { editContext } = narrative;
 
   return (
@@ -16,15 +17,20 @@ const NarrativeEditionContainer = (props) => {
       title={t_i18n('Update a narrative')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <NarrativeEditionOverview
-        narrative={narrative}
-        enableReferences={useIsEnforceReference('Narrative')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <NarrativeEditionOverview
+          narrative={narrative}
+          enableReferences={useIsEnforceReference('Narrative')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Narrative')
+          && <NarrativeDelete id={narrative.id} />
+        }
+      </>
     </Drawer>
   );
 };

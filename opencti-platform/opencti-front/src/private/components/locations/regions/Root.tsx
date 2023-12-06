@@ -9,11 +9,14 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import RegionPopover from './RegionPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -25,6 +28,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import RegionEdition from './RegionEdition';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -48,6 +52,8 @@ const regionQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Region_region
       ...RegionKnowledge_region
       ...FileImportViewer_entity
@@ -80,7 +86,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {region ? (
         <div
           style={{
@@ -101,7 +107,14 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             entityType="Region"
             disableSharing={true}
             stixDomainObject={region}
-            PopoverComponent={<RegionPopover id={region.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <RegionEdition regionId={region.id} />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={region.id}
+              defaultStartTime={region.created_at}
+              defaultStopTime={region.updated_at}
+                             />}
             enableQuickSubscription={true}
             isOpenctiAlias={true}
           />
@@ -213,7 +226,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

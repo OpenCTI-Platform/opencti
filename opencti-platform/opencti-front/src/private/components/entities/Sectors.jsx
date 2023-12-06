@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import { Button } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -15,8 +17,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   parameters: {
-    float: 'left',
     marginTop: -10,
+    width: '100%',
   },
 });
 
@@ -60,12 +62,29 @@ class Sectors extends Component {
       <>
         <Breadcrumbs variant="list" elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
         <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
+          <div style={{ float: 'left' }}>
             <SearchInput
               variant="small"
               onSubmit={this.handleSearch.bind(this)}
               keyword={searchTerm}
             />
+          </div>
+          <div style={{ float: 'right' }}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <SectorCreation
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    onClick={onOpen}
+                    variant='contained'
+                    color='primary'
+                    size='small'
+                    style={{ padding: '7px 10px' }}
+                  >
+                    {t('Create')} {t('entity_Sector')} <Add />
+                  </Button>
+                )}
+              />
+            </Security>
           </div>
         </div>
         <div className="clearfix" />
@@ -76,9 +95,6 @@ class Sectors extends Component {
             <SectorsLines data={props} keyword={searchTerm} />
           )}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SectorCreation />
-        </Security>
       </>
     );
   }

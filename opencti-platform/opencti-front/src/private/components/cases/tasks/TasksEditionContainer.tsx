@@ -7,16 +7,22 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import TasksEditionOverview from './TasksEditionOverview';
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
+import TaskDelete from './TaskDelete';
 
 interface TasksEditionContainerProps {
   queryRef: PreloadedQuery<TasksEditionContainerQuery>
   handleClose: () => void
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
 export const tasksEditionQuery = graphql`
   query TasksEditionContainerQuery($id: String!) {
     task(id: $id) {
+      id
       ...TasksEditionOverview_task
       editContext {
         name
@@ -26,7 +32,12 @@ export const tasksEditionQuery = graphql`
   }
 `;
 
-const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({ queryRef, handleClose, open }) => {
+const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({
+  queryRef,
+  handleClose,
+  controlledDial,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
   const { task } = usePreloadedQuery(tasksEditionQuery, queryRef);
   if (task === null) {
@@ -35,19 +46,25 @@ const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({ 
   return (
     <Drawer
       title={t_i18n('Update a task')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={task?.editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
-      {({ onClose }) => (
+      {({ onClose }) => (<>
         <TasksEditionOverview
           taskRef={task as TasksEditionOverview_task$key}
           context={task?.editContext}
           enableReferences={useIsEnforceReference('Task')}
           handleClose={onClose}
         />
-      )}
+        {!useIsEnforceReference('Task') && task?.id
+          && <TaskDelete id={task.id} />
+        }
+      </>)}
     </Drawer>
   );
 };

@@ -23,6 +23,7 @@ import SliderField from '../../../../components/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import NoteDelete from './NoteDelete';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -271,6 +272,7 @@ NoteEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <NoteDelete id={note.id} />
         </Form>
       )}
     </Formik>

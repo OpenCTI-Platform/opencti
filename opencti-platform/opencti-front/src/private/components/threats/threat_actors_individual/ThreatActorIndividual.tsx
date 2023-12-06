@@ -2,8 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,7 +11,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import ThreatActorIndividualBiographics from './ThreatActorIndividualBiographics';
 import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographics';
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
-import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import {
   ThreatActorIndividual_ThreatActorIndividual$data,
   ThreatActorIndividual_ThreatActorIndividual$key,
@@ -210,11 +207,6 @@ const ThreatActorIndividualComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
         defaultMarkings={threatActorIndividual.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorIndividualEdition
-          threatActorIndividualId={threatActorIndividual.id}
-        />
-      </Security>
     </>
   );
 };

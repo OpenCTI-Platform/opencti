@@ -4,11 +4,12 @@ import { useFormatter } from '../../../../components/i18n';
 import OrganizationEditionOverview from './OrganizationEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import OrganizationDelete from './OrganizationDelete';
 
 const OrganizationEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, organization, open } = props;
+  const { handleClose, organization, open, controlledDial } = props;
   const { editContext } = organization;
 
   return (
@@ -16,15 +17,23 @@ const OrganizationEditionContainer = (props) => {
       title={t_i18n('Update an organization')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === undefined
+        ? DrawerVariant.update
+        : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <OrganizationEditionOverview
-        organization={organization}
-        enableReferences={useIsEnforceReference('Organization')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <OrganizationEditionOverview
+          organization={organization}
+          enableReferences={useIsEnforceReference('Organization')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Organization')
+          && <OrganizationDelete id={organization.id} />
+        }
+      </>
     </Drawer>
   );
 };

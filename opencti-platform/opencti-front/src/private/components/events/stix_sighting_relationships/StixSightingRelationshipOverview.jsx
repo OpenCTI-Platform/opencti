@@ -12,8 +12,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Fab from '@mui/material/Fab';
-import { ArrowRightAlt, Edit } from '@mui/icons-material';
+import { ArrowRightAlt, Create } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
@@ -238,6 +237,27 @@ class StixSightingRelationshipContainer extends Component {
       : '';
     return (
       <div className={classes.container}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Button
+            onClick={this.handleOpenEdition.bind(this)}
+            variant='contained'
+            disableElevation
+            style={{
+              marginTop: '-12px',
+              fontSize: 'small',
+              float: 'right',
+            }}
+          >
+            {t('Edit')} <Create />
+          </Button>
+          <StixSightingRelationshipEdition
+            open={this.state.openEdit}
+            stixSightingRelationshipId={stixSightingRelationship.id}
+            inferred={stixSightingRelationship.x_opencti_inferences !== null}
+            handleClose={this.handleCloseEdition.bind(this)}
+            handleDelete={this.handleOpenDelete.bind(this)}
+          />
+        </Security>
         <Grid
           container={true}
           spacing={3}
@@ -595,25 +615,6 @@ class StixSightingRelationshipContainer extends Component {
             </div>
           )}
         </div>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Fab
-            onClick={this.handleOpenEdition.bind(this)}
-            color="secondary"
-            aria-label="Edit"
-            className={
-              paddingRight ? classes.editButtonWithPadding : classes.editButton
-            }
-          >
-            <Edit />
-          </Fab>
-          <StixSightingRelationshipEdition
-            open={this.state.openEdit}
-            stixSightingRelationshipId={stixSightingRelationship.id}
-            inferred={stixSightingRelationship.x_opencti_inferences !== null}
-            handleClose={this.handleCloseEdition.bind(this)}
-            handleDelete={this.handleOpenDelete.bind(this)}
-          />
-        </Security>
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}

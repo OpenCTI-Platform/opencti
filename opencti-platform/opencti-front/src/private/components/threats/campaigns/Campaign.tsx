@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import CampaignDetails from './CampaignDetails';
-import CampaignEdition from './CampaignEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -118,9 +115,6 @@ const CampaignComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={campaignData.id}
         defaultMarkings={campaignData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CampaignEdition campaignId={campaignData.id} />
-      </Security>
     </>
   );
 };

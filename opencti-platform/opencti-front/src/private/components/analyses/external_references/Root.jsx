@@ -7,6 +7,7 @@ import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootExternalReferenceSubscription($id: ID!) {
@@ -57,16 +58,18 @@ class RootExternalReference extends Component {
             if (props) {
               if (props.externalReference && props.connectorsForImport) {
                 return (
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <ExternalReference
-                          externalReference={props.externalReference}
-                          connectorsImport={props.connectorsForImport}
-                        />}
-                    />
-                  </Routes>
+                  <RelateComponentContextProvider>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <ExternalReference
+                            externalReference={props.externalReference}
+                            connectorsImport={props.connectorsForImport}
+                          />}
+                      />
+                    </Routes>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

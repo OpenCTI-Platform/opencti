@@ -19,7 +19,8 @@ const styles = () => ({
   },
   search: {
     marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginRight: '20px',
+    display: 'flex',
   },
 });
 
@@ -73,6 +74,13 @@ class AddLocationsThreatActorGroup extends Component {
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <LocationCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+                updater={updater}
+              />
             </div>
           }
         >
@@ -93,13 +101,6 @@ class AddLocationsThreatActorGroup extends Component {
             }}
           />
         </Drawer>
-        <LocationCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-          updater={updater}
-        />
       </>
     );
   }

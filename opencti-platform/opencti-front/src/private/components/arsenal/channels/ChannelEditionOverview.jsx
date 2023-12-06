@@ -19,6 +19,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ChannelDelete from './ChannelDelete';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -264,6 +265,7 @@ const ChannelEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={channel.id}
+              deleteBtn={<ChannelDelete id={channel.id} />}
             />
           )}
         </Form>

@@ -5,9 +5,7 @@ import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -18,7 +16,6 @@ import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRftDetails from './CaseRftDetails';
-import CaseRftEdition from './CaseRftEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -173,9 +170,6 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
         defaultMarkings={caseRftData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRftEdition caseId={caseRftData.id} />
-      </Security>
     </>
   );
 };

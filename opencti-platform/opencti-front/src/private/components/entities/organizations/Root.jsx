@@ -13,7 +13,6 @@ import Organization from './Organization';
 import OrganizationKnowledge from './OrganizationKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import OrganizationAnalysis from './OrganizationAnalysis';
@@ -23,6 +22,11 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import OrganizationEdition from './OrganizationEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -47,6 +51,8 @@ const organizationQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      created_at
+      updated_at
       ...Organization_organization
       ...OrganizationKnowledge_organization
       ...FileImportViewer_entity
@@ -115,7 +121,7 @@ class RootOrganization extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Routes>
           <Route
             path="/knowledge/*"
@@ -172,7 +178,14 @@ class RootOrganization extends Component {
                       stixDomainObject={organization}
                       isOpenctiAlias={true}
                       enableQuickSubscription={true}
-                      PopoverComponent={<OrganizationPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <OrganizationEdition organizationId={organization.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={organization.id}
+                        defaultStartTime={organization.created_at}
+                        defaultStopTime={organization.updated_at}
+                                       />}
                       onViewAs={this.handleChangeViewAs.bind(this)}
                       viewAs={viewAs}
                     />
@@ -306,7 +319,7 @@ class RootOrganization extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

@@ -21,6 +21,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CityDelete from './CityDelete';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -335,6 +336,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               open={false}
               values={values.references}
               id={city.id}
+              deleteBtn={<CityDelete id={city.id} />}
             />
           )}
         </Form>

@@ -21,6 +21,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CountryDelete from './CountryDelete';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -305,6 +306,7 @@ CountryEditionOverviewProps
               open={false}
               values={values.references}
               id={country.id}
+              deleteBtn={<CountryDelete id={country.id} />}
             />
           )}
         </Form>

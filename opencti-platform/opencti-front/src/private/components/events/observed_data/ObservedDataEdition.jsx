@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
+import { compose } from 'ramda';
+import inject18n from '../../../../components/i18n';
 import ObservedDataEditionContainer from './ObservedDataEditionContainer';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { observedDataEditionOverviewFocus } from './ObservedDataEditionOverview';
@@ -26,7 +30,7 @@ class ObservedDataEdition extends Component {
   }
 
   render() {
-    const { observedDataId } = this.props;
+    const { t, observedDataId } = this.props;
     return (
       <QueryRenderer
         query={observedDataEditionQuery}
@@ -37,6 +41,19 @@ class ObservedDataEdition extends Component {
               <ObservedDataEditionContainer
                 observedData={props.observedData}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='contained'
+                    onClick={onOpen}
+                    disableElevation
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
               />
             );
           }
@@ -49,6 +66,7 @@ class ObservedDataEdition extends Component {
 
 ObservedDataEdition.propTypes = {
   observedDataId: PropTypes.string,
+  t: PropTypes.func,
 };
 
-export default ObservedDataEdition;
+export default compose(inject18n)(ObservedDataEdition);

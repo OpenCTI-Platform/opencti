@@ -7,9 +7,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import TaskDetails from './TaskDetails';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -108,9 +105,6 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={task.id}
         defaultMarkings={task.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <TaskEdition caseId={task.id} />
-      </Security>
     </>
   );
 };

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ChannelEditionContainer from './ChannelEditionContainer';
@@ -38,7 +40,7 @@ class ChannelEdition extends Component {
   }
 
   render() {
-    const { channelId } = this.props;
+    const { t, channelId } = this.props;
     return (
       <QueryRenderer
         query={channelEditionQuery}
@@ -46,7 +48,22 @@ class ChannelEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <ChannelEditionContainer channel={props.channel} handleClose={this.handleClose.bind(this)}/>
+              <ChannelEditionContainer
+                channel={props.channel}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
+              />
             );
           }
           return <Loader variant="inElement" />;

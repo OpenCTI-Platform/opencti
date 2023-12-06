@@ -8,11 +8,14 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import AdministrativeAreaPopover from './AdministrativeAreaPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -24,6 +27,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -47,6 +51,8 @@ const administrativeAreaQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
       ...FileImportViewer_entity
@@ -83,7 +89,7 @@ const RootAdministrativeAreaComponent = ({
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {administrativeArea ? (
         <div
           style={{
@@ -104,9 +110,16 @@ const RootAdministrativeAreaComponent = ({
             entityType="Administrative-Area"
             disableSharing={true}
             stixDomainObject={administrativeArea}
-            PopoverComponent={
-              <AdministrativeAreaPopover id={administrativeArea.id} />
-            }
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <AdministrativeAreaEdition
+                administrativeAreaId={administrativeArea.id}
+              />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={administrativeArea.id}
+              defaultStartTime={administrativeArea.created_at}
+              defaultStopTime={administrativeArea.updated_at}
+                             />}
             enableQuickSubscription={true}
             isOpenctiAlias={true}
           />
@@ -222,7 +235,7 @@ const RootAdministrativeAreaComponent = ({
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

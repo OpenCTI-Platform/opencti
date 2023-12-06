@@ -7,16 +7,22 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FeedbackEditionOverview from './FeedbackEditionOverview';
 import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import FeedbackDelete from './FeedbackDelete';
 
 interface FeedbackEditionContainerProps {
   queryRef: PreloadedQuery<FeedbackEditionContainerQuery>
   handleClose: () => void
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
 export const feedbackEditionQuery = graphql`
   query FeedbackEditionContainerQuery($id: String!) {
     feedback(id: $id) {
+      id
       ...FeedbackEditionOverview_case
       editContext {
         name
@@ -26,7 +32,12 @@ export const feedbackEditionQuery = graphql`
   }
 `;
 
-const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps> = ({ queryRef, handleClose, open }) => {
+const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps> = ({
+  queryRef,
+  handleClose,
+  controlledDial,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
   const { feedback } = usePreloadedQuery(feedbackEditionQuery, queryRef);
   if (feedback === null) {
@@ -35,19 +46,25 @@ const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps>
   return (
     <Drawer
       title={t_i18n('Update a feedback')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={feedback?.editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
-      {({ onClose }) => (
+      {({ onClose }) => (<>
         <FeedbackEditionOverview
           feedbackRef={feedback as FeedbackEditionOverview_case$key}
           context={feedback?.editContext}
           handleClose={onClose}
           enableReferences={useIsEnforceReference('Feedback')}
         />
-      )}
+        {!useIsEnforceReference('Feedback') && feedback?.id
+          && <FeedbackDelete id={feedback.id} />
+        }
+      </>)}
     </Drawer>
   );
 };

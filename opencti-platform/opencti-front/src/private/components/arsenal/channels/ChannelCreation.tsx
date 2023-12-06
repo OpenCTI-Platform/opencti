@@ -6,9 +6,10 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -36,6 +37,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -125,6 +130,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -133,6 +139,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Channel')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -248,12 +255,23 @@ const ChannelCreation = ({
 }: {
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   return (
     <Drawer
       title={t_i18n('Create a channel')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Channel')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <ChannelCreationForm

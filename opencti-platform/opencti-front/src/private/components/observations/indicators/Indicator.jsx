@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import IndicatorDetails from './IndicatorDetails';
-import IndicatorEdition from './IndicatorEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -61,9 +58,6 @@ class IndicatorComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={indicator.id}
           defaultMarkings={indicator.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorEdition indicatorId={indicator.id} />
-        </Security>
       </>
     );
   }

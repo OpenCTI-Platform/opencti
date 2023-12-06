@@ -90,6 +90,9 @@ const FeedbackCreation: FunctionComponent<{
       variables: {
         input,
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

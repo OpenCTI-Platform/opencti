@@ -2,15 +2,12 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource.graphql';
-import DataSourceEdition from './DataSourceEdition';
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
@@ -113,9 +110,6 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
         defaultMarkings={dataSource.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <DataSourceEdition dataSourceId={dataSource.id} />
-      </Security>
     </>
   );
 };

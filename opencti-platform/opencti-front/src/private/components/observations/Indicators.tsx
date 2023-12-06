@@ -144,6 +144,9 @@ const Indicators = () => {
           filters={filters}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndicatorCreation paginationOptions={queryPaginationOptions}/>
+          </Security>}
         >
           {queryRef && (
           <React.Suspense
@@ -192,9 +195,6 @@ const Indicators = () => {
       <div>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-        </Security>
       </div>
     </ExportContextProvider>
   );

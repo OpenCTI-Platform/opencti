@@ -37,7 +37,6 @@ interface EntityStixSightingRelationshipsProps {
 const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelationshipsProps> = ({
   isTo,
   entityId,
-  noPadding,
   stixCoreObjectTypes,
   entityLink,
   disableExport,
@@ -142,6 +141,37 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           secondaryAction={true}
           paginationOptions={finalPaginationOptions}
           numberOfElements={numberOfElements}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            {isTo ? (
+              <StixSightingRelationshipCreationFromEntity
+                entityId={entityId}
+                isTo={true}
+                stixCoreObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                  'Indicator',
+                ]}
+                targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+                paginationOptions={finalPaginationOptions}
+                variant={undefined}
+                onCreate={undefined}
+              />
+            ) : (
+              <StixSightingRelationshipCreationFromEntity
+                entityId={entityId}
+                isTo={false}
+                stixCoreObjectTypes={stixCoreObjectTypes}
+                targetStixCyberObservableTypes={undefined}
+                paginationOptions={finalPaginationOptions}
+                variant={undefined}
+                onCreate={undefined}
+              />
+            )}
+          </Security>}
         >
           {queryRef && (
           <React.Suspense
@@ -174,39 +204,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   return (
     <div className={classes.container}>
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        {isTo ? (
-          <StixSightingRelationshipCreationFromEntity
-            entityId={entityId}
-            isTo={true}
-            stixCoreObjectTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-              'Tool',
-              'Vulnerability',
-              'Indicator',
-            ]}
-            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-            paddingRight={noPadding ? null : 220}
-            paginationOptions={finalPaginationOptions}
-            variant={undefined}
-            onCreate={undefined}
-          />
-        ) : (
-          <StixSightingRelationshipCreationFromEntity
-            entityId={entityId}
-            isTo={false}
-            stixCoreObjectTypes={stixCoreObjectTypes}
-            targetStixCyberObservableTypes={undefined}
-            paddingRight={noPadding ? null : 220}
-            paginationOptions={finalPaginationOptions}
-            variant={undefined}
-            onCreate={undefined}
-          />
-        )}
-      </Security>
     </div>
   );
 };

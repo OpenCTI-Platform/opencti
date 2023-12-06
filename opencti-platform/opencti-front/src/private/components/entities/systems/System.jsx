@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import SystemDetails from './SystemDetails';
-import SystemEdition from './SystemEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -72,9 +69,6 @@ class SystemComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={system.id}
           defaultMarkings={system.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SystemEdition systemId={system.id} />
-        </Security>
       </>
     );
   }

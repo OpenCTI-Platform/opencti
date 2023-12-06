@@ -21,6 +21,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import RegionDelete from './RegionDelete';
 
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
@@ -305,6 +306,7 @@ RegionEdititionOverviewProps
               open={false}
               values={values.references}
               id={region.id}
+              deleteBtn={<RegionDelete id={region.id} />}
             />
           )}
         </Form>

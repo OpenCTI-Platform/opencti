@@ -31,7 +31,8 @@ const styles = (theme) => ({
   },
   search: {
     marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginRight: '20px',
+    display: 'flex',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -101,6 +102,12 @@ class AddCoursesOfAction extends Component {
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <CourseOfActionCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+              />
             </div>
           )}
         >
@@ -121,12 +128,6 @@ class AddCoursesOfAction extends Component {
             }}
           />
         </Drawer>
-        <CourseOfActionCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
       </>
     );
   }

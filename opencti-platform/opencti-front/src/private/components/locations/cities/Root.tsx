@@ -8,6 +8,10 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import City from './City';
 import CityKnowledge from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -22,8 +26,8 @@ import { RootCitiesSubscription } from './__generated__/RootCitiesSubscription.g
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import CityPopover from './CityPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CityEdition from './CityEdition';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -47,6 +51,8 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -77,7 +83,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {city ? (
         <div
           style={{
@@ -98,7 +104,14 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             entityType="City"
             disableSharing={true}
             stixDomainObject={city}
-            PopoverComponent={<CityPopover id={city.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CityEdition cityId={city.id} />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={city.id}
+              defaultStartTime={city.created_at}
+              defaultStopTime={city.updated_at}
+                             />}
             enableQuickSubscription={true}
             isOpenctiAlias={true}
           />
@@ -210,7 +223,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

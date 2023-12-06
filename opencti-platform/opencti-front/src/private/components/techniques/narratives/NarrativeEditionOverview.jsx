@@ -18,6 +18,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import NarrativeDelete from './NarrativeDelete';
 
 const narrativeMutationFieldPatch = graphql`
   mutation NarrativeEditionOverviewFieldPatchMutation(
@@ -265,6 +266,7 @@ const NarrativeEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={narrative.id}
+              deleteBtn={<NarrativeDelete id={narrative.id} />}
             />
           )}
         </Form>

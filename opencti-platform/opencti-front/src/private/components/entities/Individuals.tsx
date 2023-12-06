@@ -80,6 +80,9 @@ const Individuals = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndividualCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -113,9 +116,6 @@ const Individuals = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IndividualCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

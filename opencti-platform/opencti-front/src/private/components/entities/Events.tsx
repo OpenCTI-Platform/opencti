@@ -86,6 +86,9 @@ const Events = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <EventCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -117,9 +120,6 @@ const Events = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <EventCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

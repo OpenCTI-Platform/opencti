@@ -21,6 +21,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import AdministrativeAreaDelete from './AdministrativeAreaDelete';
 
 const administrativeAreaMutationFieldPatch = graphql`
   mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -348,6 +349,7 @@ AdministrativeAreaEditionOverviewProps
               open={false}
               values={values.references}
               id={administrativeArea.id}
+              deleteBtn={<AdministrativeAreaDelete id={administrativeArea.id} />}
             />
           )}
         </Form>

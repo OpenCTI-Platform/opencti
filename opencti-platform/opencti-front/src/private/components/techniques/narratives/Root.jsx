@@ -7,12 +7,13 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import NarrativePopover from './NarrativePopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -20,6 +21,9 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import NarrativeEdition from './NarrativeEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -45,6 +49,8 @@ const narrativeQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Narrative_narrative
       ...NarrativeKnowledge_narrative
       ...FileImportViewer_entity
@@ -85,7 +91,7 @@ class RootNarrative extends Component {
     } = this.props;
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Routes>
           <Route
             path="/knowledge/*"
@@ -132,7 +138,14 @@ class RootNarrative extends Component {
                       entityType="Narrative"
                       disableSharing={true}
                       stixDomainObject={props.narrative}
-                      PopoverComponent={<NarrativePopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <NarrativeEdition narrativeId={narrative.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={narrative.id}
+                        defaultStartTime={narrative.created_at}
+                        defaultStopTime={narrative.updated_at}
+                                       />}
                     />
                     <Box
                       sx={{
@@ -233,7 +246,7 @@ class RootNarrative extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

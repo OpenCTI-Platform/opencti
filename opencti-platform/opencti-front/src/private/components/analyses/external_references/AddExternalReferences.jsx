@@ -11,6 +11,7 @@ import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
+import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -22,6 +23,7 @@ const useStyles = makeStyles({
   search: {
     marginLeft: 'auto',
     marginRight: ' 20px',
+    display: 'flex',
   },
   container: {
     padding: 0,
@@ -70,6 +72,12 @@ const AddExternalReferences = ({
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
+            />
+            <ExternalReferenceCreation
+              display={open}
+              contextual={true}
+              inputValue={search}
+              paginationOptions={paginationOptions}
             />
           </div>
         )}

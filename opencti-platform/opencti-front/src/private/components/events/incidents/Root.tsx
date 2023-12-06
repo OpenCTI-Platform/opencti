@@ -8,11 +8,14 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import Security from 'src/utils/Security';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import IncidentPopover from './IncidentPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -20,11 +23,11 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-
 import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import IncidentEdition from './IncidentEdition';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -50,6 +53,8 @@ const incidentQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Incident_incident
       ...IncidentKnowledge_incident
       ...StixDomainObjectContent_stixDomainObject
@@ -84,7 +89,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {incident ? (
         <div
           style={{
@@ -104,7 +109,14 @@ const RootIncidentComponent = ({ queryRef }) => {
           <StixDomainObjectHeader
             entityType="Incident"
             stixDomainObject={incident}
-            PopoverComponent={IncidentPopover}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <IncidentEdition incidentId={incident.id} />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={incident.id}
+              defaultStartTime={incident.created_at}
+              defaultStopTime={incident.updated_at}
+                             />}
             enableQuickSubscription={true}
           />
           <Box
@@ -206,7 +218,7 @@ const RootIncidentComponent = ({ queryRef }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

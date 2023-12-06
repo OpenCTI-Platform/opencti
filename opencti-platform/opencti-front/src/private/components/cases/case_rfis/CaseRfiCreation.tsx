@@ -7,7 +7,9 @@ import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
+import { MESSAGING$ } from 'src/relay/environment';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -41,6 +43,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -142,12 +148,16 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           updater(store, 'caseRfiAdd', response.caseRfiAdd);
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Case-Rfi')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/knowledge/content`,
@@ -331,6 +341,7 @@ const CaseRfiCreation = ({
   paginationOptions: CaseRfiLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfis',
@@ -341,7 +352,17 @@ const CaseRfiCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a request for information')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Case-Rfi')} <Add />
+        </Button>
+      )}
     >
       <CaseRfiCreationForm updater={updater} />
     </Drawer>

@@ -8,12 +8,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import System from './System';
 import SystemKnowledge from './SystemKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import SystemPopover from './SystemPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import SystemAnalysis from './SystemAnalysis';
@@ -23,6 +24,9 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import SystemEdition from './SystemEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -46,6 +50,8 @@ const systemQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      created_at
+      updated_at
       ...System_system
       ...SystemKnowledge_system
       ...FileImportViewer_entity
@@ -114,7 +120,7 @@ class RootSystem extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Routes>
           <Route path="/knowledge/*"
             element = { viewAs === 'knowledge' && (
@@ -166,7 +172,14 @@ class RootSystem extends Component {
                       stixDomainObject={system}
                       isOpenctiAlias={true}
                       enableQuickSubscription={true}
-                      PopoverComponent={<SystemPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <SystemEdition systemId={system.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={system.id}
+                        defaultStartTime={system.created_at}
+                        defaultStopTime={system.updated_at}
+                                       />}
                       onViewAs={this.handleChangeViewAs.bind(this)}
                       viewAs={viewAs}
                     />
@@ -299,7 +312,7 @@ class RootSystem extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

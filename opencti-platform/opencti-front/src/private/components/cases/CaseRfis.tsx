@@ -142,6 +142,9 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseRfiCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -183,9 +186,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

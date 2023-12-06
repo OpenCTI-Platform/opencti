@@ -14,7 +14,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { MESSAGING$, commitMutation } from '../../../../relay/environment';
 import StixSightingRelationshipEdition from './StixSightingRelationshipEdition';
 import { deleteNode } from '../../../../utils/store';
 
@@ -87,6 +87,7 @@ class StixSightingRelationshipPopover extends Component {
   }
 
   submitDelete() {
+    const { t } = this.props;
     this.setState({ deleting: true });
     commitMutation({
       mutation: stixSightingRelationshipPopoverDeletionMutation,
@@ -105,6 +106,9 @@ class StixSightingRelationshipPopover extends Component {
           );
         }
       },
+      onError: (error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
@@ -112,6 +116,7 @@ class StixSightingRelationshipPopover extends Component {
         if (typeof this.props.onDelete === 'function') {
           this.props.onDelete();
         }
+        MESSAGING$.notifySuccess(`${t('entity_Sighting')} ${t('successfully deleted')}`);
       },
     });
   }

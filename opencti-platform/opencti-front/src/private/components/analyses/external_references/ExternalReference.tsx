@@ -6,7 +6,6 @@ import ExternalReferenceOverview from './ExternalReferenceOverview';
 import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
 import Security from '../../../../utils/Security';
-import ExternalReferencePopover from './ExternalReferencePopover';
 import ExternalReferenceHeader from './ExternalReferenceHeader';
 import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportViewer';
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
@@ -43,9 +42,9 @@ ExternalReferenceComponentProps
     <div className={classes.container}>
       <ExternalReferenceHeader
         externalReference={externalReference}
-        PopoverComponent={
-          <ExternalReferencePopover id={''} handleRemove={undefined} />
-        }
+        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ExternalReferenceEdition externalReferenceId={externalReference.id} />
+        </Security>}
       />
       <Grid
         container={true}
@@ -70,9 +69,6 @@ ExternalReferenceComponentProps
           />
         </Grid>
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ExternalReferenceEdition externalReferenceId={externalReference.id} />
-      </Security>
     </div>
   );
 };

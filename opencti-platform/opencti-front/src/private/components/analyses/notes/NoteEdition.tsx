@@ -1,5 +1,8 @@
 import React from 'react';
 import { graphql, useMutation } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
+import { useFormatter } from 'src/components/i18n';
 import NoteEditionContainer from './NoteEditionContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
@@ -20,6 +23,7 @@ export const noteEditionQuery = graphql`
 `;
 
 const NoteEdition = ({ noteId }: { noteId: string }) => {
+  const { t_i18n } = useFormatter();
   const [commit] = useMutation(noteEditionOverviewFocus);
 
   const handleClose = () => {
@@ -46,6 +50,19 @@ const NoteEdition = ({ noteId }: { noteId: string }) => {
                 <NoteEditionContainer
                   note={props.note}
                   handleClose={handleClose}
+                  controlledDial={({ onOpen }) => (
+                    <Button
+                      style={{
+                        marginLeft: '3px',
+                        fontSize: 'small',
+                      }}
+                      variant='contained'
+                      onClick={onOpen}
+                      disableElevation
+                    >
+                      {t_i18n('Edit')} <Create />
+                    </Button>
+                  )}
                 />
               </CollaborativeSecurity>
             );

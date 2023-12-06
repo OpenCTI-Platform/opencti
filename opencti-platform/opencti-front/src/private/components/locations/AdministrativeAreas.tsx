@@ -82,6 +82,9 @@ const AdministrativeAreas: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AdministrativeAreaCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -113,9 +116,6 @@ const AdministrativeAreas: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Administrative areas'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <AdministrativeAreaCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

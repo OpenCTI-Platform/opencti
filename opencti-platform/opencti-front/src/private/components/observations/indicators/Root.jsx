@@ -17,11 +17,15 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import Security from '../../../../utils/Security';
+import IndicatorEdition from './IndicatorEdition';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -46,6 +50,8 @@ const indicatorQuery = graphql`
       entity_type
       name
       pattern
+      created_at
+      updated_at
       ...Indicator_indicator
       ...IndicatorDetails_indicator
       ...FileImportViewer_entity
@@ -85,171 +91,178 @@ class RootIndicator extends Component {
       params: { indicatorId },
     } = this.props;
     return (
-      <>
-        <QueryRenderer
-          query={indicatorQuery}
-          variables={{ id: indicatorId, relationship_type: 'indicates' }}
-          render={({ props }) => {
-            if (props) {
-              if (props.indicator) {
-                const { indicator } = props;
-                return (
-                  <>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Observations') },
-                      { label: t('Indicators'), link: '/dashboard/observations/indicators' },
-                      { label: indicator.name || indicator.pattern, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Indicator"
-                      stixDomainObject={indicator}
-                      PopoverComponent={<IndicatorPopover />}
-                      noAliases={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
+      <QueryRenderer
+        query={indicatorQuery}
+        variables={{ id: indicatorId, relationship_type: 'indicates' }}
+        render={({ props }) => {
+          if (props) {
+            if (props.indicator) {
+              const { indicator } = props;
+              return (
+                <RelateComponentContextProvider>
+                  <Breadcrumbs variant="object" elements={[
+                    { label: t('Observations') },
+                    { label: t('Indicators'), link: '/dashboard/observations/indicators' },
+                    { label: indicator.name || indicator.pattern, current: true },
+                  ]}
+                  />
+                  <StixDomainObjectHeader
+                    entityType="Indicator"
+                    stixDomainObject={indicator}
+                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IndicatorEdition indicatorId={indicator.id} />
+                    </Security>}
+                    RelateComponent={<CreateRelationshipButtonComponent
+                      id={indicator.id}
+                      defaultStartTime={indicator.created_at}
+                      defaultStopTime={indicator.updated_at}
+                                     />}
+                    noAliases={true}
+                  />
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      marginBottom: 4,
+                    }}
+                  >
+                    <Tabs
+                      value={
+                        location.pathname.includes(
+                          `/dashboard/observations/indicators/${indicator.id}/knowledge`,
+                        )
+                          ? `/dashboard/observations/indicators/${indicator.id}/knowledge`
+                          : location.pathname
+                      }
                     >
-                      <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/observations/indicators/${indicator.id}/knowledge`,
-                          )
-                            ? `/dashboard/observations/indicators/${indicator.id}/knowledge`
-                            : location.pathname
-                        }
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}`}
-                          value={`/dashboard/observations/indicators/${indicator.id}`}
-                          label={t('Overview')}
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}`}
+                        value={`/dashboard/observations/indicators/${indicator.id}`}
+                        label={t('Overview')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
+                        value={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
+                        label={t('Knowledge')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}/analyses`}
+                        value={`/dashboard/observations/indicators/${indicator.id}/analyses`}
+                        label={t('Analyses')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}/sightings`}
+                        value={`/dashboard/observations/indicators/${indicator.id}/sightings`}
+                        label={t('Sightings')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}/files`}
+                        value={`/dashboard/observations/indicators/${indicator.id}/files`}
+                        label={t('Data')}
+                      />
+                      <Tab
+                        component={Link}
+                        to={`/dashboard/observations/indicators/${indicator.id}/history`}
+                        value={`/dashboard/observations/indicators/${indicator.id}/history`}
+                        label={t('History')}
+                      />
+                    </Tabs>
+                  </Box>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={(<Indicator indicator={indicator} />)}
+                    />
+                    <Route
+                      path="/analyses"
+                      element={(
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          stixDomainObjectOrStixCoreRelationship={indicator}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
-                          value={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
-                          label={t('Knowledge')}
+                      )}
+                    />
+                    <Route
+                      path="/sightings"
+                      element={(
+                        <EntityStixSightingRelationships
+                          entityId={indicatorId}
+                          noPadding={true}
+                          stixCoreObjectTypes={[
+                            'Region',
+                            'Country',
+                            'City',
+                            'Sector',
+                            'Organization',
+                            'Individual',
+                            'System',
+                          ]}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}/analyses`}
-                          value={`/dashboard/observations/indicators/${indicator.id}/analyses`}
-                          label={t('Analyses')}
+                      )}
+                    />
+                    <Route
+                      path="/files"
+                      element={(
+                        <FileManager
+                          id={indicatorId}
+                          connectorsImport={props.connectorsForImport}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.indicator}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}/sightings`}
-                          value={`/dashboard/observations/indicators/${indicator.id}/sightings`}
-                          label={t('Sightings')}
+                      )}
+                    />
+                    <Route
+                      path="/history"
+                      element={(
+                        <StixCoreObjectHistory
+                          stixCoreObjectId={indicatorId}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}/files`}
-                          value={`/dashboard/observations/indicators/${indicator.id}/files`}
-                          label={t('Data')}
+                      )}
+                    />
+                    <Route
+                      path="/knowledge"
+                      element={(
+                        <IndicatorEntities
+                          indicatorId={indicatorId}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/indicators/${indicator.id}/history`}
-                          value={`/dashboard/observations/indicators/${indicator.id}/history`}
-                          label={t('History')}
+                      )}
+                    />
+                    <Route
+                      path="/knowledge/relations/:relationId"
+                      element={(
+                        <StixCoreRelationship
+                          entityId={indicatorId}
                         />
-                      </Tabs>
-                    </Box>
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={(<Indicator indicator={indicator} />)}
-                      />
-                      <Route
-                        path="/analyses"
-                        element={(
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            stixDomainObjectOrStixCoreRelationship={indicator}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/sightings"
-                        element={(
-                          <EntityStixSightingRelationships
-                            entityId={indicatorId}
-                            noPadding={true}
-                            stixCoreObjectTypes={[
-                              'Region',
-                              'Country',
-                              'City',
-                              'Sector',
-                              'Organization',
-                              'Individual',
-                              'System',
-                            ]}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
-                          <FileManager
-                            id={indicatorId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.indicator}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={(
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={indicatorId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={(
-                          <IndicatorEntities
-                            indicatorId={indicatorId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/relations/:relationId"
-                        element={(
-                          <StixCoreRelationship
-                            entityId={indicatorId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/sightings/:sightingId"
-                        element={ (
-                          <StixSightingRelationship
-                            entityId={indicatorId}
-                          />
-                        )}
-                      />
-                    </Routes>
-                  </>
-                );
-              }
-              return <ErrorNotFound />;
+                      )}
+                    />
+                    <Route
+                      path="/knowledge/sightings/:sightingId"
+                      element={(
+                        <StixSightingRelationship
+                          entityId={indicatorId}
+                        />
+                      )}
+                    />
+                  </Routes>
+                </RelateComponentContextProvider>
+              );
             }
-            return <Loader />;
-          }}
-        />
-      </>
+            return <ErrorNotFound />;
+          }
+          return <Loader />;
+        }}
+      />
     );
   }
 }
 
 RootIndicator.propTypes = {
+  t: PropTypes.func,
+  location: PropTypes.object,
   children: PropTypes.node,
   params: PropTypes.object,
 };

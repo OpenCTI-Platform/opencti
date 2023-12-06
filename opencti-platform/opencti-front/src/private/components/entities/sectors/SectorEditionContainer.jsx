@@ -4,11 +4,12 @@ import { useFormatter } from '../../../../components/i18n';
 import SectorEditionOverview from './SectorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import SectorDelete from './SectorDelete';
 
 const SectorEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, sector, open } = props;
+  const { handleClose, sector, open, controlledDial } = props;
   const { editContext } = sector;
 
   return (
@@ -16,15 +17,23 @@ const SectorEditionContainer = (props) => {
       title={t_i18n('Update a sector')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === undefined
+        ? DrawerVariant.update
+        : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <SectorEditionOverview
-        sector={sector}
-        enableReferences={useIsEnforceReference('Sector')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <SectorEditionOverview
+          sector={sector}
+          enableReferences={useIsEnforceReference('Sector')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Sector')
+          && <SectorDelete id={sector.id} />
+        }
+      </>
     </Drawer>
   );
 };

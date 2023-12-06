@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -10,9 +9,9 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -39,10 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     right: 30,
   },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
+    marginLeft: '5px',
   },
   buttons: {
     marginTop: 20,
@@ -50,6 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '3px',
+    padding: '7px 10px',
   },
 }));
 
@@ -145,6 +145,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -153,6 +154,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -292,7 +294,17 @@ const DataComponentCreation: FunctionComponent<{
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a data component')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Data-Component')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <DataComponentCreationForm
@@ -307,14 +319,17 @@ const DataComponentCreation: FunctionComponent<{
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
+      <Button
         onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
+        color="primary"
+        size="small"
+        aria-label={t_i18n('Create a data component')}
+        variant="contained"
         className={classes.createButtonContextual}
+        disableElevation
       >
-        <Add />
-      </Fab>
+        {t_i18n('Create')} <Add />
+      </Button>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <DialogTitle>{t_i18n('Create a data component')}</DialogTitle>
         <DialogContent>

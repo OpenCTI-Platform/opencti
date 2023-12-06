@@ -3,9 +3,9 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
-import { Edit } from '@mui/icons-material';
+import { Create } from '@mui/icons-material';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
@@ -73,17 +73,20 @@ class StixCyberObservableEdition extends Component {
   }
 
   renderClassic() {
-    const { classes, stixCyberObservableId, variant } = this.props;
+    const { t, classes, stixCyberObservableId, variant, isArtifact = false } = this.props;
     return (
       <>
-        <Fab
+        <Button
           onClick={this.handleOpen.bind(this)}
-          color="primary"
-          aria-label="Edit"
-          className={classes.editButton}
+          variant='outlined'
+          style={{
+            marginLeft: '3px',
+            fontSize: 'small',
+            float: 'right',
+          }}
         >
-          <Edit />
-        </Fab>
+          {t('Edit')} <Create />
+        </Button>
         <Drawer
           open={this.state.open}
           anchor="right"
@@ -102,6 +105,7 @@ class StixCyberObservableEdition extends Component {
                     variant={variant}
                     stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleClose.bind(this)}
+                    isArtifact={isArtifact}
                   />
                 );
               }

@@ -75,6 +75,9 @@ const Campaigns = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CampaignCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -113,9 +116,6 @@ const Campaigns = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {renderCards()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CampaignCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

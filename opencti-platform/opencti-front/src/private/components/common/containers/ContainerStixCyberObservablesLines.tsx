@@ -1,16 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixCyberObservableLine, ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
-import Security from '../../../../utils/Security';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const nbOfRowsToLoad = 50;
 
@@ -39,7 +39,7 @@ export const containerStixCyberObservablesLinesQuery = graphql`
   }
 `;
 
-const ContainerStixCyberObservablesLinesFragment = graphql`
+export const ContainerStixCyberObservablesLinesFragment = graphql`
   fragment ContainerStixCyberObservablesLines_container on Query
   @argumentDefinitions(
     id: { type: "String!" }
@@ -192,6 +192,7 @@ ContainerStixCyberObservablesLinesProps
             defaultMarkingDefinitions={data?.container.objectMarking ?? []}
             confidence={data?.container.confidence}
             enableReferences={enableReferences}
+            controlledDial={() => <></>}
           />
         </Security>
       )}

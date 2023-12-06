@@ -3,14 +3,11 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import { SpeedDialIcon } from '@mui/material';
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { CloudUploadOutlined, InsertChartOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
-import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
+import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { handleError } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -25,21 +22,8 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 20,
     textAlign: 'right',
   },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
   },
 }));
 
@@ -117,30 +101,44 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
       <Drawer
         title={t_i18n(`Create ${type}`)}
-        variant={type === 'dashboard' ? undefined : DrawerVariant.create}
-        controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
-          <SpeedDial
-            className={classes.createButton}
-            ariaLabel="Create"
-            icon={<SpeedDialIcon />}
-            FabProps={{ color: 'primary' }}
-          >
-            <SpeedDialAction
-              title={t_i18n('Create dashboard')}
-              icon={<InsertChartOutlined />}
-              tooltipTitle={t_i18n('Create dashboard')}
+        controlledDial={(type === 'dashboard')
+          ? ({ onOpen }) => (
+            <div>
+              <Button
+                color='primary'
+                size='small'
+                variant='contained'
+                disableElevation
+                onClick={onOpen}
+                data-testid='CreateDashboard'
+              >
+                {t_i18n('Create dashboard')} <InsertChartOutlined />
+              </Button>
+              <Button
+                color='primary'
+                size='small'
+                variant='contained'
+                disableElevation
+                onClick={() => inputRef.current?.click()}
+                sx={{ marginLeft: '3px' }}
+                data-testid='ImportDashboard'
+              >
+                {t_i18n('Import dashboard')} <CloudUploadOutlined />
+              </Button>
+            </div>
+          )
+          : ({ onOpen }) => (
+            <Button
+              color='primary'
+              size='small'
+              variant='contained'
+              disableElevation
               onClick={onOpen}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-            <SpeedDialAction
-              title={t_i18n('Import dashboard')}
-              icon={<CloudUploadOutlined />}
-              tooltipTitle={t_i18n('Import dashboard')}
-              onClick={() => inputRef.current?.click()}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-          </SpeedDial>
-        ) : undefined}
+            >
+              {t_i18n('Create an investigation')}
+            </Button>
+          )
+        }
       >
         {({ onClose }) => (
           <Formik

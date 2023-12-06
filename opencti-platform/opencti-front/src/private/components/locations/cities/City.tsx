@@ -2,15 +2,12 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import CityEdition from './CityEdition';
-import Security from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { City_city$key } from './__generated__/City_city.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
@@ -123,9 +120,6 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={city.id}
         defaultMarkings={city.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CityEdition cityId={city.id} />
-      </Security>
     </>
   );
 };

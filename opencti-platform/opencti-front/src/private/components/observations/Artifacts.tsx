@@ -115,65 +115,68 @@ const Artifacts: FunctionComponent = () => {
 
   const renderLines = () => {
     return (
-      <>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleToggleExports={helpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          exportContext={{ entity_type: 'Artifact' }}
-          keyword={searchTerm}
-          filters={filters}
-          iconExtension={true}
-          paginationOptions={queryPaginationOptions}
-          numberOfElements={numberOfElements}
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
+        exportContext={{ entity_type: 'Artifact' }}
+        keyword={searchTerm}
+        filters={filters}
+        iconExtension={true}
+        paginationOptions={queryPaginationOptions}
+        numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ArtifactCreation
+            paginationOptions={queryPaginationOptions}
+          />
+        </Security>}
+      >
+        {queryRef && (
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((_, idx) => (
+                  <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
+                ))}
+            </>
+                    }
         >
-          {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-                      }
-          >
-            <ArtifactsLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={contextFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-            />
-          </React.Suspense>
-          )}
-        </ListLines>
-      </>
+          <ArtifactsLines
+            queryRef={queryRef}
+            paginationOptions={queryPaginationOptions}
+            dataColumns={dataColumns}
+            onLabelClick={helpers.handleAddFilter}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            onToggleEntity={onToggleEntity}
+            selectAll={selectAll}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+          />
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            filters={contextFilters}
+            search={searchTerm}
+            handleClearSelectedElements={handleClearSelectedElements}
+          />
+        </React.Suspense>
+        )}
+      </ListLines>
     );
   };
 
@@ -182,11 +185,6 @@ const Artifacts: FunctionComponent = () => {
       <ExportContextProvider>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationOptions={queryPaginationOptions}
-          />
-        </Security>
       </ExportContextProvider>
     </div>
   );

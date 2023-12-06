@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
@@ -38,7 +40,7 @@ class CampaignEdition extends Component {
   }
 
   render() {
-    const { campaignId } = this.props;
+    const { t, campaignId } = this.props;
     return (
       <QueryRenderer
         query={campaignEditionQuery}
@@ -49,6 +51,18 @@ class CampaignEdition extends Component {
               <CampaignEditionContainer
                 campaign={props.campaign}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
               />
             );
           }

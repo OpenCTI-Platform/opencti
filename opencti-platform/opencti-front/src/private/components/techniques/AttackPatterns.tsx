@@ -94,6 +94,9 @@ const AttackPatterns = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AttackPatternCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
         <React.Suspense
@@ -127,9 +130,6 @@ const AttackPatterns = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <AttackPatternCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

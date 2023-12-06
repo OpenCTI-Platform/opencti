@@ -79,6 +79,9 @@ const Positions: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <PositionCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -107,9 +110,6 @@ const Positions: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <PositionCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

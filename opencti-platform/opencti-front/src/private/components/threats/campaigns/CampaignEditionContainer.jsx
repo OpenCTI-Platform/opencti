@@ -7,7 +7,8 @@ import { useFormatter } from '../../../../components/i18n';
 import CampaignEditionOverview from './CampaignEditionOverview';
 import CampaignEditionDetails from './CampaignEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import CampaignDelete from './CampaignDelete';
 
 const CampaignEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -15,15 +16,15 @@ const CampaignEditionContainer = (props) => {
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
 
-  const { handleClose, campaign, open } = props;
+  const { handleClose, campaign, open, controlledDial } = props;
   const { editContext } = campaign;
   return (
     <Drawer
       title={t_i18n('Update a campaign')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -48,6 +49,9 @@ const CampaignEditionContainer = (props) => {
             handleClose={handleClose}
           />
         )}
+        {!useIsEnforceReference('Campaign')
+          && <CampaignDelete id={campaign.id} />
+        }
       </>
     </Drawer>
   );

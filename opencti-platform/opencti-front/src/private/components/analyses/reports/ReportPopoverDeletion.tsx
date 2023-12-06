@@ -12,7 +12,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import DialogContentText from '@mui/material/DialogContentText';
-import { QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
@@ -57,9 +57,13 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
     setDeleting(true);
     commitMutation({
       variables: { id: reportId, purgeElements },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Report')} ${t_i18n('successfully deleted')}`);
         navigate('/dashboard/analyses/reports');
       },
     });

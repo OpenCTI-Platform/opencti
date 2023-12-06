@@ -7,9 +7,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -41,6 +42,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -147,6 +152,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: (response) => {
@@ -155,6 +161,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Report')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/analyses/reports/${response.reportAdd?.id}/knowledge/content`,
@@ -321,6 +328,7 @@ const ReportCreation = ({
 }: {
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -331,7 +339,18 @@ const ReportCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a report')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+          aria-label={t_i18n('Add')}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Report')} <Add />
+        </Button>
+      )}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>

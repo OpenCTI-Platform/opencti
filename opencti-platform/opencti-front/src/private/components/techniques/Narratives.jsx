@@ -17,7 +17,7 @@ const LOCAL_STORAGE_KEY = 'narratives';
 
 const styles = () => ({
   parameters: {
-    float: 'left',
+    width: '100%',
     marginTop: -10,
   },
 });
@@ -67,6 +67,11 @@ class Narratives extends Component {
               keyword={searchTerm}
             />
           </div>
+          <div style={{ float: 'right' }}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <NarrativeCreation />
+            </Security>
+          </div>
         </div>
         <div className="clearfix" />
         <QueryRenderer
@@ -76,9 +81,6 @@ class Narratives extends Component {
             <NarrativesLines data={props} keyword={searchTerm} />
           )}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NarrativeCreation />
-        </Security>
       </>
     );
   }

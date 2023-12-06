@@ -10,6 +10,7 @@ import './static/css/CKEditorDark.css';
 import './static/css/CKEditorLight.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
+import ToastProvider from '@components/common/toasts/ToastProvider';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';
@@ -42,7 +43,9 @@ const root = createRoot(container!);
 root.render(
   <RelayEnvironmentProvider environment={environment}>
     <Suspense fallback={<Loading />}>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </Suspense>
   </RelayEnvironmentProvider>,
 );

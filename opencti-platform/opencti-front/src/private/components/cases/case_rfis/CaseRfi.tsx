@@ -5,9 +5,7 @@ import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -17,7 +15,6 @@ import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRfiDetails from './CaseRfiDetails';
-import CaseRfiEdition from './CaseRfiEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
@@ -175,9 +172,6 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
         stixCoreObjectOrStixCoreRelationshipId={caseRfiData.id}
         defaultMarkings={caseRfiData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiEdition caseId={caseRfiData.id} />
-      </Security>
     </>
   );
 };

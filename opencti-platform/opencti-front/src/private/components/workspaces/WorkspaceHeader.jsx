@@ -108,6 +108,7 @@ const WorkspaceHeader = ({
   variant,
   adjust,
   handleDateChange,
+  widgetActions,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -376,6 +377,7 @@ const WorkspaceHeader = ({
             handleDashboardDuplication={handleDashboardDuplication}
             variant={variant}
           />
+          {widgetActions}
         </div>
         {variant === 'investigation' && (
           <div className={classes.turnToReportOrCase}>

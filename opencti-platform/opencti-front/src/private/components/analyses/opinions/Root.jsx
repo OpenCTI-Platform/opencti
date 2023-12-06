@@ -8,6 +8,7 @@ import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {
@@ -79,22 +80,24 @@ class RootOpinion extends Component {
             if (props) {
               if (props.opinion) {
                 return (
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={(
-                        <Opinion opinion={props.opinion} />
-                      )}
-                    />
-                    <Route
-                      path="/knowledge/relations/:relationId"
-                      element={
-                        <StixCoreRelationship
-                          entityId={props.opinion.id}
-                        />
-                      }
-                    />
-                  </Routes>
+                  <RelateComponentContextProvider>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <Opinion opinion={props.opinion} />
+                        }
+                      />
+                      <Route
+                        path="/knowledge/relations/:relationId"
+                        element={
+                          <StixCoreRelationship
+                            entityId={props.opinion.id}
+                          />
+                        }
+                      />
+                    </Routes>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

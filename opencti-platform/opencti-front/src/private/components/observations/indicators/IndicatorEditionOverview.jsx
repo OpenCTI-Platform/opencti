@@ -24,6 +24,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IndicatorDelete from './IndicatorDelete';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -413,6 +414,7 @@ const IndicatorEditionOverviewComponent = ({
               open={false}
               values={values.references}
               id={indicator.id}
+              deleteBtn={<IndicatorDelete id={indicator.id} />}
             />
           )}
         </Form>

@@ -6,10 +6,11 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -131,6 +132,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -139,6 +141,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_System')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -260,7 +263,20 @@ const SystemCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a system')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          onClick={onOpen}
+          variant='contained'
+          color='primary'
+          size='small'
+          style={{
+            marginLeft: '10px',
+            padding: '7px 10px',
+          }}
+        >
+          {t_i18n('Create')} {t_i18n('entity_System')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <SystemCreationForm

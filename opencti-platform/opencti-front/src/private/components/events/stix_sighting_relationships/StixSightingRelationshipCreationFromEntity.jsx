@@ -2,19 +2,17 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import { assoc, pipe, pluck } from 'ramda';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
@@ -28,41 +26,11 @@ import SearchInput from '../../../../components/SearchInput';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
+import Drawer from '../../common/drawer/Drawer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1001,
-  },
-  title: {
-    float: 'left',
-  },
+const useStyles = makeStyles(() => ({
   search: {
     float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   container: {
     padding: 0,
@@ -162,7 +130,6 @@ const StixSightingRelationshipCreationFromEntity = ({
   stixCoreObjectTypes,
   variant,
   targetStixCyberObservableTypes,
-  paddingRight,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -366,27 +333,6 @@ const StixSightingRelationshipCreationFromEntity = ({
   const renderSelectEntity = () => {
     return (
       <div style={{ height: '100%' }}>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t_i18n('Create a sighting')}
-          </Typography>
-          <div className={classes.search}>
-            <SearchInput
-              variant="inDrawer"
-              keyword={search}
-              onSubmit={handleSearch}
-            />
-          </div>
-          <div className="clearfix" />
-        </div>
         <div className={classes.container}>
           {search.length === 0 && (
             <Alert
@@ -415,17 +361,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     }
     return (
       <>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t_i18n('Create a sighting')}</Typography>
-        </div>
         <StixSightingRelationshipCreationForm
           fromEntities={[fromEntity]}
           toEntities={[toEntity]}
@@ -467,24 +402,33 @@ const StixSightingRelationshipCreationFromEntity = ({
         >
           <Add fontSize="small" />
         </IconButton>
-      ) : (
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-          style={{ right: paddingRight || 30 }}
-        >
-          <Add />
-        </Fab>
-      )}
+      ) : ''}
       <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
+        title={<div>
+          {t_i18n('Create a sighting')}
+          {step === 0
+            && <div className={classes.search}>
+              <SearchInput
+                variant="inDrawer"
+                keyword={search}
+                onSubmit={handleSearch}
+              />
+            </div>
+          }
+        </div>}
+        controlledDial={({ onOpen }) => (
+          <Button
+            onClick={onOpen}
+            style={{
+              marginLeft: '3px',
+              fontSize: 'small',
+            }}
+            variant='contained'
+            disableElevation
+          >
+            {t_i18n('Create')} {t_i18n('entity_Sighting')} <Add />
+          </Button>
+        )}
       >
         <QueryRenderer
           query={stixSightingRelationshipCreationFromEntityQuery}

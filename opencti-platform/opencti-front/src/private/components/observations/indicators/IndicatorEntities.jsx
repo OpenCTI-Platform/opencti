@@ -1,5 +1,6 @@
 import React from 'react';
 import useAuth from '../../../../utils/hooks/useAuth';
+import CreateRelationshipControlledDial from '../../common/menus/CreateRelationshipControlledDial';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, { indicatorEntitiesLinesQuery } from './IndicatorEntitiesLines';
@@ -103,6 +104,28 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         filters={filters}
         paginationOptions={paginationOptions}
         entityTypes={['stix-core-relationship']}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+            paginationOptions={paginationOptions}
+            entityId={indicatorId}
+            isRelationReversed={false}
+            targetStixDomainObjectTypes={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Incident',
+              'Malware',
+              'Infrastructure',
+              'Tool',
+              'Vulnerability',
+              'Attack-Pattern',
+              'Indicator',
+            ]}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            controlledDial={CreateRelationshipControlledDial}
+          />
+        </Security>}
       >
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}

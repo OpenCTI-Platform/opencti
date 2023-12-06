@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -8,6 +8,8 @@ import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { Add } from '@mui/icons-material';
+import { MESSAGING$ } from 'src/relay/environment';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -41,6 +43,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -144,12 +150,16 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           updater(store, 'caseRftAdd', response.caseRftAdd);
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Case=Rft')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/cases/rfts/${response.caseRftAdd?.id}/knowledge/content`,
@@ -329,6 +339,7 @@ const CaseRftCreation = ({
 }: {
   paginationOptions: CaseRftLinesCasesPaginationQuery$variables;
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -339,7 +350,17 @@ const CaseRftCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a request for takedown')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Case-Rft')} <Add />
+        </Button>
+      )}
     >
       <CaseRftCreationForm updater={updater} />
     </Drawer>

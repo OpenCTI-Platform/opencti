@@ -10,7 +10,6 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -31,13 +30,17 @@ const OpinionComponent = ({ opinion }) => {
         placeholder={
           <ContainerHeader
             container={opinion}
-            PopoverComponent={<OpinionPopover opinion={opinion} />}
+            EditComponent={<CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
+              <OpinionEdition opinionId={opinion.id} />
+            </CollaborativeSecurity>}
           />
         }
       >
         <ContainerHeader
           container={opinion}
-          PopoverComponent={<OpinionPopover opinion={opinion} />}
+          EditComponent={<CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
+            <OpinionEdition opinionId={opinion.id} />
+          </CollaborativeSecurity>}
           popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
         />
       </CollaborativeSecurity>
@@ -68,9 +71,6 @@ const OpinionComponent = ({ opinion }) => {
           />
         </Grid>
       </Grid>
-      <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
-        <OpinionEdition opinionId={opinion.id} />
-      </CollaborativeSecurity>
     </>
   );
 };

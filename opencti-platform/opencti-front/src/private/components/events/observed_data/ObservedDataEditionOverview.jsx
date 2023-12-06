@@ -19,6 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ObservedDataDelete from './ObservedDataDelete';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -309,6 +310,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 open={false}
                 values={values.references}
                 id={observedData.id}
+                deleteBtn={<ObservedDataDelete id={observedData.id} />}
               />
             )}
           </Form>

@@ -128,6 +128,9 @@ const Infrastructures = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <InfrastructureCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -174,9 +177,6 @@ const Infrastructures = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

@@ -1,5 +1,7 @@
 import { FunctionComponent } from 'react';
 import { React } from 'mdi-material-ui';
+import { Button } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -149,6 +151,34 @@ const StixCyberObservables: FunctionComponent = () => {
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCyberObservableCreation
+              paginationKey="Pagination_stixCyberObservables"
+              paginationOptions={paginationOptions}
+              contextual={false}
+              open={false}
+              handleClose={undefined}
+              type={undefined}
+              display={undefined}
+              speeddial={false}
+              inputValue={undefined}
+              controlledDial={({ onOpen }: { onOpen: () => void }) => (
+                <Button
+                  style={{
+                    marginLeft: '10px',
+                    padding: '7px 10px',
+                  }}
+                  color='primary'
+                  size='small'
+                  variant='contained'
+                  onClick={onOpen}
+                  aria-label={t_i18n('Add')}
+                >
+                  {t_i18n('Create')} {t_i18n('entity_Observable')} <Add />
+                </Button>
+              )}
+            />
+          </Security>}
         >
           <QueryRenderer
             query={stixCyberObservablesLinesQuery}
@@ -191,19 +221,6 @@ const StixCyberObservables: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCyberObservableCreation
-          paginationKey="Pagination_stixCyberObservables"
-          paginationOptions={paginationOptions}
-          contextual={false}
-          open={false}
-          handleClose={undefined}
-          type={undefined}
-          display={undefined}
-          speeddial={false}
-          inputValue={undefined}
-        />
-      </Security>
     </ExportContextProvider>
   );
 };

@@ -18,6 +18,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CourseOfActionDelete from './CourseOfActionDelete';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -327,6 +328,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={courseOfAction.id}
+              deleteBtn={<CourseOfActionDelete id={courseOfAction.id} />}
             />
           )}
         </Form>

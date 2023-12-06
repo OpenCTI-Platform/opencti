@@ -20,6 +20,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ToolDelete from './ToolDelete';
 
 const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
@@ -286,6 +287,7 @@ const ToolEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={tool.id}
+            deleteBtn={<ToolDelete id={tool.id} />}
           />
           )}
         </Form>

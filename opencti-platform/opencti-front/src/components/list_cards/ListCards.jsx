@@ -76,6 +76,7 @@ class ListCards extends Component {
       exportContext,
       numberOfElements,
       helpers,
+      createButton,
     } = this.props;
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     const entityType = exportContext?.entity_type;
@@ -127,7 +128,7 @@ class ListCards extends Component {
                   </Select>
                 </FormControl>
                 <IconButton
-                  aria-label="Sort by"
+                  aria-label={t('Sort by')}
                   onClick={this.reverse.bind(this)}
                   size="small"
                 >
@@ -207,6 +208,7 @@ class ListCards extends Component {
                           </span>
                         </Tooltip>
                     )}
+                    {createButton}
                   </ToggleButtonGroup>
                   )}
                 </div>
@@ -260,6 +262,7 @@ ListCards.propTypes = {
   paginationOptions: PropTypes.object,
   numberOfElements: PropTypes.object,
   helpers: PropTypes.object,
+  createButton: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);

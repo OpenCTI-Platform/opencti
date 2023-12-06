@@ -46,10 +46,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import ReactMde from 'react-mde';
-import SpeedDial from '@mui/material/SpeedDial';
-import { SpeedDialIcon } from '@mui/material';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { graphql, useMutation } from 'react-relay';
+import SplitButton from '../../../../components/SplitButton';
 import WidgetFilters from './WidgetFilters';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
@@ -65,12 +63,6 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
   button: {
     marginLeft: theme.spacing(2),
   },
@@ -148,6 +140,9 @@ const useStyles = makeStyles((theme) => ({
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.secondary.main}`,
     borderRadius: 4,
+  },
+  widgetActionButton: {
+    marginLeft: '5px',
   },
 }));
 
@@ -1307,8 +1302,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   };
   const getStepContent = () => {
     switch (stepIndex) {
-      case 0:
-        return renderTypes();
       case 1:
         return renderPerspective();
       case 2:
@@ -1316,7 +1309,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       case 3:
         return renderParameters();
       default:
-        return 'Go away!';
+        return renderTypes();
     }
   };
   return (
@@ -1324,27 +1317,23 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       {!widget && (
         <>
           <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
-          <SpeedDial
-            className={classes.createButton}
-            ariaLabel="Create"
-            icon={<SpeedDialIcon />}
-            FabProps={{ color: 'primary' }}
-          >
-            <SpeedDialAction
-              title={t_i18n('Create a widget')}
-              icon={<WidgetsOutlined />}
-              tooltipTitle={t_i18n('Create a widget')}
-              onClick={() => setOpen(true)}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-            <SpeedDialAction
-              title={t_i18n('Import a widget')}
-              icon={<CloudUploadOutlined />}
-              tooltipTitle={t_i18n('Import a widget')}
-              onClick={() => inputRef.current?.click()}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-          </SpeedDial>
+          <SplitButton
+            options={[
+              {
+                option: t_i18n('Create a widget'),
+                icon: <WidgetsOutlined />,
+                onClick: () => setOpen(true),
+              },
+              {
+                option: t_i18n('Import a widget'),
+                icon: <CloudUploadOutlined />,
+                onClick: () => inputRef.current?.click(),
+              },
+            ]}
+            style={{
+              marginLeft: '5px',
+            }}
+          />
         </>
       )}
       {widget && (

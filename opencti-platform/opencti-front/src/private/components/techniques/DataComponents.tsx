@@ -85,6 +85,9 @@ const DataComponents: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <DataComponentCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -117,9 +120,6 @@ const DataComponents: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data components'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <DataComponentCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

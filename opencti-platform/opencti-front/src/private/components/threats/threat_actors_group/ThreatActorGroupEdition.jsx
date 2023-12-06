@@ -3,6 +3,8 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
@@ -10,10 +12,9 @@ import { ThreatActorGroupEditionOverviewFocus } from './ThreatActorGroupEditionO
 import Loader from '../../../../components/Loader';
 
 const styles = () => ({
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+  actionBtns: {
+    marginLeft: '3px',
+    fontSize: 'small',
   },
 });
 
@@ -37,7 +38,7 @@ class ThreatActorGroupEdition extends Component {
   }
 
   render() {
-    const { threatActorGroupId } = this.props;
+    const { classes, t, threatActorGroupId } = this.props;
     return (
       <QueryRenderer
         query={ThreatActorGroupEditionQuery}
@@ -48,6 +49,15 @@ class ThreatActorGroupEdition extends Component {
               <ThreatActorGroupEditionContainer
                 threatActorGroup={props.threatActorGroup}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    className={classes.actionBtns}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
               />
             );
           }

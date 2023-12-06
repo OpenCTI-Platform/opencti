@@ -14,11 +14,12 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import NoteEdition from './NoteEdition';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -83,29 +84,37 @@ class RootNote extends Component {
       params: { noteId },
     } = this.props;
     return (
-      <>
-        <QueryRenderer
-          query={noteQuery}
-          variables={{ id: noteId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.note) {
-                const { note } = props;
-                return (
-                  <div>
+      <QueryRenderer
+        query={noteQuery}
+        variables={{ id: noteId }}
+        render={({ props }) => {
+          if (props) {
+            if (props.note) {
+              const { note } = props;
+              return (
+                <RelateComponentContextProvider>
+                  <div
+                    style={{
+                      paddingRight: location.pathname.includes(
+                        `/dashboard/analyses/notes/${note.id}/knowledge`,
+                      )
+                        ? 200
+                        : 0,
+                    }}
+                  >
                     <CollaborativeSecurity
                       data={note}
                       needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
                       placeholder={
                         <ContainerHeader
                           container={note}
-                          PopoverComponent={<NotePopover note={note} />}
+                          EditComponent={<NoteEdition noteId={note.id} />}
                         />
-                      }
+                        }
                     >
                       <ContainerHeader
                         container={props.note}
-                        PopoverComponent={<NotePopover note={note} />}
+                        EditComponent={<NoteEdition noteId={note.id} />}
                         redirectToContent={false}
                       />
                     </CollaborativeSecurity>
@@ -118,8 +127,8 @@ class RootNote extends Component {
                     >
                       <Tabs
                         value={
-                          location.pathname
-                        }
+                            location.pathname
+                          }
                       >
                         <Tab
                           component={Link}
@@ -143,13 +152,13 @@ class RootNote extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        path="/"
+                        path="/dashboard/analyses/notes/:noteId"
                         element={
                           <Note note={props.note} />
-                        }
+                          }
                       />
                       <Route
-                        path="/files"
+                        path="/dashboard/analyses/notes/:noteId/files"
                         element={
                           <FileManager
                             id={noteId}
@@ -157,7 +166,7 @@ class RootNote extends Component {
                             connectorsImport={props.connectorsForImport}
                             entity={props.note}
                           />
-                        }
+                          }
                       />
                       <Route
                         path="/history"
@@ -166,7 +175,7 @@ class RootNote extends Component {
                             stixCoreObjectId={noteId}
                             withoutRelations={true}
                           />
-                        }
+                          }
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -174,18 +183,18 @@ class RootNote extends Component {
                           <StixCoreRelationship
                             entityId={props.note.id}
                           />
-                        }
+                          }
                       />
                     </Routes>
                   </div>
-                );
-              }
-              return <ErrorNotFound />;
+                </RelateComponentContextProvider>
+              );
             }
-            return <Loader />;
-          }}
-        />
-      </>
+            return <ErrorNotFound />;
+          }
+          return <Loader />;
+        }}
+      />
     );
   }
 }

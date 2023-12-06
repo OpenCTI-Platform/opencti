@@ -6,8 +6,9 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { handleErrorInForm } from '../../../../relay/environment';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -37,6 +38,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -138,6 +143,7 @@ ObservedDataFormProps
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -146,6 +152,7 @@ ObservedDataFormProps
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -262,6 +269,7 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
@@ -271,7 +279,17 @@ const ObservedDataCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an observed data')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Observed-Data')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <ObservedDataCreationForm

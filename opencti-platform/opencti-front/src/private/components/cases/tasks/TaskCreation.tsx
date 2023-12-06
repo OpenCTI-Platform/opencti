@@ -6,7 +6,8 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -32,6 +33,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -207,12 +212,23 @@ const TaskCreation = ({
 }: {
   paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
     <Drawer
       title={t_i18n('Create a task')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Task')} <Add />
+        </Button>
+      )}
     >
       <TaskCreationForm updater={updater} />
     </Drawer>

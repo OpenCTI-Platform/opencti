@@ -12,10 +12,15 @@ import IncidentEditionDetails from './IncidentEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
+import IncidentDelete from './IncidentDelete';
 
 interface IncidentEditionContainerProps {
   queryRef: PreloadedQuery<IncidentEditionContainerQuery>
   handleClose: () => void
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
@@ -25,6 +30,7 @@ export const IncidentEditionQuery = graphql`
       ...IncidentEditionOverview_incident
       ...IncidentEditionDetails_incident
       ...IncidentDetails_incident
+      id
       editContext {
         name
         focusOn
@@ -33,7 +39,12 @@ export const IncidentEditionQuery = graphql`
   }
 `;
 
-const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps> = ({ queryRef, handleClose, open }) => {
+const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps> = ({
+  queryRef,
+  handleClose,
+  controlledDial,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
 
   const { incident } = usePreloadedQuery(IncidentEditionQuery, queryRef);
@@ -46,10 +57,13 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   return (
     <Drawer
       title={t_i18n('Update an incident')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={incident?.editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
         <>
@@ -75,6 +89,9 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
               handleClose={onClose}
             />
           )}
+          {!useIsEnforceReference('Incident') && incident?.id
+            && <IncidentDelete id={incident.id} />
+          }
         </>
       )}
     </Drawer>

@@ -7,12 +7,13 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import AttackPattern from './AttackPattern';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -20,6 +21,9 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import AttackPatternEdition from './AttackPatternEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -45,6 +49,8 @@ const attackPatternQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
@@ -85,7 +91,7 @@ class RootAttackPattern extends Component {
     } = this.props;
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
-      <div>
+      <RelateComponentContextProvider>
         <Routes>
           <Route
             path="/knowledge/*"
@@ -135,7 +141,16 @@ class RootAttackPattern extends Component {
                       entityType="AttackPattern"
                       disableSharing={true}
                       stixDomainObject={props.attackPattern}
-                      PopoverComponent={<AttackPatternPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <AttackPatternEdition
+                          attackPatternId={attackPattern.id}
+                        />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={attackPattern.id}
+                        defaultStartTime={attackPattern.created_at}
+                        defaultStopTime={attackPattern.updated_at}
+                                       />}
                     />
                     <Box
                       sx={{
@@ -236,7 +251,7 @@ class RootAttackPattern extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </RelateComponentContextProvider>
     );
   }
 }

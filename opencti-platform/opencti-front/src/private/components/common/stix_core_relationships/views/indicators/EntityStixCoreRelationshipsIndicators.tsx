@@ -1,5 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import { RelateComponentContext } from '@components/common/menus/RelateComponentProvider';
+import useFiltersState from 'src/utils/filters/useFiltersState';
+import { v4 as uuid } from 'uuid';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
@@ -31,6 +34,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   defaultStopTime,
 }) => {
   const classes = useStyles();
+  const { setRelationshipTypes, setStixCoreObjectTypes, setFilters, setHelpers } = useContext(RelateComponentContext);
   const relationshipTypes = ['indicates'];
   const entityTypes = ['Indicator'];
   const LOCAL_STORAGE_KEY = `indicators-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
@@ -45,6 +49,21 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
     },
   );
   const { view } = localStorage.viewStorage;
+  const [filters, helpers] = useFiltersState({
+    mode: 'and',
+    filterGroups: [],
+    filters: [{
+      id: uuid(),
+      key: 'entity_type',
+      values: entityTypes,
+    }],
+  });
+  useEffect(() => {
+    setRelationshipTypes(relationshipTypes);
+    setStixCoreObjectTypes(entityTypes);
+    setFilters(filters);
+    setHelpers(helpers);
+  }, []);
   return (
     <ExportContextProvider>
       <div className={classes.container}>

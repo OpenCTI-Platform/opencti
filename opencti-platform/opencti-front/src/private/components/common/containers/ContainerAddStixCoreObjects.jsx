@@ -3,11 +3,8 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
@@ -23,7 +20,7 @@ import { removeEmptyFields } from '../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -39,19 +36,6 @@ const useStyles = makeStyles((theme) => ({
   createButtonSimple: {
     float: 'left',
     marginTop: -15,
-  },
-  speedDial: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
   },
 }));
 
@@ -74,13 +58,11 @@ const ContainerAddStixCoreObjects = (props) => {
     openDrawer,
     handleClose,
     enableReferences,
+    controlledDial,
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [openSpeedDial, setOpenSpeedDial] = useState(false);
-  const [openCreateEntity, setOpenCreateEntity] = useState(false);
-  const [openCreateObservable, setOpenCreateObservable] = useState(false);
 
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const {
@@ -162,29 +144,23 @@ const ContainerAddStixCoreObjects = (props) => {
 
   const containerRef = useRef(null);
   const keyword = mapping && (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
-  const handleOpenCreateEntity = () => {
-    setOpenCreateEntity(true);
-    setOpenSpeedDial(false);
-  };
-  const handleCloseCreateEntity = () => {
-    setOpenCreateEntity(false);
-    setOpenSpeedDial(false);
-  };
-  const handleOpenCreateObservable = () => {
-    setOpenCreateObservable(true);
-    setOpenSpeedDial(false);
-  };
-  const handleCloseCreateObservable = () => {
-    setOpenCreateObservable(false);
-    setOpenSpeedDial(false);
-  };
   const renderDomainObjectCreation = (searchPaginationOptions) => {
     return (
       <StixDomainObjectCreation
-        display={open}
+        display={true}
         inputValue={keyword}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
+        controlledDial={({ onOpen }) => (
+          <Button
+            variant='outlined'
+            onClick={onOpen}
+            disableElevation
+            data-testid="create_entity"
+          >
+            {t_i18n('Create Entity')} <Add />
+          </Button>
+        )}
         confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
@@ -193,110 +169,61 @@ const ContainerAddStixCoreObjects = (props) => {
               ? targetStixCoreObjectTypes
               : []
         }
+        creationCallback={undefined}
+        open={undefined}
+        speeddial={undefined}
+        handleClose={undefined}
       />
     );
   };
   const renderObservableCreation = (searchPaginationOptions) => {
     return (
       <StixCyberObservableCreation
-        display={open}
+        display={true}
         contextual={true}
         inputValue={keyword}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
+        controlledDial={({ onOpen }) => (
+          <Button
+            variant='outlined'
+            style={{ marginLeft: '5px' }}
+            onClick={onOpen}
+            disableElevation
+            data-testid="create_observable"
+          >
+            {t_i18n('Create Observable')} <Add />
+          </Button>
+        )}
+        confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
+        stixCoreObjectTypes={
+            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+              ? targetStixCoreObjectTypes
+              : []
+        }
+        open={undefined}
+        handleClose={undefined}
       />
     );
   };
-  const renderStixCoreObjectCreation = (searchPaginationOptions) => {
-    return (
-      <>
-        <SpeedDial
-          className={classes.createButton}
-          ariaLabel="Create"
-          icon={<SpeedDialIcon/>}
-          onClose={() => setOpenSpeedDial(false)}
-          onOpen={() => setOpenSpeedDial(true)}
-          open={openSpeedDial}
-          FabProps={{
-            color: 'secondary',
-          }}
-        >
-          <SpeedDialAction
-            title={t_i18n('Create an observable')}
-            icon={<HexagonOutline/>}
-            tooltipTitle={t_i18n('Create an observable')}
-            onClick={() => handleOpenCreateObservable()}
-            FabProps={{
-              classes: { root: classes.speedDialButton },
-            }}
-          />
-          <SpeedDialAction
-            title={t_i18n('Create an entity')}
-            icon={<GlobeModel/>}
-            tooltipTitle={t_i18n('Create an entity')}
-            onClick={() => handleOpenCreateEntity()}
-            FabProps={{
-              classes: { root: classes.speedDialButton },
-            }}
-          />
-        </SpeedDial>
-        <StixDomainObjectCreation
-          display={open}
-          inputValue={keyword}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          confidence={confidence}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions}
-          stixCoreObjectTypes={
-              targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-                ? targetStixCoreObjectTypes
-                : []
-          }
-          speeddial={true}
-          open={openCreateEntity}
-          handleClose={() => handleCloseCreateEntity()}
-        />
-        <StixCyberObservableCreation
-          display={open}
-          contextual={true}
-          inputValue={keyword}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions}
-          speeddial={true}
-          open={openCreateObservable}
-          handleClose={() => handleCloseCreateObservable()}
-        />
-      </>
-    );
-  };
   const renderEntityCreation = (searchPaginationOptions) => {
-    if (
-      targetStixCoreObjectTypes
-            && isTypeDomainObject(targetStixCoreObjectTypes)
-            && !isTypeObservable(targetStixCoreObjectTypes)
-    ) {
-      return renderDomainObjectCreation(searchPaginationOptions);
-    }
-    if (
-      targetStixCoreObjectTypes
-            && isTypeObservable(targetStixCoreObjectTypes)
-            && !isTypeDomainObject(targetStixCoreObjectTypes)
-    ) {
-      return renderObservableCreation(searchPaginationOptions);
-    }
-    if (
-      !targetStixCoreObjectTypes
-            || (isTypeObservable(targetStixCoreObjectTypes)
-                && isTypeDomainObject(targetStixCoreObjectTypes))
-    ) {
-      return renderStixCoreObjectCreation(searchPaginationOptions);
-    }
-    return null;
+    const isOnlySDOs = targetStixCoreObjectTypes
+      && isTypeDomainObject(targetStixCoreObjectTypes)
+      && !isTypeObservable(targetStixCoreObjectTypes);
+    const isOnlySCOs = targetStixCoreObjectTypes
+      && isTypeObservable(targetStixCoreObjectTypes)
+      && !isTypeDomainObject(targetStixCoreObjectTypes);
+    const renderBoth = !targetStixCoreObjectTypes
+      || (isTypeObservable(targetStixCoreObjectTypes)
+        && isTypeDomainObject(targetStixCoreObjectTypes));
+    return (
+      <div style={{ float: 'right', marginTop: '-60px', display: 'flex' }}>
+        {(isOnlySDOs || renderBoth) && renderDomainObjectCreation(searchPaginationOptions)}
+        {(isOnlySCOs || renderBoth) && renderObservableCreation(searchPaginationOptions)}
+      </div>
+    );
   };
   const buildColumns = () => {
     return {
@@ -422,7 +349,7 @@ const ContainerAddStixCoreObjects = (props) => {
   };
   return (
     <>
-      {!mapping && renderButton()}
+      {!mapping && controlledDial === undefined && renderButton()}
       <Drawer
         open={mapping ? openDrawer : open}
         onClose={() => {
@@ -434,10 +361,11 @@ const ContainerAddStixCoreObjects = (props) => {
         }}
         title={t_i18n('Add entities')}
         containerRef={containerRef}
+        controlledDial={controlledDial}
       >
         <>
-          {renderSearchResults(searchPaginationOptions)}
           {renderEntityCreation(searchPaginationOptions)}
+          {renderSearchResults(searchPaginationOptions)}
         </>
       </Drawer>
     </>

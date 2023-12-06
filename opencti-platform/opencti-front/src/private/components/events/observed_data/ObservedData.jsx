@@ -4,11 +4,8 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import ObservedDataDetails from './ObservedDataDetails';
-import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -60,9 +57,6 @@ class ObservedDataComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={observedData.id}
           defaultMarkings={observedData.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ObservedDataEdition observedDataId={observedData.id} />
-        </Security>
       </>
     );
   }

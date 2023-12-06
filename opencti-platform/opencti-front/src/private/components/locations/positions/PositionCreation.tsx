@@ -6,10 +6,11 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -137,6 +138,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -145,6 +147,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Position')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -281,7 +284,7 @@ const PositionCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a position')}
-      variant={DrawerVariant.create}
+      controlledDial={CreateEntityControlledDial('entity_Position')}
     >
       {({ onClose }) => (
         <PositionCreationForm

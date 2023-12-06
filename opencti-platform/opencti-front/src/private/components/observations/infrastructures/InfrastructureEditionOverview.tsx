@@ -25,6 +25,7 @@ import { InfrastructureEditionOverview_infrastructure$key } from './__generated_
 import { Option } from '../../common/form/ReferenceField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import InfrastructureDelete from './InfrastructureDelete';
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -399,6 +400,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
               open={false}
               values={values.references}
               id={infrastructure.id}
+              deleteBtn={<InfrastructureDelete id={infrastructure.id} />}
             />
           )}
         </Form>

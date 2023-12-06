@@ -8,32 +8,22 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Fab from '@mui/material/Fab';
-import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ArrowRightAlt, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
-import { commitMutation } from '../../../../relay/environment';
-import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
 import StixCoreRelationshipExternalReferences from '../../analyses/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreators from '../../../../components/ItemCreators';
@@ -42,7 +32,6 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
 import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
-import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -53,16 +42,6 @@ const styles = (theme) => ({
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  editButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 220,
   },
   item: {
     position: 'absolute',
@@ -159,55 +138,11 @@ const styles = (theme) => ({
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { openEdit: false, openDelete: false, expanded: false };
+    this.state = { expanded: false };
   }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });
-  }
-
-  handleOpenEdition() {
-    this.setState({ openEdit: true });
-  }
-
-  handleCloseEdition() {
-    const { stixCoreRelationship } = this.props;
-    commitMutation({
-      mutation: stixCoreRelationshipEditionFocus,
-      variables: {
-        id: stixCoreRelationship.id,
-        input: { focusOn: '' },
-      },
-    });
-    this.setState({ openEdit: false });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    const {
-      location,
-      stixCoreRelationship,
-    } = this.props;
-    commitMutation({
-      mutation: stixCoreRelationshipEditionDeleteMutation,
-      variables: {
-        id: stixCoreRelationship.id,
-      },
-      onCompleted: () => {
-        this.handleCloseEdition();
-        this.props.navigate(
-          location.pathname.replace(`/relations/${stixCoreRelationship.id}`, ''),
-        );
-      },
-    });
   }
 
   render() {
@@ -584,63 +519,12 @@ class StixCoreRelationshipContainer extends Component {
             </div>
           )}
         </div>
-        {!stixCoreRelationship.is_inferred && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Fab
-              onClick={this.handleOpenEdition.bind(this)}
-              color="primary"
-              aria-label="Edit"
-              className={
-                paddingRight
-                  ? classes.editButtonWithPadding
-                  : classes.editButton
-              }
-            >
-              <Edit />
-            </Fab>
-            <StixCoreRelationshipEdition
-              open={this.state.openEdit}
-              stixCoreRelationshipId={stixCoreRelationship.id}
-              handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleOpenDelete.bind(this)}
-            />
-          </Security>
-        )}
-        <Dialog
-          open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this relationship?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </div>
     );
   }
 }
 
 StixCoreRelationshipContainer.propTypes = {
-  entityId: PropTypes.string,
   stixCoreRelationship: PropTypes.object,
   paddingRight: PropTypes.bool,
   classes: PropTypes.object,

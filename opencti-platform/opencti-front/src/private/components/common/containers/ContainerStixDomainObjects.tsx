@@ -16,6 +16,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import ContainerAddStixCoreObjectsSelfContained from './ContainerAddStixCoreObjectsSelfContained';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -46,7 +47,7 @@ const ContainerStixDomainObjects = ({
   container, enableReferences,
 }: {
   container: ContainerStixDomainObjects_container$key;
-  enableReferences?: boolean
+  enableReferences?: boolean,
 }) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -178,6 +179,13 @@ const ContainerStixDomainObjects = ({
       numberOfElements={numberOfElements}
       paginationOptions={queryPaginationOptions}
       availableEntityTypes={['Stix-Domain-Object']}
+      createButton={queryRef && (
+        <ContainerAddStixCoreObjectsSelfContained
+          queryRef={queryRef}
+          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+          paginationOptions={queryPaginationOptions}
+        />
+      )}
     >
       {queryRef && (
         <React.Suspense

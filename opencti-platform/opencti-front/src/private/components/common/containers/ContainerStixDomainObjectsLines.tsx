@@ -6,14 +6,14 @@ import {
   ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectsLines_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLines_container.graphql';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const nbOfRowsToLoad = 50;
 
@@ -185,6 +185,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
             defaultMarkingDefinitions={container.objectMarking ?? []}
             confidence={container.confidence}
             enableReferences={enableReferences}
+            controlledDial={() => <></>}
           />
         </Security>
       )}

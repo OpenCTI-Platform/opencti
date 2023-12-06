@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import InfrastructureDetails from './InfrastructureDetails';
-import InfrastructureEdition from './InfrastructureEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -123,9 +120,6 @@ const Infrastructure = ({
         stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
         defaultMarkings={infrastructureData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureEdition infrastructureId={infrastructureData.id} />
-      </Security>
     </>
   );
 };

@@ -8,6 +8,10 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -22,8 +26,8 @@ import { RootCountryQuery } from './__generated__/RootCountryQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import CountryPopover from './CountryPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CountryEdition from './CountryEdition';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -47,6 +51,8 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Country_country
       ...CountryKnowledge_country
       ...FileImportViewer_entity
@@ -79,7 +85,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {country ? (
         <div
           style={{
@@ -100,7 +106,14 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             entityType="Country"
             disableSharing={true}
             stixDomainObject={country}
-            PopoverComponent={<CountryPopover id={country.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CountryEdition countryId={country.id} />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={country.id}
+              defaultStartTime={country.created_at}
+              defaultStopTime={country.updated_at}
+                             />}
             enableQuickSubscription={true}
             isOpenctiAlias={true}
           />
@@ -214,7 +227,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

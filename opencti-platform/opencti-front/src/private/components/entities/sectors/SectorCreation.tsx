@@ -9,7 +9,7 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -146,6 +146,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -154,6 +155,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Sector')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -257,15 +259,23 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
 
 const SectorCreation = ({
   paginationOptions,
+  controlledDial,
 }: {
   paginationOptions: SectorsLinesPaginationQuery$variables;
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
   return (
     <Drawer
       title={t_i18n('Create a sector')}
-      variant={DrawerVariant.create}
+      variant={controlledDial === undefined
+        ? DrawerVariant.create
+        : undefined}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
         <SectorCreationForm

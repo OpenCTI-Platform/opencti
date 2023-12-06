@@ -19,6 +19,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import AttackPatternDelete from './AttackPatternDelete';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -294,6 +295,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={attackPattern.id}
+              deleteBtn={<AttackPatternDelete id={attackPattern.id} />}
             />
           )}
         </Form>

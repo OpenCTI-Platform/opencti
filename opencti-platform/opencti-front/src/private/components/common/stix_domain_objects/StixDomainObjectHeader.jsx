@@ -24,24 +24,27 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import { useLocation } from 'react-router-dom';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import StixCoreRelationshipHeader from '../stix_core_relationships/StixCoreRelationshipHeader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -69,7 +72,7 @@ const useStyles = makeStyles(() => ({
     float: 'left',
   },
   viewAsFieldLabel: {
-    margin: '4px 15px 0 0',
+    margin: '4px 15px 0 10px',
     fontSize: 14,
     float: 'left',
   },
@@ -81,6 +84,14 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
   },
 }));
+
+const stixCoreRelationshipQuery = graphql`
+  query StixDomainObjectHeaderQuery($id: String!) {
+    stixCoreRelationship(id: $id) {
+      ...StixCoreRelationshipHeader_stixCoreRelationship
+    }
+  }
+`;
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -183,13 +194,18 @@ const aliasValidation = (t) => Yup.object().shape({
 const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { pathname } = useLocation();
+  const isRelationshipPage = pathname.includes('/relations/');
+  const relationId = isRelationshipPage
+    ? pathname.split('/relations/')[1]
+    : '';
   const {
     stixDomainObject,
     isOpenctiAlias,
-    PopoverComponent,
+    EditComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
-    disablePopover,
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
@@ -204,7 +220,6 @@ const StixDomainObjectHeader = (props) => {
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   let type = 'unsupported';
   const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
   const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
@@ -341,7 +356,7 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  return (
+  const normalHeader = (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <Tooltip title={getMainRepresentative(stixDomainObject)}>
         <Typography
@@ -530,22 +545,9 @@ const StixDomainObjectHeader = (props) => {
             type={type}
           />
           )}
-          {(isKnowledgeUpdater || isKnowledgeEnricher) && (
-          <div className={classes.popover}>
-            {/* TODO remove this when all components are pure function without compose() */}
-            {!React.isValidElement(PopoverComponent) ? (
-              <PopoverComponent
-                disabled={disablePopover}
-                id={stixDomainObject.id}
-              />
-            ) : (
-              React.cloneElement(PopoverComponent, {
-                id: stixDomainObject.id,
-                disabled: disablePopover,
-              })
-            )}
-          </div>
-          )}
+          <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
+          {EditComponent}
+          {RelateComponent}
         </div>
       </div>
 
@@ -706,6 +708,28 @@ const StixDomainObjectHeader = (props) => {
         </Formik>
       )}
     </React.Suspense>
+  );
+
+  const relationshipHeader = (
+    <QueryRenderer
+      query={stixCoreRelationshipQuery}
+      variables={{ id: relationId }}
+      render={({ props: renderProps }) => {
+        if (renderProps?.stixCoreRelationship) {
+          return (
+            <StixCoreRelationshipHeader
+              stixCoreRelationship={renderProps.stixCoreRelationship}
+            />
+          );
+        }
+        return <Loader />;
+      }}
+    />
+  );
+
+  return (isRelationshipPage
+    ? relationshipHeader
+    : normalHeader
   );
 };
 

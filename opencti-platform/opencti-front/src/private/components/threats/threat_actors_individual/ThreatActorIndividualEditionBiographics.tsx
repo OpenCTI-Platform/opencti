@@ -20,6 +20,7 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorIndividualDelete from './ThreatActorIndividualDelete';
 
 const threatActorIndividualEditionBiographicsFocus = graphql`
   mutation ThreatActorIndividualEditionBiographicsFocusMutation(
@@ -214,6 +215,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
                   open={false}
                   values={[]}
                   id={threatActorIndividual.id}
+                  deleteBtn={<ThreatActorIndividualDelete id={threatActorIndividual.id} />}
                 />
               )}
             </Form>

@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -11,9 +10,9 @@ import { FormikConfig } from 'formik/dist/types';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -41,13 +40,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    marginLeft: '5px',
   },
   buttons: {
     marginTop: 20,
@@ -181,6 +174,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -189,6 +183,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -407,15 +402,18 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   if (contextual) {
     return (
       <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
-        <Fab
+        <Button
           onClick={handleOpen}
           color="primary"
-          aria-label="Add"
+          size="small"
+          variant="contained"
+          aria-label={t_i18n('Create an indicator')}
           className={classes.createButtonContextual}
+          disableElevation
           sx={{ zIndex: 1203 }}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Create')} <Add />
+        </Button>
         <Dialog
           open={open}
           onClose={handleClose}
@@ -437,7 +435,21 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   return (
     <Drawer
       title={t_i18n('Create an indicator')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          style={{
+            marginLeft: '10px',
+            padding: '7px 10px',
+          }}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+          aria-label={t_i18n('Add')}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Indicator')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <IndicatorCreationForm

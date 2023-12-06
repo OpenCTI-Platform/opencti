@@ -6,7 +6,7 @@ export default class ContainerAddObservablesPage {
   }
 
   getAddNewObservableButton() {
-    return this.page.getByRole('button', { name: 'Add', exact: true });
+    return this.page.getByTestId('create_observable');
   }
 
   getIPV4ButtonInNewObservable() {
@@ -38,6 +38,6 @@ export default class ContainerAddObservablesPage {
   }
 
   getCloseObservablesListButton() {
-    return this.page.getByLabel('Close');
+    return this.page.getByTestId('CloseDrawer');
   }
 }

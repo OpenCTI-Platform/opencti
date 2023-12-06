@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
+import { Create } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { compose } from 'ramda';
+import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import { attackPatternEditionOverviewFocus } from './AttackPatternEditionOverview';
@@ -27,7 +31,7 @@ class AttackPatternEdition extends Component {
   }
 
   render() {
-    const { attackPatternId } = this.props;
+    const { t, attackPatternId } = this.props;
     return (
       <QueryRenderer
         query={attackPatternEditionQuery}
@@ -38,6 +42,18 @@ class AttackPatternEdition extends Component {
               <AttackPatternEditionContainer
                 attackPattern={props.attackPattern}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
               />
             );
           }
@@ -52,4 +68,4 @@ AttackPatternEdition.propTypes = {
   attackPatternId: PropTypes.string,
 };
 
-export default AttackPatternEdition;
+export default compose(inject18n)(AttackPatternEdition);

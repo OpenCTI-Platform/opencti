@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -8,8 +8,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -136,6 +137,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -144,6 +146,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Event')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -277,7 +280,20 @@ const EventCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an event')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          onClick={onOpen}
+          variant='contained'
+          color='primary'
+          size='small'
+          style={{
+            marginLeft: '10px',
+            padding: '7px 10px',
+          }}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Event')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <EventCreationForm

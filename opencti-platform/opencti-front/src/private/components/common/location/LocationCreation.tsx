@@ -7,7 +7,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
@@ -35,10 +34,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     right: 30,
   },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
+    marginLeft: '5px',
   },
   buttons: {
     marginTop: 20,
@@ -247,14 +243,17 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
+        <Button
           onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
+          color="primary"
+          size="small"
+          aria-label={t_i18n('Add a location')}
+          variant="contained"
           className={classes.createButtonContextual}
+          disableElevation
         >
-          <Add />
-        </Fab>
+          {t_i18n('Create')} <Add />
+        </Button>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
           <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
           <DialogContent>

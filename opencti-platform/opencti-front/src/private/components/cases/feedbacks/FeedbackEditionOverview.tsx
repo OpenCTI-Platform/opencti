@@ -23,6 +23,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import FeedbackDelete from './FeedbackDelete';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -339,6 +340,7 @@ FeedbackEditionOverviewProps
               open={false}
               values={values.references}
               id={feedbackData.id}
+              deleteBtn={<FeedbackDelete id={feedbackData.id} />}
             />
           )}
         </Form>

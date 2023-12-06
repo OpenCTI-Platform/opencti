@@ -79,6 +79,9 @@ const Regions: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <RegionCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -107,9 +110,6 @@ const Regions: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Regions'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <RegionCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

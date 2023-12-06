@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import CourseOfActionDetails from './CourseOfActionDetails';
-import CourseOfActionEdition from './CourseOfActionEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -65,9 +62,6 @@ class CourseOfActionComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
           defaultMarkings={courseOfAction.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
-        </Security>
       </>
     );
   }

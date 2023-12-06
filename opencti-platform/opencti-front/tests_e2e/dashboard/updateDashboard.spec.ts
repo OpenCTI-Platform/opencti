@@ -8,7 +8,6 @@ test('Create a new dashboard page and test update', async ({ page }) => {
   const dashboardDetailsPage = new DashboardDetailsPage(page);
   const dashboardForm = new DashboardFormPage(page);
   await page.goto('/dashboard/workspaces/dashboards');
-  await dashboardPage.openButtonModal().hover();
   await dashboardPage.addNewDashboard().click();
   await dashboardForm.fillNameInput('Test Update e2e');
   await dashboardPage.getCreateDashboardButton().click();

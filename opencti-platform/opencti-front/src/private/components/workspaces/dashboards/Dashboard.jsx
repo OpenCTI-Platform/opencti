@@ -762,6 +762,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           config={manifest.config}
           handleDateChange={handleDateChange}
           variant="dashboard"
+          widgetActions={<WidgetConfig
+            onComplete={handleAddWidget}
+            workspace={workspace}
+                         />}
         />
       )}
       {isExploreUpdater && userCanEdit ? (

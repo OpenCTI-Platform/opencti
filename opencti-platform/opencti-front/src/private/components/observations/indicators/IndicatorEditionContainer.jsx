@@ -4,11 +4,12 @@ import { useFormatter } from '../../../../components/i18n';
 import IndicatorEditionOverview from './IndicatorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import IndicatorDelete from './IndicatorDelete';
 
 const IndicatorEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, indicator, open } = props;
+  const { handleClose, indicator, open, controlledDial } = props;
   const { editContext } = indicator;
 
   return (
@@ -16,15 +17,23 @@ const IndicatorEditionContainer = (props) => {
       title={t_i18n('Update an indicator')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <IndicatorEditionOverview
-        indicator={indicator}
-        enableReferences={useIsEnforceReference('Indicator')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <IndicatorEditionOverview
+          indicator={indicator}
+          enableReferences={useIsEnforceReference('Indicator')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Indicator')
+          && <IndicatorDelete id={indicator.id} />
+        }
+      </>
     </Drawer>
   );
 };

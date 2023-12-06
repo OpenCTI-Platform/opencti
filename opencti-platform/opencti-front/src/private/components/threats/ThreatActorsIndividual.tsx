@@ -78,6 +78,9 @@ const ThreatActorsIndividual = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ThreatActorIndividualCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -111,9 +114,6 @@ const ThreatActorsIndividual = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {renderCards()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorIndividualCreation paginationOptions={paginationOptions} />
-      </Security>
     </>
   );
 };

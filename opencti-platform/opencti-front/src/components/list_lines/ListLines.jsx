@@ -208,6 +208,7 @@ class ListLines extends Component {
       helpers,
       inline,
       additionalFilterKeys,
+      createButton,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -267,7 +268,8 @@ class ListLines extends Component {
               )}
               {(typeof handleChangeView === 'function'
                 || typeof handleToggleExports === 'function'
-                || typeof handleExportCsv === 'function') && (
+                || typeof handleExportCsv === 'function'
+                || createButton !== undefined) && (
                 <ToggleButtonGroup
                   size="small"
                   color="secondary"
@@ -427,6 +429,7 @@ class ListLines extends Component {
                         </span>
                       </Tooltip>
                   )}
+                  {createButton}
                 </ToggleButtonGroup>
               )}
             </div>
@@ -700,6 +703,7 @@ ListLines.propTypes = {
   availableFilterKeys: PropTypes.array,
   additionalFilterKeys: PropTypes.object,
   entityTypes: PropTypes.array,
+  createButton: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

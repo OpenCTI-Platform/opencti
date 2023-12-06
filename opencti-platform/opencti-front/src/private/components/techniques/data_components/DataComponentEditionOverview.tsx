@@ -20,6 +20,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import DataComponentDelete from './DataComponentDelete';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -321,6 +322,7 @@ DataComponentEditionOverviewComponentProps
               open={false}
               values={values.references}
               id={dataComponent.id}
+              deleteBtn={<DataComponentDelete id={dataComponent.id} />}
             />
           )}
         </Form>

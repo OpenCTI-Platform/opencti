@@ -101,6 +101,12 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           secondaryAction={true}
           paginationOptions={workspacePaginationOptions}
           numberOfElements={numberOfElements}
+          createButton={<Security needs={[EXPLORE_EXUPDATE]}>
+            <WorkspaceCreation
+              paginationOptions={workspacePaginationOptions}
+              type={type}
+            />
+          </Security>}
         >
           {queryRef && (
           <React.Suspense
@@ -131,12 +137,6 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     <>
       <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
-      <Security needs={[EXPLORE_EXUPDATE]}>
-        <WorkspaceCreation
-          paginationOptions={workspacePaginationOptions}
-          type={type}
-        />
-      </Security>
     </>
   );
 };

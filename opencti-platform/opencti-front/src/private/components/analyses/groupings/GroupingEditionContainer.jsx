@@ -1,14 +1,15 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import GroupingDelete from './GroupingDelete';
 
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, grouping, open } = props;
+  const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
 
   return (
@@ -16,15 +17,20 @@ const GroupingEditionContainer = (props) => {
       title={t_i18n('Update a grouping')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <GroupingEditionOverview
-        grouping={grouping}
-        enableReferences={useIsEnforceReference('Grouping')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <GroupingEditionOverview
+          grouping={grouping}
+          enableReferences={useIsEnforceReference('Grouping')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Grouping')
+          && <GroupingDelete id={grouping.id} />
+        }
+      </>
     </Drawer>
   );
 };

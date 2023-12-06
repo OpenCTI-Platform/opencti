@@ -114,6 +114,12 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           entityTypes={['External-Reference']}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ExternalReferenceCreation
+              paginationOptions={paginationOptions}
+              openContextual={false}
+            />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -160,12 +166,6 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ExternalReferenceCreation
-          paginationOptions={queryPaginationOptions}
-          openContextual={false}
-        />
-      </Security>
     </ExportContextProvider>
   );
 };

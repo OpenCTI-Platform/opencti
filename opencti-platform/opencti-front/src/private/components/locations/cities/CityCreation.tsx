@@ -6,8 +6,10 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
+import { MESSAGING$ } from 'src/relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -123,12 +125,16 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           updater(store, 'cityAdd');
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_City')} ${t_i18n('successfully deleted')}`);
       },
     });
   };
@@ -244,7 +250,7 @@ const CityCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a city')}
-      variant={DrawerVariant.create}
+      controlledDial={CreateEntityControlledDial('entity_City')}
     >
       {({ onClose }) => (
         <CityCreationForm

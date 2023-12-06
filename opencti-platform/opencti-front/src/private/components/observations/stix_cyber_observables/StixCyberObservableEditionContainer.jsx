@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import StixCyberObservableDelete from './StixCyberObservableDelete';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -34,7 +35,7 @@ const StixCyberObservableEditionContainer = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const { handleClose, stixCyberObservable } = props;
+  const { handleClose, stixCyberObservable, isArtifact = false } = props;
   const { editContext } = stixCyberObservable;
 
   return (
@@ -61,6 +62,10 @@ const StixCyberObservableEditionContainer = (props) => {
           enableReferences={useIsEnforceReference('Stix-Cyber-Observable')}
           context={editContext}
           handleClose={handleClose}
+        />
+        <StixCyberObservableDelete
+          id={stixCyberObservable.id}
+          isArtifact={isArtifact}
         />
       </div>
     </div>

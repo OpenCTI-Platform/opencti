@@ -8,12 +8,17 @@ import { NoteEditionContainer_note$data } from './__generated__/NoteEditionConta
 interface NoteEditionContainerProps {
   note: NoteEditionContainer_note$data
   handleClose: () => void
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
 const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
   note,
   handleClose,
+  controlledDial,
   open,
 }) => {
   const { t_i18n } = useFormatter();
@@ -23,10 +28,11 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a note')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null ? DrawerVariant.update : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
         <NoteEditionOverview

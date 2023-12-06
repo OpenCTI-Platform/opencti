@@ -9,13 +9,15 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import CaseRfiPopover from './CaseRfiPopover';
 import CaseRfi from './CaseRfi';
 import { RootCaseRfiCaseQuery } from './__generated__/RootCaseRfiCaseQuery.graphql';
 import { RootCaseRfiCaseSubscription } from './__generated__/RootCaseRfiCaseSubscription.graphql';
@@ -27,6 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import CaseRfiEdition from './CaseRfiEdition';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -108,7 +111,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     }
   }
   return (
-    <>
+    <RelateComponentContextProvider>
       {caseData ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
@@ -119,7 +122,9 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           />
           <ContainerHeader
             container={caseData}
-            PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CaseRfiEdition caseId={caseData.id} />
+            </Security>}
             enableQuickSubscription={true}
             enableAskAi={true}
           />
@@ -248,7 +253,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

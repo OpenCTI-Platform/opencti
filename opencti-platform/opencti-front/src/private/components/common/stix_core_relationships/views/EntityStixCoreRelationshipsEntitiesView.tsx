@@ -1,18 +1,18 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
+import { RelateComponentContext } from '@components/common/menus/RelateComponentProvider';
+import useFiltersState from 'src/utils/filters/useFiltersState';
+import { v4 as uuid } from 'uuid';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsEntitiesViewLines from './EntityStixCoreRelationshipsEntitiesViewLines';
 import { useFormatter } from '../../../../../components/i18n';
-import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
-import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
-import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { Filter, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { Filter, FilterGroup, emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -33,8 +33,6 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
 EntityStixCoreRelationshipsEntitiesViewProps
 > = ({
   entityId,
-  defaultStartTime,
-  defaultStopTime,
   localStorage,
   relationshipTypes,
   stixCoreObjectTypes = ['Stix-Core-Object'],
@@ -42,7 +40,6 @@ EntityStixCoreRelationshipsEntitiesViewProps
   currentView,
   enableNestedView,
   enableContextualView,
-  paddingRightButtonAdd = null,
   handleChangeView,
 }) => {
   const { t_i18n } = useFormatter();
@@ -146,112 +143,116 @@ EntityStixCoreRelationshipsEntitiesViewProps
   } = useEntityToggle(localStorageKey);
 
   const finalView = currentView || view;
-  return (
-    <>
-      <ListLines
-        helpers={storageHelpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        handleAddFilter={storageHelpers.handleAddFilter}
-        handleRemoveFilter={storageHelpers.handleRemoveFilter}
-        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-        handleChangeView={handleChangeView || storageHelpers.handleChangeView}
-        onToggleEntity={onToggleEntity}
-        handleToggleSelectAll={handleToggleSelectAll}
+  const { setRelationshipTypes, setStixCoreObjectTypes, setFilters, setHelpers } = useContext(RelateComponentContext);
+  const actualFilters = [
+    ...computeTargetStixDomainObjectTypes(stixCoreObjectTypes),
+    ...computeTargetStixCyberObservableTypes(stixCoreObjectTypes),
+  ];
+  const [typeFilters, helpers] = useFiltersState(
+    actualFilters.length > 0
+      ? {
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: uuid(),
+          key: 'entity_type',
+          values: actualFilters,
+        }],
+      }
+      : emptyFilterGroup,
+  );
+  useEffect(() => {
+    setRelationshipTypes(relationshipTypes);
+    setStixCoreObjectTypes(stixCoreObjectTypes);
+    setFilters(typeFilters);
+    setHelpers(helpers);
+  }, []);
+  return (<>
+    <ListLines
+      helpers={storageHelpers}
+      sortBy={sortBy}
+      orderAsc={orderAsc}
+      dataColumns={dataColumns}
+      handleSort={storageHelpers.handleSort}
+      handleSearch={storageHelpers.handleSearch}
+      handleAddFilter={storageHelpers.handleAddFilter}
+      handleRemoveFilter={storageHelpers.handleRemoveFilter}
+      handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+      handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+      handleChangeView={handleChangeView || storageHelpers.handleChangeView}
+      onToggleEntity={onToggleEntity}
+      handleToggleSelectAll={handleToggleSelectAll}
+      paginationOptions={paginationOptions}
+      selectAll={selectAll}
+      keyword={searchTerm}
+      displayImport={true}
+      handleToggleExports={storageHelpers.handleToggleExports}
+      openExports={openExports}
+      exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
+      iconExtension={true}
+      filters={filters}
+      availableRelationFilterTypes={{
+        targets: isRelationReversed
+          ? [
+            'Position',
+            'City',
+            'Country',
+            'Region',
+            'Individual',
+            'System',
+            'Organization',
+            'Sector',
+            'Event',
+            'Vulnerability',
+          ]
+          : [
+            'Threat-Actor',
+            'Intrusion-Set',
+            'Campaign',
+            'Incident',
+            'Malware',
+            'Tool',
+            'Malware-Analysis',
+          ],
+      }}
+      availableEntityTypes={stixCoreObjectTypes}
+      availableRelationshipTypes={relationshipTypes}
+      numberOfElements={numberOfElements}
+      noPadding={true}
+      disableCards={true}
+      enableEntitiesView={true}
+      enableNestedView={enableNestedView}
+      enableContextualView={enableContextualView}
+      currentView={finalView}
+      additionalFilterKeys={{ filterKeys: ['entity_type'] }}
+    >
+      <EntityStixCoreRelationshipsEntitiesViewLines
         paginationOptions={paginationOptions}
-        selectAll={selectAll}
-        keyword={searchTerm}
-        displayImport={true}
-        handleToggleExports={storageHelpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
-        iconExtension={true}
-        filters={filters}
-        availableRelationFilterTypes={{
-          targets: isRelationReversed
-            ? [
-              'Position',
-              'City',
-              'Country',
-              'Region',
-              'Individual',
-              'System',
-              'Organization',
-              'Sector',
-              'Event',
-              'Vulnerability',
-            ]
-            : [
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Malware-Analysis',
-            ],
-        }}
-        availableEntityTypes={stixCoreObjectTypes}
-        availableRelationshipTypes={relationshipTypes}
-        numberOfElements={numberOfElements}
-        noPadding={true}
-        disableCards={true}
-        enableEntitiesView={true}
-        enableNestedView={enableNestedView}
-        enableContextualView={enableContextualView}
-        currentView={finalView}
-        entityTypes={stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']}
-        additionalFilterKeys={{ filterKeys: ['entity_type'] }}
-      >
-        <EntityStixCoreRelationshipsEntitiesViewLines
-          paginationOptions={paginationOptions}
-          dataColumns={dataColumns}
-          onToggleEntity={onToggleEntity}
-          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-          isRelationReversed={isRelationReversed}
-          onLabelClick={storageHelpers.handleAddFilter}
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          selectAll={selectAll}
-        />
-      </ListLines>
-      <ToolBar
+        dataColumns={dataColumns}
+        onToggleEntity={onToggleEntity}
+        setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+        isRelationReversed={isRelationReversed}
+        onLabelClick={storageHelpers.handleAddFilter}
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
-        numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={contextFilters}
-        search={searchTerm}
-        handleClearSelectedElements={handleClearSelectedElements}
-        variant="medium"
-        warning={true}
-        warningMessage={t_i18n(
-          'Be careful, you are about to delete the selected entities (not the relationships!).',
-        )}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={isRelationReversed}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
-            stixCoreObjectTypes,
-          )}
-          targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
-            stixCoreObjectTypes,
-          )}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          paginationOptions={paginationOptions}
-          connectionKey="Pagination_stixCoreObjects"
-          paddingRight={paddingRightButtonAdd ?? 220}
-        />
-      </Security>
-    </>
+    </ListLines>
+    <ToolBar
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      numberOfSelectedElements={numberOfSelectedElements}
+      selectAll={selectAll}
+      filters={contextFilters}
+      search={searchTerm}
+      handleClearSelectedElements={handleClearSelectedElements}
+      variant="medium"
+      warning={true}
+      warningMessage={t_i18n(
+        'Be careful, you are about to delete the selected entities (not the relationships!).',
+      )}
+    />
+  </>
   );
 };
 

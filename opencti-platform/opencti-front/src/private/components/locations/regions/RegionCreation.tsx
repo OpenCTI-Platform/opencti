@@ -7,8 +7,10 @@ import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
+import { MESSAGING$ } from 'src/relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -115,12 +117,16 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
           updater(store, 'regionAdd');
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Region')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -228,7 +234,7 @@ const RegionCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a region')}
-      variant={DrawerVariant.create}
+      controlledDial={CreateEntityControlledDial('entity_Region')}
     >
       {({ onClose }) => (
         <RegionCreationForm

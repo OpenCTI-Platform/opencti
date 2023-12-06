@@ -115,7 +115,7 @@ const StixCoreRelationshipCreationForm = ({
   handleReverseRelation,
   handleResetSelection,
   onSubmit,
-  handleClose,
+  createAnother,
   defaultConfidence,
   defaultStartTime,
   defaultStopTime,
@@ -323,7 +323,7 @@ const StixCoreRelationshipCreationForm = ({
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
@@ -332,22 +332,32 @@ const StixCoreRelationshipCreationForm = ({
               </div>
             )}
             <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
+              {/* <Button
+                variant="outlined"
+                onClick={(e) => {
+                  if (typeof createAnother === 'function') {
+                    createAnother(true);
+                  }
+                  submitForm(e);
+                }}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t_i18n('Cancel')}
-              </Button>
+                {t_i18n('Create and Create Another')}
+              </Button> */}
               <Button
                 variant="contained"
-                color="secondary"
-                onClick={submitForm}
+                color="primary"
+                onClick={(e) => {
+                  if (typeof createAnother === 'function') {
+                    createAnother(false);
+                  }
+                  submitForm(e);
+                }}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t_i18n('Create')}
+                {t_i18n('Create and Finish')}
               </Button>
             </div>
           </div>

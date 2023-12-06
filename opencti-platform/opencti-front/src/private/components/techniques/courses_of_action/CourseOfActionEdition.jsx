@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
@@ -28,7 +30,7 @@ class CourseOfActionEdition extends Component {
   }
 
   render() {
-    const { courseOfActionId } = this.props;
+    const { t, courseOfActionId } = this.props;
     return (
       <QueryRenderer
         query={courseOfActionEditionQuery}
@@ -39,6 +41,18 @@ class CourseOfActionEdition extends Component {
               <CourseOfActionEditionContainer
                 courseOfAction={props.courseOfAction}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
               />
             );
           }
