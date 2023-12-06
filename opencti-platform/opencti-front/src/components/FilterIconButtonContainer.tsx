@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import { InformationOutline } from 'mdi-material-ui';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
@@ -143,7 +143,6 @@ FilterIconButtonContainerProps
   setHasRenderedRef,
 }) => {
   const { t } = useFormatter();
-  const theme = useTheme();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
@@ -313,9 +312,9 @@ FilterIconButtonContainerProps
               }
             >
               <Box sx={{
-                padding: '8px',
+                padding: '8px 4px',
                 display: 'flex',
-                ...(othersFilters.length > 0 && backgroundGroupingChipsStyle),
+                ...backgroundGroupingChipsStyle,
               }}>
               <Chip
                 color={chipColor}
@@ -356,11 +355,11 @@ FilterIconButtonContainerProps
               />
               </Box>
             </Tooltip>
-            {isNotLastFilter && (
+            {isNotLastFilter ? (
               <Box sx={{
-                padding: '8px',
+                padding: '8px 4px',
                 display: 'flex',
-                ...(othersFilters.length > 0 && backgroundGroupingChipsStyle),
+                ...backgroundGroupingChipsStyle,
               }}>
               <FilterIconButtonGlobalOperator
                 currentIndex={index}
@@ -369,26 +368,34 @@ FilterIconButtonContainerProps
                 globalMode={globalMode}
                 handleSwitchGlobalMode={handleSwitchGlobalMode}/>
               </Box>
-            )}
+            ) : <Box sx={{
+              position: 'relative',
+              zIndex: 0,
+            }}>
+              <Tooltip
+              title={t(
+                'The operators and modes are restricted for these filters.',
+              )}
+            >
+              <InformationOutline
+                fontSize="small"
+                color="primary"
+                style={{ position: 'absolute', zIndex: 1, top: -10, left: -10 }}
+              />
+            </Tooltip>
+            </Box>}
           </Fragment>
         );
       })}
 
       { displayedSpecificFilters.length > 0 && othersFilters.length > 0
       && <Box sx={{
-        padding: '4px 16px',
+        padding: '8px 4px 8px 8px',
         display: 'flex',
       }}>
-        <Box sx={{
-          borderRadius: '5px',
-          fontFamily: 'Consolas, monaco, monospace',
-          backgroundColor: theme?.palette.action?.selected,
-          padding: '0 8px',
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          {t('AND')}
-        </Box>
+          <div className={classOperator} onClick={handleSwitchGlobalMode}>
+            {t(globalMode.toUpperCase())}
+          </div>
       </Box>
       }
 
@@ -427,9 +434,8 @@ FilterIconButtonContainerProps
               }
             >
               <Box sx={{
-                padding: '8px',
+                padding: '8px 4px',
                 display: 'flex',
-                ...(displayedSpecificFilters.length > 0 && backgroundGroupingChipsStyle),
               }}>
               <Chip
                 color={chipColor}
@@ -472,9 +478,8 @@ FilterIconButtonContainerProps
             </Tooltip>
             {isNotLastFilter && (
               <Box sx={{
-                padding: '8px',
+                padding: '8px 4px',
                 display: 'flex',
-                ...(displayedSpecificFilters.length > 0 && backgroundGroupingChipsStyle),
               }}>
 
                 <FilterIconButtonGlobalOperator
