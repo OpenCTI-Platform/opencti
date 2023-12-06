@@ -1,0 +1,12 @@
+FROM node:20-alpine AS app
+
+WORKDIR /opt
+RUN apk add tini python3 py3-pip python3-dev git
+COPY opencti ./
+RUN pip3 install --no-cache-dir --requirement ./dependencies/requirements.txt
+ENV PYTHONUNBUFFERED=1
+ENV NODE_OPTIONS=--max_old_space_size=12288
+ENV NODE_ENV=production
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "build/back.js"]
