@@ -13,13 +13,16 @@ import {
   PARTICIPANT_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER,
+  WORKFLOW_FILTER,
 } from './filtering-constants';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixObject } from '../../types/stix-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
+import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
+import type { BasicWorkflowStatus } from '../../types/store';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -61,9 +64,17 @@ const STIX_RESOLUTION_MAP_PATHS: Record<string, string> = {
  * For instance, labels are entities internally, and filter.values would contain these entities internal ids.
  * In Stix, the labels are stored in plain text: we need to replace the ids in filter.values with their resolution.
  */
-const resolveFilter = (filter: Filter, resolutionMap: FilterResolutionMap): Filter => {
-  const newFilterValues: string [] = [];
-  filter.values.forEach((v) => {
+const resolveFilter = async (
+  context: AuthContext,
+  user: AuthUser,
+  filter: Filter,
+  resolutionMap: FilterResolutionMap
+): Promise<Filter> => {
+  const { key, values } = filter;
+  let newFilterValues: string [] = [];
+
+  // 1. add the values from the resolution map if needed
+  values.forEach((v) => {
     const resolution = resolutionMap.get(v);
     if (resolution) {
       newFilterValues.push(resolution);
@@ -71,6 +82,19 @@ const resolveFilter = (filter: Filter, resolutionMap: FilterResolutionMap): Filt
       newFilterValues.push(v);
     }
   });
+
+  // 2. handle the special case of workflow filter
+  if (key.includes(WORKFLOW_FILTER)) {
+    // get all the statuses
+    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) as BasicWorkflowStatus[];
+    // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
+    statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
+    const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+    // replace filter values with the statusIds
+    // !!! it works to do the mode/operator filter on the status (and not on the template)
+    // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
+    newFilterValues = statusIds;
+  }
 
   return {
     ...filter,
@@ -81,11 +105,18 @@ const resolveFilter = (filter: Filter, resolutionMap: FilterResolutionMap): Filt
 /**
  * Recursively call resolveFilter inside a filter group
  */
-export const resolveFilterGroup = (filterGroup: FilterGroup, resolutionMap: FilterResolutionMap): FilterGroup => {
+export const resolveFilterGroup = async (
+  context: AuthContext,
+  user: AuthUser,
+  filterGroup: FilterGroup,
+  resolutionMap: FilterResolutionMap
+): Promise<FilterGroup> => {
+  const newFilterGroups = await Promise.all(filterGroup.filterGroups.map((fg) => resolveFilterGroup(context, user, fg, resolutionMap)));
+  const newFilters = await Promise.all(filterGroup.filters.map((f) => resolveFilter(context, user, f, resolutionMap)));
   return {
     ...filterGroup,
-    filters: filterGroup.filters.map((f) => resolveFilter(f, resolutionMap)),
-    filterGroups: filterGroup.filterGroups.map((fg) => resolveFilterGroup(fg, resolutionMap))
+    filters: newFilters,
+    filterGroups: newFilterGroups,
   };
 };
 
@@ -157,7 +188,7 @@ export const resolveFilterGroupValuesWithCache = async (context: AuthContext, us
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const resolutionMap = await buildResolutionMapForFilterGroup(context, user, filterGroup, cache);
 
-  return resolveFilterGroup(filterGroup, resolutionMap);
+  return resolveFilterGroup(context, user, filterGroup, resolutionMap);
 };
 
 //----------------------------------------------------------------------------------------------------------------------
