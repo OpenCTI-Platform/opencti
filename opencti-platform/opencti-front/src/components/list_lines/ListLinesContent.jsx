@@ -242,7 +242,6 @@ class ListLinesContent extends Component {
       <div
         style={{
           height: propHeight || 'auto',
-          maxHeight: propHeight || 'auto',
           width: propWidth || 'auto',
           maxWidth: propWidth || 'auto',
           overflowY: propHeight ? 'auto' : 'hidden',

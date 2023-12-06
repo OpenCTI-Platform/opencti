@@ -6,6 +6,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootExternalReferenceSubscription($id: ID!) {
@@ -60,7 +61,7 @@ class RootExternalReference extends Component {
             if (props) {
               if (props.externalReference && props.connectorsForImport) {
                 return (
-                  <div>
+                  <RelateComponentContextProvider>
                     <Route
                       exact
                       path="/dashboard/analyses/external_references/:externalReferenceId"
@@ -72,7 +73,7 @@ class RootExternalReference extends Component {
                         />
                       )}
                     />
-                  </div>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

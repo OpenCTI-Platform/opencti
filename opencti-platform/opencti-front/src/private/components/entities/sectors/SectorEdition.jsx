@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { compose } from 'ramda';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import SectorEditionContainer from './SectorEditionContainer';
 import { sectorEditionOverviewFocus } from './SectorEditionOverview';
 import Loader from '../../../../components/Loader';
+import inject18n from '../../../../components/i18n';
 
 export const sectorEditionQuery = graphql`
   query SectorEditionContainerQuery($id: String!) {
@@ -26,7 +30,7 @@ class SectorEdition extends Component {
   }
 
   render() {
-    const { sectorId } = this.props;
+    const { t, sectorId } = this.props;
     return (
       <QueryRenderer
         query={sectorEditionQuery}
@@ -34,7 +38,22 @@ class SectorEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <SectorEditionContainer sector={props.sector} handleClose={this.handleClose.bind(this)} />
+              <SectorEditionContainer
+                sector={props.sector}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
+              />
             );
           }
           return <Loader variant="inElement" />;
@@ -48,4 +67,4 @@ SectorEdition.propTypes = {
   sectorId: PropTypes.string,
 };
 
-export default SectorEdition;
+export default compose(inject18n)(SectorEdition);

@@ -19,6 +19,7 @@ const styles = () => ({
   search: {
     marginLeft: 'auto',
     marginRight: ' 20px',
+    display: 'flex',
   },
 });
 
@@ -66,6 +67,12 @@ class AddSubNarrative extends Component {
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <NarrativeCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+              />
             </div>
           )}
         >
@@ -85,12 +92,6 @@ class AddSubNarrative extends Component {
                   />
                 );
               }}
-            />
-            <NarrativeCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={paginationOptions}
             />
           </>
         </Drawer>

@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import NarrativeDetails from './NarrativeDetails';
-import NarrativeEdition from './NarrativeEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -63,9 +60,6 @@ class NarrativeComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={narrative.id}
           defaultMarkings={narrative.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NarrativeEdition narrativeId={narrative.id} />
-        </Security>
       </>
     );
   }

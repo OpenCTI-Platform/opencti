@@ -3209,10 +3209,11 @@ const WorkbenchFileContentComponent = ({
         <Fab
           onClick={() => handleOpenEntity(null, null)}
           color="secondary"
-          aria-label="Add"
+          aria-label={t_i18n('Add an entity')}
           className={classes.createButton}
+          variant="extended"
         >
-          <Add />
+          {t_i18n('Add an entity')} <Add />
         </Fab>
         <Drawer
           open={entityStep != null}
@@ -3454,10 +3455,11 @@ const WorkbenchFileContentComponent = ({
         <Fab
           onClick={() => handleOpenObservable(null, null)}
           color="secondary"
-          aria-label="Add"
+          aria-label={t_i18n('Add an observable')}
           className={classes.createButton}
+          variant="extended"
         >
-          <Add />
+          {t_i18n('Add an observable')} <Add />
         </Fab>
         <Drawer
           open={displayObservable}
@@ -3996,10 +3998,11 @@ const WorkbenchFileContentComponent = ({
         <Fab
           onClick={() => handleOpenContainer(null, null)}
           color="secondary"
-          aria-label="Add"
+          aria-label={t_i18n('Add a container')}
           className={classes.createButton}
+          variant="extended"
         >
-          <Add />
+          {t_i18n('Add a container')} <Add />
         </Fab>
         <Drawer
           open={containerStep != null}

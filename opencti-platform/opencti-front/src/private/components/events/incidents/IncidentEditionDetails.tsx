@@ -16,6 +16,7 @@ import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEdi
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IncidentDelete from './IncidentDelete';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -247,6 +248,7 @@ IncidentEditionDetailsProps
               values={values.references}
               id={incident.id}
               open={false}
+              deleteBtn={<IncidentDelete id={incident.id} />}
             />
           )}
         </Form>

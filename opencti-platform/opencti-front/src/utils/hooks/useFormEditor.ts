@@ -3,6 +3,8 @@ import { useMutation, UseMutationConfig } from 'react-relay';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
 import { MutationParameters } from 'relay-runtime';
 import { Option } from '@components/common/form/ReferenceField';
+import { useFormatter } from 'src/components/i18n';
+import { MESSAGING$ } from 'src/relay/environment';
 import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
 
@@ -57,6 +59,11 @@ const useFormEditor = (
   const [commitFieldPatch] = useMutation(queries.fieldPatch);
   const [commitEditionFocus] = useMutation(queries.editionFocus);
   const schemaFields = (validator.describe() as SchemaObjectDescription).fields;
+  const { t_i18n } = useFormatter();
+
+  const handleToastUpdate = () => {
+    MESSAGING$.notifySuccess(t_i18n('Relationship successfully edited'));
+  };
 
   const validate = (
     name: string,
@@ -100,6 +107,7 @@ const useFormEditor = (
                 relationship_type: relation,
               },
             },
+            onCompleted: handleToastUpdate,
           });
         }
         if (removed.length > 0) {
@@ -109,6 +117,7 @@ const useFormEditor = (
               toId: removed[0].value,
               relationship_type: relation,
             },
+            onCompleted: handleToastUpdate,
           });
         }
       });
@@ -116,7 +125,10 @@ const useFormEditor = (
   };
   const changeMarking = (name: string, values: Option[], operation: string | undefined) => {
     if (operation === 'replace') {
-      commitFieldPatch({ variables: { id: data.id, input: [{ key: name, value: values.map((m) => m.value), operation }] } });
+      commitFieldPatch({
+        variables: { id: data.id, input: [{ key: name, value: values.map((m) => m.value), operation }] },
+        onCompleted: handleToastUpdate,
+      });
     } else changeMultiple(name, values, 'object-marking', convertMarkings);
   };
   const changeAssignee = (name: string, values: Option[]) => {
@@ -151,6 +163,7 @@ const useFormEditor = (
               },
             ],
           },
+          onCompleted: handleToastUpdate,
         });
       });
     }
@@ -163,6 +176,7 @@ const useFormEditor = (
           focusOn: name,
         },
       },
+      onCompleted: handleToastUpdate,
     });
   };
   const changeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
@@ -177,6 +191,7 @@ const useFormEditor = (
             id: data.id,
             input: [{ key: name, value: finalValue || '' }],
           },
+          onCompleted: handleToastUpdate,
         });
       });
     }
@@ -189,6 +204,7 @@ const useFormEditor = (
           id: data.id,
           input: [{ key: 'grantable_groups', value: finalValues }],
         },
+        onCompleted: handleToastUpdate,
       });
     });
   };

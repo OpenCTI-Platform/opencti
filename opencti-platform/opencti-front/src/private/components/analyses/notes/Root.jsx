@@ -13,10 +13,11 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import NoteEdition from './NoteEdition';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -94,100 +95,102 @@ class RootNote extends Component {
               if (props.note) {
                 const { note } = props;
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/analyses/notes/${note.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
-                    <CollaborativeSecurity
-                      data={note}
-                      needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-                      placeholder={
-                        <ContainerHeader
-                          container={note}
-                          PopoverComponent={<NotePopover note={note} />}
-                        />
-                      }
-                    >
-                      <ContainerHeader
-                        container={props.note}
-                        PopoverComponent={<NotePopover note={note} />}
-                      />
-                    </CollaborativeSecurity>
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
+                  <RelateComponentContextProvider>
+                    <div
+                      style={{
+                        paddingRight: location.pathname.includes(
+                          `/dashboard/analyses/notes/${note.id}/knowledge`,
+                        )
+                          ? 200
+                          : 0,
                       }}
                     >
-                      <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/analyses/notes/${note.id}/knowledge`,
-                          )
-                            ? `/dashboard/analyses/notes/${note.id}/knowledge`
-                            : location.pathname
+                      <CollaborativeSecurity
+                        data={note}
+                        needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+                        placeholder={
+                          <ContainerHeader
+                            container={note}
+                            EditComponent={<NoteEdition noteId={note.id} />}
+                          />
                         }
                       >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/notes/${note.id}`}
-                          value={`/dashboard/analyses/notes/${note.id}`}
-                          label={t('Overview')}
+                        <ContainerHeader
+                          container={props.note}
+                          EditComponent={<NoteEdition noteId={note.id} />}
                         />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/notes/${note.id}/files`}
-                          value={`/dashboard/analyses/notes/${note.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/notes/${note.id}/history`}
-                          value={`/dashboard/analyses/notes/${note.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
-                    <Switch>
-                      <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId"
-                        render={(routeProps) => (
-                          <Note {...routeProps} note={props.note} />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/files"
-                        render={(routeProps) => (
-                          <FileManager
-                            {...routeProps}
-                            id={noteId}
-                            connectorsExport={props.connectorsForExport}
-                            connectorsImport={props.connectorsForImport}
-                            entity={props.note}
+                      </CollaborativeSecurity>
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={
+                            location.pathname.includes(
+                              `/dashboard/analyses/notes/${note.id}/knowledge`,
+                            )
+                              ? `/dashboard/analyses/notes/${note.id}/knowledge`
+                              : location.pathname
+                          }
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/notes/${note.id}`}
+                            value={`/dashboard/analyses/notes/${note.id}`}
+                            label={t('Overview')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={noteId}
-                            withoutRelations={true}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/notes/${note.id}/files`}
+                            value={`/dashboard/analyses/notes/${note.id}/files`}
+                            label={t('Data')}
                           />
-                        )}
-                      />
-                    </Switch>
-                  </div>
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/notes/${note.id}/history`}
+                            value={`/dashboard/analyses/notes/${note.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Switch>
+                        <Route
+                          exact
+                          path="/dashboard/analyses/notes/:noteId"
+                          render={(routeProps) => (
+                            <Note {...routeProps} note={props.note} />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/notes/:noteId/files"
+                          render={(routeProps) => (
+                            <FileManager
+                              {...routeProps}
+                              id={noteId}
+                              connectorsExport={props.connectorsForExport}
+                              connectorsImport={props.connectorsForImport}
+                              entity={props.note}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/notes/:noteId/history"
+                          render={(routeProps) => (
+                            <StixCoreObjectHistory
+                              {...routeProps}
+                              stixCoreObjectId={noteId}
+                              withoutRelations={true}
+                            />
+                          )}
+                        />
+                      </Switch>
+                    </div>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

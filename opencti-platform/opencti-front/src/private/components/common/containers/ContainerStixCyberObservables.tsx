@@ -17,6 +17,7 @@ import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObser
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import ContainerAddStixCoreObjectsSelfContained from './ContainerAddStixCoreObjectsSelfContained';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -240,6 +241,14 @@ ContainerStixCyberObservablesComponentProps
             filters={filters}
             paginationOptions={queryPaginationOptions}
             availableEntityTypes={['Stix-Cyber-Observable']}
+            createButton={queryRef && (
+              <ContainerAddStixCoreObjectsSelfContained
+                queryRef={queryRef}
+                setNumberOfElements={handleSetNumberOfElements}
+                paginationOptions={queryPaginationOptions}
+                isObservable={true}
+              />
+            )}
           >
             {queryRef && (
               <React.Suspense
@@ -260,8 +269,6 @@ ContainerStixCyberObservablesComponentProps
                   queryRef={queryRef}
                   paginationOptions={queryPaginationOptions}
                   dataColumns={buildColumns(platformModuleHelpers)}
-                  onTypesChange={handleToggle}
-                  openExports={openExports}
                   selectedElements={selectedElements}
                   deSelectedElements={deSelectedElements}
                   onToggleEntity={onToggleEntity}

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import EventEditionContainer from './EventEditionContainer';
@@ -38,7 +40,7 @@ class EventEdition extends Component {
   }
 
   render() {
-    const { eventId } = this.props;
+    const { t, eventId } = this.props;
     return (
       <QueryRenderer
         query={eventEditionQuery}
@@ -46,7 +48,22 @@ class EventEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <EventEditionContainer event={props.event} handleClose={this.handleClose.bind(this)} />
+              <EventEditionContainer
+                event={props.event}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={({ onOpen }) => (
+                  <Button
+                    style={{
+                      marginLeft: '3px',
+                      fontSize: 'small',
+                    }}
+                    variant='outlined'
+                    onClick={onOpen}
+                  >
+                    {t('Edit')} <Create />
+                  </Button>
+                )}
+              />
             );
           }
           return <Loader variant="inElement" />;

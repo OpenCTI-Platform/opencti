@@ -6,12 +6,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import PositionPopover from './PositionPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -20,6 +21,9 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import PositionEdition from './PositionEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -71,6 +75,9 @@ class RootPosition extends Component {
       subscription,
       variables: { id: positionId },
     });
+    this.state = {
+      reversed: false,
+    };
   }
 
   componentWillUnmount() {
@@ -87,7 +94,7 @@ class RootPosition extends Component {
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Route path="/dashboard/locations/positions/:positionId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -135,7 +142,14 @@ class RootPosition extends Component {
                       entityType="Position"
                       disableSharing={true}
                       stixDomainObject={props.position}
-                      PopoverComponent={<PositionPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <PositionEdition positionId={position.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={position.id}
+                        defaultStartTime={position.created_at}
+                        defaultStopTime={position.updated_at}
+                                       />}
                       enableQuickSubscription={true}
                       isOpenctiAlias={true}
                     />
@@ -276,7 +290,7 @@ class RootPosition extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

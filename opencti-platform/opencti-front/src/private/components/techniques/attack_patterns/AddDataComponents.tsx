@@ -19,7 +19,8 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginRight: '20px',
+    display: 'flex',
   },
 }));
 
@@ -65,6 +66,12 @@ const AddDataComponents: FunctionComponent<{
               variant="inDrawer"
               onSubmit={handleSearch}
             />
+            <DataComponentCreation
+              contextual={true}
+              display={open}
+              inputValue={search}
+              paginationOptions={paginationOptions}
+            />
           </div>
         )}
       >
@@ -79,12 +86,6 @@ const AddDataComponents: FunctionComponent<{
           </React.Suspense>
         )}
       </Drawer>
-      <DataComponentCreation
-        contextual={true}
-        display={open}
-        inputValue={search}
-        paginationOptions={paginationOptions}
-      />
     </>
   );
 };

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import {
   ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
@@ -24,11 +24,13 @@ import ThreatActorIndividualEditionDemographics from './ThreatActorIndividualEdi
 import ThreatActorIndividualEditionBiographics from './ThreatActorIndividualEditionBiographics';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
+import ThreatActorIndividualDelete from './ThreatActorIndividualDelete';
 
 interface ThreatActorIndividualEditionContainerProps {
   queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
   handleClose: () => void;
   open?: boolean;
+  controlledDial?: ({ onOpen, onClose }:{ onOpen: () => void, onClose: () => void }) => React.ReactElement;
 }
 
 export const ThreatActorIndividualEditionQuery = graphql`
@@ -39,6 +41,7 @@ export const ThreatActorIndividualEditionQuery = graphql`
       ...ThreatActorIndividualEditionBiographics_ThreatActorIndividual
       ...ThreatActorIndividualEditionDemographics_ThreatActorIndividual
       ...ThreatActorIndividualDetails_ThreatActorIndividual
+      id
       editContext {
         name
         focusOn
@@ -50,7 +53,7 @@ export const ThreatActorIndividualEditionQuery = graphql`
 const THREAT_ACTOR_TYPE = 'Threat-Actor-Individual';
 const ThreatActorIndividualEditionContainer: FunctionComponent<
 ThreatActorIndividualEditionContainerProps
-> = ({ handleClose, queryRef, open }) => {
+> = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(
     ThreatActorIndividualEditionQuery,
@@ -64,10 +67,10 @@ ThreatActorIndividualEditionContainerProps
     return (
       <Drawer
         title={t_i18n('Update a threat actor individual')}
-        variant={open == null ? DrawerVariant.update : undefined}
         context={threatActorIndividual?.editContext}
         onClose={handleClose}
         open={open}
+        controlledDial={controlledDial}
       >
         {({ onClose }) => (
           <>
@@ -109,6 +112,9 @@ ThreatActorIndividualEditionContainerProps
                 context={threatActorIndividual?.editContext}
               />
             )}
+            {!useIsEnforceReference(THREAT_ACTOR_TYPE) && threatActorIndividual?.id
+              && <ThreatActorIndividualDelete id={threatActorIndividual.id} />
+            }
           </>
         )}
       </Drawer>

@@ -6,17 +6,21 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CourseOfActionEdition from './CourseOfActionEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -41,6 +45,8 @@ const courseOfActionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      created_at
+      updated_at
       ...CourseOfAction_courseOfAction
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -83,7 +89,7 @@ class RootCourseOfAction extends Component {
       },
     } = this.props;
     return (
-      <div>
+      <RelateComponentContextProvider>
         <QueryRenderer
           query={courseOfActionQuery}
           variables={{ id: courseOfActionId }}
@@ -103,8 +109,16 @@ class RootCourseOfAction extends Component {
                       entityType="Course-Of-Action"
                       disableSharing={true}
                       stixDomainObject={props.courseOfAction}
-                      PopoverComponent={<CourseOfActionPopover />}
-                      isOpenctiAlias={true}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <CourseOfActionEdition
+                          courseOfActionId={courseOfAction.id}
+                        />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={courseOfAction.id}
+                        defaultStartTime={courseOfAction.created_at}
+                        defaultStopTime={courseOfAction.updated_at}
+                                       />}
                     />
                     <Box
                       sx={{
@@ -194,7 +208,7 @@ class RootCourseOfAction extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </RelateComponentContextProvider>
     );
   }
 }

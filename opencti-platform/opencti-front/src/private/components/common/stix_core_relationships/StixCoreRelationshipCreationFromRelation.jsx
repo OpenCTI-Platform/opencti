@@ -15,6 +15,7 @@ import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import Skeleton from '@mui/material/Skeleton';
+import { Button } from '@mui/material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -57,6 +58,8 @@ const styles = (theme) => ({
     float: 'left',
   },
   search: {
+    display: 'flex',
+    alignItems: 'center',
     float: 'right',
   },
   header: {
@@ -424,6 +427,25 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               variant="inDrawer"
               onSubmit={this.handleSearch.bind(this)}
             />
+            <StixDomainObjectCreation
+              display={this.state.open}
+              inputValue={this.state.search}
+              paginationOptions={stixDomainObjectsPaginationOptions}
+              stixDomainObjectTypes={stixCoreObjectTypes}
+              controlledDial={({ onOpen }) => (
+                <Button
+                  onClick={onOpen}
+                  style={{
+                    marginLeft: '3px',
+                    fontSize: 'small',
+                  }}
+                  variant='contained'
+                  disableElevation
+                >
+                  {t('Create Entity')} <Add />
+                </Button>
+              )}
+            />
           </div>
           <div className="clearfix" />
         </div>
@@ -476,12 +498,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   <div> &nbsp; </div>
                 );
             }}
-          />
-          <StixDomainObjectCreation
-            display={this.state.open}
-            inputValue={this.state.search}
-            paginationOptions={stixDomainObjectsPaginationOptions}
-            stixDomainObjectTypes={stixCoreObjectTypes}
           />
         </div>
       </div>

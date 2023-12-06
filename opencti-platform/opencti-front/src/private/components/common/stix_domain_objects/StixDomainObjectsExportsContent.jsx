@@ -5,12 +5,9 @@ import Slide from '@mui/material/Slide';
 import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import StixDomainObjectsExportCreation from './StixDomainObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
 import inject18n from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -33,7 +30,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
   }
 
   render() {
-    const { t, data, exportContext, paginationOptions } = this.props;
+    const { t, data } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
     return (
       <>
@@ -64,14 +61,6 @@ class StixDomainObjectsExportsContentComponent extends Component {
             </div>
           )}
         </List>
-        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-          <StixDomainObjectsExportCreation
-            data={data}
-            exportContext={exportContext}
-            paginationOptions={paginationOptions}
-            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
-          />
-        </Security>
       </>
     );
   }

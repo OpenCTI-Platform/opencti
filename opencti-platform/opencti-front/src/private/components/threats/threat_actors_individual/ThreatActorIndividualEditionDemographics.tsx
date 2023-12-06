@@ -25,6 +25,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorIndividualDelete from './ThreatActorIndividualDelete';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -272,6 +273,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                   open={false}
                   values={[]}
                   id={threatActorIndividual.id}
+                  deleteBtn={<ThreatActorIndividualDelete id={threatActorIndividual.id} />}
                 />
               )}
             </Form>

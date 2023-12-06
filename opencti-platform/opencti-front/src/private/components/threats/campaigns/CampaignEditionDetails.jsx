@@ -15,6 +15,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CampaignDelete from './CampaignDelete';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionDetailsFieldPatchMutation(
@@ -213,6 +214,7 @@ const CampaignEditionDetailsComponent = (props) => {
               open={false}
               values={values.references}
               id={campaign.id}
+              deleteBtn={<CampaignDelete id={campaign.id} />}
             />
           )}
         </Form>

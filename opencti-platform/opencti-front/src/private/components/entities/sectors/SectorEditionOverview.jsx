@@ -18,6 +18,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import SectorDelete from './SectorDelete';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -255,6 +256,7 @@ const SectorEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={sector.id}
+            deleteBtn={<SectorDelete id={sector.id} />}
           />
           )}
         </Form>

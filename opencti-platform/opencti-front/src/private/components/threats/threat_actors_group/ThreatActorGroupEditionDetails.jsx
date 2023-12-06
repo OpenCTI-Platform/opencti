@@ -17,6 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorGroupDelete from './ThreatActorGroupDelete';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionDetailsFieldPatchMutation(
@@ -318,6 +319,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                   open={false}
                   values={values.references}
                   id={threatActorGroup.id}
+                  deleteBtn={<ThreatActorGroupDelete id={threatActorGroup.id} />}
                 />
               )}
             </Form>

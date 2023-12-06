@@ -663,6 +663,7 @@ const StixDomainObjectCreation = ({
   handleClose,
   paginationKey,
   paginationOptions,
+  controlledDial,
 }) => {
   const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
@@ -703,7 +704,7 @@ const StixDomainObjectCreation = ({
   };
   return (
     <div style={{ display: display ? 'block' : 'none' }}>
-      {!speeddial && (
+      {!speeddial && !controlledDial && (
         <Fab
           onClick={stateHandleOpen}
           color="secondary"
@@ -713,6 +714,10 @@ const StixDomainObjectCreation = ({
           <Add />
         </Fab>
       )}
+      {controlledDial
+        ? controlledDial({ onOpen: () => stateHandleOpen() })
+        : undefined
+      }
       {isOpen && queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixDomainPanel

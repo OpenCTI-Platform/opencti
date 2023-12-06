@@ -6,9 +6,10 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Report from './Report';
-import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -19,6 +20,8 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ReportEdition from './ReportEdition';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -92,33 +95,33 @@ class RootReport extends Component {
       },
     } = this.props;
     return (
-      <>
-        <QueryRenderer
-          query={reportQuery}
-          variables={{ id: reportId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.report) {
-                const { report } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/analyses/reports/${report.id}/entities`,
-                  )
-                  || location.pathname.includes(
-                    `/dashboard/analyses/reports/${report.id}/observables`,
-                  )
-                ) {
-                  paddingRight = 250;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/analyses/reports/${report.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                return (
+      <QueryRenderer
+        query={reportQuery}
+        variables={{ id: reportId }}
+        render={({ props }) => {
+          if (props) {
+            if (props.report) {
+              const { report } = props;
+              let paddingRight = 0;
+              if (
+                location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/entities`,
+                )
+                || location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/observables`,
+                )
+              ) {
+                paddingRight = 250;
+              }
+              if (
+                location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/content`,
+                )
+              ) {
+                paddingRight = 350;
+              }
+              return (
+                <RelateComponentContextProvider>
                   <div style={{ paddingRight }} data-testid="report-details-page">
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Analyses') },
@@ -128,7 +131,11 @@ class RootReport extends Component {
                     />
                     <ContainerHeader
                       container={report}
-                      PopoverComponent={<ReportPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <ReportEdition
+                          reportId={report.id}
+                        />
+                      </Security>}
                       enableQuickSubscription={true}
                       enableQuickExport={true}
                       enableAskAi={true}
@@ -261,14 +268,14 @@ class RootReport extends Component {
                       />
                     </Switch>
                   </div>
-                );
-              }
-              return <ErrorNotFound />;
+                </RelateComponentContextProvider>
+              );
             }
-            return <Loader />;
-          }}
-        />
-      </>
+            return <ErrorNotFound />;
+          }
+          return <Loader />;
+        }}
+      />
     );
   }
 }

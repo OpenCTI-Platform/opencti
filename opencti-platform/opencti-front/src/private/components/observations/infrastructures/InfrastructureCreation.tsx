@@ -6,9 +6,10 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -144,6 +145,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -152,6 +154,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Infrastructure')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -297,7 +300,21 @@ const InfrastructureCreation = ({ paginationOptions }: {
   return (
     <Drawer
       title={t_i18n('Create an infrastructure')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          style={{
+            marginLeft: '10px',
+            padding: '7px 10px',
+          }}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+          aria-label={t_i18n('Add')}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Infrastructure')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <InfrastructureCreationForm

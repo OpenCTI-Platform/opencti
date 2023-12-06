@@ -31,7 +31,8 @@ const styles = (theme) => ({
   },
   search: {
     marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginRight: '20px',
+    display: 'flex',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -101,6 +102,12 @@ class AddSubAttackPattern extends Component {
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
+              <AttackPatternCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+              />
             </div>
           )}
         >
@@ -122,12 +129,6 @@ class AddSubAttackPattern extends Component {
                   />
                 );
               }}
-            />
-            <AttackPatternCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={paginationOptions}
             />
           </>
         </Drawer>

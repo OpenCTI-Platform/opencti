@@ -19,6 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import GroupingDelete from './GroupingDelete';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -282,6 +283,7 @@ const GroupingEditionOverviewComponent = (props) => {
                 open={false}
                 values={values.references}
                 id={grouping.id}
+                deleteBtn={<GroupingDelete id={grouping.id} />}
               />
             )}
           </Form>

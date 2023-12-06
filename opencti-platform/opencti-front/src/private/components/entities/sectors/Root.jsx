@@ -10,7 +10,6 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -20,6 +19,11 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import SectorEdition from './SectorEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -45,6 +49,8 @@ const sectorQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Sector_sector
       ...SectorKnowledge_sector
       ...FileImportViewer_entity
@@ -89,7 +95,7 @@ class RootSector extends Component {
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -136,7 +142,14 @@ class RootSector extends Component {
                       stixDomainObject={sector}
                       isOpenctiAlias={true}
                       enableQuickSubscription={true}
-                      PopoverComponent={<SectorPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <SectorEdition sectorId={sector.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={sector.id}
+                        defaultStartTime={sector.created_at}
+                        defaultStopTime={sector.updated_at}
+                                       />}
                     />
                     <Box
                       sx={{
@@ -270,7 +283,7 @@ class RootSector extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

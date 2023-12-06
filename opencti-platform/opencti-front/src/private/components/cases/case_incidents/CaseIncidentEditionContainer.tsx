@@ -7,16 +7,22 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
+import CaseIncidentDelete from './CaseIncidentDelete';
 
 interface CaseIncidentEditionContainerProps {
   queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
   handleClose: () => void
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
 export const caseIncidentEditionQuery = graphql`
   query CaseIncidentEditionContainerCaseQuery($id: String!) {
     caseIncident(id: $id) {
+      id
       ...CaseIncidentEditionOverview_case
       editContext {
         name
@@ -28,7 +34,12 @@ export const caseIncidentEditionQuery = graphql`
 
 const CaseIncidentEditionContainer: FunctionComponent<
 CaseIncidentEditionContainerProps
-> = ({ queryRef, handleClose, open }) => {
+> = ({
+  queryRef,
+  handleClose,
+  controlledDial,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
   const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
   if (caseIncident === null) {
@@ -37,18 +48,26 @@ CaseIncidentEditionContainerProps
   return (
     <Drawer
       title={t_i18n('Update an incident response')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={caseIncident?.editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
-        <CaseIncidentEditionOverview
-          caseRef={caseIncident as CaseIncidentEditionOverview_case$key}
-          context={caseIncident?.editContext}
-          enableReferences={useIsEnforceReference('Case-Incident')}
-          handleClose={onClose}
-        />
+        <>
+          <CaseIncidentEditionOverview
+            caseRef={caseIncident as CaseIncidentEditionOverview_case$key}
+            context={caseIncident?.editContext}
+            enableReferences={useIsEnforceReference('Case-Incident')}
+            handleClose={onClose}
+          />
+          {!useIsEnforceReference('Case-Incident') && caseIncident?.id
+            && <CaseIncidentDelete id={caseIncident.id} />
+          }
+        </>
       )}
     </Drawer>
   );

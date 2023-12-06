@@ -24,6 +24,7 @@ const styles = () => ({
   search: {
     marginLeft: 'auto',
     marginRight: ' 20px',
+    display: 'flex',
   },
 });
 
@@ -73,6 +74,12 @@ class AddNotes extends Component {
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
+              />
+              <NoteCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={{ search: this.state.search }}
               />
             </div>
           )}
@@ -136,12 +143,6 @@ class AddNotes extends Component {
             }}
           />
         </Drawer>
-        <NoteCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={{ search: this.state.search }}
-        />
       </>
     );
   }

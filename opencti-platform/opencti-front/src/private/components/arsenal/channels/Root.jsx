@@ -6,12 +6,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -19,6 +20,9 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ChannelEdition from './ChannelEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -44,6 +48,8 @@ const channelQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Channel_channel
       ...ChannelKnowledge_channel
       ...FileImportViewer_entity
@@ -88,7 +94,7 @@ class RootChannel extends Component {
     } = this.props;
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
     return (
-      <div>
+      <RelateComponentContextProvider>
         <Route path="/dashboard/arsenal/channels/:channelId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -133,7 +139,16 @@ class RootChannel extends Component {
                     <StixDomainObjectHeader
                       entityType="Channel"
                       stixDomainObject={channel}
-                      PopoverComponent={<ChannelPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <ChannelEdition
+                          channelId={channel.id}
+                        />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={channel.id}
+                        defaultStartTime={channel.created_at}
+                        defaultStopTime={channel.updated_at}
+                                       />}
                       enableQuickSubscription={true}
                     />
                     <Box
@@ -254,7 +269,7 @@ class RootChannel extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </RelateComponentContextProvider>
     );
   }
 }

@@ -10,6 +10,9 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -18,13 +21,13 @@ import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomain
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseRft from './CaseRft';
-import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CaseRftEdition from './CaseRftEdition';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -105,7 +108,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     }
   }
   return (
-    <>
+    <RelateComponentContextProvider>
       {caseData ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
@@ -116,7 +119,9 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
           />
           <ContainerHeader
             container={caseData}
-            PopoverComponent={<CaseRftPopover id={caseData.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CaseRftEdition caseId={caseData.id} />
+            </Security>}
             enableQuickSubscription={true}
             enableAskAi={true}
           />
@@ -256,7 +261,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

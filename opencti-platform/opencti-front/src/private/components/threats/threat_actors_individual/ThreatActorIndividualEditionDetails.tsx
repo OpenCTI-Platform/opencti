@@ -23,6 +23,7 @@ import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated_
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorIndividualDelete from './ThreatActorIndividualDelete';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -375,6 +376,7 @@ ThreatActorIndividualEditionDetailsProps
                   open={false}
                   values={values.references}
                   id={threatActorIndividual.id}
+                  deleteBtn={<ThreatActorIndividualDelete id={threatActorIndividual.id} />}
                 />
               )}
             </Form>

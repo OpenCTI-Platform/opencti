@@ -6,9 +6,10 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ObservedData from './ObservedData';
-import ObservedDataPopover from './ObservedDataPopover';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -17,6 +18,8 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ObservedDataEdition from './ObservedDataEdition';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -85,7 +88,7 @@ class RootObservedData extends Component {
       },
     } = this.props;
     return (
-      <>
+      <RelateComponentContextProvider>
         <QueryRenderer
           query={observedDataQuery}
           variables={{ id: observedDataId }}
@@ -114,7 +117,9 @@ class RootObservedData extends Component {
                   />
                   <ContainerHeader
                     container={observedData}
-                    PopoverComponent={<ObservedDataPopover />}
+                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <ObservedDataEdition observedDataId={observedData.id} />
+                    </Security>}
                   />
                   <Box
                     sx={{
@@ -225,7 +230,7 @@ class RootObservedData extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

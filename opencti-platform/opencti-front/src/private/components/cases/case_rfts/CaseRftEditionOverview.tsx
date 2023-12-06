@@ -26,6 +26,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CaseRftDelete from './CaseRftDelete';
 
 export const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
@@ -404,6 +405,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               open={false}
               values={values.references}
               id={caseData.id}
+              deleteBtn={<CaseRftDelete id={caseData.id} />}
             />
           )}
         </Form>

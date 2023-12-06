@@ -2,12 +2,9 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
-import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -24,12 +21,11 @@ const useStyles = makeStyles(() => ({
 
 const StixCyberObservableHeaderComponent = ({
   stixCyberObservable,
-  isArtifact,
   disableSharing,
+  EditComponent,
+  RelateComponent,
 }) => {
   const classes = useStyles();
-  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   return (
     <>
       <Typography
@@ -47,16 +43,9 @@ const StixCyberObservableHeaderComponent = ({
               variant="header"
             />
           )}
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixCyberObservable.id} />
-          )}
-          {isKnowledgeEnricher && (
-            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} variant="button" />
-          )}
-          <StixCyberObservablePopover
-            stixCyberObservableId={stixCyberObservable.id}
-            isArtifact={isArtifact}
-          />
+          <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+          {EditComponent}
+          {RelateComponent}
         </div>
       </div>
       <div className="clearfix" />

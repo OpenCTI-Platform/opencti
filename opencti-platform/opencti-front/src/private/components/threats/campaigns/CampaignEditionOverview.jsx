@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CampaignDelete from './CampaignDelete';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -260,6 +261,7 @@ const CampaignEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={campaign.id}
+              deleteBtn={<CampaignDelete id={campaign.id} />}
             />
           )}
         </Form>

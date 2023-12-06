@@ -10,13 +10,16 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import Security from 'src/utils/Security';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorIndividualQuery.graphql';
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
-import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividual from './ThreatActorIndividual';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -25,6 +28,7 @@ import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -51,6 +55,8 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      first_seen
+      last_seen
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -120,7 +126,7 @@ const RootThreatActorIndividualComponent = ({
           ]}
         />
       </Route>
-      <>
+      <RelateComponentContextProvider>
         {data ? (
           <div
             style={{
@@ -140,7 +146,16 @@ const RootThreatActorIndividualComponent = ({
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={data}
-              PopoverComponent={ThreatActorIndividualPopover}
+              EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <ThreatActorIndividualEdition
+                  threatActorIndividualId={data.id}
+                />
+              </Security>}
+              RelateComponent={<CreateRelationshipButtonComponent
+                id={data.id}
+                defaultStartTime={data.first_seen}
+                defaultStopTime={data.last_seen}
+                               />}
               enableQuickSubscription={true}
             />
             <Box
@@ -251,7 +266,7 @@ const RootThreatActorIndividualComponent = ({
         ) : (
           <ErrorNotFound />
         )}
-      </>
+      </RelateComponentContextProvider>
     </>
   );
 };

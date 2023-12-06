@@ -8,12 +8,8 @@ export default class DashboardPage {
     return this.page.getByTestId('dashboard-page');
   }
 
-  openButtonModal() {
-    return this.page.getByLabel('Create', { exact: true });
-  }
-
   addNewDashboard() {
-    return this.page.getByLabel('Create dashboard', { exact: true });
+    return this.page.getByTestId('CreateDashboard');
   }
 
   getDashboardNameInput() {

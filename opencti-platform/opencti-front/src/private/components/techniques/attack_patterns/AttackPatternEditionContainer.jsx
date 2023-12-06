@@ -7,12 +7,13 @@ import AttackPatternEditionOverview from './AttackPatternEditionOverview';
 import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import AttackPatternDelete from './AttackPatternDelete';
 
 const AttackPatternEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, attackPattern, open } = props;
+  const { handleClose, attackPattern, open, controlledDial } = props;
   const { editContext } = attackPattern;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -24,8 +25,8 @@ const AttackPatternEditionContainer = (props) => {
       title={t_i18n('Update an attack pattern')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -50,6 +51,9 @@ const AttackPatternEditionContainer = (props) => {
             handleClose={handleClose}
           />
         )}
+        {!useIsEnforceReference('Attack-Pattern')
+          && <AttackPatternDelete id={attackPattern.id} />
+        }
       </>
     </Drawer>
   );

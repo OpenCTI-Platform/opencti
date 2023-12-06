@@ -19,6 +19,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IndividualDelete from './IndividualDelete';
 
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
@@ -288,6 +289,7 @@ const IndividualEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={individual.id}
+            deleteBtn={<IndividualDelete id={individual.id} />}
           />
           )}
         </Form>

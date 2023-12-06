@@ -12,7 +12,6 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import ExternalReferenceCreation from './ExternalReferenceCreation';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -172,9 +171,6 @@ class AddExternalReferencesLinesContainer extends Component {
       classes,
       data,
       stixCoreObjectOrStixCoreRelationshipReferences,
-      open,
-      search,
-      paginationOptions,
     } = this.props;
     const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
@@ -245,13 +241,6 @@ class AddExternalReferencesLinesContainer extends Component {
             );
           })}
         </List>
-        <ExternalReferenceCreation
-          display={open}
-          contextual={true}
-          inputValue={search}
-          paginationOptions={paginationOptions}
-          onCreate={this.toggleExternalReference.bind(this)}
-        />
       </div>
     );
   }

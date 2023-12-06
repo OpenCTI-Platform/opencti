@@ -17,6 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IntrusionSetDelete from './IntrusionSetDelete';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -282,6 +283,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
               open={false}
               values={values.references}
               id={intrusionSet.id}
+              deleteBtn={<IntrusionSetDelete id={intrusionSet.id} />}
             />
           )}
         </Form>

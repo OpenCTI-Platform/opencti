@@ -4,11 +4,12 @@ import { useFormatter } from '../../../../components/i18n';
 import EventEditionOverview from './EventEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import EventDelete from './EventDelete';
 
 const EventEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, event, open } = props;
+  const { handleClose, event, open, controlledDial } = props;
   const { editContext } = event;
 
   return (
@@ -16,15 +17,23 @@ const EventEditionContainer = (props) => {
       title={t_i18n('Update an event')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === undefined
+        ? DrawerVariant.update
+        : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <EventEditionOverview
-        event={event}
-        enableReferences={useIsEnforceReference('Event')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <EventEditionOverview
+          event={event}
+          enableReferences={useIsEnforceReference('Event')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Event')
+          && <EventDelete id={event.id} />
+        }
+      </>
     </Drawer>
   );
 };

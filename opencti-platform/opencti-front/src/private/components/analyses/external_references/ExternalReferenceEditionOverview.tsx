@@ -9,6 +9,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
+import ExternalReferenceDelete from './ExternalReferenceDelete';
 
 export const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionOverviewFieldPatchMutation(
@@ -150,6 +151,7 @@ ExternalReferenceEditionOverviewComponentProps
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            <ExternalReferenceDelete id={externalReference.id} />
           </Form>
         </div>
       )}
