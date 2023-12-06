@@ -6,6 +6,7 @@ import {
   extractAllValueFromFilters,
   Filter,
   FilterGroup,
+  filtersUsedAsApiParameters,
   findFilterFromKey,
   isFilterGroupNotEmpty,
   isUniqFilter,
@@ -495,6 +496,7 @@ export const usePaginationLocalStorage = <U>(
         setValue((c) => ({
           ...c,
           filters: newBaseFilters,
+          latestAddFilterId: undefined,
         }));
       }
     },
@@ -547,6 +549,20 @@ export const usePaginationLocalStorage = <U>(
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
+      console.log(filter);
+      if (filtersUsedAsApiParameters.includes(filter.key)) {
+        const existedFilter = viewStorage.filters?.filters.find((f) => f.key === filter.key);
+        // If the specific filter is already defined, set the latestAddFilterId in order to open the menu popover
+        // and return void to finish the task.
+        // In the other side if not existed, create a new one filter
+        if (existedFilter) {
+          setValue({
+            ...viewStorage,
+            latestAddFilterId: existedFilter.id,
+          });
+          return;
+        }
+      }
       handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {

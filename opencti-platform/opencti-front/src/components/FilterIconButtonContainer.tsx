@@ -5,11 +5,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
-import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
@@ -142,15 +143,30 @@ FilterIconButtonContainerProps
   setHasRenderedRef,
 }) => {
   const { t } = useFormatter();
+  const theme = useTheme();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     filtersRepresentativesQueryRef,
   );
   const displayedFilters = filters.filters;
+  const displayedSpecificFilters = displayedFilters.filter((f) => filtersUsedAsApiParameters.includes(f.key));
+  const othersFilters = displayedFilters.filter((f) => !filtersUsedAsApiParameters.includes(f.key));
   const globalMode = filters.mode;
-  let classFilter = classes.filter1;
   const itemRefToPopover = useRef(null);
+  const operatorToDisplay = [
+    'eq',
+    'not_eq',
+    'nil',
+    'not_nil',
+    'contains',
+    'not_contains',
+    'starts_with',
+    'not_starts_with',
+    'not_ends_with',
+    'ends_with',
+  ];
+  let classFilter = classes.filter1;
 
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
@@ -240,6 +256,11 @@ FilterIconButtonContainerProps
     classFilter = classes.filter3;
     classOperator = classes.operator3;
   }
+
+  const backgroundGroupingChipsStyle = {
+    backgroundColor: 'rgba(74, 117, 162, 0.2)',
+  };
+
   return (
     <Box
       sx={
@@ -250,28 +271,18 @@ FilterIconButtonContainerProps
           }
           : {
             marginTop: displayedFilters.length === 0 ? 0 : '10px',
-            gap: '10px',
+            gap: '10px 0',
             display: 'flex',
             flexWrap: 'wrap',
           }
       }
     >
-      {displayedFilters.map((currentFilter, index) => {
+
+      {displayedSpecificFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterOperator = currentFilter.operator;
         const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
-        const isOperatorDisplayed = ![
-          'eq',
-          'not_eq',
-          'nil',
-          'not_nil',
-          'contains',
-          'not_contains',
-          'starts_with',
-          'not_starts_with',
-          'not_ends_with',
-          'ends_with',
-        ].includes(filterOperator);
+        const isOperatorDisplayed = !operatorToDisplay.includes(filterOperator);
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
@@ -285,7 +296,7 @@ FilterIconButtonContainerProps
             {isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel}
           </>
         );
-        const isNotLastFilter = index < displayedFilters.length - 1;
+        const isNotLastFilter = index < displayedSpecificFilters.length - 1;
         return (
           <Fragment key={currentFilter.id}>
             <Tooltip
@@ -301,6 +312,11 @@ FilterIconButtonContainerProps
                 />
               }
             >
+              <Box sx={{
+                padding: '8px',
+                display: 'flex',
+                ...(othersFilters.length > 0 && backgroundGroupingChipsStyle),
+              }}>
               <Chip
                 color={chipColor}
                 ref={helpers?.getLatestAddFilterId() === currentFilter.id ? itemRefToPopover : null}
@@ -326,7 +342,7 @@ FilterIconButtonContainerProps
                   />
                 }
                 disabled={
-                  disabledPossible ? displayedFilters.length === 1 : undefined
+                  disabledPossible ? displayedSpecificFilters.length === 1 : undefined
                 }
                 onDelete={
                   isReadWriteFilter
@@ -338,19 +354,144 @@ FilterIconButtonContainerProps
                     : undefined
                 }
               />
+              </Box>
             </Tooltip>
             {isNotLastFilter && (
-                <FilterIconButtonGlobalOperator
-                    currentIndex={index}
-                    displayedFilters={displayedFilters}
-                    classOperator={classOperator}
-                    globalMode={globalMode}
-                    handleSwitchGlobalMode={handleSwitchGlobalMode}/>
+              <Box sx={{
+                padding: '8px',
+                display: 'flex',
+                ...(othersFilters.length > 0 && backgroundGroupingChipsStyle),
+              }}>
+              <FilterIconButtonGlobalOperator
+                currentIndex={index}
+                displayedFilters={displayedSpecificFilters}
+                classOperator={classOperator}
+                globalMode={globalMode}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}/>
+              </Box>
             )}
           </Fragment>
         );
       })}
+
+      { displayedSpecificFilters.length > 0 && othersFilters.length > 0
+      && <Box sx={{
+        padding: '4px 16px',
+        display: 'flex',
+      }}>
+        <Box sx={{
+          borderRadius: '5px',
+          fontFamily: 'Consolas, monaco, monospace',
+          backgroundColor: theme?.palette.action?.selected,
+          padding: '0 8px',
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          {t('AND')}
+        </Box>
+      </Box>
+      }
+
+      {othersFilters.map((currentFilter, index) => {
+        const filterKey = currentFilter.key;
+        const filterOperator = currentFilter.operator;
+        const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
+        const isOperatorDisplayed = !operatorToDisplay.includes(filterOperator);
+        const keyLabel = (
+          <>
+            {truncate(t(filterKey), 20)}
+            {isOperatorDisplayed
+              ? convertOperatorToIcon(filterOperator)
+              : currentFilter.values.length > 0 && ':'}
+          </>
+        );
+        const label = (
+          <>
+            {isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel}
+          </>
+        );
+        const isNotLastFilter = index < othersFilters.length - 1;
+        return (
+          <Fragment key={currentFilter.id}>
+            <Tooltip
+              title={
+                <FilterValues
+                  label={label}
+                  tooltip={true}
+                  currentFilter={currentFilter}
+                  handleSwitchLocalMode={handleSwitchLocalMode}
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  helpers={helpers}
+                  redirection={redirection}
+                />
+              }
+            >
+              <Box sx={{
+                padding: '8px',
+                display: 'flex',
+                ...(displayedSpecificFilters.length > 0 && backgroundGroupingChipsStyle),
+              }}>
+              <Chip
+                color={chipColor}
+                ref={helpers?.getLatestAddFilterId() === currentFilter.id ? itemRefToPopover : null}
+                classes={{ root: classFilter, label: classes.chipLabel }}
+                variant={
+                  currentFilter.values.length === 0
+                  && !['nil', 'not_nil'].includes(filterOperator)
+                    ? 'outlined'
+                    : 'filled'
+                }
+                label={
+                  <FilterValues
+                    label={label}
+                    tooltip={false}
+                    currentFilter={currentFilter}
+                    handleSwitchLocalMode={handleSwitchLocalMode}
+                    filtersRepresentativesMap={filtersRepresentativesMap}
+                    redirection={redirection}
+                    helpers={helpers}
+                    onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
+                    }
+                    isReadWriteFilter={isReadWriteFilter}
+                  />
+                }
+                disabled={
+                  disabledPossible ? othersFilters.length === 1 : undefined
+                }
+                onDelete={
+                  isReadWriteFilter
+                    ? () => manageRemoveFilter(
+                      currentFilter.id,
+                      filterKey,
+                      filterOperator,
+                    )
+                    : undefined
+                }
+              />
+              </Box>
+            </Tooltip>
+            {isNotLastFilter && (
+              <Box sx={{
+                padding: '8px',
+                display: 'flex',
+                ...(displayedSpecificFilters.length > 0 && backgroundGroupingChipsStyle),
+              }}>
+
+                <FilterIconButtonGlobalOperator
+                    currentIndex={index}
+                    displayedFilters={othersFilters}
+                    classOperator={classOperator}
+                    globalMode={globalMode}
+                    handleSwitchGlobalMode={handleSwitchGlobalMode}/>
+              </Box>
+            )}
+
+          </Fragment>
+        );
+      })}
+
       {filterChipsParams.anchorEl && (
+        <Box>
         <FilterChipPopover
           filters={filters.filters}
           params={filterChipsParams}
@@ -358,6 +499,7 @@ FilterIconButtonContainerProps
           open={open}
           helpers={helpers}
         />
+        </Box>
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
