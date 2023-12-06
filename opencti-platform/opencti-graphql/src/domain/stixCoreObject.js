@@ -264,7 +264,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
-  let filters = args.filters ?? [];
+  let { filters } = args;
   if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -272,10 +272,9 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      // eslint-disable-next-line max-len
-      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
     }
   }
   return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
@@ -299,7 +298,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
     if (isNotEmptyField(timeSeriesParameter.relationship_type) && isEmptyField(timeSeriesParameter.elementId)) {
       throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
     }
-    let filters = timeSeriesParameter.filters ?? [];
+    let { filters } = timeSeriesParameter;
     if (isNotEmptyField(timeSeriesParameter.elementId)) {
       // In case of element id, we look for a specific entity used by relationships independent of the direction
       // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -307,10 +306,9 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
       // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
       if (isNotEmptyField(timeSeriesParameter.relationship_type)) {
         const relationshipFilterKeys = timeSeriesParameter.relationship_type.map((n) => buildRefRelationKey(n));
-        // eslint-disable-next-line max-len
-        filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(timeSeriesParameter.elementId) ? timeSeriesParameter.elementId : [timeSeriesParameter.elementId] }];
+        filters = addFilter(filters, relationshipFilterKeys, timeSeriesParameter.elementId);
       } else {
-        filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(timeSeriesParameter.elementId) ? timeSeriesParameter.elementId : [timeSeriesParameter.elementId] }];
+        filters = addFilter(filters, buildRefRelationKey('*'), timeSeriesParameter.elementId);
       }
     }
     return { data: timeSeriesEntities(context, user, types, { ...args, ...R.omit(['elementId', 'relationship_type'], timeSeriesParameter), filters }) };
