@@ -459,7 +459,7 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
-  const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
+  const { indices = READ_ENTITIES_INDICES, connectionFormat, noFiltersChecking = false } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }

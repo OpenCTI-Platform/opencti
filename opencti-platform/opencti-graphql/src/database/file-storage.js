@@ -10,8 +10,8 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
-import { createWork, deleteWorkForFile, deleteWorkForSource, loadExportWorksAsProgressFiles } from '../domain/work';
-import { buildPagination, isEmptyField, isNotEmptyField } from './utils';
+import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
+import { isEmptyField, isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
@@ -20,6 +20,7 @@ import { isAttachmentProcessorEnabled } from './engine';
 import { internalLoadById } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { deleteDocumentIndex, findForPaths, indexFileToDocument } from '../modules/document/document-domain';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -98,11 +99,15 @@ export const isStorageAlive = () => initializeBucket();
 export const deleteFile = async (context, user, id) => {
   const up = await loadFile(user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
+  // Delete in S3
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
+  // Delete associated works
   await deleteWorkForFile(context, user, id);
+  // Delete index file
+  await deleteDocumentIndex(context, user, id);
   // delete in index if file has been indexed
   // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
@@ -362,48 +367,52 @@ export const upload = async (context, user, path, fileUpload, opts) => {
       Bucket: bucketName,
       Key: key,
       Body: readStream,
-      Metadata: fullMetadata
+      // Metadata: fullMetadata
     }
   });
   await s3Upload.done();
+  existingFile = await loadFile(user, key);
   const file = {
     id: key,
     name: filename,
-    size: readStream.bytesRead,
+    size: existingFile.size,
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
+  // Register in elastic
+  await indexFileToDocument(path, file);
   // Trigger a enrich job for import file if needed
-  if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
+  if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending')
+      && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;
 };
 
-export const filesListing = async (context, user, first, path, entity = null, prefixMimeType = '') => {
-  const filesListingFn = async () => {
-    let files = await rawFilesListing(context, user, path);
-    if (entity) {
-      files = files.filter((file) => file.metaData.entity_id === entity.internal_id);
-      files = await resolveImageFiles(files, entity);
-    }
-    if (prefixMimeType) {
-      files = files.filter((file) => file.metaData.mimetype.includes(prefixMimeType));
-    }
-    const inExport = await loadExportWorksAsProgressFiles(context, user, path);
-    const allFiles = R.concat(inExport, files);
-    const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
-    const fileNodes = sortedFiles.map((f) => ({ node: f }));
-    return buildPagination(first, null, fileNodes, fileNodes.length);
-  };
-  return telemetry(context, user, `STORAGE ${path}`, {
-    [SemanticAttributes.DB_NAME]: 'storage_engine',
-    [SemanticAttributes.DB_OPERATION]: 'listing',
-  }, filesListingFn);
-};
+// export const filesListing = async (context, user, first, path, entity = null, prefixMimeType = '') => {
+//   const filesListingFn = async () => {
+//     let files = await rawFilesListing(context, user, path);
+//     if (entity) {
+//       files = files.filter((file) => file.metaData.entity_id === entity.internal_id);
+//       files = await resolveImageFiles(files, entity);
+//     }
+//     if (prefixMimeType) {
+//       files = files.filter((file) => file.metaData.mimetype.includes(prefixMimeType));
+//     }
+//     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
+//     const allFiles = R.concat(inExport, files);
+//     const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
+//     const fileNodes = sortedFiles.map((f) => ({ node: f }));
+//     return buildPagination(first, null, fileNodes, fileNodes.length);
+//   };
+//   return telemetry(context, user, `STORAGE ${path}`, {
+//     [SemanticAttributes.DB_NAME]: 'storage_engine',
+//     [SemanticAttributes.DB_OPERATION]: 'listing',
+//   }, filesListingFn);
+// };
 
 export const fileListingForIndexing = async (context, user, path, opts = {}) => {
   const fileListingForIndexingFn = async () => {
@@ -428,11 +437,11 @@ export const loadFilesForIndexing = (user, files, opts = {}) => {
 };
 
 export const deleteAllObjectFiles = async (context, user, element) => {
-  const importPath = `import/${element.entity_type}/${element.internal_id}/`;
-  const importFilesPromise = simpleFilesListing(importPath);
+  const importPath = `import/${element.entity_type}/${element.internal_id}`;
+  const importFilesPromise = findForPaths(context, user, [importPath]);
   const importWorkPromise = deleteWorkForSource(importPath);
-  const exportPath = `export/${element.entity_type}/${element.internal_id}/`;
-  const exportFilesPromise = simpleFilesListing(exportPath);
+  const exportPath = `export/${element.entity_type}/${element.internal_id}`;
+  const exportFilesPromise = findForPaths(context, user, exportPath);
   const exportWorkPromise = deleteWorkForSource(exportPath);
   const [importFiles, exportFiles, _, __] = await Promise.all([
     importFilesPromise,
@@ -442,27 +451,4 @@ export const deleteAllObjectFiles = async (context, user, element) => {
   ]);
   const ids = [...importFiles, ...exportFiles].map((file) => file.Key);
   return deleteFiles(context, user, ids);
-};
-
-const resolveImageFiles = async (files, resolveEntity) => {
-  const elasticFiles = resolveEntity.x_opencti_files;
-  return files.map((file) => {
-    const elasticFile = (elasticFiles ?? []).find((e) => e.id === file.id);
-    if (elasticFile) {
-      return {
-        ...file,
-        metaData: {
-          ...file.metaData,
-          order: elasticFile.order,
-          inCarousel: elasticFile.inCarousel,
-          description: elasticFile.description
-        }
-      };
-    }
-    return file;
-  }).sort((a, b) => {
-    const orderA = a.metaData?.order ?? Infinity;
-    const orderB = b.metaData?.order ?? Infinity;
-    return orderA - orderB;
-  });
 };

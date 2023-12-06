@@ -39,7 +39,6 @@ export const filesMetrics = async (context, user, args) => {
   };
 };
 
-// region import / upload
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);

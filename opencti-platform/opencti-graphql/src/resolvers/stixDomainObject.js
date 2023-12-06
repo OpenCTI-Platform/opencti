@@ -24,7 +24,6 @@ import {
 import { findById as findStatusById, findByType } from '../domain/status';
 import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import {
@@ -33,6 +32,7 @@ import {
   stixCoreObjectsExportPush
 } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
+import { findForPaths } from '../modules/document/document-domain';
 
 const assigneesLoader = batchLoader(batchAssignees);
 
@@ -53,7 +53,10 @@ const stixDomainObjectResolvers = {
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
+    stixDomainObjectsExportFiles: (_, { type, first }, context) => {
+      // filesListing(context, context.user, first, `export/${type}/`)
+      return findForPaths(context, context.user, [`export/${type}`], { first });
+    },
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,
   StixDomainObject: {

@@ -15,10 +15,11 @@ import {
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { worksForSource } from '../domain/work';
-import { filesListing, loadFile } from '../database/file-storage';
+import { loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { findForPaths } from '../modules/document/document-domain';
 
 const externalReferenceResolvers = {
   Query: {
@@ -37,7 +38,8 @@ const externalReferenceResolvers = {
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
     importFiles: async (externalReference, { first }, context) => {
-      const listing = await filesListing(context, context.user, first, `import/${externalReference.entity_type}/${externalReference.id}/`, externalReference);
+      // const listing = await filesListing(context, context.user, first, `import/${externalReference.entity_type}/${externalReference.id}/`, externalReference);
+      const listing = await findForPaths(context, context.user, [`import/${externalReference.entity_type}/${externalReference.id}`], { first, entity_id: externalReference.id });
       if (externalReference.fileId) {
         try {
           const refFile = await loadFile(context.user, externalReference.fileId);
@@ -49,7 +51,9 @@ const externalReferenceResolvers = {
       return listing;
     },
     exportFiles: (externalReference, { first }, context) => {
-      return filesListing(context, context.user, first, `export/${externalReference.entity_type}/${externalReference.id}/`, externalReference);
+      // return filesListing(context, context.user, first, , externalReference);
+      const opts = { first, entity_id: externalReference.id };
+      return findForPaths(context, context.user, [`export/${externalReference.entity_type}`], opts);
     },
   },
   Mutation: {

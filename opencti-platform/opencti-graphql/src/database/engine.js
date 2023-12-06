@@ -1557,7 +1557,7 @@ const buildLocalMustFilter = async (validFilter) => {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
         targets.push({
           multi_match: {
-            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
+            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) || k === '_id' ? k : `${k}.keyword`}`),
             query: values[i].toString(),
           },
         });

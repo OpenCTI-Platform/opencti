@@ -1,9 +1,10 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/file-storage';
+import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
+import { findForPaths } from '../../../src/modules/document/document-domain';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -30,7 +31,7 @@ describe('File storage file listing', () => {
   });
   it('should file listing', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    let list = await filesListing(testContext, ADMIN_USER, 25, `export/Malware/${malware.id}/`);
+    let list = await findForPaths(testContext, ADMIN_USER, [`export/Malware/${malware.id}`], { first: 25, entity_id: malware.id });
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
@@ -41,7 +42,7 @@ describe('File storage file listing', () => {
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('application/json');
-    list = await filesListing(testContext, ADMIN_USER, 25, 'import/global/');
+    list = await findForPaths(testContext, ADMIN_USER, ['import/global'], { first: 25 });
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
