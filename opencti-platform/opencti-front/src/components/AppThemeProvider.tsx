@@ -1,10 +1,6 @@
 import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import {
-  createTheme,
-  StyledEngineProvider,
-  ThemeProvider,
-} from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { UserContext, UserContextType } from '../utils/hooks/useAuth';
 import themeDark from './ThemeDark';
@@ -81,11 +77,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   const muiTheme = createTheme(themeComponent as ThemeOptions);
   useDocumentThemeModifier(theme);
   // endregion
-  return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
-    </StyledEngineProvider>
-  );
+  return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };
 
 export const ConnectedThemeProvider = createFragmentContainer(
