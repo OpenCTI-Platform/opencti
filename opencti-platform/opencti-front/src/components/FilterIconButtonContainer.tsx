@@ -373,9 +373,7 @@ FilterIconButtonContainerProps
               zIndex: 0,
             }}>
               <Tooltip
-              title={t(
-                'The operators and modes are restricted for these filters.',
-              )}
+              title={t('The operators and modes are restricted for these filters.')}
             >
               <InformationOutline
                 fontSize="small"
