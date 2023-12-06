@@ -25,6 +25,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
+import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
@@ -306,7 +307,6 @@ class ImportContentComponent extends Component {
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
-      console.log('>> connectors', connectors)
     return (
       <div className={classes.container}>
         <Typography
@@ -336,6 +336,8 @@ class ImportContentComponent extends Component {
                 <FileUploader
                   onUploadSuccess={() => relay.refetch()}
                   size="medium"
+                 color={'primary'}
+                  entityId={''}
                 />
                 <FreeTextUploader
                   onUploadSuccess={() => relay.refetch()}
@@ -387,12 +389,11 @@ class ImportContentComponent extends Component {
               {connectors.length ? (
                 <List>
                   {connectors.map((connector) => (
-                    <ListItem
+                    <ListItemButton
                       key={connector.id}
                       dense={true}
                       divider={true}
                       classes={{ root: classes.item }}
-                      button={true}
                     >
                       <Tooltip
                         title={
@@ -416,7 +417,7 @@ class ImportContentComponent extends Component {
                         {connector.updated_at && (<ListItemSecondaryAction>
                             <ListItemText primary={nsdt(connector.updated_at)}/>
                         </ListItemSecondaryAction>)}
-                    </ListItem>
+                    </ListItemButton>
                   ))}
                 </List>
               ) : (
