@@ -289,18 +289,22 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     R.dissoc('lastSeenStop'),
     R.dissoc('confidences'),
   )(args);
-  const filtersFromOptions = {
-    mode: FilterMode.And,
-    filters: filtersFromOptionsContent,
-    filterGroups: [],
-  };
-  const finalFilters = filters
-    ? {
-      mode: filters.mode,
-      filters: [],
-      filterGroups: [filters, filtersFromOptions],
-    }
-    : filtersFromOptions;
+  let finalFilters = filters;
+  if (filtersFromOptionsContent.length > 0) {
+    const filtersFromOptions = {
+      mode: FilterMode.And,
+      filters: filtersFromOptionsContent,
+      filterGroups: [],
+    };
+    finalFilters = filters
+      ? {
+        mode: filters.mode,
+        filters: [],
+        filterGroups: [filters, filtersFromOptions],
+      }
+      : filtersFromOptions;
+  }
+
   return {
     ...cleanedArgs,
     types: relationsToGet,
