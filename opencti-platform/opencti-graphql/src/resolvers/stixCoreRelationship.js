@@ -38,7 +38,7 @@ import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { findForPaths } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -63,8 +63,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsDistribution: (_, args, context) => stixCoreRelationshipsDistribution(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
     stixCoreRelationshipsExportFiles: (_, { type, first }, context) => {
-      // return filesListing(context, context.user, first, `export/${type}/`);
-      return findForPaths(context, context.user, [`export/${type}`], { first });
+      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
     },
   },
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,

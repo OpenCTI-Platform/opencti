@@ -32,7 +32,7 @@ import {
   stixCoreObjectsExportPush
 } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
-import { findForPaths } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
 
 const assigneesLoader = batchLoader(batchAssignees);
 
@@ -54,8 +54,7 @@ const stixDomainObjectResolvers = {
       return [];
     },
     stixDomainObjectsExportFiles: (_, { type, first }, context) => {
-      // filesListing(context, context.user, first, `export/${type}/`)
-      return findForPaths(context, context.user, [`export/${type}`], { first });
+      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
     },
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,

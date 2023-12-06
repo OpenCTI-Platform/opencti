@@ -20,7 +20,11 @@ import { isAttachmentProcessorEnabled } from './engine';
 import { internalLoadById } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
-import { deleteDocumentIndex, findForPaths, indexFileToDocument } from '../modules/document/document-domain';
+import {
+  deleteDocumentIndex,
+  indexFileToDocument,
+  allFilesForPaths
+} from '../modules/document/document-domain';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -367,7 +371,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
       Bucket: bucketName,
       Key: key,
       Body: readStream,
-      // Metadata: fullMetadata
+      Metadata: fullMetadata
     }
   });
   await s3Upload.done();
@@ -438,10 +442,10 @@ export const loadFilesForIndexing = (user, files, opts = {}) => {
 
 export const deleteAllObjectFiles = async (context, user, element) => {
   const importPath = `import/${element.entity_type}/${element.internal_id}`;
-  const importFilesPromise = findForPaths(context, user, [importPath]);
+  const importFilesPromise = allFilesForPaths(context, user, [importPath]);
   const importWorkPromise = deleteWorkForSource(importPath);
   const exportPath = `export/${element.entity_type}/${element.internal_id}`;
-  const exportFilesPromise = findForPaths(context, user, exportPath);
+  const exportFilesPromise = allFilesForPaths(context, user, [exportPath]);
   const exportWorkPromise = deleteWorkForSource(exportPath);
   const [importFiles, exportFiles, _, __] = await Promise.all([
     importFilesPromise,

@@ -10,7 +10,7 @@ import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
-import { findForPaths } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -19,12 +19,10 @@ const fileResolvers = {
   Query: {
     file: (_, { id }, context) => loadFile(context.user, id),
     importFiles: (_, { first }, context) => {
-      // filesListing(context, context.user, first, 'import/global/')
-      return findForPaths(context, context.user, ['import/global'], { first });
+      return paginatedForPathsWithEnrichment(context, context.user, ['import/global'], { first });
     },
     pendingFiles: (_, { first }, context) => {
-      // filesListing(context, context.user, first, 'import/pending/')
-      return findForPaths(context, context.user, ['import/pending'], { first });
+      return paginatedForPathsWithEnrichment(context, context.user, ['import/pending'], { first });
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
   },

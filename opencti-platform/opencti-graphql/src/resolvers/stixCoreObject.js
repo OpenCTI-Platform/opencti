@@ -46,7 +46,7 @@ import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { findForPaths } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -83,8 +83,7 @@ const stixCoreObjectResolvers = {
     },
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { type, first }, context) => {
-      // filesListing(context, context.user, first, `export/${type}/`)
-      return findForPaths(context, context.user, [`export/${type}`], { first });
+      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
     },
     filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
   },
@@ -118,17 +117,14 @@ const stixCoreObjectResolvers = {
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => {
-      // filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject, prefixMimeType)
-      const opts = { first, prefixMimeTypes: [prefixMimeType], entity_id: stixCoreObject.id };
-      return findForPaths(context, context.user, [`import/${stixCoreObject.entity_type}/${stixCoreObject.id}`], opts);
+      const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixCoreObject.id };
+      return paginatedForPathsWithEnrichment(context, context.user, [`import/${stixCoreObject.entity_type}/${stixCoreObject.id}`], opts);
     },
     pendingFiles: (stixCoreObject, { first }, context) => {
-      // filesListing(context, context.user, first, 'import/pending/', stixCoreObject)
-      return findForPaths(context, context.user, ['import/pending'], { first, entity_id: stixCoreObject.id });
+      return paginatedForPathsWithEnrichment(context, context.user, ['import/pending'], { first, entity_id: stixCoreObject.id });
     },
     exportFiles: (stixCoreObject, { first }, context) => {
-      // filesListing(context, context.user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject)
-      return findForPaths(context, context.user, [`export/${stixCoreObject.entity_type}/${stixCoreObject.id}`], { first, entity_id: stixCoreObject.id });
+      return paginatedForPathsWithEnrichment(context, context.user, [`export/${stixCoreObject.entity_type}/${stixCoreObject.id}`], { first, entity_id: stixCoreObject.id });
     },
     numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
   },

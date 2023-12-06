@@ -8,6 +8,7 @@ import {
   type EntityOptions,
   type FilterGroupWithNested,
   internalLoadById,
+  listAllEntities,
   listEntitiesPaginated,
   storeLoadById
 } from '../../database/middleware-loader';
@@ -19,16 +20,19 @@ import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../domain/work';
 import { UnsupportedError } from '../../config/errors';
 
-export const indexFileToDocument = async (path: string, file: any) => {
+export const buildFileDataForIndexing = (path: string, file: any) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
-  const data = {
+  return {
+    ...fileData,
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
     file_path: path,
-    ...fileData,
   };
+};
+export const indexFileToDocument = async (path: string, file: any) => {
+  const data = buildFileDataForIndexing(path, file);
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
 };
 
@@ -43,10 +47,6 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
   return storeLoadById<BasicStoreEntityDocument>(context, user, fileId, ENTITY_TYPE_INTERNAL_FILE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityDocument>) => {
-  return listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], opts);
-};
-
 interface PrefixOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   entity_id?: string
   modifiedSince?: string
@@ -55,7 +55,7 @@ interface PrefixOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   excludedPaths?: string[]
 }
 
-export const findForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+const buildFileFilters = (paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
     filters: [{ key: ['file_path'], values: paths, operator: FilterOperator.StartsWith }],
@@ -68,7 +68,7 @@ export const findForPaths = async (context: AuthContext, user: AuthUser, paths: 
     filters.filters.push({ key: ['metaData.mimetype'], values: opts.prefixMimeTypes, operator: FilterOperator.StartsWith });
   }
   if (opts?.modifiedSince) {
-    filters.filters.push({ key: ['lastModified'], values: [opts.modifiedSince], operator: FilterOperator.Gt });
+    filters.filters.push({ key: ['lastModified'], values: [opts.modifiedSince], operator: FilterOperator.Gte });
   }
   if (opts?.entity_id) {
     filters.filters.push({ key: ['metaData.entity_id'], values: [opts.entity_id] });
@@ -76,8 +76,26 @@ export const findForPaths = async (context: AuthContext, user: AuthUser, paths: 
   if (opts?.maxFileSize) {
     filters.filters.push({ key: ['size'], values: [String(opts.maxFileSize)], operator: FilterOperator.Lte });
   }
+  return filters;
+};
+
+// List all available files with filtering capabilities
+// Must only be used for internal purpose
+export const allFilesForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
-    filters,
+    filters: buildFileFilters(paths, opts),
+    noFiltersChecking: true // No associated model
+  };
+  const listOptions = { ...opts, ...findOpts };
+  return listAllEntities<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
+};
+
+// Get Files paginated with auto enrichment
+// Images metadata for users
+// In progress virtual files from export
+export const paginatedForPathsWithEnrichment = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+  const findOpts: EntityOptions<BasicStoreEntityDocument> = {
+    filters: buildFileFilters(paths, opts),
     noFiltersChecking: true // No associated model
   };
   const listOptions = { ...opts, ...findOpts };
