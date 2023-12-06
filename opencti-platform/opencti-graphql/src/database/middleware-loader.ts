@@ -297,8 +297,8 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   const finalFilters = filters
     ? {
       mode: filters.mode,
-      filters: filters.filters,
-      filterGroups: filters.filterGroups.concat(filtersFromOptions),
+      filters: [],
+      filterGroups: [filters, filtersFromOptions],
     }
     : filtersFromOptions;
   return {
