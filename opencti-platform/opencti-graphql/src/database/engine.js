@@ -83,7 +83,7 @@ import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filterin
 import {
   IDS_FILTER,
   SOURCE_RELIABILITY_FILTER,
-  TYPE_FILTER, WORKFLOW_FILTER
+  TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 
@@ -1998,8 +1998,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (newFilterGroup) {
         finalFilterGroups.push(newFilterGroup);
       }
-    } else if (arrayKeys.includes(WORKFLOW_FILTER)) {
-      // in case we want to filter by status template (template of a workflow status)
+    } else if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
+      // in case we want to filter by status template (template of a workflow status) or status
       // we need to find all statuses filtered by status template and filter on these statuses
       const { newFilter, newFilterGroup } = await adaptFilterToWorkflowFilterKey(context, user, filter);
       if (newFilter) {

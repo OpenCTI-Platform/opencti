@@ -26,6 +26,7 @@ export const SCORE_FILTER = 'x_opencti_score';
 export const DETECTION_FILTER = 'x_opencti_detection';
 export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
+export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const WORKFLOW_FILTER = 'workflow_id';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';

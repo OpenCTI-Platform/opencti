@@ -154,7 +154,7 @@ export const up = async (next) => {
     }
   };
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Triggers, Taxii and Feeds filters refacto',
+    '[MIGRATION] Triggers, Taxii, Feeds, Streams and Retention rules filters refacto',
     READ_DATA_INDICES,
     entitiesUpdateQuery
   );
