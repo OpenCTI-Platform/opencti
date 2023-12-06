@@ -7,6 +7,9 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
+import { Alert, AlertTitle } from '@mui/material';
+import classNames from 'classnames';
+import Typography from '@mui/material/Typography';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import logo from '../../static/images/logo.png';
 import logo_filigran from '../../static/images/logo_filigran.png';
@@ -18,10 +21,7 @@ import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery
 import { useFormatter } from '../../components/i18n';
 import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
-import { Alert, AlertTitle } from '@mui/material';
 import SystemBanners from './SystemBanners';
-import classNames from 'classnames';
-import Typography from '@mui/material/Typography';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -33,10 +33,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textAlign: 'center',
     margin: '0 auto',
     maxWidth: 500,
-  },
-  appBar: {
-    borderTopLeftRadius: '10px',
-    borderTopRightRadius: '10px',
   },
   logo: {
     width: 200,
@@ -92,9 +88,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textAlign: 'center',
     maxWidth: 500,
   },
-  loginLogo: {
-    mode: theme.palette.mode,
-  },
   bottomMarginLogo: {
     marginBottom: 20,
   },
@@ -103,7 +96,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     justifyContent: 'center',
   },
   byFiligranLogo: {
-    marginRight: 10
+    marginRight: 10,
   },
   byFiligranText: {
     margin: 'auto 0',
@@ -153,7 +146,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       provider: string | null;
       name: string;
       type: string | null;
-    }>
+    }>,
   ) => (
     <div style={{ marginTop: 10, marginBottom: 20 }}>
       {authButtons.map((value, index) => (
@@ -177,10 +170,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     ? settings.platform_consent_confirm_text
     : t('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
-  const loginLogo =
-    theme.palette.mode === 'dark'
-      ? settings.platform_theme_dark_logo_login
-      : settings.platform_theme_light_logo_login;
+  const loginLogo = theme.palette.mode === 'dark'
+    ? settings.platform_theme_dark_logo_login
+    : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const authSSOs = providers.filter((p) => p.type === 'SSO');
@@ -210,8 +202,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const handleChange = () => {
     setChecked(!checked);
     // Auto scroll to bottom of unhidden/re-hidden login options.
-    window.setTimeout(function () {
-      const scrollingElement = (document.scrollingElement ?? document.body);
+    window.setTimeout(() => {
+      const scrollingElement = document.scrollingElement ?? document.body;
       scrollingElement.scrollTop = scrollingElement.scrollHeight;
     }, 1);
   };
@@ -234,23 +226,42 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   sessionExpiredUrlKeys();
 
-  const isWhitemarkEnable = !settings.platform_whitemark || !isEnterpriseEdition
+  const isWhitemarkEnable = !settings.platform_whitemark || !isEnterpriseEdition;
 
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }}>
       <img
         src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
         alt="logo"
-        className={classNames({ [classes.logo]: true, [classes.bottomMarginLogo]: isWhitemarkEnable })}
+        className={classNames({
+          [classes.logo]: true,
+          [classes.bottomMarginLogo]: isWhitemarkEnable,
+        })}
       />
       {isWhitemarkEnable && (
-        <div className={classNames([classes.byFiligran, classes.bottomMarginLogo])}>
-          <img width={20} height={20} src={logo_filigran} className={classes.byFiligranLogo} />
-          <Typography variant="h4" className={classes.byFiligranText}>by Filigran</Typography>
+        <div
+          className={classNames([classes.byFiligran, classes.bottomMarginLogo])}
+        >
+          <img
+            width={20}
+            height={20}
+            src={logo_filigran}
+            className={classes.byFiligranLogo}
+          />
+          <Typography variant="h4" className={classes.byFiligranText}>
+            by Filigran
+          </Typography>
         </div>
       )}
       {expired && expired === true && (
-        <Paper classes={{ root: classes.paper }} style={{ backgroundImage: 'none', backgroundColor: 'transparent', boxShadow: 'none' }}>
+        <Paper
+          classes={{ root: classes.paper }}
+          style={{
+            backgroundImage: 'none',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+          }}
+        >
           <Alert severity="warning">
             <AlertTitle style={{ textAlign: 'left' }}>Warning</AlertTitle>
             You were automatically logged out due to session expiration.
@@ -287,7 +298,10 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}
-      {isAuthButtons && isConsentMessage && checked && renderExternalAuth(authSSOs)}
+      {isAuthButtons
+        && isConsentMessage
+        && checked
+        && renderExternalAuth(authSSOs)}
       {providers?.length === 0 && (
         <div>No authentication provider available</div>
       )}

@@ -2,7 +2,7 @@
   "name": "opencti-front",
   "version": "5.12.3",
   "private": true,
-  "main": "src/index.tsx",
+  "main": "src/front.tsx",
   "dependencies": {
     "@analytics/google-analytics": "1.0.7",
     "@ckeditor/ckeditor5-react": "6.1.0",

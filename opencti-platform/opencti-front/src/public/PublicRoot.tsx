@@ -3,6 +3,7 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { loadQuery, usePreloadedQuery } from 'react-relay';
+import PublicFeedLines from '@components/data/feeds/PublicFeedLines';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { environment, fileUri } from '../relay/environment';
@@ -15,8 +16,7 @@ import {
   LoginRootPublicQuery$data,
 } from './__generated__/LoginRootPublicQuery.graphql';
 import Message from '../components/Message';
-import PublicTaxiiLines from "../private/components/data/taxii/PublicTaxiiLines";
-import PublicFeedLines from "@components/data/feeds/PublicFeedLines";
+import PublicTaxiiLines from '../private/components/data/taxii/PublicTaxiiLines';
 
 const useStyles = makeStyles({
   container: {

@@ -19,19 +19,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: 'transparent',
     margin: '0 5px 0 5px',
     color: theme.palette.text?.primary,
-    "&:focus": {
+    '&:focus': {
       border: `2px solid ${theme.palette.primary.main}`,
-    }
+    },
   },
 }));
 
-interface OtpInputField {
-  value: string
-  onChange: (data: string) => void
-  isDisabled: boolean
+interface OtpInputFieldProps {
+  value: string;
+  onChange: (data: string) => void;
+  isDisabled: boolean;
 }
 
-const OtpInputField: FunctionComponent<OtpInputField> = ({
+const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
   value,
   onChange,
   isDisabled,
@@ -49,6 +49,6 @@ const OtpInputField: FunctionComponent<OtpInputField> = ({
       renderInput={(props) => <input disabled={isDisabled} {...props} />}
     />
   );
-}
+};
 
 export default OtpInputField;

@@ -7,7 +7,7 @@ import { useFormatter } from '../../components/i18n';
 import { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   otp: {
     textAlign: 'center',
     width: '100%',

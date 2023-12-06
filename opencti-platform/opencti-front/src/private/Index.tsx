@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useTheme } from '@mui/styles';
+import { useTheme, makeStyles } from '@mui/styles';
 import { BoundaryRoute, NoMatch } from '@components/Error';
 import SearchRoot from '@components/SearchRoot';
 import TopBar from './components/nav/TopBar';
@@ -58,7 +57,6 @@ const Index = ({ settings }: IndexProps) => {
     overflowX: 'hidden',
   };
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
@@ -72,7 +70,6 @@ const Index = ({ settings }: IndexProps) => {
       }
     }
   }, [theme]);
-
   return (
     <>
       <SystemBanners settings={settings} />

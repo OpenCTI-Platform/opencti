@@ -1,20 +1,20 @@
-import { makeStyles } from "@mui/styles";
-import React, { FunctionComponent, useEffect, useState } from "react";
-import Alert from "@mui/material/Alert";
-import { graphql, useMutation } from "react-relay";
-import qrcode from "qrcode";
-import { useTheme } from "@mui/material/styles";
-import Loader from "../../components/Loader";
-import { QueryRenderer } from "../../relay/environment";
-import { useFormatter } from "../../components/i18n";
-import { OtpActivationQuery$data } from "./__generated__/OtpActivationQuery.graphql";
-import { Theme } from "../../components/Theme";
+import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import Alert from '@mui/material/Alert';
+import { graphql, useMutation } from 'react-relay';
+import qrcode from 'qrcode';
+import { useTheme } from '@mui/material/styles';
+import Loader from '../../components/Loader';
+import { QueryRenderer } from '../../relay/environment';
+import { useFormatter } from '../../components/i18n';
+import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.graphql';
+import { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   input: {
-    display: "flex",
-    justifyContent: "center",
+    display: 'flex',
+    justifyContent: 'center',
   },
 }));
 
@@ -44,9 +44,9 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
-  const [otpQrImage, setOtpQrImage] = useState("");
-  const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [otpQrImage, setOtpQrImage] = useState('');
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commit] = useMutation(validateOtpPatch);
@@ -56,8 +56,8 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
       variables: { input: { secret, code } },
       onError: () => {
         setInputDisable(false);
-        setCode("");
-        return setError(t("The code is not correct"));
+        setCode('');
+        return setError(t('The code is not correct'));
       },
       onCompleted: () => {
         window.location.reload();
@@ -69,27 +69,27 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
       uri,
       {
         color: {
-          dark: `${theme.palette.mode}` === "dark" ? "#ffffff" : "#000000",
-          light: "#0000", // Transparent background
+          dark: `${theme.palette.mode}` === 'dark' ? '#ffffff' : '#000000',
+          light: '#0000', // Transparent background
         },
       },
       (err: Error | null | undefined, imageUrl: string) => {
         if (err) {
-          setOtpQrImage("");
+          setOtpQrImage('');
           return;
         }
         setOtpQrImage(imageUrl);
-      }
+      },
     );
   }, [uri, classes.color]);
   return (
-    <div style={{ textAlign: "center", margin: "0 auto", maxWidth: 500 }}>
+    <div style={{ textAlign: 'center', margin: '0 auto', maxWidth: 500 }}>
       <img src={otpQrImage} style={{ width: 265 }} alt="" />
       {error ? (
         <Alert
           severity="error"
           variant="outlined"
-          style={{ margin: "10px 0 10px 0" }}
+          style={{ margin: '10px 0 10px 0' }}
         >
           {error}
         </Alert>
@@ -97,10 +97,10 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
         <Alert
           severity="info"
           variant="outlined"
-          style={{ margin: "10px 0 10px 0", justifyContent: "center" }}
+          style={{ margin: '10px 0 10px 0', justifyContent: 'center' }}
         >
           {t(
-            "You need to activate a two-factor authentication. Please type the code generated in your application."
+            'You need to activate a two-factor authentication. Please type the code generated in your application.',
           )}
         </Alert>
       )}
