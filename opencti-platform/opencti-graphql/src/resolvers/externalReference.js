@@ -19,7 +19,7 @@ import { loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const externalReferenceResolvers = {
   Query: {

@@ -35,7 +35,7 @@ import {
   getManagerConfigurationFromCache,
   updateManagerConfigurationLastRun
 } from '../modules/managerConfiguration/managerConfiguration-domain';
-import { allFilesForPaths, getIndexFromDate } from '../modules/document/document-domain';
+import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document/document-domain';
 import { buildOptionsFromFileManager } from '../domain/file';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');

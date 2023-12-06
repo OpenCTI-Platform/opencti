@@ -4,7 +4,7 @@ import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-s
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
-import { allFilesForPaths, paginatedForPathsWithEnrichment } from '../../../src/modules/document/document-domain';
+import { allFilesForPaths, paginatedForPathsWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';
 
 const streamConverter = (stream) => {

@@ -51,5 +51,5 @@ import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
-import './document/document';
+import './internal/document/document';
 // endregion

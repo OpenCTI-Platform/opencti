@@ -38,7 +38,7 @@ import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);

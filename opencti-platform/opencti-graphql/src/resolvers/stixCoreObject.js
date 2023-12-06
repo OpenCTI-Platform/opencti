@@ -46,7 +46,7 @@ import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);

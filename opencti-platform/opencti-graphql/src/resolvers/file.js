@@ -10,7 +10,7 @@ import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);

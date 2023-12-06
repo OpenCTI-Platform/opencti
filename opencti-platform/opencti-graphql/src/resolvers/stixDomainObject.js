@@ -32,7 +32,7 @@ import {
   stixCoreObjectsExportPush
 } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const assigneesLoader = batchLoader(batchAssignees);
 

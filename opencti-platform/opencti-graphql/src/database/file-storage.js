@@ -18,7 +18,7 @@ import { isAttachmentProcessorEnabled } from './engine';
 import { internalLoadById } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
-import { deleteDocumentIndex, indexFileToDocument, allFilesForPaths } from '../modules/document/document-domain';
+import { deleteDocumentIndex, indexFileToDocument, allFilesForPaths } from '../modules/internal/document/document-domain';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');

@@ -37,7 +37,7 @@ import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { observableValue } from '../utils/format';
-import { paginatedForPathsWithEnrichment } from '../modules/document/document-domain';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);

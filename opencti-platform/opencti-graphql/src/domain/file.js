@@ -11,7 +11,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
-import { allFilesForPaths, allRemainingFilesCount } from '../modules/document/document-domain';
+import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';

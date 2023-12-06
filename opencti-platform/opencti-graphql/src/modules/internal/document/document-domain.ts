@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
-import { generateFileIndexId } from '../../schema/identifier';
-import { ENTITY_TYPE_INTERNAL_FILE } from '../../schema/internalObject';
-import { elCount, elDeleteInstances, elIndex } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { generateFileIndexId } from '../../../schema/identifier';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
+import { elCount, elDeleteInstances, elIndex } from '../../../database/engine';
+import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import {
   type EntityOptions,
   type FilterGroupWithNested,
@@ -12,17 +12,17 @@ import {
   listAllEntities,
   listEntitiesPaginated,
   storeLoadById
-} from '../../database/middleware-loader';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { type DomainFindById } from '../../domain/domainTypes';
+} from '../../../database/middleware-loader';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
-import type { BasicStoreCommon } from '../../types/store';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
-import { loadExportWorksAsProgressFiles } from '../../domain/work';
-import { UnsupportedError } from '../../config/errors';
-import { elSearchFiles } from '../../database/file-search';
-import { SYSTEM_USER } from '../../utils/access';
-import { FROM_START_STR } from '../../utils/format';
+import type { BasicStoreCommon } from '../../../types/store';
+import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
+import { loadExportWorksAsProgressFiles } from '../../../domain/work';
+import { UnsupportedError } from '../../../config/errors';
+import { elSearchFiles } from '../../../database/file-search';
+import { SYSTEM_USER } from '../../../utils/access';
+import { FROM_START_STR } from '../../../utils/format';
 
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {

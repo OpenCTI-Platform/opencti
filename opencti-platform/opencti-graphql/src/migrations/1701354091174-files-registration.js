@@ -1,7 +1,7 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { rawFilesListing } from '../database/file-storage';
 import { logApp } from '../config/conf';
-import { buildFileDataForIndexing } from '../modules/document/document-domain';
+import { buildFileDataForIndexing } from '../modules/internal/document/document-domain';
 import { elIndexElements } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 

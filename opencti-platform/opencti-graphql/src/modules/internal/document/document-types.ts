@@ -1,4 +1,4 @@
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreEntity } from '../../../types/store';
 
 export interface BasicStoreEntityDocument extends BasicStoreEntity {
   size: number
