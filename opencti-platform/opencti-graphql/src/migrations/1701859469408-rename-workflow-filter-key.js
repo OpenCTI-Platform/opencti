@@ -1,3 +1,4 @@
+import { uniq } from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { listAllEntities } from '../database/middleware-loader';
 import {
@@ -36,7 +37,7 @@ export const up = async (next) => {
       if (arrayKeys.includes('x_opencti_workflow_id')) {
         const newKeys = arrayKeys.filter((k) => k !== 'x_opencti_workflow_id');
         newKeys.push('workflow_id');
-        newFiltersContent.push({ ...filter, key: newKeys });
+        newFiltersContent.push({ ...filter, key: uniq(newKeys) });
       } else {
         newFiltersContent.push(filter);
       }
@@ -311,7 +312,6 @@ export const up = async (next) => {
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
-  throw Error('for dev');
   logApp.info(`${message} > done`);
   next();
 };
