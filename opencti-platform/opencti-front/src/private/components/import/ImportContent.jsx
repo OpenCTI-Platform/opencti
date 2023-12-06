@@ -43,6 +43,7 @@ import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
+import {truncate} from '../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -412,7 +413,7 @@ class ImportContentComponent extends Component {
                       </Tooltip>
                       <ListItemText
                         primary={connector.name}
-                        secondary={R.join(',', connector.connector_scope)}
+                        secondary={truncate(connector.connector_scope.join(','), 30)}
                       />
                         {connector.updated_at && (<ListItemSecondaryAction>
                             <ListItemText primary={nsdt(connector.updated_at)}/>
