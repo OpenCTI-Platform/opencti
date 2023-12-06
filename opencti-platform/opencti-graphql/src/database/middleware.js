@@ -209,6 +209,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { INFERRED_OBJECT, MANUAL_OBJECT } from '../domain/container';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -290,7 +291,8 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const relationWithTargets = {};
   relations.forEach((relation) => {
     const tempTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
-    relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: !!relation.x_opencti_inferences };
+    const isInferred = isInferredIndex(relation._index);
+    relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: isInferred };
   });
 
   // Group and rebuild the result
@@ -301,14 +303,24 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       const edges = [];
       if (values) {
         const currentSourceRelations = first ? R.take(first, values) : values;
-        const filteredElements = [];
         currentSourceRelations.forEach((relation) => {
           const target = relationWithTargets[relation.id];
           if (target) {
-            filteredElements.push(target);
+            const isRelationInferred = target.is_from_relation_inferred;
+            delete target.is_from_relation_inferred;
+            // Check if multiple target
+            const isDuplicate = edges.some((edge) => edge.node.id === target.id);
+            if (!isDuplicate) {
+              const existingEdgeIndex = edges.findIndex((existingEdge) => existingEdge.node.id === target.id);
+              if (existingEdgeIndex !== -1) {
+                edges[existingEdgeIndex].relationTypes.push(isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT);
+              } else {
+                const edge = { node: target, relationTypes: [isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT] };
+                edges.push(edge);
+              }
+            }
           }
         });
-        edges.push(...filteredElements.map((n) => ({ node: n })));
       }
       return buildPagination(0, null, edges, edges.length);
     });
@@ -320,7 +332,8 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     if (data) {
       data.forEach((relation) => {
         const target = relationWithTargets[relation.id];
-        if (target) {
+        if (target && !filteredElements.some((t) => t.id === target.id)) {
+          delete target.is_from_relation_inferred;
           filteredElements.push(target);
         }
       });
