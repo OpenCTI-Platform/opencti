@@ -1,9 +1,10 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
+import moment from 'moment';
 import { generateFileIndexId } from '../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../schema/internalObject';
-import { elDeleteInstances, elIndex } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField } from '../../database/utils';
+import { elCount, elDeleteInstances, elIndex } from '../../database/engine';
+import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import {
   type EntityOptions,
   type FilterGroupWithNested,
@@ -16,11 +17,27 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type DomainFindById } from '../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon } from '../../types/store';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../domain/work';
 import { UnsupportedError } from '../../config/errors';
+import { elSearchFiles } from '../../database/file-search';
+import { SYSTEM_USER } from '../../utils/access';
+import { FROM_START_STR } from '../../utils/format';
 
-export const buildFileDataForIndexing = (path: string, file: any) => {
+export const getIndexFromDate = async (context: AuthContext) => {
+  const searchOptions = {
+    first: 1,
+    connectionFormat: false,
+    highlight: false,
+    orderBy: 'uploaded_at',
+    orderMode: 'desc',
+  };
+  const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
+  const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
+  return lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
+};
+
+export const buildFileDataForIndexing = (file: any) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
   return {
@@ -28,11 +45,10 @@ export const buildFileDataForIndexing = (path: string, file: any) => {
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
-    file_path: path,
   };
 };
-export const indexFileToDocument = async (path: string, file: any) => {
-  const data = buildFileDataForIndexing(path, file);
+export const indexFileToDocument = async (file: any) => {
+  const data = buildFileDataForIndexing(file);
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
 };
 
@@ -49,7 +65,7 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
 
 interface PrefixOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   entity_id?: string
-  modifiedSince?: string
+  modifiedSince?: string | null
   prefixMimeTypes?: string[]
   maxFileSize?: number
   excludedPaths?: string[]
@@ -58,17 +74,17 @@ interface PrefixOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
 const buildFileFilters = (paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
-    filters: [{ key: ['file_path'], values: paths, operator: FilterOperator.StartsWith }],
+    filters: [{ key: ['internal_id'], values: paths, operator: FilterOperator.StartsWith }],
     filterGroups: []
   };
   if (opts?.excludedPaths && opts?.excludedPaths.length > 0) {
-    filters.filters.push({ key: ['file_path'], values: opts.excludedPaths, operator: FilterOperator.NotStartsWith });
+    filters.filters.push({ key: ['internal_id'], values: opts.excludedPaths, mode: FilterMode.And, operator: FilterOperator.NotStartsWith });
   }
   if (opts?.prefixMimeTypes && opts?.prefixMimeTypes.length > 0) {
     filters.filters.push({ key: ['metaData.mimetype'], values: opts.prefixMimeTypes, operator: FilterOperator.StartsWith });
   }
   if (opts?.modifiedSince) {
-    filters.filters.push({ key: ['lastModified'], values: [opts.modifiedSince], operator: FilterOperator.Gte });
+    filters.filters.push({ key: ['lastModified'], values: [opts.modifiedSince], operator: FilterOperator.Gt });
   }
   if (opts?.entity_id) {
     filters.filters.push({ key: ['metaData.entity_id'], values: [opts.entity_id] });
@@ -86,8 +102,24 @@ export const allFilesForPaths = async (context: AuthContext, user: AuthUser, pat
     filters: buildFileFilters(paths, opts),
     noFiltersChecking: true // No associated model
   };
-  const listOptions = { ...opts, ...findOpts };
+  // Default ordering on lastModified starting from the oldest
+  const orderOptions: any = {};
+  if (isEmptyField(opts?.orderBy)) {
+    orderOptions.orderBy = 'lastModified';
+    orderOptions.orderMode = OrderingMode.Asc;
+  }
+  const listOptions = { ...opts, ...findOpts, ...orderOptions, indices: [READ_INDEX_INTERNAL_OBJECTS] };
   return listAllEntities<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
+};
+
+export const allRemainingFilesCount = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+  const modifiedSince = await getIndexFromDate(context);
+  const findOpts: EntityOptions<BasicStoreEntityDocument> = {
+    filters: buildFileFilters(paths, { ...opts, modifiedSince }),
+    noFiltersChecking: true // No associated model
+  };
+  const remainingOpts = { ...findOpts, types: [ENTITY_TYPE_INTERNAL_FILE] };
+  return elCount(context, user, [READ_INDEX_INTERNAL_OBJECTS], remainingOpts);
 };
 
 // Get Files paginated with auto enrichment

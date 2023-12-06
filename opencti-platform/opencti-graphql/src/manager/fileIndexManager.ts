@@ -15,25 +15,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { Promise as BluePromise } from 'bluebird';
-import moment from 'moment';
 import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_TYPE_UPDATE, isNotEmptyField, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import {
-  createStreamProcessor,
-  lockResource,
-  type StreamProcessor,
-} from '../database/redis';
+import { createStreamProcessor, lockResource, type StreamProcessor, } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import {
-  elLoadById,
-  isAttachmentProcessorEnabled,
-} from '../database/engine';
-import { elIndexFiles, elSearchFiles, elUpdateFilesWithEntityRestrictions } from '../database/file-search';
-import { fileListingForIndexing, getFileContent, loadFilesForIndexing } from '../database/file-storage';
+import { elLoadById, isAttachmentProcessorEnabled, } from '../database/engine';
+import { elIndexFiles, elUpdateFilesWithEntityRestrictions } from '../database/file-search';
+import { getFileContent } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
 import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -43,22 +35,18 @@ import {
   getManagerConfigurationFromCache,
   updateManagerConfigurationLastRun
 } from '../modules/managerConfiguration/managerConfiguration-domain';
+import { allFilesForPaths, getIndexFromDate } from '../modules/document/document-domain';
+import { buildOptionsFromFileManager } from '../domain/file';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
-const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 300000; // 5 minutes
+const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 6000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_key');
-
-// configuration that will be handled in ManagerConfiguration in MVP2
-const defaultMimeTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/html'];
-const ACCEPT_MIME_TYPES: string[] = defaultMimeTypes;
-const MAX_FILE_SIZE: number = 5242880; // 5 mb
-const INCLUDE_GLOBAL_FILES: boolean = false;
 
 interface FileToIndexObject {
   id: string;
   internalId: string;
-  entityId: string | null;
+  entityId?: string | null;
   name: string;
   uploaded_at: Date | undefined;
 }
@@ -75,20 +63,10 @@ const loadFilesToIndex = async (file: FileToIndexObject) => {
   };
 };
 
-const indexImportedFiles = async (
-  context: AuthContext,
-  fromDate: Date | null = null,
-  opts: { path?: string, includeGlobalFiles?: boolean, entityTypes?: string[], maxFileSize?: number, mimeTypes?: string[] } = {},
-) => {
-  const { path = 'import/', maxFileSize = MAX_FILE_SIZE, mimeTypes = ACCEPT_MIME_TYPES } = opts;
-  const { entityTypes = [], includeGlobalFiles = INCLUDE_GLOBAL_FILES } = opts;
-  const includedPaths = entityTypes.map((entityType) => `import/${entityType}/`);
-  if (includeGlobalFiles && includedPaths.length > 0) {
-    includedPaths.push('import/global/'); // add global to included paths
-  }
-  const excludedPaths = includeGlobalFiles ? ['import/pending/'] : ['import/pending/', 'import/global/'];
-  const fileListingOpts = { modifiedSince: fromDate, excludedPaths, includedPaths, mimeTypes, maxFileSize };
-  const allFiles = await fileListingForIndexing(context, SYSTEM_USER, path, fileListingOpts);
+const indexImportedFiles = async (context: AuthContext, indexFromDate: string | null) => {
+  const fileOptions = await buildOptionsFromFileManager(context);
+  const opts = { ...fileOptions.opts, modifiedSince: indexFromDate };
+  const allFiles = await allFilesForPaths(context, SYSTEM_USER, fileOptions.paths ?? [], opts);
   if (allFiles.length === 0) {
     return;
   }
@@ -96,8 +74,7 @@ const indexImportedFiles = async (
   for (let index = 0; index < filesBulk.length; index += 1) {
     const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
     if (managerConfiguration?.manager_running) {
-      const files = await loadFilesForIndexing(SYSTEM_USER, filesBulk[index]);
-      const filesToLoad: FileToIndexObject[] = files.map((file) => {
+      const filesToLoad: FileToIndexObject[] = filesBulk[index].map((file) => {
         const internalId = generateFileIndexId(file.id);
         const entityId = file.metaData.entity_id;
         return {
@@ -114,20 +91,6 @@ const indexImportedFiles = async (
       await waitInSec(1);
     }
   }
-};
-
-const getIndexFromDate = async (context: AuthContext) => {
-  const searchOptions = {
-    first: 1,
-    connectionFormat: false,
-    highlight: false,
-    orderBy: 'uploaded_at',
-    orderMode: 'desc',
-  };
-  const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
-  const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;
-  const indexFromDate = lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toDate() : null;
-  return indexFromDate;
 };
 
 const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
@@ -183,19 +146,11 @@ const initFileIndexManager = () => {
         logApp.debug('[OPENCTI-MODULE] Running file index manager');
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
         if (managerConfiguration?.manager_running) {
-          const startDate = new Date();
-          // get index from date only if manager has been running
-          const indexFromDate = managerConfiguration.last_run_start_date ? await getIndexFromDate(context) : null;
+          const indexFromDate = await getIndexFromDate(context);
+          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: new Date() });
           logApp.debug('[OPENCTI-MODULE] Index imported files since', { indexFromDate });
-          const indexOpts = {
-            includeGlobalFiles: managerConfiguration.manager_setting?.include_global_files || false,
-            entityTypes: managerConfiguration.manager_setting?.entity_types || [],
-            maxFileSize: managerConfiguration.manager_setting?.max_file_size,
-            mimeTypes: managerConfiguration.manager_setting?.accept_mime_types,
-          };
-          await indexImportedFiles(context, indexFromDate, indexOpts);
-          const endDate = new Date();
-          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: startDate, last_run_end_date: endDate });
+          await indexImportedFiles(context, indexFromDate);
+          await updateManagerConfigurationLastRun(context, SYSTEM_USER, managerConfiguration.id, { last_run_end_date: new Date() });
           logApp.debug('[OPENCTI-MODULE] End of file index manager processing');
         }
       } catch (e: any) {

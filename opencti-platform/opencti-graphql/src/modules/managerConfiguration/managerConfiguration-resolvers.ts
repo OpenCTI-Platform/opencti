@@ -8,6 +8,7 @@ import {
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
+import { supportedMimeTypes } from './managerConfiguration-utils';
 
 const managerConfigurationResolvers: Resolvers = {
   Query: {
@@ -18,6 +19,18 @@ const managerConfigurationResolvers: Resolvers = {
     managerConfigurationFieldPatch: (_, { id, input }, context) => {
       return managerConfigurationEditField(context, context.user, id, input);
     },
+  },
+  ManagerConfiguration: {
+    manager_setting: (config) => {
+      // For index manager, inject the supported mime types
+      if (config.manager_id === 'FILE_INDEX_MANAGER') {
+        const setting = config.manager_setting;
+        setting.supported_mime_types = supportedMimeTypes;
+        setting.max_file_size = Math.floor(setting.max_file_size / (1024 * 1024));
+        return setting;
+      }
+      return config.manager_setting;
+    }
   },
   Subscription: {
     managerConfiguration: {

@@ -24,7 +24,7 @@ const fileResolvers = {
     pendingFiles: (_, { first }, context) => {
       return paginatedForPathsWithEnrichment(context, context.user, ['import/pending'], { first });
     },
-    filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
+    filesMetrics: (_, args, context) => filesMetrics(context, context.user),
   },
   File: {
     works: (file, _, context) => worksForSource(context, context.user, file.id),

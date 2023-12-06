@@ -26,18 +26,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationAndMonitoringQuery } from './__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 
 const fileIndexingConfigurationAndMonitoringQuery = graphql`
-  query FileIndexingConfigurationAndMonitoringQuery(
-    $mimeTypes: [String!]
-    $maxFileSize: Float
-    $excludedPaths: [String!]
-    $includedPaths: [String!]
-  ) {
-    filesMetrics(
-      mimeTypes: $mimeTypes
-      maxFileSize: $maxFileSize
-      excludedPaths: $excludedPaths
-      includedPaths: $includedPaths
-    ) {
+  query FileIndexingConfigurationAndMonitoringQuery {
+    filesMetrics {
       globalCount
       globalSize
       metricsByMimeType {
@@ -48,16 +38,6 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
     }
   }
 `;
-
-export const fileIndexingDefaultMimeTypes = [
-  'application/pdf',
-  'text/plain',
-  'text/csv',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/html',
-];
-export const fileIndexingDefaultMaxFileSize = 5242880;
 
 interface FileIndexingConfigurationAndMonitoringComponentProps {
   managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
@@ -100,27 +80,8 @@ FileIndexingConfigurationAndMonitoringProps
     fileIndexingConfigurationAndMonitoringQuery,
   );
   const manager_setting = managerConfiguration?.manager_setting;
-  const entityTypes: string[] = manager_setting?.entity_types ?? [];
-  const includedPaths = entityTypes.map(
-    (entityType) => `import/${entityType}/`,
-  );
-  if (manager_setting?.include_global_files && includedPaths.length > 0) {
-    includedPaths.push('import/global/'); // add global to included paths
-  }
-  const queryArgs = {
-    mimeTypes:
-      manager_setting?.accept_mime_types?.length > 0
-        ? manager_setting.accept_mime_types
-        : fileIndexingDefaultMimeTypes,
-    maxFileSize:
-      manager_setting?.max_file_size ?? fileIndexingDefaultMaxFileSize,
-    excludedPaths: manager_setting?.include_global_files
-      ? []
-      : ['import/global'],
-    includedPaths,
-  };
   useEffect(() => {
-    loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
   }, [manager_setting]);
   return (
     <>

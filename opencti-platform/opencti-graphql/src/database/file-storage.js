@@ -6,7 +6,6 @@ import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-prov
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-cjs/defaultProvider';
 import mime from 'mime-types';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
@@ -14,17 +13,12 @@ import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/wo
 import { isEmptyField, isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
-import { telemetry } from '../config/tracing';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { internalLoadById } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
-import {
-  deleteDocumentIndex,
-  indexFileToDocument,
-  allFilesForPaths
-} from '../modules/document/document-domain';
+import { deleteDocumentIndex, indexFileToDocument, allFilesForPaths } from '../modules/document/document-domain';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -352,7 +346,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   }
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = mime.lookup(filename) || mimetype;
+  const fileMime = guessMimeType(key) || mimetype;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -387,57 +381,13 @@ export const upload = async (context, user, path, fileUpload, opts) => {
     uploadStatus: 'complete'
   };
   // Register in elastic
-  await indexFileToDocument(path, file);
+  await indexFileToDocument(file);
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending')
       && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;
-};
-
-// export const filesListing = async (context, user, first, path, entity = null, prefixMimeType = '') => {
-//   const filesListingFn = async () => {
-//     let files = await rawFilesListing(context, user, path);
-//     if (entity) {
-//       files = files.filter((file) => file.metaData.entity_id === entity.internal_id);
-//       files = await resolveImageFiles(files, entity);
-//     }
-//     if (prefixMimeType) {
-//       files = files.filter((file) => file.metaData.mimetype.includes(prefixMimeType));
-//     }
-//     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
-//     const allFiles = R.concat(inExport, files);
-//     const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
-//     const fileNodes = sortedFiles.map((f) => ({ node: f }));
-//     return buildPagination(first, null, fileNodes, fileNodes.length);
-//   };
-//   return telemetry(context, user, `STORAGE ${path}`, {
-//     [SemanticAttributes.DB_NAME]: 'storage_engine',
-//     [SemanticAttributes.DB_OPERATION]: 'listing',
-//   }, filesListingFn);
-// };
-
-export const fileListingForIndexing = async (context, user, path, opts = {}) => {
-  const fileListingForIndexingFn = async () => {
-    const files = await simpleFilesListing(path, { ...opts, recursive: true });
-    return files.sort((a, b) => a.LastModified - b.LastModified);
-  };
-  return telemetry(context, user, `STORAGE ${path}`, {
-    [SemanticAttributes.DB_NAME]: 'storage_engine',
-    [SemanticAttributes.DB_OPERATION]: 'listing',
-  }, fileListingForIndexingFn);
-};
-
-export const loadFilesForIndexing = (user, files, opts = {}) => {
-  let filesObjects = BluePromise.map(files, (f) => loadFile(user, f.Key), { concurrency: 5 });
-  const { mimeTypes } = opts;
-  if (mimeTypes?.length > 0) {
-    filesObjects = filesObjects.filter((file) => {
-      return file.metaData?.mimetype && mimeTypes.includes(file.metaData.mimetype);
-    });
-  }
-  return filesObjects;
 };
 
 export const deleteAllObjectFiles = async (context, user, element) => {

@@ -1,11 +1,11 @@
 import type { BasicStoreEntity } from '../../types/store';
 
 export interface BasicStoreEntityDocument extends BasicStoreEntity {
-  file_mime_type: string
-  file_updated_at: string
-  file_size: number
-  entity_id?: string
+  size: number
+  lastModified: Date
   metaData: {
+    entity_id?: string
+    mimetype: string
     order?: number
     description?: string
     inCarousel?: boolean

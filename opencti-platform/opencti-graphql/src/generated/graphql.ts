@@ -17680,14 +17680,6 @@ export type QueryFileArgs = {
 };
 
 
-export type QueryFilesMetricsArgs = {
-  excludedPaths?: InputMaybe<Array<Scalars['String']['input']>>;
-  includedPaths?: InputMaybe<Array<Scalars['String']['input']>>;
-  maxFileSize?: InputMaybe<Scalars['Float']['input']>;
-  mimeTypes?: InputMaybe<Array<Scalars['String']['input']>>;
-};
-
-
 export type QueryFiltersRepresentativesArgs = {
   filters: FilterGroup;
 };
@@ -33862,7 +33854,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feedbacks?: Resolver<Maybe<ResolversTypes['FeedbackConnection']>, ParentType, ContextType, Partial<QueryFeedbacksArgs>>;
   feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
-  filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType, Partial<QueryFilesMetricsArgs>>;
+  filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType>;
   filtersRepresentatives?: Resolver<Array<ResolversTypes['RepresentativeWithId']>, ParentType, ContextType, RequireFields<QueryFiltersRepresentativesArgs, 'filters'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;

@@ -11,10 +11,7 @@ export const up = async (next) => {
   const files = await rawFilesListing(context, SYSTEM_USER, '/', { recursive: true });
   logApp.info(`[MIGRATION] ${files.length} files to register in index`);
   const elements = files.map((file) => {
-    const pathSegments = file.id.split('/');
-    pathSegments.pop();
-    const path = pathSegments.join('/');
-    return { _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(path, file) };
+    return { _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(file) };
   });
   await elIndexElements(context, SYSTEM_USER, 'Migration files registration', elements);
   logApp.info('[MIGRATION] Done 1701354091161-files-registration.js');
