@@ -31,7 +31,6 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -285,7 +284,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             }
           />
         </Tooltip>
-        <ListItemSecondaryAction>
+        <div onClick={(e) => e.stopPropagation()} style={{ flex: 'none' }}>
           {!disableImport && (
             <Tooltip title={t('Launch an import of this file')}>
               <span>
@@ -383,7 +382,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               )}
             </>
           )}
-        </ListItemSecondaryAction>
+        </div>
       </ListItem>
       <FileWork file={file} nested={workNested} />
       <Dialog
