@@ -306,7 +306,7 @@ class ImportContentComponent extends Component {
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
-
+      console.log('>> connectors', connectors)
     return (
       <div className={classes.container}>
         <Typography
@@ -413,9 +413,9 @@ class ImportContentComponent extends Component {
                         primary={connector.name}
                         secondary={R.join(',', connector.connector_scope)}
                       />
-                      <ListItemSecondaryAction>
-                        <ListItemText primary={nsdt(connector.updated_at)} />
-                      </ListItemSecondaryAction>
+                        {connector.updated_at && (<ListItemSecondaryAction>
+                            <ListItemText primary={nsdt(connector.updated_at)}/>
+                        </ListItemSecondaryAction>)}
                     </ListItem>
                   ))}
                 </List>
