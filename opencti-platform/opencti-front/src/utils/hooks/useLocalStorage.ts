@@ -549,7 +549,6 @@ export const usePaginationLocalStorage = <U>(
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      console.log(filter);
       if (filtersUsedAsApiParameters.includes(filter.key)) {
         const existedFilter = viewStorage.filters?.filters.find((f) => f.key === filter.key);
         // If the specific filter is already defined, set the latestAddFilterId in order to open the menu popover
