@@ -32,6 +32,7 @@ describe('Regex Pattern Tests', () => {
 
   it('should match a valid email pattern', () => {
     expect('test@example.com').toMatch(emailChecker);
+    expect('mastodon+ada.lovelace@mymail.org').toMatch(emailChecker);
     expect('invalid_email').not.toMatch(emailChecker);
   });
 
