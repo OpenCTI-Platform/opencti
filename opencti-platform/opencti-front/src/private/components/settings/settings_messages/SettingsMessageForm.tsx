@@ -6,12 +6,15 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
+import ObjectMembersField from '@components/common/form/ObjectMembersField';
+import { Option } from '@components/common/form/ReferenceField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -43,14 +46,10 @@ const messageValidation = () => Yup.object().shape({
   activated: Yup.boolean().required(),
   dismissible: Yup.boolean().required(),
   color: Yup.string().nullable(),
+  recipients: Yup.array().nullable(),
 });
 
-type SettingsMessageInput = Partial<
-Pick<
-SettingsMessagesLine_settingsMessage$data,
-'id' | 'activated' | 'message' | 'dismissible'
->
->;
+type SettingsMessageInput = Partial<Pick<SettingsMessagesLine_settingsMessage$data, 'id' | 'activated' | 'message' | 'dismissible'> & { recipients: Option[] }>;
 
 const SettingsMessageForm = ({
   settingsId,
@@ -75,30 +74,33 @@ const SettingsMessageForm = ({
     commit({
       variables: {
         id: settingsId,
-        input: values,
+        input: {
+          ...values,
+          recipients: values.recipients?.map(({ value }) => value),
+        },
       },
       onCompleted: () => {
         setSubmitting(false);
       },
     });
   };
-  const initialValues = message
-    ? {
-      id: message.id,
-      message: message.message,
-      activated: message.activated,
-      dismissible: message.dismissible,
-      color: message.color,
-    }
-    : {
-      message: '',
-      activated: false,
-      dismissible: false,
-      color: '',
-    };
+  const initialValues = message ? {
+    id: message.id,
+    message: message.message,
+    activated: message.activated,
+    dismissible: message.dismissible,
+    color: message.color,
+    recipients: message.recipients?.map(({ id, name }) => ({ label: name, value: id })),
+  } : {
+    message: '',
+    activated: false,
+    dismissible: false,
+    color: '',
+    recipients: [],
+  };
   return (
     <Drawer
-      title= {creation ? `${t('Create a message')}` : `${t('Update a message')}`}
+      title={creation ? `${t('Create a message')}` : `${t('Update a message')}`}
       open={open}
       onClose={handleClose}
     >
@@ -142,6 +144,12 @@ const SettingsMessageForm = ({
                 name="dismissible"
                 label={t('Dismissible')}
                 containerstyle={{ marginTop: 10 }}
+              />
+              <ObjectMembersField
+                label={'Recipients'}
+                style={fieldSpacingContainerStyle}
+                multiple
+                name={'recipients'}
               />
               <div className={classes.buttons}>
                 <Button

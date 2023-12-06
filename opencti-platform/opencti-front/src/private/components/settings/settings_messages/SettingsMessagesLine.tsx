@@ -43,6 +43,10 @@ const settingsMessageFragment = graphql`
     dismissible
     updated_at
     color
+    recipients {
+      id
+      name
+    }
   }
 `;
 
