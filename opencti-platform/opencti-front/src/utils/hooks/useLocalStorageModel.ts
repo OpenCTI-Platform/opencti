@@ -34,4 +34,5 @@ export interface LocalStorage {
   messages?: MessageFromLocalStorage[];
   timeField?: string;
   dashboard?: string;
+  latestAddFilterId?: string;
 }

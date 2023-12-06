@@ -47,6 +47,7 @@ export interface UseLocalStorageHelpers {
   handleClearAllFilters: (filters?: Filter[]) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  getLatestAddFilterId: () => string | undefined;
 }
 
 const localStorageToPaginationOptions = (
@@ -64,6 +65,7 @@ const localStorageToPaginationOptions = (
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
+  delete localOptions.latestAddFilterId;
   // Rebuild some pagination options
   const basePagination: PaginationOptions = { ...localOptions };
   if (searchTerm) {
@@ -541,6 +543,7 @@ export const usePaginationLocalStorage = <U>(
           filters: filters ? [...filters] : [],
           mode: 'and',
         },
+        latestAddFilterId: undefined,
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
@@ -548,6 +551,9 @@ export const usePaginationLocalStorage = <U>(
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       handleChangeOperatorFiltersUtil({ viewStorage, setValue, id, operator });
+    },
+    getLatestAddFilterId: () => {
+      return viewStorage.latestAddFilterId;
     },
   };
 

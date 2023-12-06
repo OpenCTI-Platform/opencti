@@ -19,6 +19,7 @@ import {
 } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
+import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
@@ -149,8 +150,8 @@ FilterIconButtonContainerProps
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
-  const latestItemRef = useRef(null);
-  const nbDisplayFilter = useRef(0);
+  const itemRefToPopover = useRef(null);
+  const storeLastDisplayFilter = useRef<Filter[]>([]);
 
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
@@ -166,17 +167,16 @@ FilterIconButtonContainerProps
     useEffect(() => {
       if (
         hasRenderedRef
-        && latestItemRef.current
-        && nbDisplayFilter.current < displayedFilters.length
+        && itemRefToPopover.current
       ) {
         setFilterChipsParams({
-          filterId: displayedFilters[displayedFilters.length - 1].id,
-          anchorEl: latestItemRef.current as unknown as HTMLElement,
+          filterId: helpers?.getLatestAddFilterId(),
+          anchorEl: itemRefToPopover.current as unknown as HTMLElement,
         });
       } else {
         setHasRenderedRef();
       }
-      nbDisplayFilter.current = displayedFilters.length;
+      storeLastDisplayFilter.current = displayedFilters;
     }, [displayedFilters]);
   }
   const handleClose = () => {
@@ -305,7 +305,7 @@ FilterIconButtonContainerProps
             >
               <Chip
                 color={chipColor}
-                ref={isNotLastFilter ? null : latestItemRef}
+                ref={helpers?.getLatestAddFilterId() === currentFilter.id ? itemRefToPopover : null}
                 classes={{ root: classFilter, label: classes.chipLabel }}
                 variant={
                   currentFilter.values.length === 0
@@ -342,9 +342,12 @@ FilterIconButtonContainerProps
               />
             </Tooltip>
             {isNotLastFilter && (
-              <div className={classOperator} onClick={handleSwitchGlobalMode}>
-                {t(globalMode.toUpperCase())}
-              </div>
+                <FilterIconButtonGlobalOperator
+                    currentIndex={index}
+                    displayedFilters={displayedFilters}
+                    classOperator={classOperator}
+                    globalMode={globalMode}
+                    handleSwitchGlobalMode={handleSwitchGlobalMode}/>
             )}
           </Fragment>
         );
