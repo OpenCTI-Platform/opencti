@@ -151,7 +151,6 @@ FilterIconButtonContainerProps
   const globalMode = filters.mode;
   let classFilter = classes.filter1;
   const itemRefToPopover = useRef(null);
-  const storeLastDisplayFilter = useRef<Filter[]>([]);
 
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
@@ -176,7 +175,6 @@ FilterIconButtonContainerProps
       } else {
         setHasRenderedRef();
       }
-      storeLastDisplayFilter.current = displayedFilters;
     }, [displayedFilters]);
   }
   const handleClose = () => {
