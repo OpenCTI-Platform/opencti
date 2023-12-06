@@ -195,12 +195,12 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const filtersContent: FiltersWithNested[] = filters?.filters ?? [];
+  const filtersFromOptionsContent: FiltersWithNested[] = [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
-    filtersContent.push({ key: [buildRefRelationKey(relation)], values: [id] });
+    filtersFromOptionsContent.push({ key: [buildRefRelationKey(relation)], values: [id] });
     if (relationId) {
-      filtersContent.push({ key: ['internal_id'], values: [relationId] });
+      filtersFromOptionsContent.push({ key: ['internal_id'], values: [relationId] });
     }
   }
   // region element filtering
@@ -210,7 +210,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
-    filtersContent.push({ key: ['connections'], nested: nestedElement, values: [] });
+    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedElement, values: [] });
   }
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
@@ -221,7 +221,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     }
   }
   if (nestedElementTypes.length > 0) {
-    filtersContent.push({ key: ['connections'], nested: nestedElementTypes, values: [] });
+    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedElementTypes, values: [] });
   }
   // endregion
   // region from filtering
@@ -238,7 +238,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedFrom.push({ key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard });
   }
   if (nestedFrom.length > 0) {
-    filtersContent.push({ key: ['connections'], nested: nestedFrom, values: [] });
+    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedFrom, values: [] });
   }
   // endregion
   // region to filtering
@@ -255,21 +255,21 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedTo.push({ key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard });
   }
   if (nestedTo.length > 0) {
-    filtersContent.push({ key: ['connections'], nested: nestedTo, values: [] });
+    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedTo, values: [] });
   }
   // endregion
-  if (startTimeStart) filtersContent.push({ key: ['start_time'], values: [startTimeStart], operator: FilterOperator.Gt });
-  if (startTimeStop) filtersContent.push({ key: ['start_time'], values: [startTimeStop], operator: FilterOperator.Lt });
-  if (stopTimeStart) filtersContent.push({ key: ['stop_time'], values: [stopTimeStart], operator: FilterOperator.Gt });
-  if (stopTimeStop) filtersContent.push({ key: ['stop_time'], values: [stopTimeStop], operator: FilterOperator.Lt });
-  if (firstSeenStart) filtersContent.push({ key: ['first_seen'], values: [firstSeenStart], operator: FilterOperator.Gt });
-  if (firstSeenStop) filtersContent.push({ key: ['first_seen'], values: [firstSeenStop], operator: FilterOperator.Lt });
-  if (lastSeenStart) filtersContent.push({ key: ['last_seen'], values: [lastSeenStart], operator: FilterOperator.Gt });
-  if (lastSeenStop) filtersContent.push({ key: ['last_seen'], values: [lastSeenStop], operator: FilterOperator.Lt });
-  if (startDate) filtersContent.push({ key: ['created_at'], values: [startDate], operator: FilterOperator.Gt });
-  if (endDate) filtersContent.push({ key: ['created_at'], values: [endDate], operator: FilterOperator.Lt });
+  if (startTimeStart) filtersFromOptionsContent.push({ key: ['start_time'], values: [startTimeStart], operator: FilterOperator.Gt });
+  if (startTimeStop) filtersFromOptionsContent.push({ key: ['start_time'], values: [startTimeStop], operator: FilterOperator.Lt });
+  if (stopTimeStart) filtersFromOptionsContent.push({ key: ['stop_time'], values: [stopTimeStart], operator: FilterOperator.Gt });
+  if (stopTimeStop) filtersFromOptionsContent.push({ key: ['stop_time'], values: [stopTimeStop], operator: FilterOperator.Lt });
+  if (firstSeenStart) filtersFromOptionsContent.push({ key: ['first_seen'], values: [firstSeenStart], operator: FilterOperator.Gt });
+  if (firstSeenStop) filtersFromOptionsContent.push({ key: ['first_seen'], values: [firstSeenStop], operator: FilterOperator.Lt });
+  if (lastSeenStart) filtersFromOptionsContent.push({ key: ['last_seen'], values: [lastSeenStart], operator: FilterOperator.Gt });
+  if (lastSeenStop) filtersFromOptionsContent.push({ key: ['last_seen'], values: [lastSeenStop], operator: FilterOperator.Lt });
+  if (startDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [startDate], operator: FilterOperator.Gt });
+  if (endDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [endDate], operator: FilterOperator.Lt });
   if (confidences && confidences.length > 0) {
-    filtersContent.push({ key: ['confidence'], values: confidences });
+    filtersFromOptionsContent.push({ key: ['confidence'], values: confidences });
   }
   // remove options already passed in filters and useless for the next steps
   const cleanedArgs = R.pipe(
@@ -289,14 +289,22 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     R.dissoc('lastSeenStop'),
     R.dissoc('confidences'),
   )(args);
+  const filtersFromOptions = {
+    mode: FilterMode.And,
+    filters: filtersFromOptionsContent,
+    filterGroups: [],
+  };
+  const finalFilters = filters
+    ? {
+      mode: filters.mode,
+      filters: filters.filters,
+      filterGroups: filters.filterGroups.concat(filtersFromOptions),
+    }
+    : filtersFromOptions;
   return {
     ...cleanedArgs,
     types: relationsToGet,
-    filters: {
-      mode: filters?.mode ?? FilterMode.And,
-      filters: filtersContent,
-      filterGroups: filters?.filterGroups ?? [],
-    }
+    filters: finalFilters,
   };
 };
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
