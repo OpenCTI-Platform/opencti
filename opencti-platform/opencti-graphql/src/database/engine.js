@@ -2322,8 +2322,9 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, first = 200 } = options;
-  const { types = null, connectionFormat = true } = options;
-  const body = await elQueryBodyBuilder(context, user, options);
+  const { types = null, connectionFormat = true, noFiltersChecking = false } = options;
+  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
+  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters });
   if (body.size > ES_MAX_PAGINATION) {
     const message = `[SEARCH] You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
     throw DatabaseError(message, { body });
@@ -2364,8 +2365,6 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
 };
 export const elList = async (context, user, indexName, opts = {}) => {
   const { first = MAX_SEARCH_SIZE, maxSize = undefined } = opts;
-  const { filters, noFiltersChecking = false } = opts;
-  const convertedFilters = noFiltersChecking ? filters : checkAndConvertFilters(filters);
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
@@ -2382,7 +2381,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const paginateOpts = { ...opts, filters: convertedFilters, first, after: searchAfter, connectionFormat: false };
+    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
     const noMoreElements = elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE);
