@@ -12,7 +12,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  is_from_relation_inferred: Boolean
+
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection

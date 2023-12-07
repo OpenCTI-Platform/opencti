@@ -66,6 +66,7 @@ class ThreatActorGroupLocationsComponent extends Component {
             </ListItem>
           )}
           {threatActorGroup.locations.edges.map((locationEdge) => {
+            const { types } = locationEdge;
             const location = locationEdge.node;
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
@@ -74,7 +75,6 @@ class ThreatActorGroupLocationsComponent extends Component {
                   (n) => n?.length === 2,
                 ),
               );
-            const isInferred = location.is_from_relation_inferred;
             return (
               <ListItem
                 key={location.id}
@@ -98,7 +98,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                   </ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                {isInferred && (
+                {types.includes('manual') && (
                   <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -138,6 +138,7 @@ const ThreatActorGroupLocations = createFragmentContainer(
         entity_type
         locations {
           edges {
+            types
             node {
               id
               parent_types
@@ -145,7 +146,6 @@ const ThreatActorGroupLocations = createFragmentContainer(
               name
               x_opencti_aliases
               description
-              is_from_relation_inferred
             }
           }
         }

@@ -13,7 +13,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
-    is_from_relation_inferred: Boolean
+
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

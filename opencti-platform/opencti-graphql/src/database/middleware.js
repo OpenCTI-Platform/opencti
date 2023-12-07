@@ -309,15 +309,12 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
             const isRelationInferred = target.is_from_relation_inferred;
             delete target.is_from_relation_inferred;
             // Check if multiple target
-            const isDuplicate = edges.some((edge) => edge.node.id === target.id);
-            if (!isDuplicate) {
-              const existingEdgeIndex = edges.findIndex((existingEdge) => existingEdge.node.id === target.id);
-              if (existingEdgeIndex !== -1) {
-                edges[existingEdgeIndex].relationTypes.push(isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT);
-              } else {
-                const edge = { node: target, relationTypes: [isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT] };
-                edges.push(edge);
-              }
+            const existingEdge = edges.find((edge) => edge.node.id === target.id);
+            if (existingEdge) {
+              edges[existingEdge].types.push(isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT);
+            } else {
+              const edge = { node: target, types: [isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT] };
+              edges.push(edge);
             }
           }
         });

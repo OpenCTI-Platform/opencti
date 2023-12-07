@@ -64,6 +64,7 @@ const AddLocationsThreatActorGroupLines = createPaginationContainer(
         locations(search: $search, first: $count, after: $cursor)
           @connection(key: "Pagination_threatActorGroup_locations") {
           edges {
+            types
             node {
               id
               entity_type

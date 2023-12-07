@@ -56,8 +56,8 @@ class SectorSubSectorsComponent extends Component {
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {sector.subSectors.edges.map((subSectorEdge) => {
+            const { types } = subSectorEdge;
             const subSector = subSectorEdge.node;
-            const isInferred = subSector.is_from_relation_inferred;
             return (
               <ListItem
                 key={subSector.id}
@@ -71,7 +71,7 @@ class SectorSubSectorsComponent extends Component {
                   <Domain color="primary" />
                 </ListItemIcon>
                 <ListItemText primary={subSector.name} />
-                {isInferred && (
+                {types.includes('manual') && (
                   <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -109,12 +109,12 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
       entity_type
       subSectors {
         edges {
+          types
           node {
             id
             name
             description
             parent_types
-            is_from_relation_inferred
           }
         }
       }

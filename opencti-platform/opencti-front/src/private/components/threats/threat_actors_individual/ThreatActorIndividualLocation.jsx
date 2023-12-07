@@ -20,6 +20,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
+import {AutoFix} from "mdi-material-ui";
+import Tooltip from "@mui/material/Tooltip";
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -68,8 +70,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
             </ListItem>
           )}
           {threatActorIndividual.locations.edges.map((locationEdge) => {
+            const { types } = locationEdge;
             const location = locationEdge.node;
-            console.log('location', location);
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
               && R.head(
@@ -77,8 +79,6 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   (n) => n?.length === 2,
                 ),
               );
-            const isInferred = location.is_from_relation_inferred;
-            console.log('isInferred', isInferred);
             return (
               <ListItem
                 key={location.id}
@@ -100,8 +100,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   )}
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                {!isInferred && (
-                  <ListItemSecondaryAction>
+                {types.includes('manual') ? (
+                  <ListItemSecondaryAction style={{ right: 0 }} >
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -112,7 +112,14 @@ class ThreatActorIndividualLocationsComponent extends Component {
                       </IconButton>
                     </Security>
                   </ListItemSecondaryAction>
-                )}
+                ) : <Tooltip
+                  title={
+                    t('Inferred knowledge based on the rule Location propagation')
+                  }
+                >
+                  <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+                </Tooltip>
+                }
               </ListItem>
             );
           })}
@@ -140,6 +147,7 @@ const ThreatActorIndividualLocations = createFragmentContainer(
         entity_type
         locations {
           edges {
+            types
             node {
               id
               parent_types
@@ -147,7 +155,6 @@ const ThreatActorIndividualLocations = createFragmentContainer(
               name
               x_opencti_aliases
               description
-              is_from_relation_inferred
             }
           }
         }

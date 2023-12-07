@@ -94,7 +94,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  is_from_relation_inferred: Boolean
+
   objects(
     first: Int
     after: ID

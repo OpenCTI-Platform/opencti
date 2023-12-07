@@ -61,6 +61,7 @@ const AddSubSectorsLines = createPaginationContainer(
         sectors(search: $search, first: $count, after: $cursor)
           @connection(key: "Pagination_sectors") {
           edges {
+            types
             node {
               id
               entity_type

@@ -80,7 +80,6 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -362,7 +361,6 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   mime_type?: Maybe<Scalars['String']['output']>;
@@ -584,7 +582,6 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubAttackPattern?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
@@ -940,7 +937,6 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   name?: Maybe<Scalars['String']['output']>;
@@ -1234,7 +1230,6 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -1447,7 +1442,6 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -1771,7 +1765,6 @@ export type Case = {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -1997,7 +1990,6 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -2275,7 +2267,6 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   information_types?: Maybe<Array<Scalars['String']['output']>>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -2548,7 +2539,6 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -2875,7 +2865,6 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -3122,7 +3111,6 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -3439,7 +3427,6 @@ export type Container = {
   externalReferences?: Maybe<ExternalReferenceConnection>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   lang?: Maybe<Scalars['String']['output']>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -3706,7 +3693,6 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -3964,7 +3950,6 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -4247,7 +4232,6 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -4434,7 +4418,6 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -4735,7 +4718,6 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -4966,7 +4948,6 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -5252,7 +5233,6 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   mtime?: Maybe<Scalars['DateTime']['output']>;
@@ -5475,7 +5455,6 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -5694,7 +5673,6 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -5885,7 +5863,6 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   is_multipart?: Maybe<Scalars['Boolean']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
@@ -6084,7 +6061,6 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -6313,7 +6289,6 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -6768,7 +6743,6 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -7224,7 +7198,6 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -7501,7 +7474,6 @@ export type HashedObservable = {
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -7681,7 +7653,6 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -7869,7 +7840,6 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -8059,7 +8029,6 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -8260,7 +8229,6 @@ export type Identity = {
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -8535,7 +8503,6 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   incident_type?: Maybe<Scalars['String']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -8846,7 +8813,6 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicator_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
@@ -9115,7 +9081,6 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   isUser?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -9402,7 +9367,6 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   infrastructure_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
@@ -9807,7 +9771,6 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -10238,7 +10201,6 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -10488,7 +10450,6 @@ export type Location = {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -10688,6 +10649,7 @@ export type LocationEdge = {
   __typename?: 'LocationEdge';
   cursor: Scalars['String']['output'];
   node: Location;
+  types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type LocationEditMutations = {
@@ -10795,7 +10757,6 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -10991,7 +10952,6 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   implementation_languages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   importFiles?: Maybe<FileConnection>;
   is_family?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
@@ -11229,7 +11189,6 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   installedSoftware?: Maybe<SoftwareConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -11687,7 +11646,6 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   media_category?: Maybe<Scalars['String']['output']>;
@@ -13992,7 +13950,6 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   name?: Maybe<Scalars['String']['output']>;
@@ -14184,7 +14141,6 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubNarrative?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -14420,7 +14376,6 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_active?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -14627,7 +14582,6 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -15070,7 +15024,6 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -15379,7 +15332,6 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -15700,7 +15652,6 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -15995,7 +15946,6 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -16184,7 +16134,6 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -16467,7 +16416,6 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -16751,7 +16699,6 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   integrity_level?: Maybe<Scalars['String']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_hidden?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
@@ -19627,7 +19574,6 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubRegion?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -19916,7 +19862,6 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -20407,7 +20352,6 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
   isSubSector?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -20610,6 +20554,7 @@ export type SectorEdge = {
   __typename?: 'SectorEdge';
   cursor: Scalars['String']['output'];
   node: Sector;
+  types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type SectorEditMutations = {
@@ -20796,7 +20741,6 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   languages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -21077,7 +21021,6 @@ export type StixCoreObject = {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -21382,7 +21325,6 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   fromType: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   killChainPhases?: Maybe<KillChainPhaseConnection>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -21639,7 +21581,6 @@ export type StixCyberObservable = {
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -21903,7 +21844,6 @@ export type StixDomainObject = {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -22256,7 +22196,6 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   magic_number_hex?: Maybe<Scalars['String']['output']>;
@@ -22803,7 +22742,6 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   fromType: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   modified?: Maybe<Scalars['DateTime']['output']>;
@@ -23298,7 +23236,6 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -23570,7 +23507,6 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -23921,7 +23857,6 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -24114,7 +24049,6 @@ export type ThreatActor = {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -24323,7 +24257,6 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -24604,7 +24537,6 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   height?: Maybe<Array<Measure>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   job_title?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
@@ -24881,7 +24813,6 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
@@ -25263,7 +25194,6 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -25515,7 +25445,6 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_disabled?: Maybe<Scalars['Boolean']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   is_privileged?: Maybe<Scalars['Boolean']['output']>;
   is_service_account?: Maybe<Scalars['Boolean']['output']>;
@@ -25733,7 +25662,6 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   notes?: Maybe<NoteConnection>;
@@ -26148,7 +26076,6 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -26415,7 +26342,6 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   modified_time?: Maybe<Scalars['DateTime']['output']>;
@@ -26607,7 +26533,6 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   name?: Maybe<Scalars['String']['output']>;
@@ -26967,7 +26892,6 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   inhibit_any_policy?: Maybe<Scalars['String']['output']>;
-  is_from_relation_inferred?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   is_self_signed?: Maybe<Scalars['Boolean']['output']>;
   issuer?: Maybe<Scalars['String']['output']>;
@@ -28702,7 +28626,6 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<AdministrativeAreaGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AdministrativeAreaImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AdministrativeAreaJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28813,7 +28736,6 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ArtifactIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ArtifactJobsArgs>>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28888,7 +28810,6 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternImportFilesArgs>>;
   isSubAttackPattern?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AttackPatternJobsArgs>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
@@ -29017,7 +28938,6 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AutonomousSystemIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29114,7 +29034,6 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<BankAccountImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<BankAccountIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<BankAccountJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<BankAccountNotesArgs>>;
@@ -29185,7 +29104,6 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CampaignGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CampaignJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29291,7 +29209,6 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29361,7 +29278,6 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseIncidentGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseIncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29437,7 +29353,6 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiImportFilesArgs>>;
   information_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRfiJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29510,7 +29425,6 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRftGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRftJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29609,7 +29523,6 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ChannelGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ChannelImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ChannelJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29676,7 +29589,6 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CityGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29813,7 +29725,6 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ContainerExternalReferencesArgs>>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ContainerGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -29898,7 +29809,6 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CountryGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CountryJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29979,7 +29889,6 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CourseOfActionGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CourseOfActionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30075,7 +29984,6 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletNotesArgs>>;
@@ -30121,7 +30029,6 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptographicKeyIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptographicKeyJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptographicKeyNotesArgs>>;
@@ -30237,7 +30144,6 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DataComponentGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataComponentImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataComponentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30305,7 +30211,6 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<DataSourceGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataSourceImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataSourceJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30412,7 +30317,6 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DirectoryIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DirectoryJobsArgs>>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -30490,7 +30394,6 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DomainNameIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DomainNameJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DomainNameNotesArgs>>;
@@ -30551,7 +30454,6 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailAddrIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailAddrNotesArgs>>;
@@ -30600,7 +30502,6 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMessageIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_multipart?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMessageJobsArgs>>;
@@ -30652,7 +30553,6 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMimePartTypeJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeNotesArgs>>;
@@ -30734,7 +30634,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<EventGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EventJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30901,7 +30800,6 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<FeedbackGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<FeedbackJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31074,7 +30972,6 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<GroupingGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<GroupingJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31147,7 +31044,6 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservableImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HashedObservableIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HashedObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HashedObservableNotesArgs>>;
@@ -31190,7 +31086,6 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HostnameIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HostnameJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HostnameNotesArgs>>;
@@ -31237,7 +31132,6 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv4AddrIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv4AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv4AddrNotesArgs>>;
@@ -31284,7 +31178,6 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv6AddrIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv6AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv6AddrNotesArgs>>;
@@ -31336,7 +31229,6 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IdentityImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IdentityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31415,7 +31307,6 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentImportFilesArgs>>;
   incident_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31524,7 +31415,6 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndicatorImportFilesArgs>>;
   indicator_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndicatorJobsArgs>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
@@ -31603,7 +31493,6 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualImportFilesArgs>>;
   isUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31700,7 +31589,6 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructureImportFilesArgs>>;
   infrastructure_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<InfrastructureJobsArgs>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
@@ -31865,7 +31753,6 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IntrusionSetGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IntrusionSetJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32035,7 +31922,6 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<LanguageGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguageImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<LanguageJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32119,7 +32005,6 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<LocationGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LocationImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<LocationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32164,6 +32049,7 @@ export type LocationConnectionResolvers<ContextType = any, ParentType extends Re
 export type LocationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationEdge'] = ResolversParentTypes['LocationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Location'], ParentType, ContextType>;
+  types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -32231,7 +32117,6 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MacAddrIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MacAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MacAddrNotesArgs>>;
@@ -32286,7 +32171,6 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   implementation_languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareImportFilesArgs>>;
   is_family?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareJobsArgs>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
@@ -32349,7 +32233,6 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisImportFilesArgs>>;
   installedSoftware?: Resolver<Maybe<ResolversTypes['SoftwareConnection']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareAnalysisJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32558,7 +32441,6 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MediaContentImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MediaContentIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MediaContentJobsArgs>>;
   media_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32968,7 +32850,6 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MutexIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MutexJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33019,7 +32900,6 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativeImportFilesArgs>>;
   isSubNarrative?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NarrativeJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33090,7 +32970,6 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<NetworkTrafficIndicatorsArgs>>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NetworkTrafficJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NetworkTrafficNotesArgs>>;
@@ -33145,7 +33024,6 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<NoteGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NoteJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33327,7 +33205,6 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ObservedDataGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ObservedDataJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33417,7 +33294,6 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<OpinionGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OpinionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33500,7 +33376,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OrganizationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33620,7 +33495,6 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PaymentCardImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PaymentCardIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PaymentCardJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PaymentCardNotesArgs>>;
@@ -33665,7 +33539,6 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PhoneNumberImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PhoneNumberIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PhoneNumberJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PhoneNumberNotesArgs>>;
@@ -33784,7 +33657,6 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<PositionGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PositionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33873,7 +33745,6 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
   integrity_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
@@ -34291,7 +34162,6 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionImportFilesArgs>>;
   isSubRegion?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<RegionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34383,7 +34253,6 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ReportGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ReportJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34605,7 +34474,6 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SectorImportFilesArgs>>;
   isSubSector?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SectorJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34654,6 +34522,7 @@ export type SectorConnectionResolvers<ContextType = any, ParentType extends Reso
 export type SectorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SectorEdge'] = ResolversParentTypes['SectorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Sector'], ParentType, ContextType>;
+  types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34777,7 +34646,6 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SoftwareIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SoftwareJobsArgs>>;
   languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -34883,7 +34751,6 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreObjectGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCoreObjectJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreObjectNotesArgs>>;
@@ -34956,7 +34823,6 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35031,7 +34897,6 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixCyberObservableIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCyberObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableNotesArgs>>;
@@ -35104,7 +34969,6 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixDomainObjectGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixDomainObjectJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35189,7 +35053,6 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFileImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixFileIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixFileJobsArgs>>;
   magic_number_hex?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35450,7 +35313,6 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -35642,7 +35504,6 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SystemImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SystemJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35724,7 +35585,6 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<TaskGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TaskJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35841,7 +35701,6 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TextIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TextJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TextNotesArgs>>;
@@ -35895,7 +35754,6 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35972,7 +35830,6 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorGroupGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorGroupJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36067,7 +35924,6 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   height?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorIndividualJobsArgs>>;
@@ -36151,7 +36007,6 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ToolGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ToolJobsArgs>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType>;
@@ -36278,7 +36133,6 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UrlIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UrlJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UrlNotesArgs>>;
@@ -36371,7 +36225,6 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAccountIndicatorsArgs>>;
   is_disabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_privileged?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36419,7 +36272,6 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAgentIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAgentJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAgentNotesArgs>>;
@@ -36557,7 +36409,6 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<VulnerabilityGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityImportFilesArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<VulnerabilityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36638,7 +36489,6 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyJobsArgs>>;
   modified_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -36687,7 +36537,6 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeIndicatorsArgs>>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36832,7 +36681,6 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificateImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<X509CertificateIndicatorsArgs>>;
   inhibit_any_policy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_from_relation_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_self_signed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
