@@ -185,7 +185,7 @@
     "fast-glob": "3.3.2",
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.1",
-    "typescript": "5.2.2",
+    "typescript": "5.3.3",
     "vitest": "0.34.6"
   },
   "resolutions": {
