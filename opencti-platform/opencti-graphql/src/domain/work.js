@@ -65,8 +65,15 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
-  const { first = 10, filters = null, type } = args;
-  let finalFilters = addFilter(filters, 'event_source_id', sourceId);
+  const { first = 10, type } = args;
+  let finalFilters = {
+    mode: 'and',
+    filters: [{
+      key: 'event_source_id',
+      values: [sourceId],
+    }],
+    filterGroups: [],
+  };
   if (type) {
     finalFilters = addFilter(finalFilters, 'event_type', type);
   }
@@ -77,6 +84,7 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
     orderMode: 'desc',
     first,
     filters: finalFilters,
+    noFiltersChecking: true,
   });
 };
 
