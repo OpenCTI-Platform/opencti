@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey } from '../../schema/general';
+import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { Filter, FilterGroup } from '../../generated/graphql';
@@ -11,7 +11,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  INSTANCE_FILTER, internalFilterKeys, MEMBERS_GROUP_FILTER,
+  INSTANCE_FILTER,
+  internalFilterKeys,
+  MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   SIGHTED_BY_FILTER,
@@ -244,7 +246,7 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
         .concat(specialFilterKeys)
         .concat(internalFilterKeys);
       keys.forEach((k) => {
-        if (availableKeys.includes(k)) {
+        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
         }
       });
