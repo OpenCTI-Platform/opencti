@@ -10,7 +10,11 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
-import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  filtersUsedAsApiParameters,
+} from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
@@ -79,8 +83,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.action?.selected,
     height: 20,
     padding: '0 8px',
-    marginRight: 10,
-    marginLeft: 10,
+    marginRight: 5,
+    marginLeft: 5,
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.action?.disabled,
@@ -93,8 +97,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.action?.selected,
     height: 20,
     padding: '0 8px',
-    marginRight: 10,
-    marginLeft: 10,
+    marginRight: 5,
+    marginLeft: 5,
     cursor: 'pointer',
   },
   chipLabel: {
@@ -152,7 +156,9 @@ FilterIconButtonContainerProps
   );
   const displayedFilters = filters.filters;
   const displayedSpecificFilters = displayedFilters.filter((f) => filtersUsedAsApiParameters.includes(f.key));
-  const othersFilters = displayedFilters.filter((f) => !filtersUsedAsApiParameters.includes(f.key));
+  const othersFilters = displayedFilters.filter(
+    (f) => !filtersUsedAsApiParameters.includes(f.key),
+  );
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
   const operatorToDisplay = [
@@ -181,10 +187,7 @@ FilterIconButtonContainerProps
     // activate popover feature on chip only when "helper" is defined, not the best way to handle but
     // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
     useEffect(() => {
-      if (
-        hasRenderedRef
-        && itemRefToPopover.current
-      ) {
+      if (hasRenderedRef && itemRefToPopover.current) {
         setFilterChipsParams({
           filterId: helpers?.getLatestAddFilterId(),
           anchorEl: itemRefToPopover.current as unknown as HTMLElement,
@@ -241,6 +244,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
+  let marginTop = '2px';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
@@ -253,9 +257,11 @@ FilterIconButtonContainerProps
   } else if (styleNumber === 2) {
     classFilter = classes.filter2;
     classOperator = classes.operator2;
+    marginTop = '10px';
   } else if (styleNumber === 3) {
     classFilter = classes.filter3;
     classOperator = classes.operator3;
+    marginTop = '0px';
   }
 
   const backgroundGroupingChipsStyle = {
@@ -271,8 +277,7 @@ FilterIconButtonContainerProps
             overflow: 'hidden',
           }
           : {
-            marginTop: displayedFilters.length === 0 ? 0 : '2px',
-            marginLeft: '-4px',
+            marginTop: displayedFilters.length === 0 ? '0px' : marginTop,
             gap: '10px 0',
             display: 'flex',
             flexWrap: 'wrap',
@@ -313,92 +318,120 @@ FilterIconButtonContainerProps
                 />
               }
             >
-              <Box sx={{
-                padding: '8px 4px',
-                display: 'flex',
-                ...backgroundGroupingChipsStyle,
-              }}>
-              <Chip
-                color={chipColor}
-                ref={helpers?.getLatestAddFilterId() === currentFilter.id ? itemRefToPopover : null}
-                classes={{ root: classFilter, label: classes.chipLabel }}
-                variant={
-                  currentFilter.values.length === 0
-                  && !['nil', 'not_nil'].includes(filterOperator)
-                    ? 'outlined'
-                    : 'filled'
-                }
-                label={
-                  <FilterValues
-                    label={label}
-                    tooltip={false}
-                    currentFilter={currentFilter}
-                    handleSwitchLocalMode={handleSwitchLocalMode}
-                    filtersRepresentativesMap={filtersRepresentativesMap}
-                    redirection={redirection}
-                    helpers={helpers}
-                    onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
-                    }
-                    isReadWriteFilter={isReadWriteFilter}
-                  />
-                }
-                disabled={
-                  disabledPossible ? displayedSpecificFilters.length === 1 : undefined
-                }
-                onDelete={
-                  isReadWriteFilter
-                    ? () => manageRemoveFilter(
-                      currentFilter.id,
-                      filterKey,
-                      filterOperator,
-                    )
-                    : undefined
-                }
-              />
+              <Box
+                sx={{
+                  padding: '8px 4px',
+                  display: 'flex',
+                  ...(isReadWriteFilter ? backgroundGroupingChipsStyle : {}),
+                }}
+              >
+                <Chip
+                  color={chipColor}
+                  ref={
+                    helpers?.getLatestAddFilterId() === currentFilter.id
+                      ? itemRefToPopover
+                      : null
+                  }
+                  classes={{ root: classFilter, label: classes.chipLabel }}
+                  variant={
+                    currentFilter.values.length === 0
+                    && !['nil', 'not_nil'].includes(filterOperator)
+                      ? 'outlined'
+                      : 'filled'
+                  }
+                  label={
+                    <FilterValues
+                      label={label}
+                      tooltip={false}
+                      currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      helpers={helpers}
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
+                      }
+                      isReadWriteFilter={isReadWriteFilter}
+                    />
+                  }
+                  disabled={
+                    disabledPossible
+                      ? displayedSpecificFilters.length === 1
+                      : undefined
+                  }
+                  onDelete={
+                    isReadWriteFilter
+                      ? () => manageRemoveFilter(
+                        currentFilter.id,
+                        filterKey,
+                        filterOperator,
+                      )
+                      : undefined
+                  }
+                />
               </Box>
             </Tooltip>
             {isNotLastFilter ? (
-              <Box sx={{
-                padding: '8px 4px',
-                display: 'flex',
-                ...backgroundGroupingChipsStyle,
-              }}>
-              <FilterIconButtonGlobalOperator
-                currentIndex={index}
-                displayedFilters={displayedSpecificFilters}
-                classOperator={classOperator}
-                globalMode={globalMode}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}/>
+              <Box
+                sx={{
+                  padding: '8px 4px',
+                  display: 'flex',
+                  ...backgroundGroupingChipsStyle,
+                }}
+              >
+                <FilterIconButtonGlobalOperator
+                  currentIndex={index}
+                  displayedFilters={displayedSpecificFilters}
+                  classOperator={classOperator}
+                  globalMode={globalMode}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                />
               </Box>
-            ) : <Box sx={{
-              position: 'relative',
-              zIndex: 0,
-            }}>
-              <Tooltip
-              title={t('The operators and modes are restricted for these filters.')}
-            >
-              <InformationOutline
-                fontSize="small"
-                color="primary"
-                style={{ position: 'absolute', zIndex: 1, top: -10, left: -10 }}
-              />
-            </Tooltip>
-            </Box>}
+            ) : (
+              <>
+                {isReadWriteFilter ? (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      zIndex: 0,
+                    }}
+                  >
+                    <Tooltip
+                      title={t(
+                        'The operators and modes are restricted for these filters.',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{
+                          position: 'absolute',
+                          zIndex: 1,
+                          top: -10,
+                          left: -10,
+                        }}
+                      />
+                    </Tooltip>
+                  </Box>
+                ) : (
+                  <span />
+                )}
+              </>
+            )}
           </Fragment>
         );
       })}
-
-      { displayedSpecificFilters.length > 0 && othersFilters.length > 0
-      && <Box sx={{
-        padding: '8px 4px 8px 8px',
-        display: 'flex',
-      }}>
+      {displayedSpecificFilters.length > 0 && othersFilters.length > 0 && (
+        <Box
+          sx={{
+            padding: '8px 4px 8px 8px',
+            display: 'flex',
+          }}
+        >
           <div className={classOperator} onClick={handleSwitchGlobalMode}>
             {t(globalMode.toUpperCase())}
           </div>
-      </Box>
-      }
-
+        </Box>
+      )}
       {othersFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterOperator = currentFilter.operator;
@@ -433,78 +466,84 @@ FilterIconButtonContainerProps
                 />
               }
             >
-              <Box sx={{
-                padding: '8px 4px',
-                display: 'flex',
-              }}>
-              <Chip
-                color={chipColor}
-                ref={helpers?.getLatestAddFilterId() === currentFilter.id ? itemRefToPopover : null}
-                classes={{ root: classFilter, label: classes.chipLabel }}
-                variant={
-                  currentFilter.values.length === 0
-                  && !['nil', 'not_nil'].includes(filterOperator)
-                    ? 'outlined'
-                    : 'filled'
-                }
-                label={
-                  <FilterValues
-                    label={label}
-                    tooltip={false}
-                    currentFilter={currentFilter}
-                    handleSwitchLocalMode={handleSwitchLocalMode}
-                    filtersRepresentativesMap={filtersRepresentativesMap}
-                    redirection={redirection}
-                    helpers={helpers}
-                    onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
-                    }
-                    isReadWriteFilter={isReadWriteFilter}
-                  />
-                }
-                disabled={
-                  disabledPossible ? othersFilters.length === 1 : undefined
-                }
-                onDelete={
-                  isReadWriteFilter
-                    ? () => manageRemoveFilter(
-                      currentFilter.id,
-                      filterKey,
-                      filterOperator,
-                    )
-                    : undefined
-                }
-              />
+              <Box
+                sx={{
+                  padding: '8px 4px',
+                  display: 'flex',
+                }}
+              >
+                <Chip
+                  color={chipColor}
+                  ref={
+                    helpers?.getLatestAddFilterId() === currentFilter.id
+                      ? itemRefToPopover
+                      : null
+                  }
+                  classes={{ root: classFilter, label: classes.chipLabel }}
+                  variant={
+                    currentFilter.values.length === 0
+                    && !['nil', 'not_nil'].includes(filterOperator)
+                      ? 'outlined'
+                      : 'filled'
+                  }
+                  label={
+                    <FilterValues
+                      label={label}
+                      tooltip={false}
+                      currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      helpers={helpers}
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
+                      }
+                      isReadWriteFilter={isReadWriteFilter}
+                    />
+                  }
+                  disabled={
+                    disabledPossible ? othersFilters.length === 1 : undefined
+                  }
+                  onDelete={
+                    isReadWriteFilter
+                      ? () => manageRemoveFilter(
+                        currentFilter.id,
+                        filterKey,
+                        filterOperator,
+                      )
+                      : undefined
+                  }
+                />
               </Box>
             </Tooltip>
             {isNotLastFilter && (
-              <Box sx={{
-                padding: '8px 4px',
-                display: 'flex',
-              }}>
-
+              <Box
+                sx={{
+                  padding: '8px 4px',
+                  display: 'flex',
+                }}
+              >
                 <FilterIconButtonGlobalOperator
-                    currentIndex={index}
-                    displayedFilters={othersFilters}
-                    classOperator={classOperator}
-                    globalMode={globalMode}
-                    handleSwitchGlobalMode={handleSwitchGlobalMode}/>
+                  currentIndex={index}
+                  displayedFilters={othersFilters}
+                  classOperator={classOperator}
+                  globalMode={globalMode}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                />
               </Box>
             )}
-
           </Fragment>
         );
       })}
-
       {filterChipsParams.anchorEl && (
         <Box>
-        <FilterChipPopover
-          filters={filters.filters}
-          params={filterChipsParams}
-          handleClose={handleClose}
-          open={open}
-          helpers={helpers}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-        />
+          <FilterChipPopover
+            filters={filters.filters}
+            params={filterChipsParams}
+            handleClose={handleClose}
+            open={open}
+            helpers={helpers}
+            availableRelationFilterTypes={availableRelationFilterTypes}
+          />
         </Box>
       )}
       {filters.filterGroups
