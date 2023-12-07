@@ -2522,7 +2522,7 @@ const buildRelationDeduplicationFilter = (input) => {
     created_by_based: false,
     types_overrides: {}
   };
-  const config = deduplicationConfig.types_overrides[relationshipType] ?? deduplicationConfig;
+  const config = deduplicationConfig.types_overrides?.[relationshipType] ?? deduplicationConfig;
   if (config.created_by_based && createdBy) {
     args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
   }
