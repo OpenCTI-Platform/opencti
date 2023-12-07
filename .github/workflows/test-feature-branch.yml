@@ -1,5 +1,12 @@
 name: test-feature-branch 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      octi_config:
+        type: string
+        default: '{}'
+        required: false
+
 
 jobs:
   worker:
@@ -111,6 +118,6 @@ jobs:
           ansible-tower-url: ${{ secrets.AWX_URL }}
           template-id: "26"
           additional-vars: |
-            { "customer": "${{steps.meta.outputs.version}}" }
+            { "customer": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }} }
       - name: display URL
         run: echo "https://${{steps.meta.outputs.version}}.octi.dev.filigran.io"
