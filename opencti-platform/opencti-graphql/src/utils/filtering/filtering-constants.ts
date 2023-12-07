@@ -82,6 +82,7 @@ export const internalFilterKeys = [
   'connector_id',
   'source_event_id',
   'event_access',
+  'types',
   // attributes of the entity of type Work that are not registered elsewhere
   'status',
   'event_source_id',
