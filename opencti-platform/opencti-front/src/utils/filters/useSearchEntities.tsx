@@ -24,6 +24,7 @@ import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/f
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '@components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '@components/common/form/ObjectParticipantField';
 import { useTheme } from '@mui/styles';
+import { graphql } from 'react-relay';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -36,11 +37,215 @@ import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__
 import { isNotEmptyField } from '../utils';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import { Theme } from '../../components/Theme';
-import {
-  filtersSchemaSCOSearchQuery,
-  filtersStixCoreObjectsContainersSearchQuery,
-  filtersStixCoreObjectsSearchQuery,
-} from './useSearchEntitiesQueries';
+
+const filtersStixCoreObjectsContainersSearchQuery = graphql`
+    query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
+        $search: String
+        $filters: FilterGroup
+    ) {
+        containers(search: $search, filters: $filters) {
+            edges {
+                node {
+                    id
+                    entity_type
+                    parent_types
+                    representative {
+                        main
+                    }
+                }
+            }
+        }
+    }
+`;
+
+const filtersStixCoreObjectsSearchQuery = graphql`
+    query useSearchEntitiesStixCoreObjectsSearchQuery(
+        $search: String
+        $types: [String]
+        $count: Int
+        $filters: FilterGroup
+    ) {
+        stixCoreObjects(
+            search: $search
+            types: $types
+            first: $count
+            filters: $filters
+        ) {
+            edges {
+                node {
+                    id
+                    entity_type
+                    parent_types
+                    ... on AttackPattern {
+                        name
+                        description
+                        x_mitre_id
+                    }
+                    ... on Note {
+                        attribute_abstract
+                        content
+                    }
+                    ... on ObservedData {
+                        first_observed
+                        last_observed
+                    }
+                    ... on Opinion {
+                        opinion
+                    }
+                    ... on Report {
+                        name
+                    }
+                    ... on Grouping {
+                        name
+                    }
+                    ... on Campaign {
+                        name
+                        description
+                    }
+                    ... on CourseOfAction {
+                        name
+                        description
+                    }
+                    ... on Individual {
+                        name
+                        description
+                    }
+                    ... on Organization {
+                        name
+                        description
+                    }
+                    ... on Sector {
+                        name
+                        description
+                    }
+                    ... on System {
+                        name
+                        description
+                    }
+                    ... on Indicator {
+                        name
+                        description
+                    }
+                    ... on Infrastructure {
+                        name
+                        description
+                    }
+                    ... on IntrusionSet {
+                        name
+                        description
+                    }
+                    ... on Position {
+                        name
+                        description
+                    }
+                    ... on City {
+                        name
+                        description
+                    }
+                    ... on AdministrativeArea {
+                        name
+                        description
+                    }
+                    ... on Country {
+                        name
+                        description
+                    }
+                    ... on Region {
+                        name
+                        description
+                    }
+                    ... on Malware {
+                        name
+                        description
+                    }
+                    ... on MalwareAnalysis {
+                        product
+                        operatingSystem {
+                            name
+                        }
+                    }
+                    ... on ThreatActor {
+                        name
+                        description
+                    }
+                    ... on Tool {
+                        name
+                        description
+                    }
+                    ... on Vulnerability {
+                        name
+                        description
+                    }
+                    ... on Incident {
+                        name
+                        description
+                    }
+                    ... on Event {
+                        name
+                        description
+                    }
+                    ... on Channel {
+                        name
+                        description
+                    }
+                    ... on Narrative {
+                        name
+                        description
+                    }
+                    ... on DataComponent {
+                        name
+                    }
+                    ... on DataSource {
+                        name
+                    }
+                    ... on Case {
+                        name
+                    }
+                    ... on Task {
+                        name
+                    }
+                    ... on Language {
+                        name
+                    }
+                    ... on StixCyberObservable {
+                        observable_value
+                    }
+                    createdBy {
+                        ... on Identity {
+                            id
+                            name
+                            entity_type
+                        }
+                    }
+                    objectMarking {
+                        edges {
+                            node {
+                                id
+                                definition_type
+                                definition
+                                x_opencti_order
+                                x_opencti_color
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
+const filtersSchemaSCOSearchQuery = graphql`
+    query useSearchEntitiesSchemaSCOSearchQuery {
+        schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
+            edges {
+                node {
+                    id
+                    label
+                }
+            }
+        }
+    }
+`;
 
 export interface EntityValue {
   label?: string | null;
@@ -242,6 +447,15 @@ const useSearchEntities = ({
                 value: n?.node.id ?? '',
                 type: 'Individual',
               }));
+              const myself = (data as IdentitySearchCreatorsSearchQuery$data).me;
+              if (!creators.find((usr) => usr.value === myself.id)) {
+                creators.push({
+                  label: myself.name,
+                  value: myself.id,
+                  type: 'Individual',
+                });
+              }
+
               setCacheEntities({ ...cacheEntities, [filterKey]: creators });
               unionSetEntities(filterKey, creators);
             });
@@ -262,6 +476,15 @@ const useSearchEntities = ({
                 value: n?.node.id ?? '',
                 type: 'User',
               }));
+              // always add myself to the possible assignees (to be able to add a trigger even if I have not yet any assignment)
+              const myself = (data as ObjectAssigneeFieldAssigneesSearchQuery$data).me;
+              if (!objectAssigneeEntities.find((usr) => usr.value === myself.id)) {
+                objectAssigneeEntities.push({
+                  label: myself.name,
+                  value: myself.id,
+                  type: 'User',
+                });
+              }
               setCacheEntities({
                 ...cacheEntities,
                 [filterKey]: objectAssigneeEntities,
@@ -285,6 +508,14 @@ const useSearchEntities = ({
                 value: n?.node.id ?? '',
                 type: 'User',
               }));
+              const myself = (data as ObjectParticipantFieldParticipantsSearchQuery$data).me;
+              if (!participantToEntities.find((usr) => usr.value === myself.id)) {
+                participantToEntities.push({
+                  label: myself.name,
+                  value: myself.id,
+                  type: 'User',
+                });
+              }
               setCacheEntities({
                 ...cacheEntities,
                 [filterKey]: participantToEntities,
