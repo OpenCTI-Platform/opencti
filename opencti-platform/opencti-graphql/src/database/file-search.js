@@ -150,7 +150,7 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   if (search) {
     const decodedSearch = decodeSearch(search);
     const fullTextSearch = {
-      query_string: {
+      simple_query_string: {
         query: decodedSearch,
         fields: ['attachment.content', 'attachment.title^2']
       }

@@ -200,9 +200,9 @@ const initFileIndexManager = () => {
         }
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
-          logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
+          logApp.debug('[OPENCTI-MODULE] File index manager handler already started by another API');
         } else {
-          logApp.error('[OPENCTI-MODULE] File index manager stream handler failed to start', { error: e });
+          logApp.error('[OPENCTI-MODULE] File index manager handler failed to start', { error: e });
         }
       } finally {
         running = false;
