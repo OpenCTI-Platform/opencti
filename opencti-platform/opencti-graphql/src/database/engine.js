@@ -614,6 +614,16 @@ const elCreateIndexTemplate = async (index) => {
                 },
               },
             },
+            name: {
+              type: 'text',
+              fields: {
+                keyword: {
+                  type: 'keyword',
+                  normalizer: 'string_normalizer',
+                  ignore_above: 512,
+                },
+              },
+            },
             height: {
               type: 'nested',
               properties: {
@@ -743,9 +753,30 @@ const elCreateIndexTemplate = async (index) => {
               properties: {
                 input: { type: flattenedType },
               },
+            },
+            size: {
+              type: 'integer',
+            },
+            lastModifiedSinceMin: {
+              type: 'integer',
+            },
+            lastModified: {
+              type: 'date',
+            },
+            metaData: {
+              properties: {
+                order: {
+                  type: 'integer',
+                },
+                inCarousel: {
+                  type: 'boolean',
+                },
+                messages: { type: flattenedType },
+                errors: { type: flattenedType },
+              },
             }
           },
-        },
+        }
       },
       composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
       version: 3,

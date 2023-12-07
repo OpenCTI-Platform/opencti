@@ -17,7 +17,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon } from '../../../types/store';
-import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode, type File } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { UnsupportedError } from '../../../config/errors';
 import { elSearchFiles } from '../../../database/file-search';
@@ -37,7 +37,7 @@ export const getIndexFromDate = async (context: AuthContext) => {
   return lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
 };
 
-export const buildFileDataForIndexing = (file: any) => {
+export const buildFileDataForIndexing = (file: File) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
   return {
