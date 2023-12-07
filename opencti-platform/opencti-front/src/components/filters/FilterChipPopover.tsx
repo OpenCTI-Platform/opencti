@@ -19,7 +19,7 @@ import {
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptionsFromEntities, getUseSearch, } from '../../utils/filters/SearchEntitiesUtil';
+import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 interface FilterChipMenuProps {
@@ -290,6 +290,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             getOptionLabel={(option) => option.label ?? ''}
             noOptionsText={t('No available options')}
             options={optionValues}
+            groupBy={
+              isStixObjectTypes.includes(filterKey)
+                ? (option) => option.type
+                : (option) => t(option.group ? option.group : filterKey)
+            }
             onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
             }
             renderInput={(paramsInput) => (
