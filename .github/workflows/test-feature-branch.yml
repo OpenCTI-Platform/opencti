@@ -93,8 +93,16 @@ jobs:
     needs: [platform, worker]
     runs-on: ubuntu-latest
     steps:
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: filigran/platform
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: deploy via awx
         uses: certara/github-action-ansible-tower-awx@master
         with:
@@ -103,6 +111,6 @@ jobs:
           ansible-tower-url: ${{ secrets.AWX_URL }}
           template-id: "26"
           additional-vars: |
-            { "customer": "${{env.GITHUB_REF_NAME_SLUG}}" }
+            { "customer": "${{steps.meta.outputs.version}}" }
       - name: display URL
-        run: echo "https://${{env.GITHUB_REF_NAME_SLUG}}.octi.dev.filigran.io"
+        run: echo "https://${{steps.meta.outputs.version}}.octi.dev.filigran.io"
