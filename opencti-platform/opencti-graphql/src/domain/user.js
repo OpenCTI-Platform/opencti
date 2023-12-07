@@ -757,7 +757,7 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
       }
     }
   }).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting Workspace for user ${userId} elastic.`, { error: err });
+    throw DatabaseError(`[DELETE] Error deleting Trigger for user ${userId} elastic.`, { error: err });
   });
 };
 export const deleteAllNotificationByUser = async (userId) => {
