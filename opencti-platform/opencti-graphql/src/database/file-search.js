@@ -132,6 +132,15 @@ const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = tru
   }
   return convertedHits;
 };
+const decodeSearch = (search) => {
+  let decodedSearch;
+  try {
+    decodedSearch = decodeURIComponent(search).trim();
+  } catch (e) {
+    decodedSearch = search.trim();
+  }
+  return decodedSearch;
+};
 const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   const { search = null, fileIds = [], entityIds = [] } = options; // search options
   const { includeAuthorities = false } = options;
@@ -139,9 +148,10 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   const must = [...dataRestrictions.must];
   const mustNot = [...dataRestrictions.must_not];
   if (search) {
+    const decodedSearch = decodeSearch(search);
     const fullTextSearch = {
-      multi_match: {
-        query: search,
+      query_string: {
+        query: decodedSearch,
         fields: ['attachment.content', 'attachment.title^2']
       }
     };
