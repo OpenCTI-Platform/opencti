@@ -43,10 +43,9 @@ import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import {
-  findFilterFromKey,
   emptyFilterGroup,
   removeFilter,
-  removeIdFromFilterObject,
+  removeIdFromFilterObject, extractAllValueFromFilters,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
@@ -198,9 +197,9 @@ StixDomainObjectThreatKnowledgeProps
   )}/${stixDomainObjectId}/knowledge`;
   const buildPaginationOptions = () => {
     let toTypes: string[];
-    const entityTypeFilters = findFilterFromKey(
+    const entityTypeFilters = extractAllValueFromFilters(
       filters?.filters ?? [],
-      'entity_type',
+      'elementTargetTypes',
     );
     if (entityTypeFilters && entityTypeFilters.values.length > 0) {
       if (entityTypeFilters.values.filter((id) => id === 'all').length > 0) {
@@ -231,7 +230,7 @@ StixDomainObjectThreatKnowledgeProps
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     }
     const finalFilters = filters
-      ? removeFilter(filters, 'entity_type')
+      ? removeFilter(filters, 'elementTargetTypes')
       : undefined;
     const finalPaginationOptions = {
       ...rawPaginationOptions,
@@ -439,7 +438,7 @@ StixDomainObjectThreatKnowledgeProps
         <Filters
           helpers={helpers}
           availableFilterKeys={[
-            'entity_type',
+            'elementTargetTypes',
             'objectMarking',
             'createdBy',
             'objectLabel',
@@ -505,6 +504,8 @@ StixDomainObjectThreatKnowledgeProps
         helpers={helpers}
         filters={filters}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         classNameNumber={8}
       />
       <QueryRenderer

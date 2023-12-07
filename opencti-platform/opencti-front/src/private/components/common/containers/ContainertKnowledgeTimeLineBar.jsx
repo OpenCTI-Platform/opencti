@@ -40,6 +40,8 @@ const ContentKnowledgeTimeLineBar = ({
   timeLineFilters,
   handleAddTimeLineFilter,
   handleRemoveTimeLineFilter,
+  handleSwitchFilterLocalMode,
+  handleSwitchFilterGlobalMode,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -157,6 +159,8 @@ const ContentKnowledgeTimeLineBar = ({
               <FilterIconButton
                 filters={timeLineFilters}
                 handleRemoveFilter={handleRemoveTimeLineFilter}
+                handleSwitchLocalMode={handleSwitchFilterLocalMode}
+                handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
                 classNameNumber={1}
                 redirection
               />

@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey } from '../../schema/general';
+import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { Filter, FilterGroup } from '../../generated/graphql';
@@ -11,7 +11,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  INSTANCE_FILTER, MEMBERS_GROUP_FILTER,
+  INSTANCE_FILTER,
+  internalFilterKeys,
+  MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   SIGHTED_BY_FILTER,
@@ -208,8 +210,10 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
 
 // input: an array of relations names
 // return an array of the converted names in the rel_'database_name' format
-const getRelationsConvertedNames = (relationNames: string[]) => {
-  return relationNames.map((relationName) => `rel_${relationName}`);
+const getConvertedRelationsNames = (relationNames: string[]) => {
+  const convertedRelationsNames = relationNames.map((relationName) => `rel_${relationName}`);
+  convertedRelationsNames.push('rel_*'); // means 'all the relations'
+  return convertedRelationsNames;
 };
 
 /**
@@ -234,16 +238,17 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
       let incorrectKeys = keys;
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableConvertedRefRelations = getRelationsConvertedNames(schemaRelationsRefDefinition.getAllDatabaseName());
-      const availableConvertedStixCoreRelationships = getRelationsConvertedNames(STIX_CORE_RELATIONSHIPS);
+      const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
+      const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
       const availableKeys = availableAttributes
         .concat(availableRefRelations)
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys);
+        .concat(specialFilterKeys)
+        .concat(internalFilterKeys);
       keys.forEach((k) => {
-        if (availableKeys.includes(k)) {
+        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
         }
       });

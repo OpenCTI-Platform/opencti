@@ -1242,6 +1242,7 @@ const useSearchEntities = ({
         const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
         unionSetEntities(filterKey, elementTypeTypes);
         break;
+      case 'elementTargetTypes':
       case 'entity_type':
       case 'entity_types':
       case 'fromTypes':

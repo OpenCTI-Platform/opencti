@@ -111,6 +111,15 @@ export const EqFilters = [
   'organization_ids',
 ];
 
+// filters that can only have an 'eq' operator and a 'or' mode
+export const filtersUsedAsApiParameters = [
+  'fromId',
+  'fromTypes',
+  'toId',
+  'toTypes',
+  'elementTargetTypes',
+];
+
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
   'published',
@@ -198,6 +207,21 @@ export const findFilterFromKey = (
     }
   }
   return null;
+};
+
+export const extractAllValueFromFilters = (filters: Filter[], key: string): Filter | null => {
+  const extractFilter: Filter = {
+    key,
+    mode: 'or',
+    operator: 'eq',
+    values: [],
+  };
+  filters.forEach((filter) => {
+    if (filter.key === key) {
+      extractFilter.values.push(...filter.values);
+    }
+  });
+  return extractFilter.values.length > 0 ? extractFilter : null;
 };
 
 export const findFiltersFromKeys = (
@@ -634,8 +658,8 @@ export const getDefaultFilterObject = (key: string): Filter => {
 };
 
 export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
-  if (EqFilters.includes(filterKey)) {
-    return ['eq', 'not_eq', 'nil', 'not_nil'];
+  if (filtersUsedAsApiParameters.includes(filterKey)) {
+    return ['eq'];
   }
   if (dateFilters.includes(filterKey)) {
     return ['gt', 'gte', 'lt', 'lte'];
@@ -672,3 +696,14 @@ export const removeIdFromFilterObject = (
       }),
   };
 };
+
+export const isStixObjectTypes = [
+  'elementId',
+  'fromId',
+  'toId',
+  'objects',
+  'targets',
+  'elementId',
+  'indicates',
+  'contextEntityId',
+];

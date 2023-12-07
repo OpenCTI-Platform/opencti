@@ -1925,8 +1925,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
-  const { types = null, search = null } = options;
-  const { filters = null } = options;
+  const { types = null, search = null, noFiltersChecking = false } = options;
+  const filters = noFiltersChecking ? (options.filters ?? null) : checkAndConvertFilters(options.filters);
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -2046,8 +2046,7 @@ export const elRawCount = (query) => {
     });
 };
 export const elCount = async (context, user, indexName, options = {}) => {
-  const convertedFilters = checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: indexName, body };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
@@ -2364,8 +2363,6 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
 };
 export const elList = async (context, user, indexName, opts = {}) => {
   const { first = MAX_SEARCH_SIZE, maxSize = undefined } = opts;
-  const { filters, noFiltersChecking = false } = opts;
-  const convertedFilters = noFiltersChecking ? filters : checkAndConvertFilters(filters);
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
@@ -2382,7 +2379,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const paginateOpts = { ...opts, filters: convertedFilters, first, after: searchAfter, connectionFormat: false };
+    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
     const noMoreElements = elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE);

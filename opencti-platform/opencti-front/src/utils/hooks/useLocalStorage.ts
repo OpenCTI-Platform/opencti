@@ -3,8 +3,10 @@ import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import {
+  extractAllValueFromFilters,
   Filter,
   FilterGroup,
+  filtersUsedAsApiParameters,
   findFilterFromKey,
   isFilterGroupNotEmpty,
   isUniqFilter,
@@ -46,6 +48,7 @@ export interface UseLocalStorageHelpers {
   handleClearAllFilters: (filters?: Filter[]) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  getLatestAddFilterId: () => string | undefined;
 }
 
 const localStorageToPaginationOptions = (
@@ -63,6 +66,7 @@ const localStorageToPaginationOptions = (
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
+  delete localOptions.latestAddFilterId;
   // Rebuild some pagination options
   const basePagination: PaginationOptions = { ...localOptions };
   if (searchTerm) {
@@ -73,10 +77,10 @@ const localStorageToPaginationOptions = (
     basePagination.orderBy = sortBy;
   }
   let convertedFilters = filters?.filters as Filter[];
-  const fromId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromId'))?.values : undefined;
-  const toId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toId'))?.values : undefined;
-  const fromTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromTypes'))?.values : undefined;
-  const toTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toTypes'))?.values : undefined;
+  const fromId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromId')?.values : undefined;
+  const toId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toId')?.values : undefined;
+  const fromTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromTypes')?.values : undefined;
+  const toTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toTypes')?.values : undefined;
   convertedFilters = convertedFilters?.filter(
     (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
   );
@@ -492,6 +496,7 @@ export const usePaginationLocalStorage = <U>(
         setValue((c) => ({
           ...c,
           filters: newBaseFilters,
+          latestAddFilterId: undefined,
         }));
       }
     },
@@ -540,13 +545,30 @@ export const usePaginationLocalStorage = <U>(
           filters: filters ? [...filters] : [],
           mode: 'and',
         },
+        latestAddFilterId: undefined,
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
+      if (filtersUsedAsApiParameters.includes(filter.key)) {
+        const existedFilter = viewStorage.filters?.filters.find((f) => f.key === filter.key);
+        // If the specific filter is already defined, set the latestAddFilterId in order to open the menu popover
+        // and return void to finish the task.
+        // In the other side if not existed, create a new one filter
+        if (existedFilter) {
+          setValue({
+            ...viewStorage,
+            latestAddFilterId: existedFilter.id,
+          });
+          return;
+        }
+      }
       handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       handleChangeOperatorFiltersUtil({ viewStorage, setValue, id, operator });
+    },
+    getLatestAddFilterId: () => {
+      return viewStorage.latestAddFilterId;
     },
   };
 

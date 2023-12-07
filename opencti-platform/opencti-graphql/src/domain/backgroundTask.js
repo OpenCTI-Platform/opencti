@@ -3,7 +3,6 @@ import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_IN
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { TYPE_FILTER } from '../utils/filtering/filtering-constants';
-import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { resolveFilterGroupValuesWithCache } from '../utils/filtering/filtering-resolution';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
@@ -46,7 +45,7 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
       filterGroups: [],
     };
   }
-  const { filters, filterGroups = [] } = checkAndConvertFilters(adaptedFiltersGroup);
+  const { filters, filterGroups = [] } = adaptedFiltersGroup;
   const queryFilterGroups = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const currentGroup = filterGroups[index];

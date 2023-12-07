@@ -61,10 +61,6 @@ export const specialFilterKeys = [
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
-  RELATION_FROM_FILTER, // nested relation for the from of a relationship
-  RELATION_TO_FILTER, // nested relation for the to of a relationship
-  RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
-  RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   CONTEXT_ENTITY_ID_FILTER,
@@ -78,6 +74,22 @@ export const specialFilterKeys = [
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   SOURCE_RELIABILITY_FILTER, // reliability of the author
+];
+
+// filter keys that should be in the schema but are not
+// TODO remove this list and register the attributes
+export const internalFilterKeys = [
+  'connector_id',
+  'source_event_id',
+  'event_access',
+  // attributes of the entity of type Work that are not registered elsewhere
+  'status',
+  'event_source_id',
+  'received_time',
+  'processed_time',
+  'completed_time',
+  'completed_number',
+  'tracking',
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)

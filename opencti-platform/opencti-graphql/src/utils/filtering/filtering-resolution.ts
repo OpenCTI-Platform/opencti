@@ -19,7 +19,7 @@ import type { StixObject } from '../../types/stix-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
-import { checkAndConvertFilters, extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
+import { extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -196,14 +196,9 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
 export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  const convertedFilters = filters ? checkAndConvertFilters(filters) : undefined;
-  let finalFilters = convertedFilters
-    ? await resolveFilterGroupValuesWithCache(context, user, convertedFilters)
-    : {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: [],
-    };
+  let finalFilters = filters
+    ? await resolveFilterGroupValuesWithCache(context, user, filters)
+    : undefined;
   if (after || before) {
     const filtersContent = [];
     if (after) {
@@ -215,7 +210,7 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
     finalFilters = {
       mode: FilterMode.And,
       filters: filtersContent,
-      filterGroups: isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
+      filterGroups: (finalFilters && isFilterGroupNotEmpty(finalFilters)) ? [finalFilters] : [],
     };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
