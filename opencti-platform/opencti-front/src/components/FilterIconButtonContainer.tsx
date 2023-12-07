@@ -271,14 +271,14 @@ FilterIconButtonContainerProps
             overflow: 'hidden',
           }
           : {
-            marginTop: displayedFilters.length === 0 ? 0 : '10px',
+            marginTop: displayedFilters.length === 0 ? 0 : '2px',
+            marginLeft: '-4px',
             gap: '10px 0',
             display: 'flex',
             flexWrap: 'wrap',
           }
       }
     >
-
       {displayedSpecificFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterOperator = currentFilter.operator;

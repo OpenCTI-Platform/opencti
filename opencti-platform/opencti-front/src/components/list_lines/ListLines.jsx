@@ -89,11 +89,11 @@ const styles = (theme) => ({
     marginTop: -5,
   },
   linesContainer: {
-    margin: '10px 0 0 0',
+    margin: 0,
     padding: 0,
   },
   linesContainerBottomNav: {
-    margin: '10px 0 90px 0',
+    margin: '0 0 90px 0',
     padding: 0,
   },
   item: {
@@ -209,7 +209,6 @@ class ListLines extends Component {
       iconExtension,
       searchVariant,
       message,
-      noTopMargin,
       enableGraph,
       availableEntityTypes,
       availableRelationshipTypes,
@@ -484,7 +483,7 @@ class ListLines extends Component {
               ? classes.linesContainerBottomNav
               : classes.linesContainer,
           }}
-          style={noTopMargin ? { marginTop: 0 } : null}
+          style={!handleToggleSelectAll ? { marginTop: 10 } : null}
         >
           {!noHeaders && (
             <ListItem
@@ -694,7 +693,6 @@ ListLines.propTypes = {
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
   message: PropTypes.string,
-  noTopMargin: PropTypes.bool,
   enableGraph: PropTypes.bool,
   availableEntityTypes: PropTypes.array,
   availableRelationshipTypes: PropTypes.array,

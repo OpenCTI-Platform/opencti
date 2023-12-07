@@ -311,7 +311,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const authScreen = () => {
     if (type === '2FA_VALIDATION') {
       return (
-        <div>
+        <>
           <img
             src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
             alt="logo"
@@ -320,7 +320,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <OTPForm />
           </Paper>
-        </div>
+        </>
       );
     }
     if (type === '2FA_ACTIVATION') {

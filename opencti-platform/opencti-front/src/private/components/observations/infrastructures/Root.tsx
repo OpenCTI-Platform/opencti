@@ -84,7 +84,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         <div
           style={{
             paddingRight: location.pathname.includes(
-              `/dashboard/observations/infrastructures/${data.id}/knowledge`,
+              `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`,
             )
               ? 200
               : 0,

@@ -10,7 +10,7 @@ import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 const useStyles = makeStyles({
   label: {
-    marginTop: '20px',
+    marginTop: 20,
   },
   chipInList: {
     fontSize: 12,
