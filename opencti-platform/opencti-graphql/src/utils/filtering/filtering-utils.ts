@@ -210,8 +210,10 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
 
 // input: an array of relations names
 // return an array of the converted names in the rel_'database_name' format
-const getRelationsConvertedNames = (relationNames: string[]) => {
-  return relationNames.map((relationName) => `rel_${relationName}`);
+const getConvertedRelationsNames = (relationNames: string[]) => {
+  const convertedRelationsNames = relationNames.map((relationName) => `rel_${relationName}`);
+  convertedRelationsNames.push('rel_*'); // means 'all the relations'
+  return convertedRelationsNames;
 };
 
 /**
@@ -236,8 +238,8 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
       let incorrectKeys = keys;
       const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
       const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableConvertedRefRelations = getRelationsConvertedNames(schemaRelationsRefDefinition.getAllDatabaseName());
-      const availableConvertedStixCoreRelationships = getRelationsConvertedNames(STIX_CORE_RELATIONSHIPS);
+      const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
+      const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
       const availableKeys = availableAttributes
         .concat(availableRefRelations)
         .concat(availableConvertedRefRelations)
