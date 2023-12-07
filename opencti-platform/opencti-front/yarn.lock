@@ -3765,9 +3765,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.13.2":
-  version: 5.13.2
-  resolution: "@rjsf/core@npm:5.13.2"
+"@rjsf/core@npm:5.15.0":
+  version: 5.15.0
+  resolution: "@rjsf/core@npm:5.15.0"
   dependencies:
     lodash: ^4.17.21
     lodash-es: ^4.17.21
@@ -3777,13 +3777,13 @@ __metadata:
   peerDependencies:
     "@rjsf/utils": ^5.12.x
     react: ^16.14.0 || >=17
-  checksum: e977c33bc74075fe2035a22d242bd1a8433468834e3e45fe9b8edaf9e14e14793c43936917805f105960b3d71385fc6616ce502b5273fd6ee1c4539aa3c4e69c
+  checksum: 430750dca4d96fa0bc48f8fbbb5c31f42df5cf9079a501d56449fe1428cf6087c7c45eb1846792f748cc52ce64ffb69aa2acf509ed5328b4c85d35dfaa7d3900
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.13.2":
-  version: 5.13.2
-  resolution: "@rjsf/mui@npm:5.13.2"
+"@rjsf/mui@npm:5.15.0":
+  version: 5.15.0
+  resolution: "@rjsf/mui@npm:5.15.0"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
@@ -3792,13 +3792,13 @@ __metadata:
     "@rjsf/core": ^5.12.x
     "@rjsf/utils": ^5.12.x
     react: ">=17"
-  checksum: 186cd32aa618296a04003598649cb84b632db96485e8faf0658df44cc112da13b60485f32005ba156a26b79f02d6a8715dc71e7042491ae5bfd41a28ded084b5
+  checksum: 00ea9d2fa0a002dabb296bc58566b0cfbf3e4cf9fac49a3919e99e545910d77d8d108f92c30e019560b052f199e2c4f47d3cd143f1bf85580679fc591c0c7932
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.13.2":
-  version: 5.13.2
-  resolution: "@rjsf/utils@npm:5.13.2"
+"@rjsf/utils@npm:5.15.0":
+  version: 5.15.0
+  resolution: "@rjsf/utils@npm:5.15.0"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
@@ -3807,7 +3807,7 @@ __metadata:
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 06834669205fa0429355f04fc551986ca6899c7b656feb2f2f0477c02e6da625bf198bd292b06e703e2c029436d899a2c802fe28d1bfe5017b2a2d016a361180
+  checksum: 369de8620fdbd26aea074e0a33d5ea3b1bb89e3389d826a70612dbec8881617bb0dc8403ca6774d0def332ffe15d26bed133d6ff7361ff2978a4b024cea829c3
   languageName: node
   linkType: hard
 
@@ -14622,9 +14622,9 @@ __metadata:
     "@mui/styles": 5.14.19
     "@mui/utils": 5.14.19
     "@mui/x-date-pickers": 5.0.20
-    "@rjsf/core": 5.13.2
-    "@rjsf/mui": 5.13.2
-    "@rjsf/utils": 5.13.2
+    "@rjsf/core": 5.15.0
+    "@rjsf/mui": 5.15.0
+    "@rjsf/utils": 5.15.0
     "@rollup/plugin-graphql": 2.0.4
     "@testing-library/react": 14.0.0
     "@types/node": 20.8.6
