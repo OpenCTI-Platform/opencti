@@ -1649,8 +1649,10 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
-    const subQuery = await buildSubQueryForFilterGroup(context, user, group);
-    localMustFilters.push(subQuery);
+    if (isFilterGroupNotEmpty(group)) {
+      const subQuery = await buildSubQueryForFilterGroup(context, user, group);
+      localMustFilters.push(subQuery);
+    }
   }
   // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
