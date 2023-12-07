@@ -13,7 +13,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
-
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

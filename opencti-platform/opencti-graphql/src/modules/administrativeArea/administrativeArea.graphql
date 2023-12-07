@@ -13,7 +13,6 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
-
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

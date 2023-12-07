@@ -1914,7 +1914,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+
 
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2063,7 +2063,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+
 
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2214,7 +2214,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -2383,7 +2382,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -2544,7 +2542,6 @@ interface Container {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -2688,7 +2685,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -2889,7 +2885,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3066,7 +3061,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3262,7 +3256,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3448,7 +3441,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3608,7 +3600,6 @@ interface Identity {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3765,7 +3756,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -3932,7 +3922,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -4094,7 +4083,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -4264,7 +4252,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -4423,7 +4410,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -4587,8 +4573,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
-  createdBy: Identity
+  # StixCoreObject  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4743,8 +4728,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
+  # StixCoreObject  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4908,7 +4892,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -5066,7 +5049,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -5224,7 +5206,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -5390,7 +5371,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -5560,8 +5540,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
+  # StixCoreObject  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5695,7 +5674,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -5870,7 +5848,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6031,7 +6008,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6203,7 +6179,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6369,7 +6344,6 @@ interface StixCyberObservable {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6471,7 +6445,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6583,7 +6556,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6699,7 +6671,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6807,7 +6778,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -6917,7 +6887,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7037,7 +7006,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7165,7 +7133,6 @@ interface HashedObservable {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7269,7 +7236,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7390,7 +7356,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7520,7 +7485,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7685,7 +7649,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7796,7 +7759,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -7905,7 +7867,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8013,7 +7974,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8121,7 +8081,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8250,7 +8209,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8404,7 +8362,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8531,7 +8488,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8639,7 +8595,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8774,7 +8729,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8886,7 +8840,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -8998,7 +8951,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9106,7 +9058,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9214,7 +9165,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9322,7 +9272,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9430,7 +9379,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9538,7 +9486,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9651,7 +9598,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9759,7 +9705,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -9873,7 +9818,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection

@@ -13,7 +13,6 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
-
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

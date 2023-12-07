@@ -12,6 +12,8 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -20,8 +22,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
-import {AutoFix} from "mdi-material-ui";
-import Tooltip from "@mui/material/Tooltip";
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
