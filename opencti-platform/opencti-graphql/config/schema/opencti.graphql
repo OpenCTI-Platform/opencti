@@ -1914,8 +1914,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-
-
+  # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -2063,8 +2062,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-
-
+  # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
@@ -4573,7 +4571,8 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject  createdBy: Identity
+  # StixCoreObject
+  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4728,7 +4727,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject  createdBy: Identity
+  # StixCoreObject
+  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5540,7 +5540,8 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject  createdBy: Identity
+  # StixCoreObject
+  createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
