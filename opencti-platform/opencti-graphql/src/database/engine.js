@@ -1925,8 +1925,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
-  const { types = null, search = null } = options;
-  const { filters = null } = options;
+  const { types = null, search = null, noFiltersChecking = false } = options;
+  const filters = noFiltersChecking ? (options.filters ?? null) : checkAndConvertFilters(options.filters);
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -2046,16 +2046,14 @@ export const elRawCount = (query) => {
     });
 };
 export const elCount = async (context, user, indexName, options = {}) => {
-  const convertedFilters = checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: indexName, body };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
-  const { interval, field, types = null, noFiltersChecking = false } = options;
-  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
+  const { interval, field, types = null } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
   let dateFormat;
   switch (interval) {
     case 'year':
@@ -2108,10 +2106,9 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null, noFiltersChecking = false } = options;
+  const { field, types = null } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
-  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
@@ -2181,12 +2178,11 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true, noFiltersChecking = false } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
-  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, filters: convertedFilters, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = 0;
   const isAggregationConnection = aggregateOnConnections && (field === 'internal_id' || field === 'entity_type' || field === null);
@@ -2325,9 +2321,8 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, first = 200 } = options;
-  const { types = null, connectionFormat = true, noFiltersChecking = false } = options;
-  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters });
+  const { types = null, connectionFormat = true } = options;
+  const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
     const message = `[SEARCH] You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
     throw DatabaseError(message, { body });

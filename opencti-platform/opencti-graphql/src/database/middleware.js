@@ -6,7 +6,6 @@ import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { JSONPath } from 'jsonpath-plus';
 import * as jsonpatch from 'fast-json-patch';
-import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 
 import {
   ALREADY_DELETED_ERROR,
@@ -556,8 +555,7 @@ export const stixLoadByIdStringify = async (context, user, id) => {
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
-  const convertedFilters = checkAndConvertFilters(args.filters);
-  const elements = await loadByFiltersWithDependencies(context, user, types, { args, filters: convertedFilters });
+  const elements = await loadByFiltersWithDependencies(context, user, types, args);
   return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
@@ -624,7 +622,7 @@ export const distributionHistory = async (context, user, types, args) => {
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (context, user, types, args) => {
-  const distributionArgs = buildEntityFilters({ types, ...args, filters: convertedFilters });
+  const distributionArgs = buildEntityFilters({ types, ...args });
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -670,7 +668,7 @@ export const distributionRelations = async (context, user, args) => {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types
-  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField, filters: convertedFilters };
+  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField };
   const distributionArgs = buildAggregationRelationFilter(types, opts);
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
