@@ -242,22 +242,28 @@ export const up = async (next) => {
         for (let i = 0; i < widgetEntries.length; i += 1) {
           const [key, value] = widgetEntries[i];
           const { dataSelection } = value;
-          const newDataSelection = dataSelection.map((selection) => {
-            const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
-            const newFilters = convertFilters(filters, true);
-            const newDynamicFrom = convertFilters(dynamicFrom, true);
-            const newDynamicTo = convertFilters(dynamicTo, true);
-            return {
-              ...selection,
-              filters: newFilters,
-              dynamicFrom: newDynamicFrom,
-              dynamicTo: newDynamicTo,
+          if (dataSelection) {
+            const newDataSelection = dataSelection.map((selection) => {
+              const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
+              const newFilters = convertFilters(filters, true);
+              const newDynamicFrom = convertFilters(dynamicFrom, true);
+              const newDynamicTo = convertFilters(dynamicTo, true);
+              return {
+                ...selection,
+                filters: newFilters,
+                dynamicFrom: newDynamicFrom,
+                dynamicTo: newDynamicTo,
+              };
+            });
+            newWidgets[key] = {
+              ...value,
+              dataSelection: newDataSelection,
             };
-          });
-          newWidgets[key] = {
-            ...value,
-            dataSelection: newDataSelection,
-          };
+          } else {
+            newWidgets[key] = {
+              ...value,
+            };
+          }
         }
         const newManifest = {
           ...decodedManifest,
