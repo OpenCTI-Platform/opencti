@@ -463,6 +463,7 @@ class ListLines extends Component {
           handleRemoveFilter={handleRemoveFilter}
           handleSwitchGlobalMode={handleSwitchGlobalMode}
           handleSwitchLocalMode={handleSwitchLocalMode}
+          availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
         />
         {message && (

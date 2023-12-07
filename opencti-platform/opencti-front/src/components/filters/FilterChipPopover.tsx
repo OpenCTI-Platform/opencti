@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
 import Popover from '@mui/material/Popover';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -8,17 +8,18 @@ import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
 import { MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
+import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import {
   dateFilters,
   Filter,
   getAvailableOperatorForFilter,
-  integerFilters,
+  integerFilters, isStixObjectTypes,
   textFilters,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import {
-  getOptions,
+  getOptionsFromEntities,
   getUseSearch,
 } from '../../utils/filters/SearchEntitiesUtil';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
@@ -29,6 +30,7 @@ interface FilterChipMenuProps {
   params: FilterChipsParameter;
   filters: Filter[];
   helpers?: UseLocalStorageHelpers;
+  availableRelationFilterTypes?: Record<string, string[]>;
 }
 
 export interface FilterChipsParameter {
@@ -134,6 +136,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   open,
   filters,
   helpers,
+  availableRelationFilterTypes,
 }) => {
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
@@ -156,9 +159,26 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   }[]
   >
   >({});
+  const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
+    availableRelationFilterTypes || {
+      targets: [
+        'Region',
+        'Country',
+        'Administrative-Area',
+        'City',
+        'Position',
+        'Sector',
+        'Organization',
+        'Individual',
+        'System',
+        'Event',
+        'Vulnerability',
+      ],
+    },
+  );
   const [entities, searchEntities] = getUseSearch();
   const { t } = useFormatter();
-  const optionValues: OptionValue[] = getOptions(filterKey, entities);
+  const optionValues: OptionValue[] = getOptionsFromEntities(entities, searchScope, filterKey);
   const handleChange = (checked: boolean, value: string) => {
     if (checked) {
       helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
@@ -219,6 +239,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
 
   const noValueOperator = !['not_nil', 'nil'].includes(filterOperator);
+  const renderSearchScopeSelection = (key: string) => (
+    <SearchScopeElement
+      name={key}
+      searchScope={searchScope}
+      setSearchScope={setSearchScope}
+      availableRelationFilterTypes={availableRelationFilterTypes}
+    />
+  );
   return (
     <Popover
       open={open}
@@ -269,6 +297,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             renderInput={(paramsInput) => (
               <TextField
                 {...paramsInput}
+                InputProps={{
+                  ...paramsInput.InputProps,
+                  endAdornment: isStixObjectTypes.includes(filterKey)
+                    ? renderSearchScopeSelection(filterKey)
+                    : paramsInput.InputProps.endAdornment,
+                }}
                 label={t(filterKey)}
                 variant="outlined"
                 size="small"

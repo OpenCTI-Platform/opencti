@@ -124,6 +124,7 @@ interface FilterIconButtonContainerProps {
   helpers?: UseLocalStorageHelpers;
   hasRenderedRef: boolean;
   setHasRenderedRef: () => void;
+  availableRelationFilterTypes?: Record<string, string[]>;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -141,6 +142,7 @@ FilterIconButtonContainerProps
   helpers,
   hasRenderedRef,
   setHasRenderedRef,
+  availableRelationFilterTypes,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -501,6 +503,7 @@ FilterIconButtonContainerProps
           handleClose={handleClose}
           open={open}
           helpers={helpers}
+          availableRelationFilterTypes={availableRelationFilterTypes}
         />
         </Box>
       )}

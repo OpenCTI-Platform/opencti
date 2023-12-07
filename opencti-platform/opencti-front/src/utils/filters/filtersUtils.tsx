@@ -696,3 +696,14 @@ export const removeIdFromFilterObject = (
       }),
   };
 };
+
+export const isStixObjectTypes = [
+  'elementId',
+  'fromId',
+  'toId',
+  'objects',
+  'targets',
+  'elementId',
+  'indicates',
+  'contextEntityId',
+];

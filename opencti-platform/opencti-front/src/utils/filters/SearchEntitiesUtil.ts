@@ -1,6 +1,7 @@
 import { Dispatch, SyntheticEvent } from 'react';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import useSearchEntities, { SearchEntitiesProps } from './useSearchEntities';
+import { isStixObjectTypes } from './filtersUtils';
 
 let searchEntitiesScope: SearchEntitiesProps | undefined;
 
@@ -11,43 +12,24 @@ export const getSearchEntitiesScope = (): SearchEntitiesProps | undefined => {
   return searchEntitiesScope;
 };
 
-export const getOptionsFromEntities = (filterKey: string) => {
-  let options: OptionValue[] = [];
-  if (!searchEntitiesScope) {
-    return [];
-  }
-  const [entities, _] = useSearchEntities(searchEntitiesScope) as [
-    Record<string, OptionValue[]>,
-    (
-      filterKey: string,
-      cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
-      setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
-      event: SyntheticEvent
-    ) => Record<string, OptionValue[]>,
-  ];
-  const { searchScope } = searchEntitiesScope;
-  const isStixObjectTypes = [
-    'elementId',
-    'fromId',
-    'toId',
-    'objects',
-    'targets',
-    'elementId',
-    'indicates',
-  ].includes(filterKey);
-  if (isStixObjectTypes) {
+export const getOptionsFromEntities = (
+  entities: Record<string, OptionValue[]>,
+  searchScope: Record<string, string[]>,
+  filterKey: string,
+): OptionValue[] => {
+  let filteredOptions: OptionValue[] = [];
+  if (isStixObjectTypes.includes(filterKey)) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
-      options = (entities[filterKey] || [])
+      filteredOptions = (entities[filterKey] || [])
         .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)))
         .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
     } else {
-      options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+      filteredOptions = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
     }
   } else if (entities[filterKey]) {
-    options = entities[filterKey];
+    filteredOptions = entities[filterKey];
   }
-
-  return options;
+  return filteredOptions;
 };
 
 export const getUseSearch = () => {
@@ -63,24 +45,4 @@ export const getUseSearch = () => {
       event: SyntheticEvent
     ) => Record<string, OptionValue[]>,
   ];
-};
-
-export const getOptions = (filterKey: string, entities: Record<string, OptionValue[]>) => {
-  let options: OptionValue[] = [];
-  const isStixObjectTypes = [
-    'elementId',
-    'fromId',
-    'toId',
-    'objects',
-    'targets',
-    'elementId',
-    'indicates',
-  ].includes(filterKey);
-
-  if (isStixObjectTypes) {
-    options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
-  } else if (entities[filterKey]) {
-    options = entities[filterKey];
-  }
-  return options;
 };

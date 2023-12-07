@@ -27,6 +27,7 @@ interface FilterIconButtonProps {
   disabledPossible?: boolean;
   redirection?: boolean;
   helpers?: UseLocalStorageHelpers;
+  availableRelationFilterTypes?: Record<string, string[]>;
 }
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
@@ -40,6 +41,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   redirection,
   chipColor,
   helpers,
+  availableRelationFilterTypes,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -77,6 +79,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
             helpers={helpers}
             hasRenderedRef={hasRenderedRef.current}
             setHasRenderedRef={setHasRenderedRef}
+            availableRelationFilterTypes={availableRelationFilterTypes}
           />
         </React.Suspense>
       )}
