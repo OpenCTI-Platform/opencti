@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import Popover from '@mui/material/Popover';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -13,15 +13,13 @@ import {
   dateFilters,
   Filter,
   getAvailableOperatorForFilter,
-  integerFilters, isStixObjectTypes,
+  integerFilters,
+  isStixObjectTypes,
   textFilters,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import {
-  getOptionsFromEntities,
-  getUseSearch,
-} from '../../utils/filters/SearchEntitiesUtil';
+import { getOptionsFromEntities, getUseSearch, } from '../../utils/filters/SearchEntitiesUtil';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 interface FilterChipMenuProps {
