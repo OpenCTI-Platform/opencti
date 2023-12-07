@@ -21,7 +21,6 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { Filter, FilterGroup, InputMaybe, OrderingMode } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
-import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
@@ -434,33 +433,27 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
 
 export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const { filters, noFiltersChecking } = args;
-  const convertedFilters = noFiltersChecking ? filters : checkAndConvertFilters(filters);
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
   // }
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args, filters: convertedFilters });
+  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
-  const { indices = READ_ENTITIES_INDICES, noFiltersChecking = false } = args;
-  const filters = noFiltersChecking ? args.filters : checkAndConvertFilters(args.filters);
-  const paginateArgs = buildEntityFilters({ entityTypes, filters, ...args });
+  const { indices = READ_ENTITIES_INDICES } = args;
+  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elList(context, user, indices, paginateArgs);
 };
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<StoreEntityConnection<T>> => {
+  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
-  const convertedFilters = (noFiltersChecking || !args.filters)
-    ? args.filters
-    : checkAndConvertFilters(args.filters);
-  const paginateArgs = buildEntityFilters({ ...args, entityTypes, filters: convertedFilters });
+  const paginateArgs = buildEntityFilters({ ...args, entityTypes });
   return elPaginate(context, user, indices, paginateArgs);
 };
 

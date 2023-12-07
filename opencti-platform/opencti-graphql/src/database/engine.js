@@ -2053,8 +2053,9 @@ export const elCount = async (context, user, indexName, options = {}) => {
   return elRawCount(query);
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
-  const { interval, field, types = null } = options;
-  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
+  const { interval, field, types = null, noFiltersChecking = false } = options;
+  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
+  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
   let dateFormat;
   switch (interval) {
     case 'year':
@@ -2107,9 +2108,10 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null } = options;
+  const { field, types = null, noFiltersChecking = false } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
+  const body = await elQueryBodyBuilder(context, user, { ...options, filters: convertedFilters, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
@@ -2179,11 +2181,12 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true, noFiltersChecking = false } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
-  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
+  const convertedFilters = noFiltersChecking ? options.filters : checkAndConvertFilters(options.filters);
+  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, filters: convertedFilters, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = 0;
   const isAggregationConnection = aggregateOnConnections && (field === 'internal_id' || field === 'entity_type' || field === null);
