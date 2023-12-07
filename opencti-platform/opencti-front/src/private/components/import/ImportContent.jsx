@@ -43,7 +43,7 @@ import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
-import {truncate} from '../../../utils/String';
+import { truncate } from '../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -195,6 +195,10 @@ class ImportContentComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  handleClickConnector(connectorId) {
+    this.props.navigate(`/dashboard/data/connectors/${connectorId}`);
   }
 
   handleOpenImport(file) {
@@ -395,6 +399,7 @@ class ImportContentComponent extends Component {
                       dense={true}
                       divider={true}
                       classes={{ root: classes.item }}
+                      onClick={this.handleClickConnector.bind(this, connector.id)}
                     >
                       <Tooltip
                         title={
