@@ -337,7 +337,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   const { toId, toRole, toTypes = [] } = args;
   const { filters = null } = args;
   // Config
-  const customFiltersContent = filters?.filters ?? [];
+  const customFiltersContent = [];
   // region element
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
@@ -405,12 +405,22 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   )(args);
   // Override some special filters
   builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
-  const customFilters = {
-    mode: filters?.mode ?? FilterMode.And,
-    filters: customFiltersContent,
-    filterGroups: filters?.filterGroups ?? [],
-  };
-  return { ...builtArgs, filters: customFilters };
+  let finalFilters = filters;
+  if (customFiltersContent.length > 0) {
+    const customFilters = {
+      mode: FilterMode.And,
+      filters: customFiltersContent,
+      filterGroups: [],
+    };
+    finalFilters = filters
+      ? {
+        mode: filters.mode,
+        filters: [],
+        filterGroups: [customFilters, filters],
+      }
+      : customFilters;
+  }
+  return { ...builtArgs, filters: finalFilters };
 };
 
 const entitiesAggregations = [

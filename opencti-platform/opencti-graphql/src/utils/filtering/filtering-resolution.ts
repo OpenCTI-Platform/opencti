@@ -198,11 +198,7 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
   const types = [...defaultTypes];
   let finalFilters = filters
     ? await resolveFilterGroupValuesWithCache(context, user, filters)
-    : {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: [],
-    };
+    : undefined;
   if (after || before) {
     const filtersContent = [];
     if (after) {
@@ -214,7 +210,7 @@ export const convertFiltersToQueryOptions = async (context: AuthContext, user: A
     finalFilters = {
       mode: FilterMode.And,
       filters: filtersContent,
-      filterGroups: isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
+      filterGroups: (finalFilters && isFilterGroupNotEmpty(finalFilters)) ? [finalFilters] : [],
     };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };
