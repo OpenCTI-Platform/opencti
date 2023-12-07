@@ -11,7 +11,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  INSTANCE_FILTER, MEMBERS_GROUP_FILTER,
+  INSTANCE_FILTER, internalFilterKeys, MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   SIGHTED_BY_FILTER,
@@ -241,7 +241,8 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys);
+        .concat(specialFilterKeys)
+        .concat(internalFilterKeys);
       keys.forEach((k) => {
         if (availableKeys.includes(k)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);
