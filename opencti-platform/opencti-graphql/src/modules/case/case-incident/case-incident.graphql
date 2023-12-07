@@ -94,7 +94,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-
   objects(
     first: Int
     after: ID
