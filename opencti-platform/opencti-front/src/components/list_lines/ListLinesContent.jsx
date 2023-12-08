@@ -252,6 +252,7 @@ class ListLinesContent extends Component {
           maxWidth: propWidth || 'auto',
           overflowY: propHeight ? 'auto' : 'hidden',
           overflowX: propWidth ? 'auto' : 'hidden',
+          listStyleType: 'none',
         }}
         ref={this.containerRef}
       >

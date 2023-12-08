@@ -38,10 +38,6 @@ const Retention = () => {
       label: 'Name',
       width: '15%',
     },
-    filters: {
-      label: 'Apply on',
-      width: '35%',
-    },
     retention: {
       label: 'Max retention',
       width: '20%',
@@ -53,6 +49,10 @@ const Retention = () => {
     remaining_count: {
       label: 'Remaining',
       width: '10%',
+    },
+    filters: {
+      label: 'Apply on',
+      width: '35%',
     },
   };
   if (!platformModuleHelpers.isRetentionManagerEnable()) {

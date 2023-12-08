@@ -106,7 +106,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     },
     filters: {
       label: 'Details',
-      width: '30%',
+      width: '35%',
       isSortable: false,
     },
   };
