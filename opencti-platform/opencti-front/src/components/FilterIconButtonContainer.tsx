@@ -278,7 +278,6 @@ FilterIconButtonContainerProps
           }
           : {
             marginTop: displayedFilters.length === 0 ? '0px' : marginTop,
-            gap: '10px 0',
             display: 'flex',
             flexWrap: 'wrap',
           }
@@ -320,7 +319,7 @@ FilterIconButtonContainerProps
             >
               <Box
                 sx={{
-                  padding: '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
                   display: 'flex',
                   ...(isReadWriteFilter ? backgroundGroupingChipsStyle : {}),
                 }}
@@ -373,7 +372,7 @@ FilterIconButtonContainerProps
             {isNotLastFilter ? (
               <Box
                 sx={{
-                  padding: '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
                   display: 'flex',
                   ...backgroundGroupingChipsStyle,
                 }}
@@ -468,7 +467,7 @@ FilterIconButtonContainerProps
             >
               <Box
                 sx={{
-                  padding: '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
                   display: 'flex',
                 }}
               >
@@ -518,7 +517,7 @@ FilterIconButtonContainerProps
             {isNotLastFilter && (
               <Box
                 sx={{
-                  padding: '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
                   display: 'flex',
                 }}
               >

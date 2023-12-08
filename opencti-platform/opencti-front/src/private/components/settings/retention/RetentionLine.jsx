@@ -12,11 +12,11 @@ import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const Transition = React.forwardRef((props, ref) => (
-    <Slide direction="up" ref={ref} {...props} />
+  <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -54,7 +54,7 @@ class RetentionLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <LayersClearOutlined />
+          <LayersClearOutlined/>
         </ListItemIcon>
         <ListItemText
           primary={
@@ -62,19 +62,6 @@ class RetentionLineComponent extends Component {
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              {isFilterGroupNotEmpty(filters) ? (
-                <FilterIconButton
-                  filters={filters}
-                  dataColumns={dataColumns}
-                  classNameNumber={3}
-                  styleNumber={3}
-                  redirection
-                />
-              ) : (
-                <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
-                  <span>{t('Everything')}</span>
-                </div>
-              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.retention.width }}
@@ -93,6 +80,19 @@ class RetentionLineComponent extends Component {
               >
                 {n(node.remaining_count)}
               </div>
+              {isFilterGroupNotEmpty(filters) ? (
+                <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
+                  redirection
+                />
+              ) : (
+                <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+                  <span>{t('Everything')}</span>
+                </div>
+              )}
             </div>
           }
         />
@@ -118,15 +118,15 @@ RetentionLineComponent.propTypes = {
 
 const RetentionLineFragment = createFragmentContainer(RetentionLineComponent, {
   node: graphql`
-        fragment RetentionLine_node on RetentionRule {
-            id
-            name
-            max_retention
-            last_execution_date
-            remaining_count
-            filters
-        }
-    `,
+    fragment RetentionLine_node on RetentionRule {
+      id
+      name
+      max_retention
+      last_execution_date
+      remaining_count
+      filters
+    }
+  `,
 });
 
 export const RetentionLine = R.compose(
@@ -138,80 +138,81 @@ class RetentionDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-            <ListItem classes={{ root: classes.item }} divider={true}>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <Skeleton
-                        animation="wave"
-                        variant="circular"
-                        width={30}
-                        height={30}
-                    />
-                </ListItemIcon>
-                <ListItemText
-                    primary={
-                        <div>
-                            <div
-                                className={classes.bodyItem}
-                                style={{ width: dataColumns.name.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="90%"
-                                    height="100%"
-                                />
-                            </div>
-                            <div
-                                className={classes.bodyItem}
-                                style={{ width: dataColumns.retention.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="90%"
-                                    height="100%"
-                                />
-                            </div>
-                            <div
-                                className={classes.bodyItem}
-                                style={{ width: dataColumns.filters.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="70%"
-                                    height="100%"
-                                />
-                            </div>
-                            <div
-                                className={classes.bodyItem}
-                                style={{ width: dataColumns.last_execution_date.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="20%"
-                                    height="100%"
-                                />
-                            </div>
-                            <div
-                                className={classes.bodyItem}
-                                style={{ width: dataColumns.remaining_count.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="20%"
-                                    height="100%"
-                                />
-                            </div>
-                        </div>
-                    }
+      <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
                 />
-                <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-                    <MoreVert/>
-                </ListItemSecondaryAction>
-            </ListItem>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.retention.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_execution_date.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="20%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.remaining_count.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="20%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="70%"
+                  height="100%"
+                />
+              </div>
+            </div>
+          }
+        />
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+          <MoreVert/>
+        </ListItemSecondaryAction>
+      </ListItem>
     );
   }
 }
