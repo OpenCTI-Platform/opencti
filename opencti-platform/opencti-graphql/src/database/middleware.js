@@ -311,9 +311,9 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
             // Check if multiple target
             const existingEdge = edges.find((edge) => edge.node.id === target.id);
             if (existingEdge) {
-              edges[existingEdge].types.push(isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT);
+              edges[existingEdge].types.push(isRelationInferred ? 'inferred' : 'manual');
             } else {
-              const edge = { node: target, types: [isRelationInferred ? INFERRED_OBJECT : MANUAL_OBJECT] };
+              const edge = { node: target, types: [isRelationInferred ? 'inferred' : 'manual'] };
               edges.push(edge);
             }
           }

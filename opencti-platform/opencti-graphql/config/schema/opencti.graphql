@@ -10353,7 +10353,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixCoreRelationship
-
   description: String
   start_time: DateTime
   stop_time: DateTime
@@ -10421,7 +10420,6 @@ input StixCoreRelationshipAddInput {
   objectOrganization: [String]
   externalReferences: [String]
   killChainPhases: [String]
-
   clientMutationId: String
   update: Boolean
 }
@@ -10483,7 +10481,6 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixSightingRelationship
-
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -10526,7 +10523,6 @@ input StixSightingRelationshipAddInput {
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]
-
   clientMutationId: String
   update: Boolean
 }

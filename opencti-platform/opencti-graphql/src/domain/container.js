@@ -12,8 +12,8 @@ import { findById as findInvestigationById } from '../modules/workspace/workspac
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
-export const MANUAL_OBJECT = 'manual';
-export const INFERRED_OBJECT = 'inferred';
+const MANUAL_OBJECT = 'manual';
+const INFERRED_OBJECT = 'inferred';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
