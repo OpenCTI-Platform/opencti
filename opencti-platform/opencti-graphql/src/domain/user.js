@@ -699,16 +699,9 @@ export const meEditField = async (context, user, userId, inputs, password = null
 };
 
 const isUserTheLastAdmin = (userId, authorized_members) => {
-  let currentUserIsAdmin = false;
-  let anotherUserIsAdmin = false;
+  const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
+  const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
 
-  authorized_members.forEach((oneMember) => {
-    if (oneMember.id === userId && oneMember.access_right === 'admin') {
-      currentUserIsAdmin = true;
-    } else if (oneMember.access_right === 'admin') {
-      anotherUserIsAdmin = true;
-    }
-  });
   return currentUserIsAdmin && !anotherUserIsAdmin;
 };
 
