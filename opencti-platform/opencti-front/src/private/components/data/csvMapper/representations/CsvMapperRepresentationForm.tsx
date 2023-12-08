@@ -93,17 +93,14 @@ CsvMapperRepresentationFormProps
         attributes: [],
         target: { entity_type: null },
       });
-      await formikContext.setFieldTouched(`representations[${index}]`, false);
     } else {
       await formikContext.setFieldValue(`representations[${index}]`, {
         ...representation,
         attributes: [],
         target: { entity_type: option.value },
       });
-      await formikContext.setFieldTouched(`representations[${index}]`, false);
     }
-    console.log('formikContext', formikContext.initialValues);
-    console.log('formikContext', formikContext.values);
+    await formikContext.setFieldTouched(`representations[${index}]`, false);
   };
 
   const deletion = useDeletion({});
@@ -216,7 +213,7 @@ CsvMapperRepresentationFormProps
               >
                 <div style={{ marginTop: 20 }}>
                   <CsvMapperRepresentationAttributesForm
-                      key={representation.target.entity_type}
+                    key={representation.target.entity_type}
                     index={index}
                     queryRef={queryRef}
                     handleErrors={handleErrors}
