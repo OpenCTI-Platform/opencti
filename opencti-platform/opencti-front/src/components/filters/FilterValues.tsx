@@ -28,7 +28,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 0,
     margin: '0 5px 0 5px',
     padding: '0 5px 0 5px',
-    cursor: 'pointer',
     backgroundColor: theme.palette.action?.disabled,
     fontFamily: 'Consolas, monaco, monospace',
   },
@@ -79,7 +78,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           className={deactivatePopoverMenu ? '' : classes.label}
           onClick={onCLick}
         >
-          {label}:
+          {label}
         </strong>{' '}
         <span>
           {filterOperator === 'nil' ? t('is empty') : t('is not empty')}
