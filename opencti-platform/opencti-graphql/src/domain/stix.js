@@ -203,7 +203,7 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: checkAndConvertFilters(filters),
+    filters: checkAndConvertFilters(filters, {}),
   };
 };
 

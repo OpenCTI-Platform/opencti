@@ -222,13 +222,14 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * - convert relation refs key if any
  * @param filterGroup
  */
-export const checkAndConvertFilters = (filterGroup?: FilterGroup | null, noFiltersChecking = false, authorizeNestedFiltersKeys = false) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean, authorizeNestedFiltersKeys?: boolean }) => {
   if (!filterGroup) {
     return undefined;
   }
   if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
     throw Error(`Incorrect filters format: ${JSON.stringify(filterGroup)}`);
   }
+  const { noFiltersChecking = false, authorizeNestedFiltersKeys = false } = opts;
   // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
