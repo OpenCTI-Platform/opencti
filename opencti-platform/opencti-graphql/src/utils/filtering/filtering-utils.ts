@@ -15,7 +15,7 @@ import {
   internalFilterKeys,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
-  MEMBERS_USER_FILTER,
+  MEMBERS_USER_FILTER, nestedFilterKeys,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -222,7 +222,7 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * - convert relation refs key if any
  * @param filterGroup
  */
-export const checkAndConvertFilters = (filterGroup?: FilterGroup | null, noFiltersChecking = false) => {
+export const checkAndConvertFilters = (filterGroup?: FilterGroup | null, noFiltersChecking = false, authorizeNestedFiltersKeys = false) => {
   if (!filterGroup) {
     return undefined;
   }
@@ -240,13 +240,16 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null, noFilte
       const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
       const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
-      const availableKeys = availableAttributes
+      let availableKeys = availableAttributes
         .concat(availableRefRelations)
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
         .concat(specialFilterKeys)
         .concat(internalFilterKeys);
+      if (authorizeNestedFiltersKeys) {
+        availableKeys = availableKeys.concat(nestedFilterKeys);
+      }
       keys.forEach((k) => {
         if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);

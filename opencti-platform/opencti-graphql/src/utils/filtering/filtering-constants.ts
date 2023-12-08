@@ -76,6 +76,15 @@ export const specialFilterKeys = [
   SOURCE_RELIABILITY_FILTER, // reliability of the author
 ];
 
+// nested filter keys also authorized in some elastic query cases (ex: retention policy query checking)
+// but normally not-authorized in elastic queries (because they should be passed in options)
+export const nestedFilterKeys = [
+  RELATION_FROM_FILTER, // nested relation for the from of a relationship
+  RELATION_TO_FILTER, // nested relation for the to of a relationship
+  RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
+  RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
+];
+
 // filter keys that should be in the schema but are not
 // TODO remove this list and register the attributes
 export const internalFilterKeys = [
