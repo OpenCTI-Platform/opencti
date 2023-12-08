@@ -130,6 +130,22 @@ const TopMenuSettings = () => {
           <EEChip feature={t('File indexing')} clickable={false} />
         </Button>
       </Security>
+        <Security needs={[SETTINGS]}>
+            <Button
+                component={Link}
+                size="small"
+                to="/dashboard/settings/decay"
+                variant={
+                    location.pathname.includes('/dashboard/settings/decay')
+                        ? buttonVariant
+                        : 'text'
+                }
+                classes={{ root: classes.button }}
+            >
+                {t('Decay POC')}
+                <EEChip feature={t('Decay POC')} clickable={false} />
+            </Button>
+        </Security>
     </>
   );
 };

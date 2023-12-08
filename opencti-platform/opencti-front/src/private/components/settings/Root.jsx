@@ -29,6 +29,7 @@ import Users from './Users';
 import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
+import Decay from './decay/Decay';
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -181,6 +182,10 @@ const Root = () => {
           path="/dashboard/settings/file_indexing"
           render={() => <FileIndexing />}
         />
+          <BoundaryRoute
+              path="/dashboard/settings/decay"
+              render={() => <Decay />}
+          />
         <BoundaryRoute
           exact
           path="/dashboard/settings/customization"
