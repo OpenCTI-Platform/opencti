@@ -164,11 +164,11 @@ const SearchStixCoreObjectLineComponent = ({
                   label={n(node.containersNumber.total)}
                 />
                 ) : (
-                <Chip
-                  classes={{ root: classes.chip }}
-                  label={n(node.containersNumber.total)}
-                  component={Link}
-                  to={linkAnalyses}
+                  <Chip
+                    classes={{ root: classes.chip }}
+                    label={n(node.containersNumber.total)}
+                    component={Link}
+                    to={linkAnalyses}
                 />
                 )}
             </div>

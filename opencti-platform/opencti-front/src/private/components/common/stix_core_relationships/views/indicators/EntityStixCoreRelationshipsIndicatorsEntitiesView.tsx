@@ -147,7 +147,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   return (
     <>
       <ListLines
-          helpers={storageHelpers}
+        helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -212,17 +212,17 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-      <StixCoreRelationshipCreationFromEntity
-        entityId={entityId}
-        isRelationReversed={isRelationReversed}
-        targetStixDomainObjectTypes={['Indicator']}
-        allowedRelationshipTypes={relationshipTypes}
-        paginationOptions={paginationOptions}
-        openExports={openExports}
-        paddingRight={220}
-        connectionKey="Pagination_indicators"
-        defaultStartTime={defaultStartTime}
-        defaultStopTime={defaultStopTime}
+        <StixCoreRelationshipCreationFromEntity
+          entityId={entityId}
+          isRelationReversed={isRelationReversed}
+          targetStixDomainObjectTypes={['Indicator']}
+          allowedRelationshipTypes={relationshipTypes}
+          paginationOptions={paginationOptions}
+          openExports={openExports}
+          paddingRight={220}
+          connectionKey="Pagination_indicators"
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
       />
       </Security>
     </>

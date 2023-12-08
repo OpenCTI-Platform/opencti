@@ -111,86 +111,86 @@ const Artifacts: FunctionComponent = () => {
     const toolBarFilters = filtersWithEntityType(filters, 'Artifact');
 
     return (
-          <>
-            <ListLines
-              helpers={helpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={helpers.handleSort}
-              handleSearch={helpers.handleSearch}
-              handleAddFilter={helpers.handleAddFilter}
-              handleRemoveFilter={helpers.handleRemoveFilter}
-              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-              handleToggleExports={helpers.handleToggleExports}
-              openExports={openExports}
-              handleToggleSelectAll={handleToggleSelectAll}
-              selectAll={selectAll}
-              exportEntityType="Artifact"
-              exportContext={null}
-              keyword={searchTerm}
-              filters={filters}
-              iconExtension={true}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              availableFilterKeys={[
-                'objectLabel',
-                'objectMarking',
-                'created_at',
-                'createdBy',
-              ]}
+      <>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          exportEntityType="Artifact"
+          exportContext={null}
+          keyword={searchTerm}
+          filters={filters}
+          iconExtension={true}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'objectLabel',
+            'objectMarking',
+            'created_at',
+            'createdBy',
+          ]}
             >
-              {queryRef && (
-                  <React.Suspense
-                      fallback={
-                        <>
-                          {Array(20)
-                            .fill(0)
-                            .map((_, idx) => (
-                                  <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
-                            ))}
-                        </>
+          {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <ArtifactLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
                       }
                   >
-                  <ArtifactsLines
-                    queryRef={queryRef}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    onLabelClick={helpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={helpers.handleSetNumberOfElements}
+            <ArtifactsLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onLabelClick={helpers.handleAddFilter}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
                   />
-                  <ToolBar
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    numberOfSelectedElements={numberOfSelectedElements}
-                    selectAll={selectAll}
-                    filters={toolBarFilters}
-                    search={searchTerm}
-                    handleClearSelectedElements={handleClearSelectedElements}
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={toolBarFilters}
+              search={searchTerm}
+              handleClearSelectedElements={handleClearSelectedElements}
                   />
-                  </React.Suspense>
-              )}
-            </ListLines>
-          </>
+          </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
 
   return (
-      <ExportContextProvider>
-        <div>
-          {renderLines()}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ArtifactCreation
-              paginationOptions={paginationOptions}
+    <ExportContextProvider>
+      <div>
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ArtifactCreation
+            paginationOptions={paginationOptions}
             />
-          </Security>
-        </div>
-      </ExportContextProvider>
+        </Security>
+      </div>
+    </ExportContextProvider>
   );
 };
 

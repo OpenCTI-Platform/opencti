@@ -369,26 +369,26 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
                     {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                        <ListItem
-                          key={role?.id}
-                          dense={true}
-                          divider={true}
-                          component={Link}
-                          button={true}
-                          to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                      <ListItem
+                        key={role?.id}
+                        dense={true}
+                        divider={true}
+                        component={Link}
+                        button={true}
+                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
                         >
-                          <ListItemIcon>
-                            <ItemIcon type="Role" />
-                          </ListItemIcon>
-                          <ListItemText primary={role?.name} />
-                        </ListItem>
+                        <ListItemIcon>
+                          <ItemIcon type="Role" />
+                        </ListItemIcon>
+                        <ListItemText primary={role?.name} />
+                      </ListItem>
                     ) : (
-                        <ListItem key={role?.id} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <ItemIcon type="Role" />
-                          </ListItemIcon>
-                          <ListItemText primary={role?.name} />
-                        </ListItem>
+                      <ListItem key={role?.id} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <ItemIcon type="Role" />
+                        </ListItemIcon>
+                        <ListItemText primary={role?.name} />
+                      </ListItem>
                     )))}
                   </List>
                 </FieldOrEmpty>
@@ -400,30 +400,30 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
                     {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                        <ListItem
-                          key={groupEdge?.node.id}
-                          dense={true}
-                          divider={true}
-                          button={true}
-                          component={Link}
-                          to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                      <ListItem
+                        key={groupEdge?.node.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
                         >
-                          <ListItemIcon>
-                            <ItemIcon type="Group" />
-                          </ListItemIcon>
-                          <ListItemText primary={groupEdge?.node.name} />
-                        </ListItem>
+                        <ListItemIcon>
+                          <ItemIcon type="Group" />
+                        </ListItemIcon>
+                        <ListItemText primary={groupEdge?.node.name} />
+                      </ListItem>
                     ) : (
-                        <ListItem
-                          key={groupEdge?.node.id}
-                          dense={true}
-                          divider={true}
+                      <ListItem
+                        key={groupEdge?.node.id}
+                        dense={true}
+                        divider={true}
                         >
-                          <ListItemIcon>
-                            <ItemIcon type="Group" />
-                          </ListItemIcon>
-                          <ListItemText primary={groupEdge?.node.name} />
-                        </ListItem>
+                        <ListItemIcon>
+                          <ItemIcon type="Group" />
+                        </ListItemIcon>
+                        <ListItemText primary={groupEdge?.node.name} />
+                      </ListItem>
                     )))}
                   </List>
                 </FieldOrEmpty>

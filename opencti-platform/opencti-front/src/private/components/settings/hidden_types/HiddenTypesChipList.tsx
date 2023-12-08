@@ -42,9 +42,9 @@ const HiddenTypesChipList = ({
   const diff = hiddenTypesGlobal.filter((hiddenTypeGlobal) => !hiddenTypes?.includes(hiddenTypeGlobal));
 
   return (<>
-      <Typography variant="h3" gutterBottom={true}>
-        {t('Hidden entity types')}
-      </Typography>
+    <Typography variant="h3" gutterBottom={true}>
+      {t('Hidden entity types')}
+    </Typography>
     <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
       {diff.map((hiddenTypeGlobal) => (<Chip
         key={hiddenTypeGlobal}
@@ -57,7 +57,7 @@ const HiddenTypesChipList = ({
         label={t(`entity_${hiddenType}`)}
       />))}
     </FieldOrEmpty>
-    </>
+  </>
   );
 };
 

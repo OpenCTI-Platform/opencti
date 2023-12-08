@@ -91,11 +91,11 @@ PictureManagementViewerProps
               <List>
                 {images.map(
                   (file, idx) => file && (
-                      <PictureLine
-                        picture={file}
-                        key={idx}
-                        dataColumns={dataColumns}
-                        entityId={data.id}
+                  <PictureLine
+                    picture={file}
+                    key={idx}
+                    dataColumns={dataColumns}
+                    entityId={data.id}
                       />
                   ),
                 )}

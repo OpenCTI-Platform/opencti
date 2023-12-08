@@ -25,15 +25,15 @@ const ItemAssignees: FunctionComponent<Props> = (props) => {
     <div>
       {assignees.length > 0
         ? assignees.map((assignee) => (
-            <Button
-              key={assignee.id}
-              variant="outlined"
-              color="primary"
-              size="small"
-              style={{ margin: '0 7px 7px 0', cursor: 'default' }}
+          <Button
+            key={assignee.id}
+            variant="outlined"
+            color="primary"
+            size="small"
+            style={{ margin: '0 7px 7px 0', cursor: 'default' }}
             >
-              {assignee.name}
-            </Button>
+            {assignee.name}
+          </Button>
         ))
         : '-'}
     </div>

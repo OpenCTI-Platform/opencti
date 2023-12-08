@@ -67,24 +67,24 @@ class AddAttackPatterns extends Component {
             </div>
           )}
         >
-            <QueryRenderer
-              query={addAttackPatternsLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddAttackPatternsLines
-                    courseOfAction={courseOfAction}
-                    courseOfActionAttackPatterns={courseOfActionAttackPatterns}
-                    courseOfActionPaginationOptions={
+          <QueryRenderer
+            query={addAttackPatternsLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddAttackPatternsLines
+                  courseOfAction={courseOfAction}
+                  courseOfActionAttackPatterns={courseOfActionAttackPatterns}
+                  courseOfActionPaginationOptions={
                       courseOfActionPaginationOptions
                     }
-                    data={props}
+                  data={props}
                   />
-                );
-              }}
+              );
+            }}
             />
         </Drawer>
       </div>

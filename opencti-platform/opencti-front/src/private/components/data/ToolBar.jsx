@@ -1935,10 +1935,10 @@ class ToolBar extends Component {
                   {t('Aliases')}
                 </Typography>
                 {newAliases.map((label) => (label.length > 0 ? (
-                    <Chip
-                      key={label}
-                      classes={{ root: classes.aliases }}
-                      label={label}
+                  <Chip
+                    key={label}
+                    classes={{ root: classes.aliases }}
+                    label={label}
                     />
                 ) : (
                   ''

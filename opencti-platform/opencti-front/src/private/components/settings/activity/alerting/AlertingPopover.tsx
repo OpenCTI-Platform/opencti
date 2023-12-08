@@ -101,11 +101,11 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Dialog open={displayDelete}
-            keepMounted={true}
-            TransitionComponent={Transition}
-            PaperProps={{ elevation: 1 }}
-            onClose={handleCloseDelete}>
-          <DialogContent>
+        keepMounted={true}
+        TransitionComponent={Transition}
+        PaperProps={{ elevation: 1 }}
+        onClose={handleCloseDelete}>
+        <DialogContent>
           <DialogContentText>
             {t('Do you want to delete this trigger?')}
           </DialogContentText>
@@ -120,16 +120,16 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         </DialogActions>
       </Dialog>
       {displayEdit && <Drawer open={true}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={() => setDisplayEdit(false)}>
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={() => setDisplayEdit(false)}>
         {queryRef && (
-           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-             {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-             {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-           </React.Suspense>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+          {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+        </React.Suspense>
         )}
       </Drawer>}
     </div>

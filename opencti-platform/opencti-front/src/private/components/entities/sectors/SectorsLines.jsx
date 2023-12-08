@@ -65,10 +65,10 @@ class SectorsLinesComponent extends Component {
               sortByNameCaseInsensitive,
             )(sector);
             return (
-                <SectorLine
-                  key={sector.id}
-                  node={sector}
-                  subSectors={subSectors}
+              <SectorLine
+                key={sector.id}
+                node={sector}
+                subSectors={subSectors}
                 />
             );
           }, sectors)

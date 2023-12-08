@@ -57,118 +57,118 @@ const ContentKnowledgeTimeLineBar = ({
     };
   });
   return (
-        <UserContext.Consumer>
-            {({ bannerSettings }) => (
-                <Drawer
-                    anchor="bottom"
-                    variant="permanent"
-                    classes={{ paper: classes.bottomNav }}
-                    PaperProps={{
-                      variant: 'elevation',
-                      elevation: 1,
-                      style: {
-                        paddingLeft: navOpen ? 185 : 60,
-                        bottom: bannerSettings.bannerHeightNumber,
-                      },
-                    }}
+    <UserContext.Consumer>
+      {({ bannerSettings }) => (
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+          PaperProps={{
+            variant: 'elevation',
+            elevation: 1,
+            style: {
+              paddingLeft: navOpen ? 185 : 60,
+              bottom: bannerSettings.bannerHeightNumber,
+            },
+          }}
                 >
-                    <div
-                        style={{
-                          height: 54,
-                          verticalAlign: 'top',
-                          transition: 'height 0.2s linear',
-                        }}
+          <div
+            style={{
+              height: 54,
+              verticalAlign: 'top',
+              transition: 'height 0.2s linear',
+            }}
                     >
-                        <div
-                            style={{
-                              verticalAlign: 'top',
-                              width: '100%',
-                              height: 54,
-                              paddingTop: 3,
-                            }}
+            <div
+              style={{
+                verticalAlign: 'top',
+                width: '100%',
+                height: 54,
+                paddingTop: 3,
+              }}
                         >
-                            <div
-                                style={{
-                                  float: 'left',
+              <div
+                style={{
+                  float: 'left',
 
-                                  height: '100%',
-                                  display: 'flex',
-                                }}
+                  height: '100%',
+                  display: 'flex',
+                }}
                             >
-                                <Tooltip
-                                    title={
+                <Tooltip
+                  title={
                                         timeLineDisplayRelationships
                                           ? t('Do not display relationships')
                                           : t('Display relationships')
                                     }
                                 >
-              <span>
-                <IconButton
-                    color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
-                    size="large"
-                    onClick={() => handleToggleTimeLineDisplayRelationships()}
+                  <span>
+                    <IconButton
+                      color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
+                      size="large"
+                      onClick={() => handleToggleTimeLineDisplayRelationships()}
                 >
-                  <RelationManyToMany/>
-                </IconButton>
-              </span>
-                                </Tooltip>
-                                <Tooltip
-                                    title={
+                      <RelationManyToMany/>
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Tooltip
+                  title={
                                         timeLineFunctionalDate
                                           ? t('Use technical dates')
                                           : t('Use functional dates')
                                     }
                                 >
-              <span>
-                <IconButton
-                    color={timeLineFunctionalDate ? 'secondary' : 'primary'}
-                    size="large"
-                    onClick={() => handleToggleTimeLineFunctionalDate()}
+                  <span>
+                    <IconButton
+                      color={timeLineFunctionalDate ? 'secondary' : 'primary'}
+                      size="large"
+                      onClick={() => handleToggleTimeLineFunctionalDate()}
                 >
-                  <CalendarMultiselectOutline/>
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Divider className={classes.divider} orientation="vertical" />
-            <div style={{ margin: '9px 10px 0 10px' }}>
-              <SearchInput
-                variant="thin"
-                onSubmit={handleTimeLineSearch}
-                keyword={timeLineSearchTerm}
+                      <CalendarMultiselectOutline/>
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Divider className={classes.divider} orientation="vertical" />
+                <div style={{ margin: '9px 10px 0 10px' }}>
+                  <SearchInput
+                    variant="thin"
+                    onSubmit={handleTimeLineSearch}
+                    keyword={timeLineSearchTerm}
               />
-            </div>
-            <Divider className={classes.divider} orientation="vertical" />
-            <div style={{ paddingTop: 4 }}>
-              <Filters
-                availableFilterKeys={[
-                  'entity_type',
-                  'objectMarking',
-                  'objectLabel',
-                  'createdBy',
-                  'relationship_type',
-                ]}
-                availableEntityTypes={[
-                  'Stix-Domain-Object',
-                  'Stix-Cyber-Observable',
-                ]}
-                handleAddFilter={handleAddTimeLineFilter}
-                noDirectFilters={true}
+                </div>
+                <Divider className={classes.divider} orientation="vertical" />
+                <div style={{ paddingTop: 4 }}>
+                  <Filters
+                    availableFilterKeys={[
+                      'entity_type',
+                      'objectMarking',
+                      'objectLabel',
+                      'createdBy',
+                      'relationship_type',
+                    ]}
+                    availableEntityTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
+                    handleAddFilter={handleAddTimeLineFilter}
+                    noDirectFilters={true}
               />
-            </div>
-            <div style={{ paddingTop: 3 }}>
-              <FilterIconButton
-                filters={timeLineFilters}
-                handleRemoveFilter={handleRemoveTimeLineFilter}
-                handleSwitchLocalMode={handleSwitchFilterLocalMode}
-                handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
-                classNameNumber={1}
-                redirection
+                </div>
+                <div style={{ paddingTop: 3 }}>
+                  <FilterIconButton
+                    filters={timeLineFilters}
+                    handleRemoveFilter={handleRemoveTimeLineFilter}
+                    handleSwitchLocalMode={handleSwitchFilterLocalMode}
+                    handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
+                    classNameNumber={1}
+                    redirection
               />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Drawer>)}
+        </Drawer>)}
     </UserContext.Consumer>
   );
 };

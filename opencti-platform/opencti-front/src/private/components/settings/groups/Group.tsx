@@ -132,7 +132,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <GroupPopover groupId={group.id} />
       </div>
       <div className="clearfix" />
-       <Grid
+      <Grid
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
@@ -221,15 +221,15 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         primary={truncate(group.default_dashboard?.name, 40)}
                       />
                       {!canAccessDashboard && (
-                        <ListItemSecondaryAction>
-                          <Tooltip
-                            title={t(
-                              'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                            )}
+                      <ListItemSecondaryAction>
+                        <Tooltip
+                          title={t(
+                            'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                          )}
                           >
-                            <WarningOutlined color="warning" />
-                          </Tooltip>
-                        </ListItemSecondaryAction>
+                          <WarningOutlined color="warning" />
+                        </Tooltip>
+                      </ListItemSecondaryAction>
                       )}
                     </ListItem>
                   </List>
@@ -312,8 +312,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Triggers recipientId={group.id} filterKey="authorized_members.id" />
           <GroupUsers groupId={group.id} />
         </Grid>
-       </Grid>
-       <GroupEdition groupId={group.id}/>
+      </Grid>
+      <GroupEdition groupId={group.id}/>
     </div>
   );
 };

@@ -115,37 +115,37 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     };
     return (
       <>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={disableExport ? null : helpers.handleToggleExports}
-        filters={filters}
-        availableFilterKeys={[
-          'toTypes',
-          'objectLabel',
-          'objectMarking',
-          'x_opencti_workflow_id',
-          'created',
-          'createdBy',
-          'x_opencti_negative',
-        ]}
-        openExports={openExports}
-        exportEntityType="stix-sighting-relationship"
-        availableEntityTypes={stixCoreObjectTypes}
-        displayImport={true}
-        secondaryAction={true}
-        paginationOptions={finalPaginationOptions}
-        numberOfElements={numberOfElements}
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={disableExport ? null : helpers.handleToggleExports}
+          filters={filters}
+          availableFilterKeys={[
+            'toTypes',
+            'objectLabel',
+            'objectMarking',
+            'x_opencti_workflow_id',
+            'created',
+            'createdBy',
+            'x_opencti_negative',
+          ]}
+          openExports={openExports}
+          exportEntityType="stix-sighting-relationship"
+          availableEntityTypes={stixCoreObjectTypes}
+          displayImport={true}
+          secondaryAction={true}
+          paginationOptions={finalPaginationOptions}
+          numberOfElements={numberOfElements}
       >
-        {queryRef && (
+          {queryRef && (
           <React.Suspense
             fallback={
               <>
@@ -167,49 +167,49 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               onLabelClick={helpers.handleAddFilter}
             />
           </React.Suspense>
-        )}
-      </ListLines>
-    </>
+          )}
+        </ListLines>
+      </>
     );
   };
 
   return (
-      <div className={classes.container}>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {isTo ? (
-            <StixSightingRelationshipCreationFromEntity
-              entityId={entityId}
-              isTo={true}
-              stixCoreObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Indicator',
-              ]}
-              targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-              paddingRight={noPadding ? null : 220}
-              paginationOptions={finalPaginationOptions}
-              variant={undefined}
-              onCreate={undefined}
+    <div className={classes.container}>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {isTo ? (
+          <StixSightingRelationshipCreationFromEntity
+            entityId={entityId}
+            isTo={true}
+            stixCoreObjectTypes={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+              'Tool',
+              'Vulnerability',
+              'Indicator',
+            ]}
+            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+            paddingRight={noPadding ? null : 220}
+            paginationOptions={finalPaginationOptions}
+            variant={undefined}
+            onCreate={undefined}
             />
-          ) : (
-            <StixSightingRelationshipCreationFromEntity
-              entityId={entityId}
-              isTo={false}
-              stixCoreObjectTypes={stixCoreObjectTypes}
-              targetStixCyberObservableTypes={undefined}
-              paddingRight={noPadding ? null : 220}
-              paginationOptions={finalPaginationOptions}
-              variant={undefined}
-              onCreate={undefined}
+        ) : (
+          <StixSightingRelationshipCreationFromEntity
+            entityId={entityId}
+            isTo={false}
+            stixCoreObjectTypes={stixCoreObjectTypes}
+            targetStixCyberObservableTypes={undefined}
+            paddingRight={noPadding ? null : 220}
+            paginationOptions={finalPaginationOptions}
+            variant={undefined}
+            onCreate={undefined}
             />
-          )}
-        </Security>
-      </div>
+        )}
+      </Security>
+    </div>
   );
 };
 

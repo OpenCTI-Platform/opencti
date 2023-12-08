@@ -542,12 +542,12 @@ class ImportContentComponent extends Component {
                     </Field>
                     {this.state.selectedConnector?.configurations?.length > 0
                       ? <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
+                          component={SelectField}
+                          variant="standard"
+                          name="configuration"
+                          label={t('Configuration')}
+                          fullWidth={true}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
                       >
                         {this.state.selectedConnector.configurations?.map((config) => {
                           return (

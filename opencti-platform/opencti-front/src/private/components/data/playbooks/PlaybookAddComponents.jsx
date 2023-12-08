@@ -196,28 +196,28 @@ const PlaybookAddComponentsContent = ({
       ];
     }
     return (
-            <Select
-                variant="standard"
-                disabled={disabled}
-                value={actionsInputs[i]?.attribute}
-                onChange={(event) => {
-                  handleChangeActionInput(i, 'attribute', event.target.value);
-                  setValues(R.omit([`actions-${i}-value`], values));
-                }}
+      <Select
+        variant="standard"
+        disabled={disabled}
+        value={actionsInputs[i]?.attribute}
+        onChange={(event) => {
+          handleChangeActionInput(i, 'attribute', event.target.value);
+          setValues(R.omit([`actions-${i}-value`], values));
+        }}
             >
-                {options.length > 0 ? (
-                  R.map(
-                    (n) => (
-                            <MenuItem key={n.value} value={n.value}>
-                                {n.label}
-                            </MenuItem>
-                    ),
-                    options,
-                  )
-                ) : (
-                    <MenuItem value="none">{t('None')}</MenuItem>
-                )}
-            </Select>
+        {options.length > 0 ? (
+          R.map(
+            (n) => (
+              <MenuItem key={n.value} value={n.value}>
+                {n.label}
+              </MenuItem>
+            ),
+            options,
+          )
+        ) : (
+          <MenuItem value="none">{t('None')}</MenuItem>
+        )}
+      </Select>
     );
   };
   const renderValuesOptions = (i) => {
@@ -225,98 +225,98 @@ const PlaybookAddComponentsContent = ({
     switch (actionsInputs[i]?.attribute) {
       case 'objectMarking':
         return (
-                    <ObjectMarkingField
-                        name={`actions-${i}-value`}
-                        disabled={disabled}
-                        onChange={(_, value) => handleChangeActionInput(
-                          i,
-                          'value',
-                          value.map((n) => ({
-                            label: n.label,
-                            value: n.value,
-                            patch_value: n.value,
-                          })),
-                        )
+          <ObjectMarkingField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(
+              i,
+              'value',
+              value.map((n) => ({
+                label: n.label,
+                value: n.value,
+                patch_value: n.value,
+              })),
+            )
                         }
                     />
         );
       case 'objectLabel':
         return (
-                    <ObjectLabelField
-                        name={`actions-${i}-value`}
-                        disabled={disabled}
-                        onChange={(_, value) => handleChangeActionInput(
-                          i,
-                          'value',
-                          value.map((n) => ({
-                            label: n.label,
-                            value: n.value,
-                            patch_value: n.label,
-                          })),
-                        )
+          <ObjectLabelField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(
+              i,
+              'value',
+              value.map((n) => ({
+                label: n.label,
+                value: n.value,
+                patch_value: n.label,
+              })),
+            )
                         }
                     />
         );
       case 'createdBy':
         return (
-                    <CreatedByField
-                        name={`actions-${i}-value`}
-                        disabled={disabled}
-                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
-                          {
-                            label: value.label,
-                            value: value.value,
-                            patch_value: value.value,
-                          },
-                        ])
+          <CreatedByField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              {
+                label: value.label,
+                value: value.value,
+                patch_value: value.value,
+              },
+            ])
                         }
                     />
         );
       case 'x_opencti_workflow_id':
         return (
-                    <StatusField
-                        name={`actions-${i}-value`}
-                        disabled={disabled}
-                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
-                          {
-                            label: value.label,
-                            value: value.value,
-                            patch_value: value.value,
-                          },
-                        ])
+          <StatusField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              {
+                label: value.label,
+                value: value.value,
+                patch_value: value.value,
+              },
+            ])
                         }
                     />
         );
       case 'x_opencti_detection':
         return (
-                    <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name={`actions-${i}-value`}
-                        label={t('Value')}
-                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
-                          { label: value, value, patch_value: value },
-                        ])
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name={`actions-${i}-value`}
+            label={t('Value')}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
+            ])
                         }
                     />
         );
       default:
         return (
-                    <Field
-                        component={TextField}
-                        disabled={disabled}
-                        type={
+          <Field
+            component={TextField}
+            disabled={disabled}
+            type={
                             numberAttributes.includes(actionsInputs[i]?.attribute)
                               ? 'number'
                               : 'text'
                         }
-                        variant="standard"
-                        name={`actions-${i}-value`}
-                        label={t('Value')}
-                        fullWidth={true}
-                        onChange={(_, value) => handleChangeActionInput(i, 'value', [
-                          { label: value, value, patch_value: value },
-                        ])
+            variant="standard"
+            name={`actions-${i}-value`}
+            label={t('Value')}
+            fullWidth={true}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
+            ])
                         }
                     />
         );
@@ -360,29 +360,29 @@ const PlaybookAddComponentsContent = ({
       R.filter(filterByKeyword),
     )(playbookComponents);
     return (
-            <div className={classes.lines}>
-                <List>
-                    {components.map((component) => {
-                      return (
-                            <ListItem
-                                key={component.id}
-                                divider={true}
-                                button={true}
-                                clases={{ root: classes.item }}
-                                onClick={() => setComponentId(component.id)}
+      <div className={classes.lines}>
+        <List>
+          {components.map((component) => {
+            return (
+              <ListItem
+                key={component.id}
+                divider={true}
+                button={true}
+                clases={{ root: classes.item }}
+                onClick={() => setComponentId(component.id)}
                             >
-                                <ListItemIcon>
-                                    <ItemIcon type={component.icon}/>
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={component.name}
-                                    secondary={component.description}
+                <ListItemIcon>
+                  <ItemIcon type={component.icon}/>
+                </ListItemIcon>
+                <ListItemText
+                  primary={component.name}
+                  secondary={component.description}
                                 />
-                            </ListItem>
-                      );
-                    })}
-                </List>
-            </div>
+              </ListItem>
+            );
+          })}
+        </List>
+      </div>
     );
   };
   const renderConfig = () => {
@@ -480,13 +480,13 @@ const PlaybookAddComponentsContent = ({
                         </div>
                         <div className="clearfix" />
                         <FilterIconButton
-                            filters={filters}
-                            handleRemoveFilter={handleRemoveFilter}
-                            handleSwitchGlobalMode={handleSwitchGlobalMode}
-                            handleSwitchLocalMode={handleSwitchLocalMode}
-                            classNameNumber={2}
-                            styleNumber={2}
-                            redirection
+                          filters={filters}
+                          handleRemoveFilter={handleRemoveFilter}
+                          handleSwitchGlobalMode={handleSwitchGlobalMode}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          classNameNumber={2}
+                          styleNumber={2}
+                          redirection
                         />
                         <div className="clearfix" />
                       </div>
@@ -722,10 +722,10 @@ const PlaybookAddComponentsContent = ({
     );
   };
   return (
-        <>
-            {isEmptyField(componentId) && renderLines()}
-            {isNotEmptyField(componentId) && renderConfig()}
-        </>
+    <>
+      {isEmptyField(componentId) && renderLines()}
+      {isNotEmptyField(componentId) && renderConfig()}
+    </>
   );
 };
 
@@ -751,27 +751,27 @@ const PlaybookAddComponents = ({
         && (selectedNode !== null || selectedEdge || null)
   );
   return (
-        <Drawer
-            open={open}
-            title={t('Add components')}
-            onClose={handleClose}
+    <Drawer
+      open={open}
+      title={t('Add components')}
+      onClose={handleClose}
         >
-            {({ onClose }) => (
-                <>
-                    {(selectedNode || selectedEdge) && (
-                        <PlaybookAddComponentsContent
-                            searchTerm={searchTerm}
-                            playbookComponents={playbookComponents}
-                            action={action}
-                            selectedNode={selectedNode}
-                            onConfigAdd={onConfigAdd}
-                            onConfigReplace={onConfigReplace}
-                            handleClose={onClose}
+      {({ onClose }) => (
+        <>
+          {(selectedNode || selectedEdge) && (
+          <PlaybookAddComponentsContent
+            searchTerm={searchTerm}
+            playbookComponents={playbookComponents}
+            action={action}
+            selectedNode={selectedNode}
+            onConfigAdd={onConfigAdd}
+            onConfigReplace={onConfigReplace}
+            handleClose={onClose}
                         />
-                    )}
-                </>
-            )}
-        </Drawer>
+          )}
+        </>
+      )}
+    </Drawer>
   );
 };
 

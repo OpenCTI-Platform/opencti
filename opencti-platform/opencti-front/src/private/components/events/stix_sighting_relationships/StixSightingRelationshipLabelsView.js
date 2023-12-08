@@ -65,9 +65,9 @@ const stixSightingRelationshipMutationRelationsDelete = graphql`
 
 const StixSightingRelationshipLabelsView = (props) => {
   return <StixCoreObjectOrCoreRelationshipLabelsView {...props}
-                                                     mutationRelationsAdd={stixSightingRelationshipMutationRelationsAdd}
-                                                     mutationRelationDelete={stixSightingRelationshipMutationRelationsDelete}
-                                                     enableReferences={useIsEnforceReference('stix-sighting-relationship')}/>;
+    mutationRelationsAdd={stixSightingRelationshipMutationRelationsAdd}
+    mutationRelationDelete={stixSightingRelationshipMutationRelationsDelete}
+    enableReferences={useIsEnforceReference('stix-sighting-relationship')}/>;
 };
 
 StixSightingRelationshipLabelsView.propTypes = {

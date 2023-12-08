@@ -182,7 +182,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             containerstyle={fieldSpacingContainerStyle}
           >
             {!onlyAuthors && locations.map((location, idx) => (
-            <MenuItem key={idx} value={location}>{t(location)}</MenuItem>
+              <MenuItem key={idx} value={location}>{t(location)}</MenuItem>
             ))}
           </Field>
           <div className={classes.buttons}>
@@ -204,7 +204,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               {t('Create')}
             </Button>
           </div>
-      </Form>
+        </Form>
       )}
     </Formik>
   );

@@ -59,7 +59,7 @@ const CaseTemplates = () => {
 
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -91,7 +91,7 @@ const CaseTemplates = () => {
                 setNumberOfElements={helpers.handleSetNumberOfElements}
               />
             </React.Suspense>
-      </>
+          </>
         )}
       </ListLines>
     );

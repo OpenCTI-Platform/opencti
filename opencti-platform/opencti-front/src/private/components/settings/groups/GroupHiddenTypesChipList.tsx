@@ -20,7 +20,7 @@ const GroupHiddenTypesChipList = ({
   const hiddenTypesGroup = group?.default_hidden_types ?? [];
 
   return (
-      <HiddenTypesChipList hiddenTypes={hiddenTypesGroup}/>
+    <HiddenTypesChipList hiddenTypes={hiddenTypesGroup}/>
   );
 };
 

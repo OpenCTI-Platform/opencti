@@ -142,11 +142,11 @@ class UserPopover extends Component {
         >
           <DialogTitle>{t('Do you want to delete this user?')}</DialogTitle>
           <DialogContent dividers>
-              <ul>
-                <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-                <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-              </ul>
-                  {t('If you want to keep the associated information, we recommend deactivating the user instead.')}
+            <ul>
+              <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+              <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+            </ul>
+            {t('If you want to keep the associated information, we recommend deactivating the user instead.')}
           </DialogContent>
           <DialogActions>
             <Button

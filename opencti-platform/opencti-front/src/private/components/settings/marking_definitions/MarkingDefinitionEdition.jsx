@@ -109,79 +109,79 @@ class MarkingDefinitionEditionContainer extends Component {
         onClose={handleClose}
         context={editContext}
       >
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={markingDefinitionValidation(t)}
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={markingDefinitionValidation(t)}
           >
-            {() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="definition_type"
-                  label={t('Type')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="definition_type"
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="definition_type"
+                label={t('Type')}
+                fullWidth={true}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="definition_type"
                     />
                   }
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="definition"
-                  label={t('Definition')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="definition"
+              <Field
+                component={TextField}
+                variant="standard"
+                name="definition"
+                label={t('Definition')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="definition"
                     />
                   }
                 />
-                <Field
-                  component={ColorPickerField}
-                  name="x_opencti_color"
-                  label={t('Color')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="x_opencti_color"
+              <Field
+                component={ColorPickerField}
+                name="x_opencti_color"
+                label={t('Color')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="x_opencti_color"
                     />
                   }
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="x_opencti_order"
-                  label={t('Order')}
-                  fullWidth={true}
-                  type="number"
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="x_opencti_order"
+              <Field
+                component={TextField}
+                variant="standard"
+                name="x_opencti_order"
+                label={t('Order')}
+                fullWidth={true}
+                type="number"
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="x_opencti_order"
                     />
                   }
                 />
-              </Form>
-            )}
-          </Formik>
+            </Form>
+          )}
+        </Formik>
       </Drawer>
     );
   }

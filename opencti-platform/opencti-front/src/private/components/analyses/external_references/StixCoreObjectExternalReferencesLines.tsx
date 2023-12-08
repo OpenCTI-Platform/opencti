@@ -350,20 +350,20 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <List>
                             {externalReference.importFiles.edges.map(
                               (file) => file?.node && (
-                                  <FileLine
-                                    key={file.node.id}
-                                    dense={true}
-                                    file={file.node}
-                                    nested={true}
-                                    workNested={true}
-                                    onDelete={() => relay.refetchConnection(200)
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                file={file.node}
+                                nested={true}
+                                workNested={true}
+                                onDelete={() => relay.refetchConnection(200)
                                     }
-                                    connectors={
+                                connectors={
                                       importConnsPerFormat[
                                         file.node.metaData?.mimetype ?? 0
                                       ]
                                     }
-                                    handleOpenImport={handleOpenImport}
+                                handleOpenImport={handleOpenImport}
                                   />
                               ),
                             )}
@@ -415,13 +415,13 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         <List>
                           {externalReference.importFiles?.edges?.map(
                             (file) => file?.node && (
-                                <FileLine
-                                  key={file.node.id}
-                                  dense={true}
-                                  disableImport={true}
-                                  file={file.node}
-                                  nested={true}
-                                  isExternalReferenceAttachment={isFileAttached}
+                            <FileLine
+                              key={file.node.id}
+                              dense={true}
+                              disableImport={true}
+                              file={file.node}
+                              nested={true}
+                              isExternalReferenceAttachment={isFileAttached}
                                 />
                             ),
                           )}
@@ -432,25 +432,25 @@ StixCoreObjectExternalReferencesLinesContainerProps
               })}
           </List>
           ) : (
-          <div
-            style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
-              paddingTop: 15,
-              paddingBottom: 15,
-            }}
-          >
-            <span
+            <div
               style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
+                display: 'table',
+                height: '100%',
+                width: '100%',
+                paddingTop: 15,
+                paddingBottom: 15,
               }}
+          >
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
             >
-              {t('No entities of this type has been found.')}
-            </span>
-          </div>
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
           )}
         {expandable && (
           <Button

@@ -202,10 +202,10 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             </Typography>
             {informationTypes.length > 0
               ? (data.information_types ?? []).map((informationType) => (
-                  <Chip
-                    key={informationType}
-                    classes={{ root: classes.chip }}
-                    label={informationType}
+                <Chip
+                  key={informationType}
+                  classes={{ root: classes.chip }}
+                  label={informationType}
                   />
               ))
               : '-'}
@@ -253,41 +253,41 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge?.node;
               return (
-                  <ListItem
-                    key={data.id}
-                    dense={true}
-                    button={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
+                <ListItem
+                  key={data.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
                   >
-                    <ListItemIcon>
-                      <ItemIcon type={relatedContainer?.entity_type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.itemText}>
-                          {relatedContainer?.name}
-                        </div>
+                  <ListItemIcon>
+                    <ItemIcon type={relatedContainer?.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div className={classes.itemText}>
+                        {relatedContainer?.name}
+                      </div>
                       }
                     />
-                    <div className={classes.itemAuthor}>
-                      {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                    </div>
-                    <div className={classes.itemDate}>
-                      {fsd(relatedContainer?.created)}
-                    </div>
-                    <div className={classes.itemMarking}>
-                      <ItemMarkings
-                        variant="inList"
-                        markingDefinitionsEdges={
+                  <div className={classes.itemAuthor}>
+                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                  </div>
+                  <div className={classes.itemDate}>
+                    {fsd(relatedContainer?.created)}
+                  </div>
+                  <div className={classes.itemMarking}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitionsEdges={
                           relatedContainer?.objectMarking?.edges ?? []
                         }
-                        limit={1}
+                      limit={1}
                       />
-                    </div>
-                  </ListItem>
+                  </div>
+                </ListItem>
               );
             })
             : '-'}

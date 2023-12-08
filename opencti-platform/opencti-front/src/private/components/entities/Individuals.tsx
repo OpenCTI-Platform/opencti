@@ -63,7 +63,7 @@ const Individuals = () => {
     );
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -117,12 +117,12 @@ const Individuals = () => {
   };
 
   return (
-      <div>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndividualCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+    <div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <IndividualCreation paginationOptions={paginationOptions} />
+      </Security>
+    </div>
   );
 };
 

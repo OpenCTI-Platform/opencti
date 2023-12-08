@@ -184,41 +184,41 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   label={
                     <span>
                       <strong>{t('Period: ')}</strong>
-                                            {data.period}
+                      {data.period}
                     </span>
                                     }
                                 />
-                                {currentTime.length > 1 && (
-                                    <Chip
-                                        classes={{ root: classes.chipInList3 }}
-                                        label={
-                                            <span>
-                        <strong>{t('Day: ')}</strong>
-                                                {day}
-                      </span>
+                {currentTime.length > 1 && (
+                <Chip
+                  classes={{ root: classes.chipInList3 }}
+                  label={
+                    <span>
+                      <strong>{t('Day: ')}</strong>
+                      {day}
+                    </span>
                                         }
                                     />
-                                )}
-                                {data.trigger_time && data.trigger_time.length > 0 && (
-                                    <Chip
-                                        classes={{ root: classes.chipInList3 }}
-                                        label={
-                                            <span>
-                        <strong>{t('Time: ')}</strong>
-                                                {nt(time)}
-                      </span>
+                )}
+                {data.trigger_time && data.trigger_time.length > 0 && (
+                <Chip
+                  classes={{ root: classes.chipInList3 }}
+                  label={
+                    <span>
+                      <strong>{t('Time: ')}</strong>
+                      {nt(time)}
+                    </span>
                                         }
                                     />
-                                )}
-                            </div>
+                )}
+              </div>
             )}
-                    </div>
+          </div>
                 }
             />
-            <ListItemIcon classes={{ root: classes.goIcon }}>
-                <AlertingPopover data={data} paginationOptions={paginationOptions}/>
-            </ListItemIcon>
-        </ListItem>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <AlertingPopover data={data} paginationOptions={paginationOptions}/>
+      </ListItemIcon>
+    </ListItem>
   );
 };
 
@@ -229,35 +229,35 @@ export const AlertingLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-        <ListItem classes={{ root: classes.item }} divider={true}>
-            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Skeleton animation="wave" variant="circular" width={30} height={30}/>
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30}/>
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
                             >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="90%"
-                                    height={20}
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
                                 />
-                            </div>
-                        ))}
-                    </div>
+              </div>
+            ))}
+          </div>
                 }
             />
-            <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-                <IconButton disabled={true} aria-haspopup="true" size="large">
-                    <MoreVert/>
-                </IconButton>
-            </ListItemSecondaryAction>
-        </ListItem>
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert/>
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };

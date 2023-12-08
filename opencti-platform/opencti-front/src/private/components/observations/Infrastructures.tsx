@@ -103,7 +103,7 @@ const Infrastructures = () => {
     );
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -135,14 +135,14 @@ const Infrastructures = () => {
           <React.Suspense
             fallback={
               <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <InfrastructureLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <InfrastructureLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
                   />
-                ))}
+                  ))}
               </>
             }
           >

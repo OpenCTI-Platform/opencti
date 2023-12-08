@@ -90,29 +90,29 @@ class Stream extends Component {
       },
     };
     return (
-            <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={dataColumns}
-                handleSort={this.handleSort.bind(this)}
-                handleSearch={this.handleSearch.bind(this)}
-                displayImport={false}
-                secondaryAction={true}
-                keyword={searchTerm}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
+        keyword={searchTerm}
             >
-                <QueryRenderer
-                    query={StreamLinesQuery}
-                    variables={{ count: 25, ...paginationOptions }}
-                    render={({ props }) => (
-                        <StreamLines
-                            data={props}
-                            paginationOptions={paginationOptions}
-                            dataColumns={dataColumns}
-                            initialLoading={props === null}
+        <QueryRenderer
+          query={StreamLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <StreamLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
                         />
-                    )}
+          )}
                 />
-            </ListLines>
+      </ListLines>
     );
   }
 
@@ -125,11 +125,11 @@ class Stream extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-            <div className={classes.container}>
-                <SharingMenu/>
-                {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-                <StreamCollectionCreation paginationOptions={paginationOptions}/>
-            </div>
+      <div className={classes.container}>
+        <SharingMenu/>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StreamCollectionCreation paginationOptions={paginationOptions}/>
+      </div>
     );
   }
 }

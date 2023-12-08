@@ -16,10 +16,10 @@ export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | 
         <div style={{ display: 'inline-flex' }}>
           <div style={{ paddingTop: 2 }}>
             <Tooltip title={country.name}>
-            <img
-              style={{ width: 20 }}
-              src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-              alt={country.name}
+              <img
+                style={{ width: 20 }}
+                src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                alt={country.name}
             />
             </Tooltip>
           </div>

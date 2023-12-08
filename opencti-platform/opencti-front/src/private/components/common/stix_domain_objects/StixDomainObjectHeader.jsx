@@ -369,30 +369,30 @@ const StixDomainObjectHeader = (props) => {
         >
           {R.take(5, aliases).map(
             (label) => label.length > 0 && (
-                <Security
-                  needs={[KNOWLEDGE_KNUPDATE]}
-                  key={label}
-                  placeholder={
-                    <Tooltip title={label}>
-                      <Chip
-                        classes={{ root: classes.alias }}
-                        label={truncate(label, 40)}
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              key={label}
+              placeholder={
+                <Tooltip title={label}>
+                  <Chip
+                    classes={{ root: classes.alias }}
+                    label={truncate(label, 40)}
                       />
-                    </Tooltip>
+                </Tooltip>
                   }
                 >
-                  <Tooltip title={label}>
-                    <Chip
-                      classes={{ root: classes.alias }}
-                      label={truncate(label, 40)}
-                      onDelete={
+              <Tooltip title={label}>
+                <Chip
+                  classes={{ root: classes.alias }}
+                  label={truncate(label, 40)}
+                  onDelete={
                         enableReferences
                           ? () => handleOpenCommitDelete(label)
                           : () => deleteAlias(label)
                       }
                     />
-                  </Tooltip>
-                </Security>
+              </Tooltip>
+            </Security>
             ),
           )}
         </div>
@@ -561,23 +561,23 @@ const StixDomainObjectHeader = (props) => {
                 stixDomainObject,
               ).map(
                 (label) => label.length > 0 && (
-                    <ListItem key={label} disableGutters={true} dense={true}>
-                      <ListItemText primary={label} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={
+                <ListItem key={label} disableGutters={true} dense={true}>
+                  <ListItemText primary={label} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={
                             enableReferences
                               ? () => handleOpenCommitDelete(label)
                               : () => deleteAlias(label)
                           }
-                          size="large"
+                      size="large"
                         >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                      <Delete />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
                 ),
               )}
             </List>

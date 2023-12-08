@@ -142,105 +142,105 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
     : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
 
   return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={`/dashboard/observations/artifacts/${data.id}`}
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`/dashboard/observations/artifacts/${data.id}`}
       >
-        <ListItemIcon
-          classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 40 }}
-          onClick={(event) => (event.shiftKey
-            ? onToggleShiftEntity(index, data, event)
-            : onToggleEntity(data, event))
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
           }
         >
-          <Checkbox
-            edge="start"
-            checked={
+        <Checkbox
+          edge="start"
+          checked={
               (selectAll && !(data.id in (deSelectedElements || {})))
               || data.id in (selectedElements || {})
             }
-            disableRipple={true}
+          disableRipple={true}
           />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type="Artifact" />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.observable_value.width }}
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type="Artifact" />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.observable_value.width }}
               >
-                {data.observable_value}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_name.width }}
-              >
-                {file?.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_mime_type.width }}
-              >
-                <code>{file?.metaData?.mimetype}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_size.width }}
-              >
-                {b(file?.size)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                {data.createdBy?.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                {(data.creators ?? []).map((c) => c?.name).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={data.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                {nsdt(data.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <ItemMarkings
-                  variant="inList"
-                  markingDefinitionsEdges={data.objectMarking?.edges ?? []}
-                  limit={1}
-                />
-              </div>
+              {data.observable_value}
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_name.width }}
+              >
+              {file?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_mime_type.width }}
+              >
+              <code>{file?.metaData?.mimetype}</code>
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_size.width }}
+              >
+              {b(file?.size)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+              >
+              {data.createdBy?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+              >
+              {(data.creators ?? []).map((c) => c?.name).join(', ')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+              >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={data.objectLabel}
+                onClick={onLabelClick.bind(this)}
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+              >
+              {nsdt(data.created_at)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+              >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={data.objectMarking?.edges ?? []}
+                limit={1}
+                />
+            </div>
+          </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };
 
@@ -254,129 +254,129 @@ export const ArtifactLineDummy: FunctionComponent<ArtifactLineDummyProps> = ({
   const classes = useStyles();
 
   return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon
-          classes={{ root: classes.itemIconDisabled }}
-          style={{ minWidth: 40 }}
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
         >
-          <Checkbox edge="start" disabled={true} disableRipple={true} />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
           />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.observable_value.width }}
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.observable_value.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_mime_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.file_size.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_name.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_mime_type.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.file_size.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created_at.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+                />
+            </div>
+          </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };

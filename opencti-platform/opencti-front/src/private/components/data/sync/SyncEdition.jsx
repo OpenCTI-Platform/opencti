@@ -268,10 +268,10 @@ const SyncEditionContainer = ({ synchronizer }) => {
             </AccordionSummary>
             <AccordionDetails>
               <Alert icon={false}
-                     classes={{ root: classes.alert, message: classes.message }}
-                     severity="error"
-                     variant="outlined"
-                     style={{ position: 'relative' }}>
+                classes={{ root: classes.alert, message: classes.message }}
+                severity="error"
+                variant="outlined"
+                style={{ position: 'relative' }}>
                 <div>{t('Use these options if you know what you are doing')}</div>
               </Alert>
               <Field

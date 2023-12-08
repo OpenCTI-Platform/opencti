@@ -453,53 +453,53 @@ const StixSightingRelationshipCreationFromEntity = ({
     );
   };
   return (
-      <div>
-        {variant === 'inLine' ? (
-          <IconButton
-            color="secondary"
-            aria-label="Label"
-            onClick={handleOpen}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large"
+    <div>
+      {variant === 'inLine' ? (
+        <IconButton
+          color="secondary"
+          aria-label="Label"
+          onClick={handleOpen}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          size="large"
           >
-            <Add fontSize="small" />
-          </IconButton>
-        ) : (
-          <Fab
-            onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
-            className={classes.createButton}
-            style={{ right: paddingRight || 30 }}
+          <Add fontSize="small" />
+        </IconButton>
+      ) : (
+        <Fab
+          onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+          style={{ right: paddingRight || 30 }}
           >
-            <Add />
-          </Fab>
-        )}
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
+          <Add />
+        </Fab>
+      )}
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
         >
-          <QueryRenderer
-            query={stixSightingRelationshipCreationFromEntityQuery}
-            variables={{ id: entityId }}
-            render={({ props }) => {
-              if (props && props.stixCoreObject) {
-                return (
-                  <div style={{ height: '100%' }}>
-                    {step === 0 ? renderSelectEntity() : ''}
-                    {step === 1 ? renderForm(props.stixCoreObject) : ''}
-                  </div>
-                );
-              }
-              return renderLoader();
-            }}
+        <QueryRenderer
+          query={stixSightingRelationshipCreationFromEntityQuery}
+          variables={{ id: entityId }}
+          render={({ props }) => {
+            if (props && props.stixCoreObject) {
+              return (
+                <div style={{ height: '100%' }}>
+                  {step === 0 ? renderSelectEntity() : ''}
+                  {step === 1 ? renderForm(props.stixCoreObject) : ''}
+                </div>
+              );
+            }
+            return renderLoader();
+          }}
           />
-        </Drawer>
-      </div>
+      </Drawer>
+    </div>
   );
 };
 

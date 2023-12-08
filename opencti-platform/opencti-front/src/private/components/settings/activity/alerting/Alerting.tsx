@@ -174,7 +174,7 @@ const Alerting: FunctionComponent = () => {
     const queryRef = useQueryLoading<AlertingPaginationQuery>(alertingQuery, paginationOptions);
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

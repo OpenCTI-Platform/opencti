@@ -57,10 +57,10 @@ class NarrativesLinesComponent extends Component {
               sortByNameCaseInsensitive,
             )(narrative);
             return (
-                <NarrativeLine
-                  key={narrative.id}
-                  node={narrative}
-                  subNarratives={subNarratives}
+              <NarrativeLine
+                key={narrative.id}
+                node={narrative}
+                subNarratives={subNarratives}
                 />
             );
           }, narratives)

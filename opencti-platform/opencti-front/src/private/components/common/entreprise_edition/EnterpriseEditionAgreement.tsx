@@ -80,7 +80,7 @@ EnterpriseEditionAgreementProps
             {t(
               'For all other usages, you (and your organization) should have entered in a',
             )}{' '}
-            <a href="https://filigran.io/offering/subscribe" target="_blank">
+            <a href="https://filigran.io/offering/subscribe" target="_blank" rel="noreferrer">
               {t('Filigran Enterprise agreement')}
             </a>
             .
@@ -100,7 +100,7 @@ EnterpriseEditionAgreementProps
                 <span>{t('I have read and agree to the')}</span>{' '}
                 <a
                   href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE"
-                  target="_blank"
+                  target="_blank" rel="noreferrer"
                 >
                   {t('OpenCTI EE license terms')}
                 </a>

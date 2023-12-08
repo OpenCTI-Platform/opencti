@@ -357,19 +357,19 @@ class StixDomainObjectOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                    <ListItem key={stixId} disableGutters={true} dense={true}>
-                      <ListItemText primary={stixId} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={this.deleteStixId.bind(this, stixId)}
-                          size="large"
+                <ListItem key={stixId} disableGutters={true} dense={true}>
+                  <ListItemText primary={stixId} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={this.deleteStixId.bind(this, stixId)}
+                      size="large"
                         >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                      <Delete />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
                 ),
               )}
             </List>

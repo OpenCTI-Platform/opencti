@@ -204,10 +204,10 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             </Typography>
             {takedownTypes.length > 0
               ? takedownTypes.map((takedownType) => (
-                  <Chip
-                    key={takedownType}
-                    classes={{ root: classes.chip }}
-                    label={takedownType}
+                <Chip
+                  key={takedownType}
+                  classes={{ root: classes.chip }}
+                  label={takedownType}
                   />
               ))
               : '-'}
@@ -255,41 +255,41 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge?.node;
               return (
-                  <ListItem
-                    key={data.id}
-                    dense={true}
-                    button={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/cases/rfts/${relatedContainer?.id}`}
+                <ListItem
+                  key={data.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/cases/rfts/${relatedContainer?.id}`}
                   >
-                    <ListItemIcon>
-                      <ItemIcon type={relatedContainer?.entity_type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.itemText}>
-                          {relatedContainer?.name}
-                        </div>
+                  <ListItemIcon>
+                    <ItemIcon type={relatedContainer?.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div className={classes.itemText}>
+                        {relatedContainer?.name}
+                      </div>
                       }
                     />
-                    <div className={classes.itemAuthor}>
-                      {relatedContainer?.createdBy?.name ?? ''}
-                    </div>
-                    <div className={classes.itemDate}>
-                      {fsd(relatedContainer?.created)}
-                    </div>
-                    <div className={classes.itemMarking}>
-                      <ItemMarkings
-                        variant="inList"
-                        markingDefinitionsEdges={
+                  <div className={classes.itemAuthor}>
+                    {relatedContainer?.createdBy?.name ?? ''}
+                  </div>
+                  <div className={classes.itemDate}>
+                    {fsd(relatedContainer?.created)}
+                  </div>
+                  <div className={classes.itemMarking}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitionsEdges={
                           relatedContainer?.objectMarking?.edges ?? []
                         }
-                        limit={1}
+                      limit={1}
                       />
-                    </div>
-                  </ListItem>
+                  </div>
+                </ListItem>
               );
             })
             : '-'}

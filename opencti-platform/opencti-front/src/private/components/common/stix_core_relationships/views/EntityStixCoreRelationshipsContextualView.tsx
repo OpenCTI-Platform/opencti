@@ -171,14 +171,14 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       width: '10%',
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
-                <Chip
-                    classes={{ root: classes.chipInList }}
-                    style={{
-                      backgroundColor: hexToRGB(itemColor(stixCoreObject.entity_type), 0.08),
-                      color: itemColor(stixCoreObject.entity_type),
-                      border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
-                    }}
-                    label={t(`entity_${stixCoreObject.entity_type}`)}
+        <Chip
+          classes={{ root: classes.chipInList }}
+          style={{
+            backgroundColor: hexToRGB(itemColor(stixCoreObject.entity_type), 0.08),
+            color: itemColor(stixCoreObject.entity_type),
+            border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
+          }}
+          label={t(`entity_${stixCoreObject.entity_type}`)}
                 />
       ),
     },
@@ -210,10 +210,10 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       width: '15%',
       isSortable: false,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
-                <StixCoreObjectLabels
-                    variant="inList"
-                    labels={stixCoreObject.objectLabel}
-                    onClick={helpers.handleAddFilter}
+        <StixCoreObjectLabels
+          variant="inList"
+          labels={stixCoreObject.objectLabel}
+          onClick={helpers.handleAddFilter}
                 />
       ),
     },
@@ -228,10 +228,10 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       width: '10%',
       isSortable: isRuntimeSort ?? false,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
-                <ItemMarkings
-                    variant="inList"
-                    markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
-                    limit={1}
+        <ItemMarkings
+          variant="inList"
+          markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
+          limit={1}
                 />
       ),
     },
@@ -243,11 +243,11 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
         const linkAnalyses = `${link}/analyses`;
         return (
-                    <Chip
-                        classes={{ root: classes.chip }}
-                        label={n(stixCoreObject.containers?.edges?.length)}
-                        component={Link}
-                        to={linkAnalyses}
+          <Chip
+            classes={{ root: classes.chip }}
+            label={n(stixCoreObject.containers?.edges?.length)}
+            component={Link}
+            to={linkAnalyses}
                     />
         );
       },
@@ -292,71 +292,71 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
 
   return (
-        <>
-            <ListLines
-                helpers={helpers}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={dataColumns}
-                handleSort={helpers.handleSort}
-                handleSearch={helpers.handleSearch}
-                handleAddFilter={helpers.handleAddFilter}
-                handleRemoveFilter={helpers.handleRemoveFilter}
-                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-                handleChangeView={helpers.handleChangeView}
-                handleToggleSelectAll={handleToggleSelectAll}
-                paginationOptions={paginationOptions}
-                selectAll={selectAll}
-                keyword={searchTerm}
-                displayImport={true}
-                handleToggleExports={helpers.handleToggleExports}
-                openExports={openExports}
-                exportEntityType={'Stix-Core-Object'}
-                iconExtension={true}
-                filters={cleanedFilters}
-                availableFilterKeys={availableFilterKeys}
-                availableRelationshipTypes={relationshipTypes}
-                availableEntityTypes={stixCoreObjectTypes}
-                numberOfElements={numberOfElements}
-                noPadding={true}
-                disableCards={true}
-                enableEntitiesView={true}
-                enableContextualView={true}
-                currentView={currentView}
-                searchContext={{ elementId: [entityId] }}
+    <>
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleChangeView={helpers.handleChangeView}
+        handleToggleSelectAll={handleToggleSelectAll}
+        paginationOptions={paginationOptions}
+        selectAll={selectAll}
+        keyword={searchTerm}
+        displayImport={true}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType={'Stix-Core-Object'}
+        iconExtension={true}
+        filters={cleanedFilters}
+        availableFilterKeys={availableFilterKeys}
+        availableRelationshipTypes={relationshipTypes}
+        availableEntityTypes={stixCoreObjectTypes}
+        numberOfElements={numberOfElements}
+        noPadding={true}
+        disableCards={true}
+        enableEntitiesView={true}
+        enableContextualView={true}
+        currentView={currentView}
+        searchContext={{ elementId: [entityId] }}
             >
-                {queryRef ? (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-                        <EntityStixCoreRelationshipsContextualViewLines
-                            paginationOptions={paginationOptions}
-                            dataColumns={dataColumns}
-                            onToggleEntity={onToggleEntity}
-                            setNumberOfElements={helpers.handleSetNumberOfElements}
-                            selectedElements={selectedElements}
-                            deSelectedElements={deSelectedElements}
-                            selectAll={selectAll}
+        {queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+            <EntityStixCoreRelationshipsContextualViewLines
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onToggleEntity={onToggleEntity}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              selectAll={selectAll}
                         />
-                    </React.Suspense>
-                ) : (
-                    <Loader variant={LoaderVariant.inElement}/>
-                )}
-            </ListLines>
-            <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                filters={backgroundTaskFilters}
-                search={searchTerm}
-                handleClearSelectedElements={handleClearSelectedElements}
-                variant="medium"
-                warning={true}
-                warningMessage={t(
-                  'Be careful, you are about to delete the selected entities.',
-                )}
+          </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement}/>
+        )}
+      </ListLines>
+      <ToolBar
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        numberOfSelectedElements={numberOfSelectedElements}
+        selectAll={selectAll}
+        filters={backgroundTaskFilters}
+        search={searchTerm}
+        handleClearSelectedElements={handleClearSelectedElements}
+        variant="medium"
+        warning={true}
+        warningMessage={t(
+          'Be careful, you are about to delete the selected entities.',
+        )}
             />
-        </>
+    </>
   );
 };
 
@@ -367,11 +367,11 @@ const EntityStixCoreRelationshipsContextualView: FunctionComponent<Omit<EntitySt
   );
 
   return queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-            <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef}/>
-        </React.Suspense>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef}/>
+    </React.Suspense>
   ) : (
-        <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement}/>
   );
 };
 

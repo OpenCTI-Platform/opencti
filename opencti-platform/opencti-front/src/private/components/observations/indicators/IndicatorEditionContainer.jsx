@@ -19,11 +19,11 @@ const IndicatorEditionContainer = (props) => {
       variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
     >
-        <IndicatorEditionOverview
-          indicator={indicator}
-          enableReferences={useIsEnforceReference('Indicator')}
-          context={editContext}
-          handleClose={handleClose}
+      <IndicatorEditionOverview
+        indicator={indicator}
+        enableReferences={useIsEnforceReference('Indicator')}
+        context={editContext}
+        handleClose={handleClose}
         />
     </Drawer>
   );

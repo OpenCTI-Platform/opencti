@@ -71,13 +71,13 @@ const RootRole = () => {
   const queryRef = useQueryLoading<RootRoleQuery>(roleQuery, { id: roleId });
   return (
     <div>
-            {queryRef ? (
+      {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootRoleComponent queryRef={queryRef} roleId={roleId} />
         </React.Suspense>
-            ) : (
+      ) : (
         <Loader variant={LoaderVariant.inElement} />
-            )}
+      )}
     </div>
   );
 };

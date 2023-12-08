@@ -86,13 +86,13 @@ const RootGroup = () => {
   const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, { id: groupId, rolesOrderBy: 'name', rolesOrderMode: 'asc' });
   return (
     <div>
-            {queryRef ? (
+      {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootGroupComponent queryRef={queryRef} groupId={groupId} />
         </React.Suspense>
-            ) : (
+      ) : (
         <Loader variant={LoaderVariant.container} />
-            )}
+      )}
     </div>
   );
 };

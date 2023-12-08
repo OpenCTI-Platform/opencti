@@ -98,34 +98,34 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       });
   };
   return (
-      <Field
-        component={AutocompleteField}
-        style={style}
-        name={name}
-        disabled={disabled}
-        multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t('Participant(s)'),
-          helperText: helpertext,
-          onFocus: searchParticipants,
-        }}
-        noOptionsText={t('No available options')}
-        options={participants}
-        onInputChange={searchParticipants}
-        onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          fieldProps: React.HTMLAttributes<HTMLLIElement>,
-          option: { type: string; label: string },
-        ) => (
-           <li {...fieldProps}>
-             <div className={classes.icon}>
-               <ItemIcon type={option.type} />
-             </div>
-             <div className={classes.text}>{option.label}</div>
-           </li>
-        )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
+    <Field
+      component={AutocompleteField}
+      style={style}
+      name={name}
+      disabled={disabled}
+      multiple={true}
+      textfieldprops={{
+        variant: 'standard',
+        label: label ?? t('Participant(s)'),
+        helperText: helpertext,
+        onFocus: searchParticipants,
+      }}
+      noOptionsText={t('No available options')}
+      options={participants}
+      onInputChange={searchParticipants}
+      onChange={typeof onChange === 'function' ? onChange : null}
+      renderOption={(
+        fieldProps: React.HTMLAttributes<HTMLLIElement>,
+        option: { type: string; label: string },
+      ) => (
+        <li {...fieldProps}>
+          <div className={classes.icon}>
+            <ItemIcon type={option.type} />
+          </div>
+          <div className={classes.text}>{option.label}</div>
+        </li>
+      )}
+      classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
   );
 };

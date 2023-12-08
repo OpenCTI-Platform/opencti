@@ -228,13 +228,13 @@ const RetentionEditionContainer = (props) => {
             </div>
             <div className="clearfix" />
             <FilterIconButton
-                filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                classNameNumber={2}
-                styleNumber={2}
-                redirection
+              filters={filters}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              classNameNumber={2}
+              styleNumber={2}
+              redirection
               />
             <div className={classes.buttons}>
               <Button

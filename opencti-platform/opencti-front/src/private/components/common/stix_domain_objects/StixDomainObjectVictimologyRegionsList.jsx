@@ -459,15 +459,15 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
-                                        <MarkdownDisplay
-                                          content={
+                                          <MarkdownDisplay
+                                            content={
                                             stixCoreRelationship.description
                                           }
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
+                                            remarkGfmPlugin={true}
+                                            commonmark={true}
                                         />
                                         ) : stixCoreRelationship.inferred ? (
-                                        <i>{t('This relation is inferred')}</i>
+                                          <i>{t('This relation is inferred')}</i>
                                         ) : (
                                           t('No description of this targeting')
                                         )
@@ -566,19 +566,19 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
-                                                <MarkdownDisplay
-                                                  content={
+                                                  <MarkdownDisplay
+                                                    content={
                                                     stixCoreRelationship.description
                                                   }
-                                                  remarkGfmPlugin={true}
-                                                  commonmark={true}
+                                                    remarkGfmPlugin={true}
+                                                    commonmark={true}
                                                 />
                                                 ) : stixCoreRelationship.inferred ? (
-                                                <i>
-                                                  {t(
-                                                    'This relation is inferred',
-                                                  )}
-                                                </i>
+                                                  <i>
+                                                    {t(
+                                                      'This relation is inferred',
+                                                    )}
+                                                  </i>
                                                 ) : (
                                                   t(
                                                     'No description of this targeting',

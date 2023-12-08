@@ -144,111 +144,111 @@ const Indicators = () => {
       },
     };
     return (
-            <>
-                <ListLines
-                    helpers={storageHelpers}
-                    sortBy={sortBy}
-                    orderAsc={orderAsc}
-                    dataColumns={dataColumns}
-                    handleSort={storageHelpers.handleSort}
-                    handleSearch={storageHelpers.handleSearch}
-                    handleAddFilter={storageHelpers.handleAddFilter}
-                    handleRemoveFilter={storageHelpers.handleRemoveFilter}
-                    handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-                    handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-                    handleToggleExports={storageHelpers.handleToggleExports}
-                    openExports={openExports}
-                    handleToggleSelectAll={handleToggleSelectAll}
-                    selectAll={selectAll}
-                    exportEntityType="Indicator"
-                    exportContext={null}
-                    iconExtension={true}
-                    keyword={searchTerm}
-                    filters={filters}
-                    paginationOptions={paginationOptions}
-                    numberOfElements={numberOfElements}
-                    availableFilterKeys={[
-                      'objectLabel',
-                      'objectMarking',
-                      'created',
-                      'created_at',
-                      'valid_from',
-                      'x_opencti_score',
-                      'createdBy',
-                      'indicates',
-                      'sightedBy',
-                      'x_opencti_detection',
-                      'basedOn',
-                      'revoked',
-                      'creator_id',
-                      'confidence',
-                      'indicator_types',
-                    ]}
+      <>
+        <ListLines
+          helpers={storageHelpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          exportEntityType="Indicator"
+          exportContext={null}
+          iconExtension={true}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'objectLabel',
+            'objectMarking',
+            'created',
+            'created_at',
+            'valid_from',
+            'x_opencti_score',
+            'createdBy',
+            'indicates',
+            'sightedBy',
+            'x_opencti_detection',
+            'basedOn',
+            'revoked',
+            'creator_id',
+            'confidence',
+            'indicator_types',
+          ]}
                 >
-                    {queryRef && (
-                        <React.Suspense
-                            fallback={
-                                <>
-                                    {Array(20)
-                                      .fill(0)
-                                      .map((_, idx) => (
-                                            <IndicatorLineDummyComponent
-                                                key={idx}
-                                                dataColumns={dataColumns}
+          {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <IndicatorLineDummyComponent
+                      key={idx}
+                      dataColumns={dataColumns}
                                             />
-                                      ))}
-                                </>
+                  ))}
+              </>
                             }
                         >
-                            <IndicatorsLines
-                                queryRef={queryRef}
-                                paginationOptions={paginationOptions}
-                                dataColumns={dataColumns}
-                                onLabelClick={storageHelpers.handleAddFilter}
-                                selectedElements={selectedElements}
-                                deSelectedElements={deSelectedElements}
-                                onToggleEntity={onToggleEntity}
-                                selectAll={selectAll}
-                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+            <IndicatorsLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onLabelClick={storageHelpers.handleAddFilter}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
+              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                             />
-                        </React.Suspense>
-                    )}
-                </ListLines>
-                <ToolBar
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    numberOfSelectedElements={numberOfSelectedElements}
-                    selectAll={selectAll}
-                    filters={toolBarFilters}
-                    search={searchTerm}
-                    handleClearSelectedElements={handleClearSelectedElements}
-                    variant="large"
-                    type="Indicator"
+          </React.Suspense>
+          )}
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={toolBarFilters}
+          search={searchTerm}
+          handleClearSelectedElements={handleClearSelectedElements}
+          variant="large"
+          type="Indicator"
                 />
-            </>
+      </>
     );
   };
   return (
-        <UserContext.Consumer>
-            {({ platformModuleHelpers }) => (
-                <ExportContextProvider>
-                    <div className={classes.container}>
-                        {renderLines(platformModuleHelpers)}
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <IndicatorCreation paginationOptions={paginationOptions}/>
-                        </Security>
-                        <IndicatorsRightBar
-                            indicatorTypes={patternTypes}
-                            observableTypes={observableTypes}
-                            handleToggleIndicatorType={handleToggleIndicatorType}
-                            handleToggleObservableType={handleToggleObservableType}
-                            handleClearObservableTypes={handleClearObservableTypes}
-                            openExports={openExports}
+    <UserContext.Consumer>
+      {({ platformModuleHelpers }) => (
+        <ExportContextProvider>
+          <div className={classes.container}>
+            {renderLines(platformModuleHelpers)}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <IndicatorCreation paginationOptions={paginationOptions}/>
+            </Security>
+            <IndicatorsRightBar
+              indicatorTypes={patternTypes}
+              observableTypes={observableTypes}
+              handleToggleIndicatorType={handleToggleIndicatorType}
+              handleToggleObservableType={handleToggleObservableType}
+              handleClearObservableTypes={handleClearObservableTypes}
+              openExports={openExports}
                         />
-                    </div>
-                </ExportContextProvider>
-            )}
-        </UserContext.Consumer>
+          </div>
+        </ExportContextProvider>
+      )}
+    </UserContext.Consumer>
   );
 };
 

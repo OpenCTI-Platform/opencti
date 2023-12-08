@@ -140,7 +140,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                       === false ? (
                         <ExpandMore />
                         ) : (
-                        <ExpandLess />
+                          <ExpandLess />
                         )}
                     </IconButton>
                   </ListItemSecondaryAction>
@@ -186,7 +186,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                       - {entityToDisplay.name}
                                     </span>
                                     ) : (
-                                    <span>{entityToDisplay.name}</span>
+                                      <span>{entityToDisplay.name}</span>
                                     )
                                 ) : (
                                   t('Restricted')

@@ -126,13 +126,13 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         </Security>
       </Menu>
       <WorkspaceDuplicationDialog
-          workspace={workspace}
-          displayDuplicate={displayDuplicate}
-          handleCloseDuplicate={handleCloseDuplicate}
-          duplicating={duplicating}
-          setDuplicating={setDuplicating}
-          updater={updater}
-          paginationOptions={paginationOptions}
+        workspace={workspace}
+        displayDuplicate={displayDuplicate}
+        handleCloseDuplicate={handleCloseDuplicate}
+        duplicating={duplicating}
+        setDuplicating={setDuplicating}
+        updater={updater}
+        paginationOptions={paginationOptions}
       />
       <Dialog
         open={displayDelete}

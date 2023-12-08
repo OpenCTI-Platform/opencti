@@ -62,7 +62,7 @@ const Positions: FunctionComponent = () => {
     );
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

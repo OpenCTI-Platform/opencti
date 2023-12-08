@@ -59,33 +59,33 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
       open={open}
       onClose={handleClose}
     >
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={playbookValidation(t)}
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={playbookValidation(t)}
         >
-          {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onSubmit={handleSubmitField}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
+            <Field
+              component={TextField}
+              variant="standard"
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onSubmit={handleSubmitField}
               />
-            </Form>
-          )}
-        </Formik>
+          </Form>
+        )}
+      </Formik>
     </Drawer>
   );
 };

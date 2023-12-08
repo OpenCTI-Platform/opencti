@@ -32,58 +32,58 @@ const Root = () => {
   }
 
   return (
-  <Switch>
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases"
-      render={() => <Redirect to={`/dashboard/cases/${redirect}`} />}
+    <Switch>
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases"
+        render={() => <Redirect to={`/dashboard/cases/${redirect}`} />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases/incidents"
-      component={CaseIncidents}
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases/incidents"
+        component={CaseIncidents}
     />
-    <BoundaryRoute
-      path="/dashboard/cases/incidents/:caseId"
-      component={RootIncident}
+      <BoundaryRoute
+        path="/dashboard/cases/incidents/:caseId"
+        component={RootIncident}
     />
-     <BoundaryRoute
-       exact
-      path="/dashboard/cases/rfis"
-      component={CaseRfis}
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases/rfis"
+        component={CaseRfis}
     />
-    <BoundaryRoute
-      path="/dashboard/cases/rfis/:caseId"
-      component={RootCaseRfi}
+      <BoundaryRoute
+        path="/dashboard/cases/rfis/:caseId"
+        component={RootCaseRfi}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases/rfts"
-      component={CaseRfts}
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases/rfts"
+        component={CaseRfts}
     />
-    <BoundaryRoute
-      path="/dashboard/cases/rfts/:caseId"
-      component={RootCaseRft}
+      <BoundaryRoute
+        path="/dashboard/cases/rfts/:caseId"
+        component={RootCaseRft}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases/tasks"
-      component={Tasks}
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases/tasks"
+        component={Tasks}
     />
-    <BoundaryRoute
-      path="/dashboard/cases/tasks/:taskId"
-      component={RootTask}
+      <BoundaryRoute
+        path="/dashboard/cases/tasks/:taskId"
+        component={RootTask}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases/feedbacks"
-      component={Feedbacks}
+      <BoundaryRoute
+        exact
+        path="/dashboard/cases/feedbacks"
+        component={Feedbacks}
     />
-    <BoundaryRoute
-      path="/dashboard/cases/feedbacks/:caseId"
-      component={RootFeedback}
+      <BoundaryRoute
+        path="/dashboard/cases/feedbacks/:caseId"
+        component={RootFeedback}
     />
-  </Switch>
+    </Switch>
   );
 };
 

@@ -29,48 +29,48 @@ const Root = () => {
 
   return (
     <Switch>
-    <BoundaryRoute
-      exact
-      path="/dashboard/observations"
-      render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
+      <BoundaryRoute
+        exact
+        path="/dashboard/observations"
+        render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/observations/observables"
-      component={StixCyberObservables}
+      <BoundaryRoute
+        exact
+        path="/dashboard/observations/observables"
+        component={StixCyberObservables}
     />
-    <BoundaryRoute
-      path="/dashboard/observations/observables/:observableId"
-      component={RootStixCyberObservable}
+      <BoundaryRoute
+        path="/dashboard/observations/observables/:observableId"
+        component={RootStixCyberObservable}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/observations/artifacts"
-      component={Artifacts}
+      <BoundaryRoute
+        exact
+        path="/dashboard/observations/artifacts"
+        component={Artifacts}
     />
-    <BoundaryRoute
-      path="/dashboard/observations/artifacts/:observableId"
-      component={RootArtifact}
+      <BoundaryRoute
+        path="/dashboard/observations/artifacts/:observableId"
+        component={RootArtifact}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/observations/indicators"
-      component={Indicators}
+      <BoundaryRoute
+        exact
+        path="/dashboard/observations/indicators"
+        component={Indicators}
     />
-    <BoundaryRoute
-      path="/dashboard/observations/indicators/:indicatorId"
-      component={RootIndicator}
+      <BoundaryRoute
+        path="/dashboard/observations/indicators/:indicatorId"
+        component={RootIndicator}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/observations/infrastructures"
-      component={Infrastructures}
+      <BoundaryRoute
+        exact
+        path="/dashboard/observations/infrastructures"
+        component={Infrastructures}
     />
-    <BoundaryRoute
-      path="/dashboard/observations/infrastructures/:infrastructureId"
-      component={RootInfrastructure}
+      <BoundaryRoute
+        path="/dashboard/observations/infrastructures/:infrastructureId"
+        component={RootInfrastructure}
     />
-  </Switch>
+    </Switch>
   );
 };
 

@@ -473,7 +473,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               || stixCoreObjectTypes.length === 0 ? (
                   this.renderFakeList()
                 ) : (
-                <div> &nbsp; </div>
+                  <div> &nbsp; </div>
                 );
             }}
           />
@@ -499,44 +499,44 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     }
 
     return (
-        <UserContext.Consumer>
-          {({ schema }) => {
-            const relationshipTypes = R.filter(
-              (n) => R.isNil(allowedRelationshipTypes)
+      <UserContext.Consumer>
+        {({ schema }) => {
+          const relationshipTypes = R.filter(
+            (n) => R.isNil(allowedRelationshipTypes)
                     || allowedRelationshipTypes.length === 0
                     || allowedRelationshipTypes.includes(n),
-              resolveRelationsTypes(
-                R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
-                  ? 'observable'
-                  : fromEntity.entity_type,
-                toEntity.entity_type,
-                schema.schemaRelationsTypesMapping,
-              ),
-            );
-            return (
-                <>
-                  <div className={classes.header}>
-                    <IconButton
-                      aria-label="Close"
-                      className={classes.closeButton}
-                      onClick={this.handleClose.bind(this)}
-                      size="large"
+            resolveRelationsTypes(
+              R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                ? 'observable'
+                : fromEntity.entity_type,
+              toEntity.entity_type,
+              schema.schemaRelationsTypesMapping,
+            ),
+          );
+          return (
+            <>
+              <div className={classes.header}>
+                <IconButton
+                  aria-label="Close"
+                  className={classes.closeButton}
+                  onClick={this.handleClose.bind(this)}
+                  size="large"
                     >
-                      <Close fontSize="small" color="primary" />
-                    </IconButton>
-                    <Typography variant="h6">{t('Create a relationship')}</Typography>
-                  </div>
-                  <StixCoreRelationshipCreationForm
-                      fromEntities={[fromEntity]}
-                      toEntities={[toEntity]}
-                      relationshipTypes={relationshipTypes}
-                      handleResetSelection={this.handleResetSelection.bind(this)}
-                      onSubmit={this.onSubmit.bind(this)}
-                      handleClose={this.handleClose.bind(this)} />
-                </>
-            );
-          }}
-        </UserContext.Consumer>
+                  <Close fontSize="small" color="primary" />
+                </IconButton>
+                <Typography variant="h6">{t('Create a relationship')}</Typography>
+              </div>
+              <StixCoreRelationshipCreationForm
+                fromEntities={[fromEntity]}
+                toEntities={[toEntity]}
+                relationshipTypes={relationshipTypes}
+                handleResetSelection={this.handleResetSelection.bind(this)}
+                onSubmit={this.onSubmit.bind(this)}
+                handleClose={this.handleClose.bind(this)} />
+            </>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 

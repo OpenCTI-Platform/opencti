@@ -313,85 +313,85 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   const updateInstanceTriggerContent = (instanceTrigger: InstanceTriggerEditionFormValues, firstTrigger: boolean, multipleInstanceTrigger: boolean) => {
     const instanceTriggerFilters = deserializeFilterGroupForFrontend(instanceTrigger.filters);
     return (
-            <div key={instanceTrigger.id} className={firstTrigger ? classes.container : classes.subcontainer}>
-                <Formik
-                    initialValues={instanceTrigger}
-                    validationSchema={liveTriggerValidation}
-                    onSubmit={onSubmitUpdate}
+      <div key={instanceTrigger.id} className={firstTrigger ? classes.container : classes.subcontainer}>
+        <Formik
+          initialValues={instanceTrigger}
+          validationSchema={liveTriggerValidation}
+          onSubmit={onSubmitUpdate}
                 >
-                    {({
-                      submitForm,
-                      isSubmitting,
-                      values,
-                      setFieldValue,
-                    }) => (
-                        <Form style={{ margin: '20px 0 20px 0' }}>
-                            <Field
-                                component={TextField}
-                                variant="standard"
-                                name="name"
-                                label={t('Name')}
-                                fullWidth={true}
+          {({
+            submitForm,
+            isSubmitting,
+            values,
+            setFieldValue,
+          }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
                             />
-                            <NotifierField
-                                name="notifiers"
-                                onChange={setFieldValue}
+              <NotifierField
+                name="notifiers"
+                onChange={setFieldValue}
                             />
-                            <Field
-                                component={AutocompleteField}
-                                name="event_types"
-                                style={fieldSpacingContainerStyle}
-                                multiple={true}
-                                textfieldprops={{
-                                  variant: 'standard',
-                                  label: t('Triggering on'),
-                                }}
-                                options={instanceEventTypesOptions}
-                                onChange={setFieldValue}
-                                renderOption={(
-                                  props: React.HTMLAttributes<HTMLLIElement>,
-                                  option: { value: string, label: string },
-                                ) => (
-                                    <MenuItem value={option.value} {...props}>
-                                        <Checkbox
-                                            checked={values.event_types.map((n) => n.value).includes(option.value)}/>
-                                        <ListItemText primary={option.label}/>
-                                    </MenuItem>
-                                )}
+              <Field
+                component={AutocompleteField}
+                name="event_types"
+                style={fieldSpacingContainerStyle}
+                multiple={true}
+                textfieldprops={{
+                  variant: 'standard',
+                  label: t('Triggering on'),
+                }}
+                options={instanceEventTypesOptions}
+                onChange={setFieldValue}
+                renderOption={(
+                  props: React.HTMLAttributes<HTMLLIElement>,
+                  option: { value: string, label: string },
+                ) => (
+                  <MenuItem value={option.value} {...props}>
+                    <Checkbox
+                      checked={values.event_types.map((n) => n.value).includes(option.value)}/>
+                    <ListItemText primary={option.label}/>
+                  </MenuItem>
+                )}
                             />
-                            {multipleInstanceTrigger && instanceTriggerFilters
+              {multipleInstanceTrigger && instanceTriggerFilters
                                 && <div style={{ ...fieldSpacingContainerStyle }}>
-                                    <FilterIconButton
-                                        filters={instanceTriggerFilters}
-                                        classNameNumber={3}
-                                        styleNumber={3}
-                                        redirection
+                                  <FilterIconButton
+                                    filters={instanceTriggerFilters}
+                                    classNameNumber={3}
+                                    styleNumber={3}
+                                    redirection
                                     />
                                 </div>
                             }
-                            <div className={classes.buttons} style={{ marginTop: firstTrigger ? 20 : 40 }}>
-                                <Button
-                                    variant="contained"
-                                    onClick={multipleInstanceTrigger ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
-                                    disabled={deleting}
-                                    classes={{ root: classes.deleteButton }}
+              <div className={classes.buttons} style={{ marginTop: firstTrigger ? 20 : 40 }}>
+                <Button
+                  variant="contained"
+                  onClick={multipleInstanceTrigger ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
+                  disabled={deleting}
+                  classes={{ root: classes.deleteButton }}
                                 >
-                                    {multipleInstanceTrigger ? t('Remove') : t('Delete')}
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={submitForm}
-                                    disabled={isSubmitting}
-                                    classes={{ root: classes.updateButton }}
+                  {multipleInstanceTrigger ? t('Remove') : t('Delete')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.updateButton }}
                                 >
-                                    {t('Update')}
-                                </Button>
-                            </div>
-                        </Form>
-                    )}
-                </Formik>
-            </div>
+                  {t('Update')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
     );
   };
 
@@ -423,70 +423,70 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     const firstInstanceTriggerToDisplay = sortedTriggersToDisplay[0];
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
-            <Drawer
-                title={t('Update instance triggers')}
-                open={open}
-                onClose={handleClose}
+      <Drawer
+        title={t('Update instance triggers')}
+        open={open}
+        onClose={handleClose}
             >
-                <>
-                    <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                        {t(instanceTriggerDescription)}
-                    </Alert>
-                    <div>
-                        {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
-                    </div>
-                    {otherInstanceTriggersToDisplay.length > 0
+        <>
+          <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+            {t(instanceTriggerDescription)}
+          </Alert>
+          <div>
+            {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
+          </div>
+          {otherInstanceTriggersToDisplay.length > 0
                         && <List>
-                            <ListItem
-                                button={true}
-                                divider={true}
-                                classes={{ root: classes.nested }}
+                          <ListItem
+                            button={true}
+                            divider={true}
+                            classes={{ root: classes.nested }}
+                            onClick={handleToggleLine}
+                            >
+                            <ListItemText
+                              primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`}/>
+                            <ListItemSecondaryAction>
+                              <IconButton
                                 onClick={handleToggleLine}
-                            >
-                                <ListItemText
-                                    primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`}/>
-                                <ListItemSecondaryAction>
-                                    <IconButton
-                                        onClick={handleToggleLine}
-                                        aria-haspopup="true"
-                                        size="large"
+                                aria-haspopup="true"
+                                size="large"
                                     >
-                                        {expandedLines ? (
-                                            <ExpandLess/>
-                                        ) : (
-                                            <ExpandMore/>
-                                        )}
-                                    </IconButton>
-                                </ListItemSecondaryAction>
-                            </ListItem>
-                            <Collapse
-                                in={expandedLines}
+                                {expandedLines ? (
+                                  <ExpandLess/>
+                                ) : (
+                                  <ExpandMore/>
+                                )}
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                          <Collapse
+                            in={expandedLines}
                             >
-                                {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
-                            </Collapse>
+                            {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
+                          </Collapse>
                         </List>
                     }
-                </>
-            </Drawer>
+        </>
+      </Drawer>
     );
   };
   return (
-        <div>
-            <Tooltip title={t('Instance trigger quick subscription')}>
-                <ToggleButton
-                    onClick={triggerUpdate ? handleOpen : createInstanceTrigger}
-                    value="quick-subscription"
-                    size="small"
-                    style={{ marginRight: 3 }}
+    <div>
+      <Tooltip title={t('Instance trigger quick subscription')}>
+        <ToggleButton
+          onClick={triggerUpdate ? handleOpen : createInstanceTrigger}
+          value="quick-subscription"
+          size="small"
+          style={{ marginRight: 3 }}
                 >
-                    <NotificationsOutlined
-                        fontSize="small"
-                        color={triggerUpdate ? 'secondary' : 'primary'}
+          <NotificationsOutlined
+            fontSize="small"
+            color={triggerUpdate ? 'secondary' : 'primary'}
                     />
-                </ToggleButton>
-            </Tooltip>
-            {triggerUpdate && updateInstanceTrigger()}
-        </div>
+        </ToggleButton>
+      </Tooltip>
+      {triggerUpdate && updateInstanceTrigger()}
+    </div>
   );
 };
 

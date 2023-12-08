@@ -83,29 +83,29 @@ class Feed extends Component {
       },
     };
     return (
-            <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={dataColumns}
-                handleSort={this.handleSort.bind(this)}
-                handleSearch={this.handleSearch.bind(this)}
-                displayImport={false}
-                secondaryAction={true}
-                keyword={searchTerm}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
+        keyword={searchTerm}
             >
-                <QueryRenderer
-                    query={FeedLinesQuery}
-                    variables={{ count: 25, ...paginationOptions }}
-                    render={({ props }) => (
-                        <FeedLines
-                            data={props}
-                            paginationOptions={paginationOptions}
-                            dataColumns={dataColumns}
-                            initialLoading={props === null}
+        <QueryRenderer
+          query={FeedLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <FeedLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
                         />
-                    )}
+          )}
                 />
-            </ListLines>
+      </ListLines>
     );
   }
 
@@ -118,11 +118,11 @@ class Feed extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-            <div className={classes.container}>
-                <SharingMenu/>
-                {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-                <FeedCreation paginationOptions={paginationOptions}/>
-            </div>
+      <div className={classes.container}>
+        <SharingMenu/>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <FeedCreation paginationOptions={paginationOptions}/>
+      </div>
     );
   }
 }

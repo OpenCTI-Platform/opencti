@@ -87,54 +87,54 @@ export const ToolLine: FunctionComponent<ToolLineProps> = ({
   const { fd } = useFormatter();
   const data = useFragment(toolLineFragment, node);
   return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={`/dashboard/arsenal/tools/${data.id}`}
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`/dashboard/arsenal/tools/${data.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type="Tool" />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type="Tool" />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
               >
-                {data.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={data.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(data.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                {fd(data.modified)}
-              </div>
+              {data.name}
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+              >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={data.objectLabel}
+                onClick={onLabelClick.bind(this)}
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+              >
+              {fd(data.created)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+              >
+              {fd(data.modified)}
+            </div>
+          </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };
 
@@ -145,68 +145,68 @@ export const ToolLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
           />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+                />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+              >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+                />
+            </div>
+          </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRight />
+      </ListItemIcon>
+    </ListItem>
   );
 };

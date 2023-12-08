@@ -89,11 +89,11 @@ const dataColumns: DataColumns = {
     width: '20%',
     isSortable: false,
     render: (node, { t, classes }) => (
-            <Chip
-                classes={{ root: classes.chipInList }}
-                color={node.stream_live ? 'success' : 'error'}
-                variant="outlined"
-                label={t(node.stream_live ? 'Started' : 'Stopped')}
+      <Chip
+        classes={{ root: classes.chipInList }}
+        color={node.stream_live ? 'success' : 'error'}
+        variant="outlined"
+        label={t(node.stream_live ? 'Started' : 'Stopped')}
             />
     ),
   },
@@ -128,46 +128,46 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
     copyToClipboard(t, window.location.origin);
   };
   return (
-        <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
-            <ListItemIcon>
-                <Stream/>
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
+    <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
+      <ListItemIcon>
+        <Stream/>
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
                             >
-                                {value.render?.(stream, { t, classes })}
-                            </div>
-                        ))}
-                    </div>
+                {value.render?.(stream, { t, classes })}
+              </div>
+            ))}
+          </div>
                 }
             />
-            <ListItemSecondaryAction>
-                <Tooltip
-                    title={t(
-                      'Copy uri to clipboard for your OpenCTI synchronizer configuration',
-                    )}
+      <ListItemSecondaryAction>
+        <Tooltip
+          title={t(
+            'Copy uri to clipboard for your OpenCTI synchronizer configuration',
+          )}
                 >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy/>
             </IconButton>
           </span>
-                </Tooltip>
-                <Tooltip title={t('Access stream directly in your browser')}>
+        </Tooltip>
+        <Tooltip title={t('Access stream directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
               <OpenInNew/>
             </IconButton>
           </span>
-                </Tooltip>
-            </ListItemSecondaryAction>
-        </ListItem>
+        </Tooltip>
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 
@@ -175,37 +175,37 @@ const PublicStreamLines = () => {
   const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(publicStreamLinesQuery, queryRef);
   const { t } = useFormatter();
   return streamCollections && streamCollections.edges.length > 0 ? (
-        <>
-            <Typography variant="h2" gutterBottom={true}>
-                {t('Public stream collections')}
-            </Typography>
-            <ListLines dataColumns={dataColumns} secondaryAction={true}>
-                <ListLinesContent
-                    isLoading={() => {
-                    }}
-                    hasNext={() => {
-                    }}
-                    dataColumns={dataColumns}
-                    dataList={streamCollections.edges}
-                    LineComponent={PublicStreamLine}
-                    DummyLineComponent={<StreamLineDummy/>}
+    <>
+      <Typography variant="h2" gutterBottom={true}>
+        {t('Public stream collections')}
+      </Typography>
+      <ListLines dataColumns={dataColumns} secondaryAction={true}>
+        <ListLinesContent
+          isLoading={() => {
+          }}
+          hasNext={() => {
+          }}
+          dataColumns={dataColumns}
+          dataList={streamCollections.edges}
+          LineComponent={PublicStreamLine}
+          DummyLineComponent={<StreamLineDummy/>}
                 />
-            </ListLines>
-        </>
+      </ListLines>
+    </>
   ) : (
-        <>
-            <Typography variant="h2" gutterBottom={true}>
-                {t('Public stream collections')}
-            </Typography>
-            <Typography
-                variant="h5"
-                gutterBottom={true}
-                color={'error'}
-                style={{ marginTop: 20, marginBottom: 40 }}
+    <>
+      <Typography variant="h2" gutterBottom={true}>
+        {t('Public stream collections')}
+      </Typography>
+      <Typography
+        variant="h5"
+        gutterBottom={true}
+        color={'error'}
+        style={{ marginTop: 20, marginBottom: 40 }}
             >
-                {t('No available public stream on this platform')}
-            </Typography>
-        </>
+        {t('No available public stream on this platform')}
+      </Typography>
+    </>
   );
 };
 

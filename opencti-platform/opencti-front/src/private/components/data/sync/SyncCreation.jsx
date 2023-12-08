@@ -272,37 +272,37 @@ const SyncCreation = ({ paginationOptions }) => {
                         ({ value, label, name, description, filters }) => {
                           const streamsFilters = deserializeFilterGroupForFrontend(filters);
                           return (
-                              <EnrichedTooltip
-                                  key={value}
-                                  value={value}
+                            <EnrichedTooltip
+                              key={value}
+                              value={value}
+                              style={{ overflow: 'hidden' }}
+                              title={
+                                <Grid
+                                  container
+                                  spacing={1}
                                   style={{ overflow: 'hidden' }}
-                                  title={
-                                    <Grid
-                                        container
-                                        spacing={1}
-                                        style={{ overflow: 'hidden' }}
                                     >
-                                      <Grid key={name} item xs={12}>
-                                        <Typography>{name}</Typography>
-                                      </Grid>
-                                      <Grid key={description} item xs={12}>
-                                        <Typography>{description}</Typography>
-                                      </Grid>
-                                      <Grid key={filters} item xs={12}>
-                                        <FilterIconButton
-                                          filters={streamsFilters}
-                                          classNameNumber={3}
-                                          styleNumber={3}
+                                  <Grid key={name} item xs={12}>
+                                    <Typography>{name}</Typography>
+                                  </Grid>
+                                  <Grid key={description} item xs={12}>
+                                    <Typography>{description}</Typography>
+                                  </Grid>
+                                  <Grid key={filters} item xs={12}>
+                                    <FilterIconButton
+                                      filters={streamsFilters}
+                                      classNameNumber={3}
+                                      styleNumber={3}
                                         />
-                                      </Grid>
-                                    </Grid>
+                                  </Grid>
+                                </Grid>
                                   }
-                                  placement="bottom-start"
+                              placement="bottom-start"
                               >
-                                <MenuItem key={value} value={value}>
-                                  {label}
-                                </MenuItem>
-                              </EnrichedTooltip>
+                              <MenuItem key={value} value={value}>
+                                {label}
+                              </MenuItem>
+                            </EnrichedTooltip>
                           );
                         },
                       )}
@@ -375,10 +375,10 @@ const SyncCreation = ({ paginationOptions }) => {
                   </AccordionSummary>
                   <AccordionDetails>
                     <Alert icon={false}
-                           classes={{ root: classes.alert, message: classes.message }}
-                           severity="error"
-                           variant="outlined"
-                           style={{ position: 'relative' }}>
+                      classes={{ root: classes.alert, message: classes.message }}
+                      severity="error"
+                      variant="outlined"
+                      style={{ position: 'relative' }}>
                       <div>{t('Use these options if you know what you are doing')}</div>
                     </Alert>
                     <Field

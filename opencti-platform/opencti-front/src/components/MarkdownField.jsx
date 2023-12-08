@@ -72,13 +72,13 @@ const MarkdownField = (props) => {
           : setSelectedTab(tab))
         }
         generateMarkdownPreview={(markdown) => Promise.resolve(
-            <div onMouseUp={() => internalOnSelect()}>
-              <MarkdownDisplay
-                content={markdown}
-                remarkGfmPlugin={true}
-                commonmark={true}
+          <div onMouseUp={() => internalOnSelect()}>
+            <MarkdownDisplay
+              content={markdown}
+              remarkGfmPlugin={true}
+              commonmark={true}
               />
-            </div>,
+          </div>,
         )
         }
         l18n={{

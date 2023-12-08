@@ -119,12 +119,12 @@ const Tools = () => {
     );
   };
   return (
-      <>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ToolCreation paginationOptions={paginationOptions} />
-        </Security>
-      </>
+    <>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ToolCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
   );
 };
 

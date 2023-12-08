@@ -157,7 +157,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                       === false ? (
                         <ExpandMore />
                         ) : (
-                        <ExpandLess />
+                          <ExpandLess />
                         )}
                     </IconButton>
                   </ListItemSecondaryAction>
@@ -242,7 +242,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                     ] === false ? (
                                       <ExpandMore />
                                       ) : (
-                                      <ExpandLess />
+                                        <ExpandLess />
                                       )}
                                   </IconButton>
                                 ) : (
@@ -288,12 +288,12 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                               courseOfAction.description
                                               && courseOfAction.description
                                                 .length > 0 ? (
-                                                <MarkdownDisplay
-                                                  content={
+                                                  <MarkdownDisplay
+                                                    content={
                                                     courseOfAction.description
                                                   }
-                                                  remarkGfmPlugin={true}
-                                                  commonmark={true}
+                                                    remarkGfmPlugin={true}
+                                                    commonmark={true}
                                                 ></MarkdownDisplay>
                                                 ) : (
                                                   t(
