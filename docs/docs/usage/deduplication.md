@@ -49,6 +49,10 @@ Technically, OpenCTI generates deterministic IDs based on the listed properties 
 | Tool                    | `name` OR `alias`                                           |
 | Vulnerability           | `name` OR `alias`                                           |
 
+!!! info "Names and aliases management"
+    
+    The name and aliases of an entity define a set of unique values, so it's not possible to have the name equal to an alias and vice versa.
+
 ### Relationships
 
 The deduplication process of relationships is based on the following criterias:
