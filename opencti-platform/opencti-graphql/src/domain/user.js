@@ -16,9 +16,21 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import {
+  elFindByIds,
+  elLoadBy,
+  elRawDeleteByQuery
+} from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllRelations,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import {
@@ -29,7 +41,6 @@ import {
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
@@ -43,6 +54,7 @@ import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -686,31 +698,44 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 
-export const deleteAllWorkspaceForUser = async (userId) => {
-  return await elRawDeleteByQuery({
-    index: READ_INDEX_INTERNAL_OBJECTS,
-    refresh: true,
-    body: {
-      query: {
-        bool: {
-          must: [
-            { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-            { term: { 'authorized_members.id.keyword': { value: userId } } }
-          ],
-          filter: {
-            script: {
-              script: 'return (doc[\'authorized_members.id.keyword\'].size() == 1);'
-            }
+const isUserTheLastAdmin = (userId, authorized_members) => {
+  const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
+  const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
+
+  return currentUserIsAdmin && !anotherUserIsAdmin;
+};
+
+export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
+  const userToDeleteAuth = await findById(context, authUser, userId);
+
+  const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE], { connectionFormat: false });
+
+  const workspaceToDeleteIds = workspacesToDelete
+    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.authorized_members))
+    .map((workspaceEntity) => workspaceEntity.internal_id);
+
+  if (workspaceToDeleteIds.length > 0) {
+    await elRawDeleteByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: 'Workspace' } } },
+              { terms: { 'internal_id.keyword': workspaceToDeleteIds } }
+            ]
           }
         }
       }
-    }
-  }).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting Workspaces for user ${userId} elastic.`, { error: err });
-  });
+    }).catch((err) => {
+      throw DatabaseError(`[DELETE] Error deleting Workspace for user ${userId} elastic.`, { error: err });
+    });
+  }
+  return true;
 };
 
-export const deleteAllTrigerAndDigestByUser = async (userId) => {
+export const deleteAllTriggerAndDigestByUser = async (userId) => {
   return await elRawDeleteByQuery({
     index: READ_INDEX_INTERNAL_OBJECTS,
     refresh: true,
@@ -769,9 +794,9 @@ export const userDelete = async (context, user, userId) => {
       throw ForbiddenAccess();
     }
   }
-  await deleteAllTrigerAndDigestByUser(userId);
+  await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
-  await deleteAllWorkspaceForUser(userId);
+  await deleteAllWorkspaceForUser(context, user, userId);
 
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
