@@ -161,7 +161,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 && data.notifiers.length > 0
                 && data.notifiers
                   .map<React.ReactNode>((n) => (
-                    <code>{n.name}</code>
+                    <code key={n.id}>{n.name}</code>
                 ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>

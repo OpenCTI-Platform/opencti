@@ -1,3 +1,4 @@
+import React from 'react';
 import { FieldProps } from 'formik';
 import FormControl from '@mui/material/FormControl';
 import { ButtonGroup, FormLabel } from '@mui/material';
@@ -39,44 +40,44 @@ const CheckboxesField = ({
   const checkNone = () => setFieldValue(name, []);
 
   return (
-      <FormControl component="fieldset" name={name}>
-        <FormLabel component="legend">{label}</FormLabel>
+    <FormControl component="fieldset" name={name}>
+      <FormLabel component="legend">{label}</FormLabel>
 
-        <ButtonGroup size="small" sx={{ marginTop: '4px' }}>
-          <Button
-            disabled={items.length === 0}
-            variant={(items.length > 0 && value.length === items.length) ? 'contained' : undefined}
-            onClick={checkAll}>
-            {t('All')}
-          </Button>
-          <Button
-            disabled={items.length === 0}
-            variant={(items.length > 0 && value.length === 0) ? 'contained' : undefined}
-            onClick={checkNone}>
-            {t('None')}
-          </Button>
-        </ButtonGroup>
+      <ButtonGroup size="small" sx={{ marginTop: '4px' }}>
+        <Button
+          disabled={items.length === 0}
+          variant={(items.length > 0 && value.length === items.length) ? 'contained' : undefined}
+          onClick={checkAll}>
+          {t('All')}
+        </Button>
+        <Button
+          disabled={items.length === 0}
+          variant={(items.length > 0 && value.length === 0) ? 'contained' : undefined}
+          onClick={checkNone}>
+          {t('None')}
+        </Button>
+      </ButtonGroup>
 
-        <FormGroup sx={{
-          maxHeight: '300px',
-          flexWrap: 'nowrap',
-          overflowY: 'auto',
-        }}>
-          {items.map((item) => (
-            <FormControlLabel
-              key={item.label}
-              label={item.label}
-              control={(
-                <Checkbox
-                  checked={isChecked(item)}
-                  name={item.value}
-                  onChange={() => toggle(item)}
+      <FormGroup sx={{
+        maxHeight: '300px',
+        flexWrap: 'nowrap',
+        overflowY: 'auto',
+      }}>
+        {items.map((item) => (
+          <FormControlLabel
+            key={item.label}
+            label={item.label}
+            control={(
+              <Checkbox
+                checked={isChecked(item)}
+                name={item.value}
+                onChange={() => toggle(item)}
                 />
               )}
             />
-          ))}
-        </FormGroup>
-      </FormControl>
+        ))}
+      </FormGroup>
+    </FormControl>
   );
 };
 

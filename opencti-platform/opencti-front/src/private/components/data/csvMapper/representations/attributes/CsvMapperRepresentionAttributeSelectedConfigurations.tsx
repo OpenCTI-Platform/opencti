@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { AttributeConfiguration } from '@components/data/csvMapper/representations/attributes/Attribute';
 import makeStyles from '@mui/styles/makeStyles';
 import { SubdirectoryArrowRight } from 'mdi-material-ui';

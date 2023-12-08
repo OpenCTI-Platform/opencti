@@ -1,3 +1,4 @@
+import React from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { act } from '@testing-library/react';
 import ReactDOM from 'react-dom/client';
