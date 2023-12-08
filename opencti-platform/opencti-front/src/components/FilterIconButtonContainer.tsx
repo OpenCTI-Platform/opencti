@@ -53,7 +53,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '0 8px',
     display: 'flex',
     alignItems: 'center',
-    cursor: 'pointer',
   },
   operator2: {
     borderRadius: 5,
@@ -75,7 +74,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '0 8px',
     display: 'flex',
     alignItems: 'center',
-    cursor: 'pointer',
   },
   operator3: {
     borderRadius: 5,
@@ -99,7 +97,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '0 8px',
     marginRight: 5,
     marginLeft: 5,
-    cursor: 'pointer',
   },
   chipLabel: {
     lineHeight: '32px',

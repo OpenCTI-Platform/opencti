@@ -26,25 +26,6 @@ FilterIconButtonGlobalOperatorProps
   const { t } = useFormatter();
   const theme = useTheme();
   if (filtersUsedAsApiParameters.includes(displayedFilters[currentIndex].key)) {
-    if (
-      displayedFilters[currentIndex].key
-      === displayedFilters[currentIndex + 1].key
-    ) {
-      return (
-        <Box
-          sx={{
-            borderRadius: '5px',
-            fontFamily: 'Consolas, monaco, monospace',
-            backgroundColor: theme?.palette.action?.selected,
-            padding: '0 8px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {t('OR')}
-        </Box>
-      );
-    }
     return (
       <Box
         sx={{
