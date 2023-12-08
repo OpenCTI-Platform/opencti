@@ -18,7 +18,6 @@ import {
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -31,6 +30,8 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -41,9 +42,10 @@ import {
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+  <Slide direction="up" ref={ref} {...props} children={props.children} />
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -239,12 +241,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isWarning = isArtifact
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.dll');
+  const fileExtension = file?.name.substring(file?.name.lastIndexOf('.'));
   return (
     <>
-      <ListItem
+      <ListItemButton
         divider={true}
         dense={dense}
-        button={true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         rel="noopener noreferrer"
         onClick={
@@ -275,7 +277,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               root: classes.itemText,
               primary: classes.fileName,
             }}
-            primary={file?.name}
+            primary={`${truncate(file?.name, 80)}${fileExtension}`}
             secondary={
               <>
                 {file?.metaData?.mimetype ?? t('Pending')} (
@@ -284,7 +286,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             }
           />
         </Tooltip>
-        <div onClick={(e) => e.stopPropagation()} style={{ flex: 'none' }}>
+        <ListItemSecondaryAction>
           {!disableImport && (
             <Tooltip title={t('Launch an import of this file')}>
               <span>
@@ -382,8 +384,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               )}
             </>
           )}
-        </div>
-      </ListItem>
+        </ListItemSecondaryAction>
+      </ListItemButton>
       <FileWork file={file} nested={workNested} />
       <Dialog
         open={displayDelete}

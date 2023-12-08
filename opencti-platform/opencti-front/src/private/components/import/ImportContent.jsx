@@ -29,6 +29,7 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
+import { withRouter } from 'react-router-dom';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import {
@@ -198,7 +199,7 @@ class ImportContentComponent extends Component {
   }
 
   handleClickConnector(connectorId) {
-    this.props.navigate(`/dashboard/data/connectors/${connectorId}`);
+    this.props.history.push(`/dashboard/data/connectors/${connectorId}`);
   }
 
   handleOpenImport(file) {
@@ -703,4 +704,4 @@ const ImportContent = createRefetchContainer(
   importContentQuery,
 );
 
-export default R.compose(inject18n, withStyles(styles))(ImportContent);
+export default R.compose(inject18n, withStyles(styles), withRouter)(ImportContent);
