@@ -82,7 +82,7 @@ const IngestionTaxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-            >
+      >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
@@ -93,9 +93,9 @@ const IngestionTaxii = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
-                        />
+            />
           )}
-                />
+        />
       </ListLines>
       <IngestionTaxiiCreation paginationOptions={paginationOptions}/>
     </div>

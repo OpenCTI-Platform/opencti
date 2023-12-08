@@ -223,7 +223,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           connectionKey="Pagination_indicators"
           defaultStartTime={defaultStartTime}
           defaultStopTime={defaultStopTime}
-      />
+        />
       </Security>
     </>
   );

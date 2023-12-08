@@ -368,7 +368,7 @@ class StixCoreRelationshipCreation extends Component {
                   className={classes.closeButton}
                   onClick={this.handleClose.bind(this)}
                   size="large"
-                    >
+                >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
                 <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -385,7 +385,7 @@ class StixCoreRelationshipCreation extends Component {
                 defaultStopTime={stopTime}
                 defaultCreatedBy={defaultCreatedBy}
                 defaultMarkingDefinitions={defaultMarkingDefinitions}
-                  />
+              />
             </>
           );
         }}

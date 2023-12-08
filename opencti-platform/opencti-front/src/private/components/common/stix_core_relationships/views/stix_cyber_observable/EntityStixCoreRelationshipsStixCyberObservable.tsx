@@ -59,7 +59,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
-          />}
+             />}
 
         {view === 'relationships'
           && <EntityStixCoreRelationshipsRelationshipsView
@@ -73,7 +73,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
-          />}
+             />}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsContextualView

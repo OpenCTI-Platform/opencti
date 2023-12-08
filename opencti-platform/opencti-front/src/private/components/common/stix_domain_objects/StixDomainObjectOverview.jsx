@@ -365,7 +365,7 @@ class StixDomainObjectOverview extends Component {
                       aria-label="delete"
                       onClick={this.deleteStixId.bind(this, stixId)}
                       size="large"
-                        >
+                    >
                       <Delete />
                     </IconButton>
                   </ListItemSecondaryAction>

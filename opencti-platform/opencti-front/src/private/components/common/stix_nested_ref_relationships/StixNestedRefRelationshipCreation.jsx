@@ -875,7 +875,7 @@ class StixNestedRefRelationshipCreation extends Component {
             }
             return this.renderLoader();
           }}
-          />
+                      />
           : ''}
       </Drawer>
     );

@@ -232,7 +232,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         enableNestedView={enableNestedView}
         enableContextualView={enableContextualView}
         currentView={finalView}
-            >
+      >
         <EntityStixCoreRelationshipsEntitiesViewLines
           paginationOptions={paginationOptions}
           dataColumns={dataColumns}
@@ -243,7 +243,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
           selectedElements={selectedElements}
           deSelectedElements={deSelectedElements}
           selectAll={selectAll}
-                />
+        />
       </ListLines>
       <ToolBar
         selectedElements={selectedElements}
@@ -258,7 +258,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         warningMessage={t(
           'Be careful, you are about to delete the selected entities (not the relationships!).',
         )}
-            />
+      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
@@ -275,7 +275,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
           paginationOptions={paginationOptions}
           connectionKey="Pagination_stixCoreObjects"
           paddingRight={paddingRightButtonAdd ?? 220}
-                />
+        />
       </Security>
     </>
   );

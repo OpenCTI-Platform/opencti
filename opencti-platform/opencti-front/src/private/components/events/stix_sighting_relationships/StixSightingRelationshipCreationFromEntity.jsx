@@ -431,7 +431,8 @@ const StixSightingRelationshipCreationFromEntity = ({
           onSubmit={onSubmit}
           handleClose={handleClose}
           defaultFirstSeen={dayStartDate()}
-          defaultLastSeen={dayStartDate()} />
+          defaultLastSeen={dayStartDate()}
+        />
       </>
     );
   };
@@ -461,7 +462,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           onClick={handleOpen}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
           size="large"
-          >
+        >
           <Add fontSize="small" />
         </IconButton>
       ) : (
@@ -471,7 +472,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           aria-label="Add"
           className={classes.createButton}
           style={{ right: paddingRight || 30 }}
-          >
+        >
           <Add />
         </Fab>
       )}
@@ -482,7 +483,7 @@ const StixSightingRelationshipCreationFromEntity = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-        >
+      >
         <QueryRenderer
           query={stixSightingRelationshipCreationFromEntityQuery}
           variables={{ id: entityId }}
@@ -497,7 +498,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             }
             return renderLoader();
           }}
-          />
+        />
       </Drawer>
     </div>
   );

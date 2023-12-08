@@ -140,7 +140,7 @@ const Artifacts: FunctionComponent = () => {
             'created_at',
             'createdBy',
           ]}
-            >
+        >
           {queryRef && (
           <React.Suspense
             fallback={
@@ -152,7 +152,7 @@ const Artifacts: FunctionComponent = () => {
                   ))}
               </>
                       }
-                  >
+          >
             <ArtifactsLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -163,7 +163,7 @@ const Artifacts: FunctionComponent = () => {
               onToggleEntity={onToggleEntity}
               selectAll={selectAll}
               setNumberOfElements={helpers.handleSetNumberOfElements}
-                  />
+            />
             <ToolBar
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
@@ -172,7 +172,7 @@ const Artifacts: FunctionComponent = () => {
               filters={toolBarFilters}
               search={searchTerm}
               handleClearSelectedElements={handleClearSelectedElements}
-                  />
+            />
           </React.Suspense>
           )}
         </ListLines>
@@ -187,7 +187,7 @@ const Artifacts: FunctionComponent = () => {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ArtifactCreation
             paginationOptions={paginationOptions}
-            />
+          />
         </Security>
       </div>
     </ExportContextProvider>

@@ -232,7 +232,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                   key={responseType}
                   classes={{ root: classes.chip }}
                   label={responseType}
-                  />
+                />
               ))
               : '-'}
           </Grid>
@@ -263,7 +263,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                   divider={true}
                   component={Link}
                   to={`/dashboard/cases/incidents/${relatedContainer?.id}`}
-                  >
+                >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer?.entity_type} />
                   </ListItemIcon>
@@ -273,7 +273,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                         {relatedContainer?.name}
                       </div>
                       }
-                    />
+                  />
                   <div className={classes.itemAuthor}>
                     {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
                   </div>
@@ -287,7 +287,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                           relatedContainer?.objectMarking?.edges ?? []
                         }
                       limit={1}
-                      />
+                    />
                   </div>
                 </ListItem>
               );

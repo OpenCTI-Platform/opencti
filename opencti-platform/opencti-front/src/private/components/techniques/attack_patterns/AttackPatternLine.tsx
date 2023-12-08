@@ -93,7 +93,7 @@ export const AttackPatternLine: FunctionComponent<AttackPatternLineProps> = ({
       button={true}
       component={Link}
       to={`/dashboard/techniques/attack_patterns/${data.id}`}
-      >
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Attack-Pattern" />
       </ListItemIcon>
@@ -103,7 +103,7 @@ export const AttackPatternLine: FunctionComponent<AttackPatternLineProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.killChainPhase.width }}
-              >
+            >
               {(data.killChainPhases?.edges && data.killChainPhases?.edges.length > 0)
                 ? `[${data.killChainPhases.edges[0].node.kill_chain_name}] ${data.killChainPhases.edges[0].node.phase_name}`
                 : '-'}
@@ -111,40 +111,40 @@ export const AttackPatternLine: FunctionComponent<AttackPatternLineProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_mitre_id.width }}
-              >
+            >
               <code>{emptyFilled(data.x_mitre_id)}</code>
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
-              >
+            >
               {data.name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
-              >
+            >
               <StixCoreObjectLabels
                 variant="inList"
                 labels={data.objectLabel}
                 onClick={onLabelClick.bind(this)}
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
-              >
+            >
               {fd(data.created)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.modified.width }}
-              >
+            >
               {fd(data.modified)}
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>
@@ -166,7 +166,7 @@ export const AttackPatternLineDummy = ({
           variant="circular"
           width={30}
           height={30}
-          />
+        />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -174,72 +174,72 @@ export const AttackPatternLineDummy = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.killChainPhase.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_mitre_id.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.modified.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>

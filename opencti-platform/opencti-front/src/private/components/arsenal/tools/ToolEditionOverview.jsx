@@ -178,7 +178,7 @@ const ToolEditionOverviewComponent = (props) => {
       initialValues={initialValues}
       validationSchema={toolValidator}
       onSubmit={onSubmit}
-      >
+    >
       {({
         submitForm,
         isSubmitting,
@@ -199,7 +199,7 @@ const ToolEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -213,7 +213,7 @@ const ToolEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           <ConfidenceField
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -221,7 +221,7 @@ const ToolEditionOverviewComponent = (props) => {
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
-            />
+          />
           <KillChainPhasesField
             name="killChainPhases"
             style={fieldSpacingContainerStyle}
@@ -230,7 +230,7 @@ const ToolEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="killChainPhases" />
               }
             onChange={editor.changeKillChainPhases}
-            />
+          />
           {tool.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -242,7 +242,7 @@ const ToolEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -252,7 +252,7 @@ const ToolEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -261,7 +261,7 @@ const ToolEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           <OpenVocabField
             type="tool_types_ov"
             name="tool_types"
@@ -273,7 +273,7 @@ const ToolEditionOverviewComponent = (props) => {
             variant="edit"
             multiple={true}
             editContext={context}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -282,7 +282,7 @@ const ToolEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={tool.id}
-              />
+          />
           )}
         </Form>
       )}

@@ -56,7 +56,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             isRelationReversed
             currentView={view}
             enableContextualView
-          />}
+             />}
 
         {view === 'relationships'
           && <EntityStixCoreRelationshipsRelationshipsView
@@ -70,7 +70,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             isRelationReversed
             currentView={view}
             enableContextualView
-          />}
+             />}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsIndicatorsContextualView

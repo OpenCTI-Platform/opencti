@@ -24,7 +24,7 @@ const IndicatorEditionContainer = (props) => {
         enableReferences={useIsEnforceReference('Indicator')}
         context={editContext}
         handleClose={handleClose}
-        />
+      />
     </Drawer>
   );
 };

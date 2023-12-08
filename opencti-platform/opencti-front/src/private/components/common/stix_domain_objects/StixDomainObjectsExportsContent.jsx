@@ -71,7 +71,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
                 dense={true}
                 disableImport={true}
                 directDownload={true}
-                  />
+              />
               ),
             )
           ) : (

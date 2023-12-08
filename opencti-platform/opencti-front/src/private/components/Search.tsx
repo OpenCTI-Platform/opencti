@@ -153,7 +153,7 @@ const Search = () => {
             'created',
             'created_at',
           ]}
-            >
+        >
           {queryRef && (
           <React.Suspense
             fallback={
@@ -165,7 +165,7 @@ const Search = () => {
                   ))}
               </>
                       }
-                  >
+          >
             <SearchStixCoreObjectsLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -176,7 +176,7 @@ const Search = () => {
               onToggleEntity={onToggleEntity}
               selectAll={selectAll}
               setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  />
+            />
             <ToolBar
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
@@ -185,7 +185,7 @@ const Search = () => {
               filters={filters}
               search={paginationOptions.search}
               handleClearSelectedElements={handleClearSelectedElements}
-                />
+            />
           </React.Suspense>
           )}
         </ListLines>
@@ -204,7 +204,7 @@ const Search = () => {
             component={Link}
             color={isEnterpriseEdition ? 'primary' : 'ee'}
             to={`/dashboard/search/files/${searchTerm}`}
-              >
+          >
             <div>{t('Extend this search to indexed files')}<EEChip /></div>
           </Button>
         </div>

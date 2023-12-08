@@ -44,18 +44,18 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
           )}`,
         }}
         label={t(`relationship_${relation.relationship_type}`)}
-        />
+      />
       {relation.source_id && (
         <RelationShipFromAndTo
           id={relation.source_id}
           direction={'From'}
-            />
+        />
       )}
       {relation.target_id && (
         <RelationShipFromAndTo
           id={relation.target_id}
           direction={'To'}
-            />
+        />
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Marking')}
@@ -65,7 +65,7 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
           <ItemMarkings
             markingDefinitionsEdges={relation.markedBy.map((marking) => ({ node: marking }))}
             limit={2}
-            />
+          />
         ) : (
           '-'
         )}

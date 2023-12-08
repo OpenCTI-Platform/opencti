@@ -77,7 +77,7 @@ const MarkdownField = (props) => {
               content={markdown}
               remarkGfmPlugin={true}
               commonmark={true}
-              />
+            />
           </div>,
         )
         }

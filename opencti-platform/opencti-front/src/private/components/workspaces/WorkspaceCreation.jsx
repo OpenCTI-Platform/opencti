@@ -122,24 +122,24 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
             ariaLabel="Create"
             icon={<SpeedDialIcon />}
             FabProps={{ color: 'secondary' }}
-            >
+          >
             <SpeedDialAction
               title={t('Create dashboard')}
               icon={<InsertChartOutlined />}
               tooltipTitle={t('Create dashboard')}
               onClick={onOpen}
               FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
+            />
             <SpeedDialAction
               title={t('Import dashboard')}
               icon={<CloudUploadOutlined />}
               tooltipTitle={t('Import dashboard')}
               onClick={() => inputRef.current?.click()}
               FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
+            />
           </SpeedDial>
         ) : undefined}
-        >
+      >
         {({ onClose }) => (
           <Formik
             initialValues={{
@@ -149,7 +149,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
             validationSchema={workspaceValidation(t)}
             onSubmit={onSubmit}
             onReset={onClose}
-            >
+          >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -157,7 +157,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
-                  />
+                />
                 <Field
                   component={MarkdownField}
                   name="description"
@@ -166,14 +166,14 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
-                  />
+                />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                    >
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
@@ -182,7 +182,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                    >
+                  >
                     {t('Create')}
                   </Button>
                 </div>

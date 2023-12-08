@@ -206,7 +206,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                   key={informationType}
                   classes={{ root: classes.chip }}
                   label={informationType}
-                  />
+                />
               ))
               : '-'}
           </Grid>
@@ -261,7 +261,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                   divider={true}
                   component={Link}
                   to={`/dashboard/cases/rfis/${relatedContainer?.id}`}
-                  >
+                >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer?.entity_type} />
                   </ListItemIcon>
@@ -271,7 +271,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                         {relatedContainer?.name}
                       </div>
                       }
-                    />
+                  />
                   <div className={classes.itemAuthor}>
                     {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
                   </div>
@@ -285,7 +285,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                           relatedContainer?.objectMarking?.edges ?? []
                         }
                       limit={1}
-                      />
+                    />
                   </div>
                 </ListItem>
               );

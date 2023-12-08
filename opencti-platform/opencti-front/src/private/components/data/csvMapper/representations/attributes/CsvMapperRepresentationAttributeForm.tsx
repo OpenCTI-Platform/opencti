@@ -156,7 +156,7 @@ CsvMapperRepresentationAttributeFormProps
       <CsvMapperRepresentionAttributeSelectedConfigurations
         configuration={ formikContext.values.representations[indexRepresentation]
           .attributes[indexAttribute]?.column?.configuration}
-        />
+      />
 
     </div>
   );

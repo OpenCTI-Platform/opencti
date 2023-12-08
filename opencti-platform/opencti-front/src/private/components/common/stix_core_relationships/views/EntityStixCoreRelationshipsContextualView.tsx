@@ -179,7 +179,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
             border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
           }}
           label={t(`entity_${stixCoreObject.entity_type}`)}
-                />
+        />
       ),
     },
     [isObservables ? 'observable_value' : 'name']: {
@@ -214,7 +214,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
           variant="inList"
           labels={stixCoreObject.objectLabel}
           onClick={helpers.handleAddFilter}
-                />
+        />
       ),
     },
     created_at: {
@@ -232,7 +232,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
           variant="inList"
           markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
           limit={1}
-                />
+        />
       ),
     },
     cases_and_analysis: {
@@ -248,7 +248,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
             label={n(stixCoreObject.containers?.edges?.length)}
             component={Link}
             to={linkAnalyses}
-                    />
+          />
         );
       },
     },
@@ -325,7 +325,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         enableContextualView={true}
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
-            >
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
             <EntityStixCoreRelationshipsContextualViewLines
@@ -336,7 +336,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
               selectAll={selectAll}
-                        />
+            />
           </React.Suspense>
         ) : (
           <Loader variant={LoaderVariant.inElement}/>
@@ -355,7 +355,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         warningMessage={t(
           'Be careful, you are about to delete the selected entities.',
         )}
-            />
+      />
     </>
   );
 };

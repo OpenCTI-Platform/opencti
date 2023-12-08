@@ -31,7 +31,7 @@ const ItemAssignees: FunctionComponent<Props> = (props) => {
             color="primary"
             size="small"
             style={{ margin: '0 7px 7px 0', cursor: 'default' }}
-            >
+          >
             {assignee.name}
           </Button>
         ))

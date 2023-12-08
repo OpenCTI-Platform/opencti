@@ -145,7 +145,7 @@ const StixSightingRelationships = () => {
             'x_opencti_negative',
             'creator',
           ]}
-                >
+        >
           <QueryRenderer
             query={stixSightingRelationshipsLinesQuery}
             variables={rawPaginationOptions}
@@ -165,9 +165,9 @@ const StixSightingRelationships = () => {
                 deSelectedElements={deSelectedElements}
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
-                            />
+              />
             )}
-                    />
+          />
         </ListLines>
         <ToolBar
           selectedElements={selectedElements}
@@ -178,7 +178,7 @@ const StixSightingRelationships = () => {
           filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="stix-sighting-relationship"
-                />
+        />
       </>
     );
   };

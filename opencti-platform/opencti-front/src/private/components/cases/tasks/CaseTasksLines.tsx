@@ -140,7 +140,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         variant="h4"
         gutterBottom={true}
         style={{ float: 'left', paddingBottom: 11 }}
-            >
+      >
         {t('Tasks')}
       </Typography>
       <Tooltip title={t('Add a task to this container')}>
@@ -150,7 +150,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           onClick={handleOpen}
           classes={{ root: classes.createButton }}
           size="large"
-                >
+        >
           <AddOutlined fontSize="small"/>
         </IconButton>
       </Tooltip>
@@ -161,7 +161,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           onClick={() => setOpenCaseTemplate(true)}
           classes={{ root: classes.applyButton }}
           size="large"
-                >
+        >
           <ContentPasteGoOutlined fontSize="small"/>
         </IconButton>
       </Tooltip>
@@ -171,7 +171,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         onClose={() => setOpenCaseTemplate(false)}
         fullWidth={true}
         maxWidth="md"
-            >
+      >
         <DialogTitle>{t('Apply case templates')}</DialogTitle>
         <DialogContent>
           <Formik
@@ -200,13 +200,13 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 },
               });
             }}
-                    >
+          >
             {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
               <Form style={{ minWidth: 400 }}>
                 <CaseTemplateField
                   onChange={setFieldValue}
                   label="Case templates"
-                                />
+                />
                 <div className={classes.buttons}>
                   <Button
                     onClick={() => {
@@ -215,7 +215,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     }}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                                    >
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
@@ -223,7 +223,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                                    >
+                  >
                     {t('Apply')}
                   </Button>
                 </div>
@@ -236,13 +236,13 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         open={open}
         title={t('Create a task')}
         onClose={handleClose}
-            >
+      >
         <CaseTaskCreation
           caseId={caseId}
           onClose={handleClose}
           paginationOptions={paginationOptions}
           defaultMarkings={defaultMarkings}
-                />
+        />
       </Drawer>
       <div className="clearfix"/>
       <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -253,7 +253,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           dataColumns={tasksDataColumns}
           inline={true}
           secondaryAction={true}
-                >
+        >
           <ListLinesContent
             dataColumns={tasksDataColumns}
             dataList={data?.tasks?.edges ?? []}
@@ -262,7 +262,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             entityId={caseId}
             paginationOptions={tasksFilters}
             containerRef={containerRef}
-                    />
+          />
         </ListLines>
       </Paper>
     </div>

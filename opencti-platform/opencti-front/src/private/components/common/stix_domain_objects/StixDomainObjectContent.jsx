@@ -606,7 +606,7 @@ class StixDomainObjectContentComponent extends Component {
                         content={markdown}
                         remarkGfmPlugin={true}
                         commonmark={true}
-                        />,
+                      />,
                     )
                     }
                     l18n={{

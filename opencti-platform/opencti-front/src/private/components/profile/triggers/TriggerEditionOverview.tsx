@@ -309,7 +309,7 @@ TriggerEditionOverviewProps
       initialValues={initialValues as never}
       validationSchema={triggerValidation()}
       onSubmit={onSubmit}
-        >
+    >
       {({ values, setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -319,7 +319,7 @@ TriggerEditionOverviewProps
             label={t('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
-                    />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -329,7 +329,7 @@ TriggerEditionOverviewProps
             rows="4"
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
-                    />
+          />
           {trigger.trigger_type === 'live' && (
           <Field
             component={AutocompleteField}
@@ -351,7 +351,7 @@ TriggerEditionOverviewProps
                 <ListItemText primary={option.label}/>
               </MenuItem>
             )}
-                        />
+          />
           )}
           {trigger.trigger_type === 'digest' && (
           <TriggersField
@@ -361,7 +361,7 @@ TriggerEditionOverviewProps
             style={fieldSpacingContainerStyle}
             onChange={handleSubmitTriggers}
             paginationOptions={paginationOptions}
-                        />
+          />
           )}
           {trigger.trigger_type === 'digest' && (
           <Field
@@ -372,7 +372,7 @@ TriggerEditionOverviewProps
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
-                        >
+          >
             <MenuItem value="hour">{t('hour')}</MenuItem>
             <MenuItem value="day">{t('day')}</MenuItem>
             <MenuItem value="week">{t('week')}</MenuItem>
@@ -388,7 +388,7 @@ TriggerEditionOverviewProps
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitDay}
-                        >
+          >
             <MenuItem value="1">{t('Monday')}</MenuItem>
             <MenuItem value="2">{t('Tuesday')}</MenuItem>
             <MenuItem value="3">{t('Wednesday')}</MenuItem>
@@ -407,7 +407,7 @@ TriggerEditionOverviewProps
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitDay}
-                        >
+          >
             {Array.from(Array(31).keys()).map((idx) => (
               <MenuItem key={idx} value={(idx + 1).toString()}>
                 {(idx + 1).toString()}
@@ -427,12 +427,12 @@ TriggerEditionOverviewProps
               fullWidth: true,
               style: { marginTop: 20 },
             }}
-                        />
+          />
           )}
           <NotifierField
             name="notifiers"
             onChange={(name, options) => handleSubmitField(name, options.map(({ value }) => value))}
-                    />
+          />
           {trigger.trigger_type === 'live'
                         && <span>
                           {trigger.instance_trigger
@@ -444,7 +444,7 @@ TriggerEditionOverviewProps
                                 inputValues={instanceFilters}
                                 setInputValues={setInstanceFilters}
                                 openOnFocus={true}
-                      />
+                              />
                             </div>)
                             : <div>
                               <div style={{ marginTop: 35 }}>
@@ -484,7 +484,7 @@ TriggerEditionOverviewProps
                                   allEntityTypes={undefined}
                                   type={undefined}
                                   availableRelationFilterTypes={undefined}
-                          />
+                                />
                               </div>
                               <div className="clearfix"/>
                             </div>
@@ -496,7 +496,7 @@ TriggerEditionOverviewProps
                             handleSwitchLocalMode={handleSwitchLocalMode}
                             classNameNumber={2}
                             redirection
-              />
+                          />
                         </span>
                     }
         </Form>

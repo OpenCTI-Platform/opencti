@@ -254,7 +254,7 @@ const RetentionCreation = (props) => {
                 classNameNumber={2}
                 styleNumber={2}
                 redirection
-                />
+              />
               <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button

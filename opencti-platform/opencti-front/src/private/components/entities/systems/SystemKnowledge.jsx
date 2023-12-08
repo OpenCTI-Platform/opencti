@@ -46,13 +46,13 @@ class SystemKnowledgeComponent extends Component {
                 stixDomainObjectId={system.id}
                 stixDomainObjectType="System"
                 {...routeProps}
-                />
+              />
             ) : (
               <StixDomainObjectAuthorKnowledge
                 stixDomainObjectId={system.id}
                 stixDomainObjectType="System"
                 {...routeProps}
-                />
+              />
             ))
             }
           />

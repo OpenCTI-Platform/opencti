@@ -62,7 +62,8 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
-        size="large">
+        size="large"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

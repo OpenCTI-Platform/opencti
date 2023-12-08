@@ -166,7 +166,7 @@ const SectorEditionOverviewComponent = (props) => {
       initialValues={initialValues}
       validationSchema={sectorValidator}
       onSubmit={onSubmit}
-      >
+    >
       {({
         submitForm,
         isSubmitting,
@@ -187,7 +187,7 @@ const SectorEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -201,7 +201,7 @@ const SectorEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           {sector.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -213,7 +213,7 @@ const SectorEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -223,7 +223,7 @@ const SectorEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -232,7 +232,7 @@ const SectorEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -241,7 +241,7 @@ const SectorEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={sector.id}
-              />
+          />
           )}
         </Form>
       )}

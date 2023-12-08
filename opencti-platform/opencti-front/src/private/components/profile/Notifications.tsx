@@ -95,7 +95,7 @@ const Notifications: FunctionComponent = () => {
           'is_read',
           'created',
         ]}
-            >
+      >
         {queryRef && (
         <React.Suspense
           fallback={
@@ -104,11 +104,11 @@ const Notifications: FunctionComponent = () => {
                 <NotificationLineDummy
                   key={`NotificationLineDummy-${idx}`}
                   dataColumns={dataColumns}
-                                    />
+                />
               ))}
             </>
                         }
-                    >
+        >
           <NotificationsLines
             queryRef={queryRef}
             paginationOptions={paginationOptions}
@@ -119,7 +119,7 @@ const Notifications: FunctionComponent = () => {
             deSelectedElements={deSelectedElements}
             onToggleEntity={onToggleEntity}
             selectAll={selectAll}
-                        />
+          />
           <NotificationsToolBar
             selectedElements={selectedElements}
             deSelectedElements={deSelectedElements}
@@ -127,7 +127,7 @@ const Notifications: FunctionComponent = () => {
             handleClearSelectedElements={handleClearSelectedElements}
             selectAll={selectAll}
             filters={toolBarFilters}
-                        />
+          />
         </React.Suspense>
         )}
       </ListLines>

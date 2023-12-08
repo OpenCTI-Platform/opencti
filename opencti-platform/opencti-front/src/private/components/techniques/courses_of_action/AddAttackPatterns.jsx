@@ -82,10 +82,10 @@ class AddAttackPatterns extends Component {
                       courseOfActionPaginationOptions
                     }
                   data={props}
-                  />
+                />
               );
             }}
-            />
+          />
         </Drawer>
       </div>
     );

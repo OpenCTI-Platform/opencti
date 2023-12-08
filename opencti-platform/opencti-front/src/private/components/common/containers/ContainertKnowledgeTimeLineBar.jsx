@@ -71,14 +71,14 @@ const ContentKnowledgeTimeLineBar = ({
               bottom: bannerSettings.bannerHeightNumber,
             },
           }}
-                >
+        >
           <div
             style={{
               height: 54,
               verticalAlign: 'top',
               transition: 'height 0.2s linear',
             }}
-                    >
+          >
             <div
               style={{
                 verticalAlign: 'top',
@@ -86,7 +86,7 @@ const ContentKnowledgeTimeLineBar = ({
                 height: 54,
                 paddingTop: 3,
               }}
-                        >
+            >
               <div
                 style={{
                   float: 'left',
@@ -94,20 +94,20 @@ const ContentKnowledgeTimeLineBar = ({
                   height: '100%',
                   display: 'flex',
                 }}
-                            >
+              >
                 <Tooltip
                   title={
                                         timeLineDisplayRelationships
                                           ? t('Do not display relationships')
                                           : t('Display relationships')
                                     }
-                                >
+                >
                   <span>
                     <IconButton
                       color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
                       size="large"
                       onClick={() => handleToggleTimeLineDisplayRelationships()}
-                >
+                    >
                       <RelationManyToMany/>
                     </IconButton>
                   </span>
@@ -118,13 +118,13 @@ const ContentKnowledgeTimeLineBar = ({
                                           ? t('Use technical dates')
                                           : t('Use functional dates')
                                     }
-                                >
+                >
                   <span>
                     <IconButton
                       color={timeLineFunctionalDate ? 'secondary' : 'primary'}
                       size="large"
                       onClick={() => handleToggleTimeLineFunctionalDate()}
-                >
+                    >
                       <CalendarMultiselectOutline/>
                     </IconButton>
                   </span>
@@ -135,7 +135,7 @@ const ContentKnowledgeTimeLineBar = ({
                     variant="thin"
                     onSubmit={handleTimeLineSearch}
                     keyword={timeLineSearchTerm}
-              />
+                  />
                 </div>
                 <Divider className={classes.divider} orientation="vertical" />
                 <div style={{ paddingTop: 4 }}>
@@ -153,7 +153,7 @@ const ContentKnowledgeTimeLineBar = ({
                     ]}
                     handleAddFilter={handleAddTimeLineFilter}
                     noDirectFilters={true}
-              />
+                  />
                 </div>
                 <div style={{ paddingTop: 3 }}>
                   <FilterIconButton
@@ -163,7 +163,7 @@ const ContentKnowledgeTimeLineBar = ({
                     handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
                     classNameNumber={1}
                     redirection
-              />
+                  />
                 </div>
               </div>
             </div>

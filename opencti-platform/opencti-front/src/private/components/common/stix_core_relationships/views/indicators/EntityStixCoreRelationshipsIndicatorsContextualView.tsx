@@ -193,7 +193,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
           variant="inList"
           labels={stixCoreObject.objectLabel}
           onClick={helpers.handleAddFilter}
-                />
+        />
       ),
     },
     created_at: {
@@ -217,7 +217,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
           variant="inList"
           markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
           limit={1}
-                />
+        />
       ),
     },
     cases_and_analysis: {
@@ -233,7 +233,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
             label={n(stixCoreObject.containers?.edges?.length)}
             component={Link}
             to={linkAnalyses}
-                    />
+          />
         );
       },
     },
@@ -304,7 +304,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         enableContextualView
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
-            >
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
             <EntityStixCoreRelationshipsIndicatorsContextualViewLines
@@ -315,7 +315,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
               selectAll={selectAll}
-                        />
+            />
           </React.Suspense>
         ) : (
           <Loader variant={LoaderVariant.inElement}/>
@@ -334,7 +334,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         warningMessage={t(
           'Be careful, you are about to delete the selected entities.',
         )}
-            />
+      />
     </>
   );
 };

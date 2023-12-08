@@ -180,7 +180,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
             'confidence',
             'indicator_types',
           ]}
-            >
+        >
           <QueryRenderer
             query={stixDomainObjectIndicatorsLinesQuery}
             variables={paginationOptions}
@@ -197,9 +197,9 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
                 deSelectedElements={deSelectedElements}
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
-                  />
-            )}
               />
+            )}
+          />
         </ListLines>
         <ToolBar
           selectedElements={selectedElements}
@@ -210,7 +210,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"
-            />
+        />
       </div>
     );
   };

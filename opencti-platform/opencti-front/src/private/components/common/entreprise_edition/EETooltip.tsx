@@ -31,7 +31,8 @@ const EETooltip = ({
           setFeedbackCreation(true);
           e.preventDefault();
           e.stopPropagation();
-        }}>
+        }}
+        >
           {children}
         </span>
       </Tooltip>

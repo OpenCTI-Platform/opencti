@@ -182,7 +182,7 @@ const ContainerAddStixCoreObjects = (props) => {
                       ? targetStixCoreObjectTypes
                       : []
                 }
-            />
+      />
     );
   };
   const renderObservableCreation = (searchPaginationOptions) => {
@@ -197,7 +197,7 @@ const ContainerAddStixCoreObjects = (props) => {
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
-            />
+      />
     );
   };
   const renderStixCoreObjectCreation = (searchPaginationOptions) => {
@@ -213,7 +213,7 @@ const ContainerAddStixCoreObjects = (props) => {
           FabProps={{
             color: 'secondary',
           }}
-                >
+        >
           <SpeedDialAction
             title={t('Create an observable')}
             icon={<HexagonOutline/>}
@@ -222,7 +222,7 @@ const ContainerAddStixCoreObjects = (props) => {
             FabProps={{
               classes: { root: classes.speedDialButton },
             }}
-                    />
+          />
           <SpeedDialAction
             title={t('Create an entity')}
             icon={<GlobeModel/>}
@@ -231,7 +231,7 @@ const ContainerAddStixCoreObjects = (props) => {
             FabProps={{
               classes: { root: classes.speedDialButton },
             }}
-                    />
+          />
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
@@ -251,7 +251,7 @@ const ContainerAddStixCoreObjects = (props) => {
           speeddial={true}
           open={openCreateEntity}
           handleClose={() => handleCloseCreateEntity()}
-                />
+        />
         <StixCyberObservableCreation
           display={open}
           contextual={true}
@@ -265,7 +265,7 @@ const ContainerAddStixCoreObjects = (props) => {
           speeddial={true}
           open={openCreateObservable}
           handleClose={() => handleCloseCreateObservable()}
-                />
+        />
       </div>
     );
   };
@@ -384,7 +384,7 @@ const ContainerAddStixCoreObjects = (props) => {
                 'created_at',
                 'creator_id',
               ]}
-                        >
+            >
               <QueryRenderer
                 query={containerAddStixCoreObjectsLinesQuery}
                 variables={{ count: 100, ...searchPaginationOptions }}
@@ -402,9 +402,9 @@ const ContainerAddStixCoreObjects = (props) => {
                     setNumberOfElements={setNumberOfElements}
                     mapping={mapping}
                     containerRef={containerRef}
-                                    />
+                  />
                 )}
-                            />
+              />
             </ListLines>
           </div>
         )}
@@ -427,7 +427,7 @@ const ContainerAddStixCoreObjects = (props) => {
             aria-label="Add"
             onClick={() => setOpen(true)}
             size="large"
-                    >
+          >
             <Add/>
           </IconButton>
         </Tooltip>
@@ -441,7 +441,7 @@ const ContainerAddStixCoreObjects = (props) => {
           onClick={() => setOpen(true)}
           classes={{ root: classes.createButtonSimple }}
           size="large"
-                >
+        >
           <Add fontSize="small"/>
         </IconButton>
       );
@@ -454,7 +454,7 @@ const ContainerAddStixCoreObjects = (props) => {
         className={
                     withPadding ? classes.createButtonWithPadding : classes.createButton
                 }
-            >
+      >
         <Add/>
       </Fab>
     );
@@ -485,7 +485,7 @@ const ContainerAddStixCoreObjects = (props) => {
           }
         }}
         title={t('Add entities')}
-            >
+      >
         <>
           {renderSearchResults(searchPaginationOptions)}
           {renderEntityCreation(searchPaginationOptions)}

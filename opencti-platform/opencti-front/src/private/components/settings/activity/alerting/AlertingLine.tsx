@@ -187,7 +187,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                       {data.period}
                     </span>
                                     }
-                                />
+                />
                 {currentTime.length > 1 && (
                 <Chip
                   classes={{ root: classes.chipInList3 }}
@@ -197,7 +197,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                       {day}
                     </span>
                                         }
-                                    />
+                />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                 <Chip
@@ -208,13 +208,13 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                       {nt(time)}
                     </span>
                                         }
-                                    />
+                />
                 )}
               </div>
             )}
           </div>
                 }
-            />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <AlertingPopover data={data} paginationOptions={paginationOptions}/>
       </ListItemIcon>
@@ -241,18 +241,18 @@ export const AlertingLineDummy = ({
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
-                            >
+              >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width="90%"
                   height={20}
-                                />
+                />
               </div>
             ))}
           </div>
                 }
-            />
+      />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <IconButton disabled={true} aria-haspopup="true" size="large">
           <MoreVert/>

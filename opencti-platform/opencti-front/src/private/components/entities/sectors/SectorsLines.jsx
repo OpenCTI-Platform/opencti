@@ -69,7 +69,7 @@ class SectorsLinesComponent extends Component {
                 key={sector.id}
                 node={sector}
                 subSectors={subSectors}
-                />
+              />
             );
           }, sectors)
           : Array.from(Array(20), (e, i) => <SectorLineDummy key={i} />)}

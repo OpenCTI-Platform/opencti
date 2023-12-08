@@ -364,7 +364,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                                       ]
                                     }
                                 handleOpenImport={handleOpenImport}
-                                  />
+                              />
                               ),
                             )}
                           </List>
@@ -422,7 +422,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               file={file.node}
                               nested={true}
                               isExternalReferenceAttachment={isFileAttached}
-                                />
+                            />
                             ),
                           )}
                         </List>
@@ -440,14 +440,14 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 paddingTop: 15,
                 paddingBottom: 15,
               }}
-          >
+            >
               <span
                 style={{
                   display: 'table-cell',
                   verticalAlign: 'middle',
                   textAlign: 'center',
                 }}
-            >
+              >
                 {t('No entities of this type has been found.')}
               </span>
             </div>

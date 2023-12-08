@@ -45,13 +45,13 @@ class IndividualKnowledgeComponent extends Component {
                 stixDomainObjectId={individual.id}
                 stixDomainObjectType="Individual"
                 {...routeProps}
-                />
+              />
             ) : (
               <StixDomainObjectAuthorKnowledge
                 stixDomainObjectId={individual.id}
                 stixDomainObjectType="Individual"
                 {...routeProps}
-                />
+              />
             ))
             }
           />

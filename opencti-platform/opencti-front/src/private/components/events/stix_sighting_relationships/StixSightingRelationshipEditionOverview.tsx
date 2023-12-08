@@ -434,7 +434,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   open={false}
                   values={values.references}
                   id={stixSightingRelationship.id}
-                  noStoreUpdate={noStoreUpdate} />
+                  noStoreUpdate={noStoreUpdate}
+                />
               )}
             </Form>
           )}

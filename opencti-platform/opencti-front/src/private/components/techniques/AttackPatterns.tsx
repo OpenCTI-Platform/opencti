@@ -113,18 +113,18 @@ const AttackPatterns = () => {
                   <AttackPatternLineDummy
                     key={idx}
                     dataColumns={dataColumns}
-                            />
+                  />
                 ))}
             </>
                 }
-            >
+        >
           <AttackPatternsLines
             queryRef={queryRef}
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
             onLabelClick={helpers.handleAddFilter}
             setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
+          />
         </React.Suspense>
         )}
       </ListLines>

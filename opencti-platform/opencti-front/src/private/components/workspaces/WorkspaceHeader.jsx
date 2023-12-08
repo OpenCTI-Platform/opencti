@@ -432,7 +432,7 @@ const WorkspaceHeader = ({
               classes={{ root: classes.tag }}
               label={tag}
               onDelete={() => deleteTag(tag)}
-                />
+            />
             ),
           )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
@@ -532,7 +532,7 @@ const WorkspaceHeader = ({
                       key={label}
                       disableGutters={true}
                       dense={true}
-                        >
+                    >
                       <ListItemText primary={label} />
                       <ListItemSecondaryAction>
                         <IconButton
@@ -540,7 +540,7 @@ const WorkspaceHeader = ({
                           aria-label="delete"
                           onClick={() => deleteTag(label)}
                           size="large"
-                            >
+                        >
                           <Delete />
                         </IconButton>
                       </ListItemSecondaryAction>

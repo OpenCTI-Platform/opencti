@@ -94,7 +94,7 @@ const dataColumns: DataColumns = {
         color={node.stream_live ? 'success' : 'error'}
         variant="outlined"
         label={t(node.stream_live ? 'Started' : 'Stopped')}
-            />
+      />
     ),
   },
   filters: {
@@ -110,7 +110,7 @@ const dataColumns: DataColumns = {
             dataColumns={this}
             classNameNumber={3}
             styleNumber={3}
-          />}
+                          />}
         </>
       );
     },
@@ -140,19 +140,19 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
-                            >
+              >
                 {value.render?.(stream, { t, classes })}
               </div>
             ))}
           </div>
                 }
-            />
+      />
       <ListItemSecondaryAction>
         <Tooltip
           title={t(
             'Copy uri to clipboard for your OpenCTI synchronizer configuration',
           )}
-                >
+        >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy/>
@@ -189,7 +189,7 @@ const PublicStreamLines = () => {
           dataList={streamCollections.edges}
           LineComponent={PublicStreamLine}
           DummyLineComponent={<StreamLineDummy/>}
-                />
+        />
       </ListLines>
     </>
   ) : (
@@ -202,7 +202,7 @@ const PublicStreamLines = () => {
         gutterBottom={true}
         color={'error'}
         style={{ marginTop: 20, marginBottom: 40 }}
-            >
+      >
         {t('No available public stream on this platform')}
       </Typography>
     </>

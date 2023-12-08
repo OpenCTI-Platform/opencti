@@ -199,7 +199,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                   expanded={expanded}
                   onChange={() => handleChangePanel(type, expanded)}
                   elevation={3}
-              >
+                >
                   <AccordionSummary expandIcon={<ExpandMore />}>
                     <Typography className={classes.heading}>
                       {t(`entity_${type}`)}
@@ -210,7 +210,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                   </AccordionSummary>
                   <AccordionDetails
                     classes={{ root: classes.expansionPanelContent }}
-                >
+                  >
                     <List classes={{ root: classes.list }}>
                       {stixCyberObservables[type].map((stixCyberObservable) => {
                         const alreadyAdded = indicatorObservablesIds.includes(
@@ -223,7 +223,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                             divider={true}
                             button={true}
                             onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
-                        >
+                          >
                             <ListItemIcon>
                               {alreadyAdded ? (
                                 <CheckCircle classes={{ root: classes.icon }} />
@@ -233,7 +233,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                             </ListItemIcon>
                             <ListItemText
                               primary={stixCyberObservable.observable_value}
-                          />
+                            />
                           </ListItem>
                         );
                       })}

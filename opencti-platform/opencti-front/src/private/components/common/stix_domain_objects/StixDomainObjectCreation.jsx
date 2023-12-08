@@ -596,7 +596,7 @@ const StixDomainPanel = ({
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
           updater={creationUpdater}
-          />
+        />
       );
     }
     if (type === 'Tool') {

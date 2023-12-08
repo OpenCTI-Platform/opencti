@@ -192,7 +192,8 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     return <>
       <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
-        multiple={true} name={'recipients'}/>
+        multiple={true} name={'recipients'}
+      />
       <span>
         <div style={{ marginTop: 35 }}>
           <Filters
@@ -216,7 +217,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             allEntityTypes={undefined}
             type={undefined}
             availableRelationFilterTypes={undefined}
-         />
+          />
         </div>
         <div className="clearfix"/>
       </span>
@@ -250,7 +251,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         handleSwitchGlobalMode={handleSwitchGlobalMode}
         classNameNumber={2}
         redirection
-        />
+      />
     </React.Fragment>
   );
 
@@ -264,7 +265,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-            >
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -272,7 +273,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             onClick={handleClose}
             size="large"
             color="primary"
-                    >
+          >
             <Close fontSize="small" color="primary"/>
           </IconButton>
           <Typography variant="h6">{t('Create a live activity trigger')}</Typography>
@@ -283,7 +284,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             validationSchema={liveActivityTriggerValidation(t)}
             onSubmit={onLiveSubmit}
             onReset={onReset}
-                    >
+          >
             {({
               submitForm,
               handleReset,
@@ -299,7 +300,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                                    >
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
@@ -308,7 +309,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
-                                    >
+                  >
                     {t('Create')}
                   </Button>
                 </div>
@@ -324,11 +325,13 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     <Dialog disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      PaperProps={{ elevation: 1 }}>
+      PaperProps={{ elevation: 1 }}
+    >
       <Formik initialValues={liveInitialValues}
         validationSchema={liveActivityTriggerValidation(t)}
         onSubmit={onLiveSubmit}
-        onReset={onReset}>
+        onReset={onReset}
+      >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
             <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>

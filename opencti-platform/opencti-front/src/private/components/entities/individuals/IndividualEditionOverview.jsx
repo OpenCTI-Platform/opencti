@@ -170,7 +170,8 @@ const IndividualEditionOverviewComponent = (props) => {
     <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={individualValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -192,7 +193,7 @@ const IndividualEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -206,7 +207,7 @@ const IndividualEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           <Field
             component={TextField}
             variant="standard"
@@ -221,7 +222,7 @@ const IndividualEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="contact_information" />
               }
-            />
+          />
           <OpenVocabField
             label={t('Reliability')}
             type="reliability_ov"
@@ -233,7 +234,7 @@ const IndividualEditionOverviewComponent = (props) => {
             editContext={context}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
-            />
+          />
           {individual.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -245,7 +246,7 @@ const IndividualEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -255,7 +256,7 @@ const IndividualEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -264,7 +265,7 @@ const IndividualEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -273,7 +274,7 @@ const IndividualEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={individual.id}
-              />
+          />
           )}
         </Form>
       )}

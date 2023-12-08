@@ -169,7 +169,7 @@ const SystemEditionOverviewComponent = (props) => {
       initialValues={initialValues}
       validationSchema={systemValidator}
       onSubmit={onSubmit}
-      >
+    >
       {({
         submitForm,
         isSubmitting,
@@ -191,7 +191,7 @@ const SystemEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -205,7 +205,7 @@ const SystemEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           <Field
             component={TextField}
             variant="standard"
@@ -220,7 +220,7 @@ const SystemEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="contact_information" />
               }
-            />
+          />
           <OpenVocabField
             label={t('Reliability')}
             type="reliability_ov"
@@ -232,7 +232,7 @@ const SystemEditionOverviewComponent = (props) => {
             editContext={context}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
-            />
+          />
           {system.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -244,7 +244,7 @@ const SystemEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -254,7 +254,7 @@ const SystemEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -263,7 +263,7 @@ const SystemEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -272,7 +272,7 @@ const SystemEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={system.id}
-              />
+          />
           )}
         </Form>
       )}

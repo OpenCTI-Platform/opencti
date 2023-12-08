@@ -376,7 +376,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                         component={Link}
                         button={true}
                         to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                        >
+                      >
                         <ListItemIcon>
                           <ItemIcon type="Role" />
                         </ListItemIcon>
@@ -407,7 +407,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                         button={true}
                         component={Link}
                         to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                        >
+                      >
                         <ListItemIcon>
                           <ItemIcon type="Group" />
                         </ListItemIcon>
@@ -418,7 +418,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                         key={groupEdge?.node.id}
                         dense={true}
                         divider={true}
-                        >
+                      >
                         <ListItemIcon>
                           <ItemIcon type="Group" />
                         </ListItemIcon>

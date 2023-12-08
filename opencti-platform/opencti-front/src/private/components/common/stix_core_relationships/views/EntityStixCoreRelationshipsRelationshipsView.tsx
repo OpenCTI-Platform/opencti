@@ -253,7 +253,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         paginationOptions={paginationOptions}
         enableEntitiesView={true}
         currentView={finalView}
-            >
+      >
         <QueryRenderer
           query={
                         // eslint-disable-next-line no-nested-ternary
@@ -279,7 +279,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
-                            />
+              />
             ) : isRelationReversed ? (
               <EntityStixCoreRelationshipsLinesTo
                 data={props}
@@ -292,7 +292,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
-                            />
+              />
             ) : (
               <EntityStixCoreRelationshipsLinesFrom
                 data={props}
@@ -305,10 +305,10 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
-                            />
+              />
             ))
                     }
-                />
+        />
       </ListLines>
       <ToolBar
         selectedElements={selectedElements}
@@ -319,7 +319,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
-            />
+      />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
@@ -331,7 +331,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           defaultStopTime={defaultStopTime}
           paginationOptions={paginationOptions}
           paddingRight={paddingRightButtonAdd ?? 220}
-                />
+        />
       </Security>
     </>
   );

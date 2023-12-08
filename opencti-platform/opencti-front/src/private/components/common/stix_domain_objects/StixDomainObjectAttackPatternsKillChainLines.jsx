@@ -294,7 +294,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                                   }
                                                     remarkGfmPlugin={true}
                                                     commonmark={true}
-                                                ></MarkdownDisplay>
+                                                  ></MarkdownDisplay>
                                                 ) : (
                                                   t(
                                                     'No description of this course of action',

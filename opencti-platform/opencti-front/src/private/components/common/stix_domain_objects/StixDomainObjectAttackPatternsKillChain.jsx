@@ -131,24 +131,24 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
         <div
           className={classes.parameters}
           style={{ marginTop: -12 }}
-                >
+        >
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
               variant="small"
               keyword={searchTerm}
               onSubmit={handleSearch.bind(this)}
-                        />
+            />
           </div>
           <div
             style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }}
-                    >
+          >
             <Tooltip
               title={
                                 currentModeOnlyActive
                                   ? t('Display the whole matrix')
                                   : t('Display only used techniques')
                             }
-                        >
+            >
               <span>
                 <IconButton
                   color={currentModeOnlyActive ? 'secondary' : 'primary'}
@@ -165,7 +165,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                                   ? t('Disable invert colors')
                                   : t('Enable invert colors')
                             }
-                        >
+            >
               <span>
                 <IconButton
                   color={currentColorsReversed ? 'secondary' : 'primary'}
@@ -235,11 +235,11 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                   value="export"
                   aria-label="export"
                   onClick={handleToggleExports.bind(this)}
-                  >
+                >
                   <FileDownloadOutlined
                     fontSize="small"
                     color={openExports ? 'secondary' : 'primary'}
-                    />
+                  />
                 </ToggleButton>
               </Tooltip>
               )}
@@ -250,14 +250,14 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                     'Export is disabled because too many entities are targeted (maximum number of entities is: ',
                   ) + export_max_size
                 })`}
-                >
+              >
                 <span>
                   <ToggleButton
                     size="small"
                     value="export"
                     aria-label="export"
                     disabled={true}
-                    >
+                  >
                     <FileDownloadOutlined fontSize="small"/>
                   </ToggleButton>
                 </span>
@@ -270,7 +270,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 name={t('Attack patterns kill chain')}
                 csvData={csvData}
                 csvFileName={`${t('Attack pattern courses of action')}.csv`}
-                            />
+              />
             </div>
           </div>
           <div className="clearfix"/>
@@ -283,7 +283,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             paginationOptions={paginationOptions}
             onDelete={this.props.relay.refetch.bind(this)}
             searchTerm={searchTerm}
-                        />
+          />
           )}
           {currentView === 'matrix' && (
           <StixDomainObjectAttackPatternsKillChainMatrix
@@ -299,7 +299,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             currentColorsReversed={currentColorsReversed}
             currentModeOnlyActive={currentModeOnlyActive}
             handleAdd={this.handleAdd.bind(this)}
-                        />
+          />
           )}
           {currentView === 'courses-of-action' && (
           <StixDomainObjectAttackPatternsKillChainLines
@@ -309,7 +309,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             onDelete={this.props.relay.refetch.bind(this)}
             searchTerm={searchTerm}
             coursesOfAction={true}
-                        />
+          />
           )}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipCreationFromEntity
@@ -320,7 +320,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
               targetEntities={targetEntities}
-                        />
+            />
           </Security>
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixCoreRelationshipsExports
@@ -328,7 +328,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
               context={exportContext}
-                        />
+            />
           </Security>
         </div>
       </>

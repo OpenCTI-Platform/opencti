@@ -45,13 +45,13 @@ class OrganizationKnowledgeComponent extends Component {
                 stixDomainObjectId={organization.id}
                 stixDomainObjectType="Organization"
                 {...routeProps}
-                />
+              />
             ) : (
               <StixDomainObjectAuthorKnowledge
                 stixDomainObjectId={organization.id}
                 stixDomainObjectType="Organization"
                 {...routeProps}
-                />
+              />
             ))
             }
           />

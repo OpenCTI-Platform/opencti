@@ -96,7 +96,7 @@ const Sync = () => {
             .
           </>
                 }
-            >
+      >
         <QueryRenderer
           query={SyncLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
@@ -107,9 +107,9 @@ const Sync = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
-                        />
+            />
           )}
-                />
+        />
       </ListLines>
       <SyncCreation paginationOptions={paginationOptions}/>
     </div>

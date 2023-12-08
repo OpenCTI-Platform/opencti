@@ -208,7 +208,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                   key={takedownType}
                   classes={{ root: classes.chip }}
                   label={takedownType}
-                  />
+                />
               ))
               : '-'}
           </Grid>
@@ -263,7 +263,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                   divider={true}
                   component={Link}
                   to={`/dashboard/cases/rfts/${relatedContainer?.id}`}
-                  >
+                >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer?.entity_type} />
                   </ListItemIcon>
@@ -273,7 +273,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                         {relatedContainer?.name}
                       </div>
                       }
-                    />
+                  />
                   <div className={classes.itemAuthor}>
                     {relatedContainer?.createdBy?.name ?? ''}
                   </div>
@@ -287,7 +287,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
                           relatedContainer?.objectMarking?.edges ?? []
                         }
                       limit={1}
-                      />
+                    />
                   </div>
                 </ListItem>
               );

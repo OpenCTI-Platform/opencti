@@ -20,7 +20,7 @@ export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | 
                 style={{ width: 20 }}
                 src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
                 alt={country.name}
-            />
+              />
             </Tooltip>
           </div>
           <div style={{ marginLeft: 10 }}>

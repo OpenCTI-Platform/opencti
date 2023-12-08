@@ -78,7 +78,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
       button={true}
       component={Link}
       to={`/dashboard/entities/events/${data.id}`}
-      >
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Event" />
       </ListItemIcon>
@@ -88,36 +88,36 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
-              >
+            >
               {data.name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.event_types.width }}
-              >
+            >
               {data.event_types?.join(', ')}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.start_time.width }}
-              >
+            >
               {fd(data.start_time)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.stop_time.width }}
-              >
+            >
               {fd(data.stop_time)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
-              >
+            >
               {fd(data.created)}
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
@@ -139,7 +139,7 @@ export const EventLineDummy = ({
           variant="circular"
           width={30}
           height={30}
-          />
+        />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -147,61 +147,61 @@ export const EventLineDummy = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.event_types.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.start_time.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.stop_time.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>

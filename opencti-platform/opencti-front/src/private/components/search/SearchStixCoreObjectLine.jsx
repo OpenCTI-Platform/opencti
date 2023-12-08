@@ -169,7 +169,7 @@ const SearchStixCoreObjectLineComponent = ({
                     label={n(node.containersNumber.total)}
                     component={Link}
                     to={linkAnalyses}
-                />
+                  />
                 )}
             </div>
             <div

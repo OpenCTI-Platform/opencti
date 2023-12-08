@@ -159,7 +159,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
             'confidence',
             'created',
           ]}
-                >
+        >
           <QueryRenderer
             query={observedDatasLinesQuery}
             variables={{ ...paginationOptions }}
@@ -179,9 +179,9 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                            />
+              />
             )}
-                    />
+          />
         </ListLines>
         <ToolBar
           selectedElements={selectedElements}
@@ -192,7 +192,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Observed-Data"
-                />
+        />
       </>
     );
   };

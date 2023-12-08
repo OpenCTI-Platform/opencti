@@ -130,7 +130,7 @@ const ContainerStixCoreObjectsMapping = ({
         secondaryAction={true}
         numberOfElements={numberOfElements}
         noPadding={true}
-        >
+      >
         {queryRef && (
         <React.Suspense
           fallback={
@@ -141,11 +141,11 @@ const ContainerStixCoreObjectsMapping = ({
                   <ContainerStixCoreObjectsMappingLineDummy
                     key={idx}
                     dataColumns={dataColumns}
-                      />
+                  />
                 ))}
             </>
               }
-            >
+        >
           <ContainerStixCoreObjectsMappingLines
             container={container}
             queryRef={queryRef}
@@ -156,7 +156,7 @@ const ContainerStixCoreObjectsMapping = ({
             height={height}
             contentMappingData={contentMappingData}
             contentMapping={contentMapping}
-              />
+          />
         </React.Suspense>
         )}
       </ListLines>
@@ -177,7 +177,7 @@ const ContainerStixCoreObjectsMapping = ({
         confidence={container.confidence}
         paginationOptions={paginationOptions}
         onAdd={addMapping}
-        />
+      />
     </div>
   );
 };

@@ -1939,7 +1939,7 @@ class ToolBar extends Component {
                     key={label}
                     classes={{ root: classes.aliases }}
                     label={label}
-                    />
+                  />
                 ) : (
                   ''
                 )))}

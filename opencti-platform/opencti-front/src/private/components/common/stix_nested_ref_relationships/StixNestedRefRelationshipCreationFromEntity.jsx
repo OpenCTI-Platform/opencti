@@ -859,7 +859,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
                     }
                     return this.renderLoader();
                   }}
-              />
+                />
               : ''}
           </div>
         </Drawer>

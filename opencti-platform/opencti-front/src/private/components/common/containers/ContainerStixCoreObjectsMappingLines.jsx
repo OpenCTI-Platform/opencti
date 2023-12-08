@@ -108,7 +108,7 @@ const ContainerStixCoreObjectsMappingLines = ({
       LineComponent={
         <ContainerStixCoreObjectsMappingLine
           containerId={data?.container?.id ?? null}
-          />
+        />
         }
       DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
       dataColumns={dataColumns}
@@ -116,7 +116,7 @@ const ContainerStixCoreObjectsMappingLines = ({
       height={height}
       contentMapping={contentMapping}
       contentMappingData={contentMappingData}
-      />
+    />
   );
 };
 

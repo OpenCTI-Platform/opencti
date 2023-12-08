@@ -75,7 +75,7 @@ const IngestionRss = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-            >
+      >
         <QueryRenderer
           query={IngestionRssLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
@@ -86,9 +86,9 @@ const IngestionRss = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
-                        />
+            />
           )}
-                />
+        />
       </ListLines>
       <IngestionRssCreation paginationOptions={paginationOptions}/>
     </div>

@@ -157,7 +157,8 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     initialValues={initialValues}
     validationSchema={organizationValidator}
     onSubmit={onSubmit}
-    onReset={onReset}>
+    onReset={onReset}
+         >
     {({
       submitForm,
       handleReset,

@@ -108,7 +108,7 @@ const EventsLines: FunctionComponent<EventsLinesProps> = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      />
+    />
   );
 };
 

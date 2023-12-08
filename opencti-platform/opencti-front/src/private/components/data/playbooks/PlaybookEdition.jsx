@@ -63,7 +63,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={playbookValidation(t)}
-        >
+      >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -73,7 +73,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               label={t('Name')}
               fullWidth={true}
               onSubmit={handleSubmitField}
-              />
+            />
             <Field
               component={TextField}
               variant="standard"
@@ -82,7 +82,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               fullWidth={true}
               style={{ marginTop: 20 }}
               onSubmit={handleSubmitField}
-              />
+            />
           </Form>
         )}
       </Formik>

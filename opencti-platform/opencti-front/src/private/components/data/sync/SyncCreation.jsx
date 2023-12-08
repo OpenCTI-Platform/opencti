@@ -281,7 +281,7 @@ const SyncCreation = ({ paginationOptions }) => {
                                   container
                                   spacing={1}
                                   style={{ overflow: 'hidden' }}
-                                    >
+                                >
                                   <Grid key={name} item xs={12}>
                                     <Typography>{name}</Typography>
                                   </Grid>
@@ -293,12 +293,12 @@ const SyncCreation = ({ paginationOptions }) => {
                                       filters={streamsFilters}
                                       classNameNumber={3}
                                       styleNumber={3}
-                                        />
+                                    />
                                   </Grid>
                                 </Grid>
                                   }
                               placement="bottom-start"
-                              >
+                            >
                               <MenuItem key={value} value={value}>
                                 {label}
                               </MenuItem>
@@ -378,7 +378,8 @@ const SyncCreation = ({ paginationOptions }) => {
                       classes={{ root: classes.alert, message: classes.message }}
                       severity="error"
                       variant="outlined"
-                      style={{ position: 'relative' }}>
+                      style={{ position: 'relative' }}
+                    >
                       <div>{t('Use these options if you know what you are doing')}</div>
                     </Alert>
                     <Field

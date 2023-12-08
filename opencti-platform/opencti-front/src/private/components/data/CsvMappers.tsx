@@ -72,17 +72,17 @@ const CsvMappers = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-            >
+      >
         {queryRef && (
         <>
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement}/>}
-                        >
+          >
             <CsvMapperLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
-                            />
+            />
           </React.Suspense>
         </>
         )}

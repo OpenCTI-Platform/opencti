@@ -47,13 +47,15 @@ const CheckboxesField = ({
         <Button
           disabled={items.length === 0}
           variant={(items.length > 0 && value.length === items.length) ? 'contained' : undefined}
-          onClick={checkAll}>
+          onClick={checkAll}
+        >
           {t('All')}
         </Button>
         <Button
           disabled={items.length === 0}
           variant={(items.length > 0 && value.length === 0) ? 'contained' : undefined}
-          onClick={checkNone}>
+          onClick={checkNone}
+        >
           {t('None')}
         </Button>
       </ButtonGroup>
@@ -62,7 +64,8 @@ const CheckboxesField = ({
         maxHeight: '300px',
         flexWrap: 'nowrap',
         overflowY: 'auto',
-      }}>
+      }}
+      >
         {items.map((item) => (
           <FormControlLabel
             key={item.label}
@@ -72,9 +75,9 @@ const CheckboxesField = ({
                 checked={isChecked(item)}
                 name={item.value}
                 onChange={() => toggle(item)}
-                />
+              />
               )}
-            />
+          />
         ))}
       </FormGroup>
     </FormControl>

@@ -521,7 +521,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   className={classes.closeButton}
                   onClick={this.handleClose.bind(this)}
                   size="large"
-                    >
+                >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
                 <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -532,7 +532,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 relationshipTypes={relationshipTypes}
                 handleResetSelection={this.handleResetSelection.bind(this)}
                 onSubmit={this.onSubmit.bind(this)}
-                handleClose={this.handleClose.bind(this)} />
+                handleClose={this.handleClose.bind(this)}
+              />
             </>
           );
         }}

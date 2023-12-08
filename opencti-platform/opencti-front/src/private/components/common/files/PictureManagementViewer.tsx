@@ -96,7 +96,7 @@ PictureManagementViewerProps
                     key={idx}
                     dataColumns={dataColumns}
                     entityId={data.id}
-                      />
+                  />
                   ),
                 )}
               </List>

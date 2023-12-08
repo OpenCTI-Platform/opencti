@@ -271,7 +271,8 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 classes={{ root: classes.alert, message: classes.message }}
                 severity="error"
                 variant="outlined"
-                style={{ position: 'relative' }}>
+                style={{ position: 'relative' }}
+              >
                 <div>{t('Use these options if you know what you are doing')}</div>
               </Alert>
               <Field

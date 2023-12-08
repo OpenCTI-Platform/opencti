@@ -39,7 +39,7 @@ class SystemEdition extends Component {
           }
           return <Loader variant="inElement" />;
         }}
-          />
+      />
     );
   }
 }

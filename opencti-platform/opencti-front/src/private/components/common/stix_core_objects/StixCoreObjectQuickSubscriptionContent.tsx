@@ -318,7 +318,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
           initialValues={instanceTrigger}
           validationSchema={liveTriggerValidation}
           onSubmit={onSubmitUpdate}
-                >
+        >
           {({
             submitForm,
             isSubmitting,
@@ -332,11 +332,11 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
-                            />
+              />
               <NotifierField
                 name="notifiers"
                 onChange={setFieldValue}
-                            />
+              />
               <Field
                 component={AutocompleteField}
                 name="event_types"
@@ -354,11 +354,12 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 ) => (
                   <MenuItem value={option.value} {...props}>
                     <Checkbox
-                      checked={values.event_types.map((n) => n.value).includes(option.value)}/>
+                      checked={values.event_types.map((n) => n.value).includes(option.value)}
+                    />
                     <ListItemText primary={option.label}/>
                   </MenuItem>
                 )}
-                            />
+              />
               {multipleInstanceTrigger && instanceTriggerFilters
                                 && <div style={{ ...fieldSpacingContainerStyle }}>
                                   <FilterIconButton
@@ -366,7 +367,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                                     classNameNumber={3}
                                     styleNumber={3}
                                     redirection
-                                    />
+                                  />
                                 </div>
                             }
               <div className={classes.buttons} style={{ marginTop: firstTrigger ? 20 : 40 }}>
@@ -375,7 +376,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   onClick={multipleInstanceTrigger ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
                   disabled={deleting}
                   classes={{ root: classes.deleteButton }}
-                                >
+                >
                   {multipleInstanceTrigger ? t('Remove') : t('Delete')}
                 </Button>
                 <Button
@@ -384,7 +385,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.updateButton }}
-                                >
+                >
                   {t('Update')}
                 </Button>
               </div>
@@ -427,7 +428,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         title={t('Update instance triggers')}
         open={open}
         onClose={handleClose}
-            >
+      >
         <>
           <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
             {t(instanceTriggerDescription)}
@@ -442,15 +443,16 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                             divider={true}
                             classes={{ root: classes.nested }}
                             onClick={handleToggleLine}
-                            >
+                          >
                             <ListItemText
-                              primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`}/>
+                              primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`}
+                            />
                             <ListItemSecondaryAction>
                               <IconButton
                                 onClick={handleToggleLine}
                                 aria-haspopup="true"
                                 size="large"
-                                    >
+                              >
                                 {expandedLines ? (
                                   <ExpandLess/>
                                 ) : (
@@ -461,7 +463,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                           </ListItem>
                           <Collapse
                             in={expandedLines}
-                            >
+                          >
                             {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
                           </Collapse>
                         </List>
@@ -478,11 +480,11 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
           value="quick-subscription"
           size="small"
           style={{ marginRight: 3 }}
-                >
+        >
           <NotificationsOutlined
             fontSize="small"
             color={triggerUpdate ? 'secondary' : 'primary'}
-                    />
+          />
         </ToggleButton>
       </Tooltip>
       {triggerUpdate && updateInstanceTrigger()}

@@ -113,7 +113,7 @@ class MarkingDefinitionEditionContainer extends Component {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={markingDefinitionValidation(t)}
-          >
+        >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -128,9 +128,9 @@ class MarkingDefinitionEditionContainer extends Component {
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="definition_type"
-                    />
+                  />
                   }
-                />
+              />
               <Field
                 component={TextField}
                 variant="standard"
@@ -144,9 +144,9 @@ class MarkingDefinitionEditionContainer extends Component {
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="definition"
-                    />
+                  />
                   }
-                />
+              />
               <Field
                 component={ColorPickerField}
                 name="x_opencti_color"
@@ -159,9 +159,9 @@ class MarkingDefinitionEditionContainer extends Component {
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="x_opencti_color"
-                    />
+                  />
                   }
-                />
+              />
               <Field
                 component={TextField}
                 variant="standard"
@@ -176,9 +176,9 @@ class MarkingDefinitionEditionContainer extends Component {
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="x_opencti_order"
-                    />
+                  />
                   }
-                />
+              />
             </Form>
           )}
         </Formik>

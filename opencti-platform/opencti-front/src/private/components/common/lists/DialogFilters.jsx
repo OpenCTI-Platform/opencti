@@ -54,7 +54,7 @@ const DialogFilters = ({
             handleSwitchG
             classNameNumber={4}
             styleNumber={2}
-            />
+          />
           {filterElement}
         </DialogContent>
         <DialogActions>

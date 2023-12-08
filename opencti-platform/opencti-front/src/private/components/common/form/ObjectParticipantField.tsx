@@ -126,7 +126,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
         </li>
       )}
       classes={{ clearIndicator: classes.autoCompleteIndicator }}
-      />
+    />
   );
 };
 

@@ -89,7 +89,7 @@ const dataColumns: DataColumns = {
         color={'success'}
         variant="outlined"
         label={t('Started')}
-            />
+      />
     ),
   },
   filters: {
@@ -105,7 +105,7 @@ const dataColumns: DataColumns = {
             dataColumns={this}
             classNameNumber={3}
             styleNumber={3}
-          />}
+                          />}
         </>
       );
     },
@@ -135,19 +135,19 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
-                            >
+              >
                 {value.render?.(feed, { t, classes })}
               </div>
             ))}
           </div>
                 }
-            />
+      />
       <ListItemSecondaryAction>
         <Tooltip
           title={t(
             'Copy uri to clipboard for your csv client',
           )}
-                >
+        >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy/>
@@ -184,7 +184,7 @@ const PublicFeedLines = () => {
           dataList={feeds.edges}
           LineComponent={PublicFeedLine}
           DummyLineComponent={<FeedLineDummy/>}
-                />
+        />
       </ListLines>
     </>
   ) : (
@@ -197,7 +197,7 @@ const PublicFeedLines = () => {
         gutterBottom={true}
         color={'error'}
         style={{ marginTop: 20 }}
-            >
+      >
         {t('No available public CSV feeds on this platform')}
       </Typography>
     </>

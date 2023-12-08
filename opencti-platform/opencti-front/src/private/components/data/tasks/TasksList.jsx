@@ -186,21 +186,21 @@ const TasksList = ({ data }) => {
         classes={{ root: classes.paper }}
         variant="outlined"
         style={{ marginBottom: 20 }}
-          >
+      >
         <div
           style={{
             display: 'table',
             height: '100%',
             width: '100%',
           }}
-            >
+        >
           <span
             style={{
               display: 'table-cell',
               verticalAlign: 'middle',
               textAlign: 'center',
             }}
-              >
+          >
             {t('No task')}
           </span>
         </div>
@@ -231,7 +231,7 @@ const TasksList = ({ data }) => {
             classes={{ root: classes.paper }}
             variant="outlined"
             style={{ marginBottom: 20 }}
-            >
+          >
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={5}>
                 <Grid container={true} spacing={1}>
@@ -250,11 +250,11 @@ const TasksList = ({ data }) => {
                             {task.task_search}
                           </div>
                             }
-                          />
+                      />
                       <Chip
                         classes={{ root: classes.operator }}
                         label={t('AND')}
-                          />
+                      />
                     </span>
                     )}
                     {task.type !== 'RULE'
@@ -279,7 +279,7 @@ const TasksList = ({ data }) => {
                     <Chip
                       classes={{ root: classes.filter }}
                       label={<div>{t('All rule targets')}</div>}
-                        />
+                    />
                     )}
                   </Grid>
                   <Grid item={true} xs={12}>
@@ -290,7 +290,7 @@ const TasksList = ({ data }) => {
                     <Chip
                       classes={{ root: classes.operator }}
                       label={<div>{t('APPLY RULE')}</div>}
-                        />
+                    />
                     )}
                     {task.actions
                         && R.map(
@@ -386,7 +386,7 @@ const TasksList = ({ data }) => {
                                   * 100,
                               )
                         }
-                      />
+                    />
                   </Grid>
                 </Grid>
               </Grid>
@@ -405,7 +405,7 @@ const TasksList = ({ data }) => {
                     variant="outlined"
                     onClick={() => handleDeleteTask(task.id)}
                     size="small"
-                >
+                  >
                   <Delete fontSize="small"/>
                   &nbsp;&nbsp;{t('Delete')}
                 </Button>

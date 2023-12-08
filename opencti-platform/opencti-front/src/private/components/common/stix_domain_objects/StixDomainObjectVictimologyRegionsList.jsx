@@ -465,7 +465,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                           }
                                             remarkGfmPlugin={true}
                                             commonmark={true}
-                                        />
+                                          />
                                         ) : stixCoreRelationship.inferred ? (
                                           <i>{t('This relation is inferred')}</i>
                                         ) : (
@@ -572,7 +572,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                   }
                                                     remarkGfmPlugin={true}
                                                     commonmark={true}
-                                                />
+                                                  />
                                                 ) : stixCoreRelationship.inferred ? (
                                                   <i>
                                                     {t(

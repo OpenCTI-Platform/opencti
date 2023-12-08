@@ -67,7 +67,8 @@ const StixCoreRelationshipLabelsView = (props) => {
   return <StixCoreObjectOrCoreRelationshipLabelsView {...props}
     mutationRelationsAdd={stixCoreRelationshipMutationRelationsAdd}
     mutationRelationDelete={stixCoreRelationshipMutationRelationsDelete}
-    enableReferences={useIsEnforceReference('stix-core-relationship')}/>;
+    enableReferences={useIsEnforceReference('stix-core-relationship')}
+         />;
 };
 
 StixCoreRelationshipLabelsView.propTypes = {

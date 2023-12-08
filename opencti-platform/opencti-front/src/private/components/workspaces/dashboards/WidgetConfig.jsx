@@ -738,21 +738,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         container={true}
         spacing={3}
         style={{ marginTop: 20, marginBottom: 20 }}
-            >
+      >
         {visualizationTypes.map((visualizationType) => (
           <Grid key={visualizationType.key} item={true} xs="4">
             <Card variant="outlined" className={classes.card3}>
               <CardActionArea
                 onClick={() => handleSelectType(visualizationType.key)}
                 style={{ height: '100%' }}
-                            >
+              >
                 <CardContent>
                   {renderIcon(visualizationType.key)}
                   <Typography
                     gutterBottom
                     variant="body1"
                     style={{ marginTop: 8 }}
-                                    >
+                  >
                     {t(visualizationType.name)}
                   </Typography>
                 </CardContent>
@@ -779,21 +779,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         container={true}
         spacing={3}
         style={{ marginTop: 20, marginBottom: 20 }}
-            >
+      >
         {getCurrentIsEntities() && (
         <Grid item={true} xs={xs}>
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
               onClick={() => handleSelectPerspective('entities')}
               style={{ height: '100%' }}
-                            >
+            >
               <CardContent>
                 <DatabaseOutline style={{ fontSize: 40 }} color="primary"/>
                 <Typography
                   gutterBottom
                   variant="h2"
                   style={{ marginTop: 20 }}
-                                    >
+                >
                   {t('Entities')}
                 </Typography>
                 <br/>
@@ -811,14 +811,14 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             <CardActionArea
               onClick={() => handleSelectPerspective('relationships')}
               style={{ height: '100%' }}
-                            >
+            >
               <CardContent>
                 <FlaskOutline style={{ fontSize: 40 }} color="primary"/>
                 <Typography
                   gutterBottom
                   variant="h2"
                   style={{ marginTop: 20 }}
-                                    >
+                >
                   {t('Knowledge graph')}
                 </Typography>
                 <br/>
@@ -838,17 +838,17 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             <CardActionArea
               onClick={() => handleSelectPerspective('audits')}
               style={{ height: '100%' }}
-                            >
+            >
               <CardContent>
                 <LibraryBooksOutlined
                   style={{ fontSize: 40 }}
                   color="primary"
-                                    />
+                />
                 <Typography
                   gutterBottom
                   variant="h2"
                   style={{ marginTop: 20 }}
-                                    >
+                >
                   {t('Activity & history')}
                 </Typography>
                 <br/>
@@ -1079,7 +1079,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
           value={parameters.title}
           onChange={(event) => handleChangeParameter('title', event.target.value)
                     }
-                />
+        />
         {getCurrentCategory() === 'text' && (
         <div style={{ marginTop: 20 }}>
           <InputLabel shrink={true}>{t('Content')}</InputLabel>
@@ -1093,7 +1093,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 content={markdown}
                 remarkGfmPlugin={true}
                 commonmark={true}
-                                />,
+              />,
             )
                             }
             l18n={{
@@ -1104,7 +1104,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             }}
             minEditorHeight={100}
             maxEditorHeight={100}
-                        />
+          />
         </div>
         )}
         {getCurrentCategory() === 'timeseries' && (
@@ -1116,7 +1116,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             value={parameters.interval ?? 'day'}
             onChange={(event) => handleChangeParameter('interval', event.target.value)
                             }
-                        >
+          >
             <MenuItem value="day">{t('Day')}</MenuItem>
             <MenuItem value="week">{t('Week')}</MenuItem>
             <MenuItem value="month">{t('Month')}</MenuItem>
@@ -1155,7 +1155,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       width: '100%',
                       marginTop: 20,
                     }}
-                                        >
+                  >
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <InputLabel id="relative" size="small">
                         {isNotEmptyField(dataSelection[i].label)
@@ -1175,7 +1175,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           event.target.value,
                         )
                                                     }
-                                                >
+                      >
                         <MenuItem value="created_at">
                           created_at ({t('Technical date')})
                         </MenuItem>
@@ -1226,7 +1226,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                           )
                                                 }
                                           style={{ marginTop: 20 }}
-                                            />
+                                        />
                   )}
                   {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
@@ -1242,7 +1242,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                           )
                                                 }
                                           style={{ marginTop: 20 }}
-                                            />
+                                        />
                   )}
                   {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
@@ -1258,12 +1258,12 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                           )
                                                 }
                                           style={{ marginTop: 20 }}
-                                            />
+                                        />
                   )}
                   {getCurrentAvailableParameters().includes('attribute') && (
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
-                                        >
+                  >
                     {dataSelection[i].perspective === 'relationships' && (
                     <FormControl
                       className={classes.formControl}
@@ -1272,7 +1272,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         flex: 1,
                         marginRight: 20,
                       }}
-                                                >
+                    >
                       <InputLabel>{t('Attribute')}</InputLabel>
                       <Select
                         fullWidth={true}
@@ -1283,7 +1283,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           event.target.value,
                         )
                                                         }
-                                                    >
+                      >
                         <MenuItem key="internal_id" value="internal_id">
                           {t('Entity')}
                         </MenuItem>
@@ -1293,19 +1293,19 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         <MenuItem
                           key="created-by.internal_id"
                           value="created-by.internal_id"
-                                                        >
+                        >
                           {t('Author')}
                         </MenuItem>
                         <MenuItem
                           key="object-marking.internal_id"
                           value="object-marking.internal_id"
-                                                        >
+                        >
                           {t('Marking definition')}
                         </MenuItem>
                         <MenuItem
                           key="kill-chain-phase.internal_id"
                           value="kill-chain-phase.internal_id"
-                                                        >
+                        >
                           {t('Kill chain phase')}
                         </MenuItem>
                         <MenuItem key="creator_id" value="creator_id">
@@ -1322,7 +1322,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                   style={{
                                                     flex: 1,
                                                   }}
-                                                    >
+                                                >
                                                   <InputLabel>{t('Attribute')}</InputLabel>
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}
@@ -1369,7 +1369,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                               event.target.value,
                                                             )
                                                                             }
-                                                                        >
+                                                          >
                                                             {[
                                                               ...attributes,
                                                               { value: 'created-by.internal_id' },
@@ -1385,7 +1385,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                               <MenuItem
                                                                 key={attribute.value}
                                                                 value={attribute.value}
-                                                                                >
+                                                              >
                                                                 {t(
                                                                   capitalizeFirstLetter(
                                                                     attribute.value,
@@ -1398,7 +1398,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                       }
                                                       return <div/>;
                                                     }}
-                                                        />
+                                                  />
                                                 </FormControl>
                     )}
                     {dataSelection[i].perspective === 'entities'
@@ -1421,7 +1421,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                     event.target.value,
                                                   )
                                                         }
-                                                    />
+                                                />
                     )}
                     {dataSelection[i].perspective === 'audits' && (
                     <FormControl
@@ -1430,7 +1430,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       style={{
                         flex: 1,
                       }}
-                                                >
+                    >
                       <InputLabel>{t('Attribute')}</InputLabel>
                       <Select
                         fullWidth={true}
@@ -1441,7 +1441,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           event.target.value,
                         )
                                                         }
-                                                    >
+                      >
                         {[
                           { value: 'entity_type' },
                           { value: 'context_data.id' },
@@ -1467,7 +1467,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           <MenuItem
                             key={attribute.value}
                             value={attribute.value}
-                                                            >
+                          >
                             {t(capitalizeFirstLetter(attribute.value))}
                           </MenuItem>
                         ))}
@@ -1480,22 +1480,22 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         <Switch
                           onChange={() => handleToggleDataValidationIsTo(i)}
                           checked={!dataSelection[i].isTo}
-                                                        />
+                        />
                                                     }
                       label={t('Display the source')}
-                                                />
+                    />
                     )}
                     {dataSelection[i].perspective === 'relationships' && (
                     <Tooltip
                       title={t(
                         'Enable if the displayed data is the source of the relationships.',
                       )}
-                                                >
+                    >
                       <InformationOutline
                         fontSize="small"
                         color="primary"
                         style={{ marginTop: 14 }}
-                                                    />
+                      />
                     </Tooltip>
                     )}
                   </div>
@@ -1511,10 +1511,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               <Switch
                 onChange={() => handleToggleParameter('stacked')}
                 checked={parameters.stacked}
-                                />
+              />
                             }
             label={t('Stacked')}
-                        />
+          />
           )}
           {getCurrentAvailableParameters().includes('distributed') && (
           <FormControlLabel
@@ -1522,10 +1522,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               <Switch
                 onChange={() => handleToggleParameter('distributed')}
                 checked={parameters.distributed}
-                                />
+              />
                             }
             label={t('Distributed')}
-                        />
+          />
           )}
           {getCurrentAvailableParameters().includes('legend') && (
           <FormControlLabel
@@ -1533,10 +1533,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               <Switch
                 onChange={() => handleToggleParameter('legend')}
                 checked={parameters.legend}
-                                />
+              />
                             }
             label={t('Display legend')}
-                        />
+          />
           )}
         </div>
       </div>

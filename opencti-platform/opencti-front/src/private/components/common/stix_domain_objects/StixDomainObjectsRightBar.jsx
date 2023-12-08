@@ -43,7 +43,7 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
       elevation={1}
       sx={{ zIndex: 1202 }}
       classes={{ paper: classes.drawerPaper }}
-      >
+    >
       <div className={classes.toolbar} />
       <QueryRenderer
         query={stixDomainObjectsLinesSubTypesQuery}
@@ -68,25 +68,27 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
                         <IconButton onClick={handleClear}
                           disabled={types.length === 0}
                           color="primary"
-                          size="large">
+                          size="large"
+                        >
                           <FilterOffOutline fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
                   </ListSubheader>
                   }
-                >
+              >
                 {translatedOrderedList.map((subType) => (
                   <ListItem key={subType.id}
                     dense={true}
                     button={true}
                     onClick={() => handleToggle(subType.label)}
-                    classes={{ root: classes.item }}>
+                    classes={{ root: classes.item }}
+                  >
                     <Checkbox
                       checked={types.includes(subType.label)}
                       disableRipple={true}
                       size="small"
-                      />
+                    />
                     <ListItemText primary={subType.tlabel} />
                   </ListItem>
                 ))}
@@ -95,7 +97,7 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
           }
           return <div />;
         }}
-        />
+      />
     </Drawer>
   );
 };

@@ -210,7 +210,8 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                   setOpen(true);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+                classes={{ root: classes.button }}
+              >
                 {t('Test')}
               </Button>
               <Button
@@ -220,7 +221,8 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                   submitForm(setSubmitting, setErrors, values, formRef.current);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+                classes={{ root: classes.button }}
+              >
                 {t('Save')}
               </Button>
             </div>

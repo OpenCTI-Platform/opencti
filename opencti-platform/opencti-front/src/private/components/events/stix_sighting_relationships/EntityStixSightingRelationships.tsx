@@ -144,7 +144,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           secondaryAction={true}
           paginationOptions={finalPaginationOptions}
           numberOfElements={numberOfElements}
-      >
+        >
           {queryRef && (
           <React.Suspense
             fallback={
@@ -195,7 +195,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
             paginationOptions={finalPaginationOptions}
             variant={undefined}
             onCreate={undefined}
-            />
+          />
         ) : (
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
@@ -206,7 +206,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
             paginationOptions={finalPaginationOptions}
             variant={undefined}
             onCreate={undefined}
-            />
+          />
         )}
       </Security>
     </div>

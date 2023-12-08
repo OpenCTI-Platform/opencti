@@ -459,7 +459,7 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
           distributionRelQueryRef={distributionRelQueryRef}
           distributionFromQueryRef={distributionFromQueryRef}
           distributionToQueryRef={distributionToQueryRef}
-      />
+        />
       </Suspense>
     ) : (
       Fallback

@@ -141,7 +141,7 @@ const Infrastructures = () => {
                     <InfrastructureLineDummy
                       key={idx}
                       dataColumns={dataColumns}
-                  />
+                    />
                   ))}
               </>
             }

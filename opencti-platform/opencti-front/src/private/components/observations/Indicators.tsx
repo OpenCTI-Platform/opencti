@@ -184,7 +184,7 @@ const Indicators = () => {
             'confidence',
             'indicator_types',
           ]}
-                >
+        >
           {queryRef && (
           <React.Suspense
             fallback={
@@ -195,11 +195,11 @@ const Indicators = () => {
                     <IndicatorLineDummyComponent
                       key={idx}
                       dataColumns={dataColumns}
-                                            />
+                    />
                   ))}
               </>
                             }
-                        >
+          >
             <IndicatorsLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -210,7 +210,7 @@ const Indicators = () => {
               onToggleEntity={onToggleEntity}
               selectAll={selectAll}
               setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                            />
+            />
           </React.Suspense>
           )}
         </ListLines>
@@ -224,7 +224,7 @@ const Indicators = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"
           type="Indicator"
-                />
+        />
       </>
     );
   };
@@ -244,7 +244,7 @@ const Indicators = () => {
               handleToggleObservableType={handleToggleObservableType}
               handleClearObservableTypes={handleClearObservableTypes}
               openExports={openExports}
-                        />
+            />
           </div>
         </ExportContextProvider>
       )}

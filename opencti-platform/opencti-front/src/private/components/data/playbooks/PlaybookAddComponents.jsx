@@ -204,7 +204,7 @@ const PlaybookAddComponentsContent = ({
           handleChangeActionInput(i, 'attribute', event.target.value);
           setValues(R.omit([`actions-${i}-value`], values));
         }}
-            >
+      >
         {options.length > 0 ? (
           R.map(
             (n) => (
@@ -238,7 +238,7 @@ const PlaybookAddComponentsContent = ({
               })),
             )
                         }
-                    />
+          />
         );
       case 'objectLabel':
         return (
@@ -255,7 +255,7 @@ const PlaybookAddComponentsContent = ({
               })),
             )
                         }
-                    />
+          />
         );
       case 'createdBy':
         return (
@@ -270,7 +270,7 @@ const PlaybookAddComponentsContent = ({
               },
             ])
                         }
-                    />
+          />
         );
       case 'x_opencti_workflow_id':
         return (
@@ -285,7 +285,7 @@ const PlaybookAddComponentsContent = ({
               },
             ])
                         }
-                    />
+          />
         );
       case 'x_opencti_detection':
         return (
@@ -298,7 +298,7 @@ const PlaybookAddComponentsContent = ({
               { label: value, value, patch_value: value },
             ])
                         }
-                    />
+          />
         );
       default:
         return (
@@ -318,7 +318,7 @@ const PlaybookAddComponentsContent = ({
               { label: value, value, patch_value: value },
             ])
                         }
-                    />
+          />
         );
     }
   };
@@ -370,14 +370,14 @@ const PlaybookAddComponentsContent = ({
                 button={true}
                 clases={{ root: classes.item }}
                 onClick={() => setComponentId(component.id)}
-                            >
+              >
                 <ListItemIcon>
                   <ItemIcon type={component.icon}/>
                 </ListItemIcon>
                 <ListItemText
                   primary={component.name}
                   secondary={component.description}
-                                />
+                />
               </ListItem>
             );
           })}
@@ -755,7 +755,7 @@ const PlaybookAddComponents = ({
       open={open}
       title={t('Add components')}
       onClose={handleClose}
-        >
+    >
       {({ onClose }) => (
         <>
           {(selectedNode || selectedEdge) && (
@@ -767,7 +767,7 @@ const PlaybookAddComponents = ({
             onConfigAdd={onConfigAdd}
             onConfigReplace={onConfigReplace}
             handleClose={onClose}
-                        />
+          />
           )}
         </>
       )}

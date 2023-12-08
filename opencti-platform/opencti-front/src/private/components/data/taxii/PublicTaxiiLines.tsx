@@ -94,7 +94,7 @@ const dataColumns: DataColumns = {
         color={'success'}
         variant="outlined"
         label={t('Started')}
-            />
+      />
     ),
   },
   filters: {
@@ -110,7 +110,7 @@ const dataColumns: DataColumns = {
             dataColumns={this}
             classNameNumber={3}
             styleNumber={3}
-          />}
+                          />}
         </>
       );
     },
@@ -140,19 +140,19 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
-                            >
+              >
                 {value.render?.(collection, { t, classes })}
               </div>
             ))}
           </div>
                 }
-            />
+      />
       <ListItemSecondaryAction>
         <Tooltip
           title={t(
             'Copy uri to clipboard for your Taxii client',
           )}
-                >
+        >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy/>
@@ -189,7 +189,7 @@ const PublicTaxiiLines = () => {
           dataList={taxiiCollections.edges}
           LineComponent={PublicTaxiiLine}
           DummyLineComponent={<TaxiiLineDummy/>}
-                />
+        />
       </ListLines>
     </>
   ) : (
@@ -202,7 +202,7 @@ const PublicTaxiiLines = () => {
         gutterBottom={true}
         color={'error'}
         style={{ marginTop: 20, marginBottom: 40 }}
-            >
+      >
         {t('No available public taxii collections on this platform')}
       </Typography>
     </>

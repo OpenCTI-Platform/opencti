@@ -169,7 +169,8 @@ const OrganizationEditionOverviewComponent = (props) => {
     <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={organizationValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -190,7 +191,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -204,7 +205,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           <Field
             component={TextField}
             variant="standard"
@@ -219,7 +220,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="contact_information" />
               }
-            />
+          />
           <Field
             component={SelectField}
             variant="standard"
@@ -236,7 +237,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_organization_type" />
               }
-            >
+          >
             <MenuItem value="constituent">{t('Constituent')}</MenuItem>
             <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
             <MenuItem value="partner">{t('Partner')}</MenuItem>
@@ -254,7 +255,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             editContext={context}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
-            />
+          />
           {organization.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -266,7 +267,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -276,7 +277,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -285,7 +286,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -294,7 +295,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={organization.id}
-              />
+          />
           )}
         </Form>
       )}

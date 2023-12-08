@@ -169,7 +169,7 @@ const EventEditionOverviewComponent = (props) => {
       initialValues={initialValues}
       validationSchema={eventValidator}
       onSubmit={onSubmit}
-      >
+    >
       {({
         submitForm,
         isSubmitting,
@@ -190,7 +190,7 @@ const EventEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
+          />
           <OpenVocabField
             label={t('Event types')}
             type="event-type-ov"
@@ -202,7 +202,7 @@ const EventEditionOverviewComponent = (props) => {
             variant="edit"
             multiple={true}
             editContext={context}
-            />
+          />
           <Field
             component={MarkdownField}
             name="description"
@@ -216,7 +216,7 @@ const EventEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
+          />
           <Field
             component={DateTimePickerField}
             name="start_time"
@@ -231,7 +231,7 @@ const EventEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="start_date" />
               ),
             }}
-            />
+          />
           <Field
             component={DateTimePickerField}
             name="stop_time"
@@ -246,7 +246,7 @@ const EventEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="end_date" />
               ),
             }}
-            />
+          />
           {event.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -258,7 +258,7 @@ const EventEditionOverviewComponent = (props) => {
             helpertext={
               <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
+          />
           )}
           <CreatedByField
             name="createdBy"
@@ -268,7 +268,7 @@ const EventEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
               }
             onChange={editor.changeCreated}
-            />
+          />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
@@ -277,7 +277,7 @@ const EventEditionOverviewComponent = (props) => {
               }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
-            />
+          />
           {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
@@ -286,7 +286,7 @@ const EventEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={event.id}
-              />
+          />
           )}
         </Form>
       )}

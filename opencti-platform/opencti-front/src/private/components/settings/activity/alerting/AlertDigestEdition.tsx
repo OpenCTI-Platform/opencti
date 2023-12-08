@@ -187,7 +187,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           className={classes.closeButton}
           onClick={handleClose}
           size="large"
-          color="primary">
+          color="primary"
+        >
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
@@ -232,7 +233,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 label={t('Period')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-                onChange={handleSubmitField}>
+                onChange={handleSubmitField}
+              >
                 <MenuItem value="hour">{t('hour')}</MenuItem>
                 <MenuItem value="day">{t('day')}</MenuItem>
                 <MenuItem value="week">{t('week')}</MenuItem>
@@ -246,7 +248,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                   label={t('Week day')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
-                  onChange={handleSubmitDay}>
+                  onChange={handleSubmitDay}
+                >
                   <MenuItem value="1">{t('Monday')}</MenuItem>
                   <MenuItem value="2">{t('Tuesday')}</MenuItem>
                   <MenuItem value="3">{t('Wednesday')}</MenuItem>
@@ -264,7 +267,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                   label={t('Month day')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
-                  onChange={handleSubmitDay}>
+                  onChange={handleSubmitDay}
+                >
                   {Array.from(Array(31).keys()).map((idx) => (
                     <MenuItem key={idx} value={(idx + 1).toString()}>
                       {(idx + 1).toString()}

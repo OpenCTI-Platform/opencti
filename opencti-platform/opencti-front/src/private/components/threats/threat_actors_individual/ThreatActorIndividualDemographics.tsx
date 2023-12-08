@@ -77,7 +77,7 @@ const ThreatActorIndividualDemographics = ({
                       key={index}
                       label={t(place)}
                       style={{ margin: 1 }}
-                      />
+                    />
                   ),
                 )
                 : '-'}
@@ -95,7 +95,7 @@ const ThreatActorIndividualDemographics = ({
                       key={index}
                       label={t(place)}
                       style={{ margin: 1 }}
-                      />
+                    />
                   ),
                 )
                 : '-'}
@@ -132,7 +132,7 @@ const ThreatActorIndividualDemographics = ({
                       key={index}
                       label={t(place)}
                       style={{ margin: 1 }}
-                      />
+                    />
                   ),
                 )
                 : '-'}

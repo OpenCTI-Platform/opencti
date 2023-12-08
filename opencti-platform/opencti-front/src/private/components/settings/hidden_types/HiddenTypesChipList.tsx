@@ -50,12 +50,12 @@ const HiddenTypesChipList = ({
         key={hiddenTypeGlobal}
         classes={{ root: classes.grey_chip }}
         label={t(`entity_${hiddenTypeGlobal}`)}
-      />))}
+                                       />))}
       {hiddenTypes.map((hiddenType) => (<Chip
         key={hiddenType}
         classes={{ root: classes.chip }}
         label={t(`entity_${hiddenType}`)}
-      />))}
+                                        />))}
     </FieldOrEmpty>
   </>
   );

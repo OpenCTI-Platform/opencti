@@ -52,7 +52,8 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaperInGraph }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview
@@ -77,7 +78,8 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview

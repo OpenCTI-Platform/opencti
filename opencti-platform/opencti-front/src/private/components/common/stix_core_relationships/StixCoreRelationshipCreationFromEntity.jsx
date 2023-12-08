@@ -509,7 +509,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             className={classes.closeButton}
             onClick={() => handleClose()}
             size="large"
-                    >
+          >
             <Close fontSize="small" color="primary"/>
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -552,7 +552,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                     'created_at',
                     'creator_id',
                   ]}
-                                >
+                >
                   <QueryRenderer
                     query={
                                             stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery
@@ -570,9 +570,9 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                         deSelectedElements={{}}
                         selectAll={false}
                         onToggleEntity={onToggleEntity}
-                                            />
+                      />
                     )}
-                                    />
+                  />
                 </ListLines>
               </>
             )}
@@ -584,7 +584,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
             stixDomainObjectTypes={actualTypeFilter}
-                        />
+          />
           )}
           {targetEntities.length === 0 && isOnlySCOs && (
           <StixCyberObservableCreation
@@ -594,7 +594,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
             stixCyberObservableObjectTypes={actualTypeFilter}
-                        />
+          />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
           <>
@@ -608,7 +608,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               FabProps={{
                 color: 'secondary',
               }}
-                            >
+            >
               <SpeedDialAction
                 title={t('Create an observable')}
                 icon={<HexagonOutline/>}
@@ -617,7 +617,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 FabProps={{
                   classes: { root: classes.speedDialButton },
                 }}
-                                />
+              />
               <SpeedDialAction
                 title={t('Create an entity')}
                 icon={<GlobeModel/>}
@@ -626,7 +626,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 FabProps={{
                   classes: { root: classes.speedDialButton },
                 }}
-                                />
+              />
             </SpeedDial>
             <StixDomainObjectCreation
               display={open}
@@ -636,7 +636,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               speeddial={true}
               open={openCreateEntity}
               handleClose={handleCloseCreateEntity}
-                            />
+            />
             <StixCyberObservableCreation
               display={open}
               contextual={true}
@@ -646,7 +646,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               speeddial={true}
               open={openCreateObservable}
               handleClose={handleCloseCreateObservable}
-                            />
+            />
           </>
           )}
           {targetEntities.length > 0 && (
@@ -656,7 +656,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             size="small"
             color="secondary"
             onClick={() => handleNextStep()}
-                        >
+          >
             {t('Continue')}
             <ChevronRightOutlined/>
           </Fab>
@@ -696,7 +696,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   className={classes.closeButton}
                   onClick={() => handleClose()}
                   size="large"
-                                >
+                >
                   <Close fontSize="small" color="primary"/>
                 </IconButton>
                 <Typography variant="h6">
@@ -713,7 +713,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 handleClose={handleClose}
                 defaultStartTime={defaultStartTime}
                 defaultStopTime={defaultStopTime}
-                            />
+              />
             </>
           );
         }}
@@ -747,7 +747,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
           onClick={() => setOpen(true)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
           size="large"
-                >
+        >
           <Add fontSize="small"/>
         </IconButton>
       ) : !openExports ? (
@@ -757,7 +757,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
           aria-label="Add"
           className={classes.createButton}
           style={{ right: paddingRight || 30 }}
-                >
+        >
           <Add/>
         </Fab>
       ) : (
@@ -775,7 +775,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
           // we must target the element inside the Drawer that holds the scrolling = the Slide
           ref: containerRef,
         }}
-            >
+      >
         <QueryRenderer
           query={stixCoreRelationshipCreationFromEntityQuery}
           variables={{ id: entityId }}
@@ -790,7 +790,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             }
             return renderLoader();
           }}
-                />
+        />
       </Drawer>
     </>
   );

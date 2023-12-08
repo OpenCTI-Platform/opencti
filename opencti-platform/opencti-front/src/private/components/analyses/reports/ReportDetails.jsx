@@ -189,7 +189,7 @@ const ReportDetailsComponent = (props) => {
                   divider={true}
                   component={Link}
                   to={`/dashboard/analyses/reports/${relatedContainer.id}`}
-                  >
+                >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
                   </ListItemIcon>
@@ -199,7 +199,7 @@ const ReportDetailsComponent = (props) => {
                         {relatedContainer.name}
                       </div>
                       }
-                    />
+                  />
                   <div className={classes.itemAuthor}>
                     {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
                   </div>
@@ -213,7 +213,7 @@ const ReportDetailsComponent = (props) => {
                           relatedContainer.objectMarking.edges
                         }
                       limit={1}
-                      />
+                    />
                   </div>
                 </ListItem>
               );

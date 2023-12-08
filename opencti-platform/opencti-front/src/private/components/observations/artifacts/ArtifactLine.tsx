@@ -148,7 +148,7 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
       button={true}
       component={Link}
       to={`/dashboard/observations/artifacts/${data.id}`}
-      >
+    >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
@@ -156,7 +156,7 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
           ? onToggleShiftEntity(index, data, event)
           : onToggleEntity(data, event))
           }
-        >
+      >
         <Checkbox
           edge="start"
           checked={
@@ -164,7 +164,7 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
               || data.id in (selectedElements || {})
             }
           disableRipple={true}
-          />
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Artifact" />
@@ -175,68 +175,68 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.observable_value.width }}
-              >
+            >
               {data.observable_value}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_name.width }}
-              >
+            >
               {file?.name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_mime_type.width }}
-              >
+            >
               <code>{file?.metaData?.mimetype}</code>
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_size.width }}
-              >
+            >
               {b(file?.size)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
-              >
+            >
               {data.createdBy?.name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
-              >
+            >
               {(data.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
-              >
+            >
               <StixCoreObjectLabels
                 variant="inList"
                 labels={data.objectLabel}
                 onClick={onLabelClick.bind(this)}
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
-              >
+            >
               {nsdt(data.created_at)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
-              >
+            >
               <ItemMarkings
                 variant="inList"
                 markingDefinitionsEdges={data.objectMarking?.edges ?? []}
                 limit={1}
-                />
+              />
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>
@@ -258,7 +258,7 @@ export const ArtifactLineDummy: FunctionComponent<ArtifactLineDummyProps> = ({
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
-        >
+      >
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -267,7 +267,7 @@ export const ArtifactLineDummy: FunctionComponent<ArtifactLineDummyProps> = ({
           variant="circular"
           width={30}
           height={30}
-          />
+        />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -275,105 +275,105 @@ export const ArtifactLineDummy: FunctionComponent<ArtifactLineDummyProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.observable_value.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_name.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_mime_type.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.file_size.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={140}
                 height="100%"
-                />
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
-              >
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={100}
                 height="100%"
-                />
+              />
             </div>
           </div>
           }
-        />
+      />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>

@@ -141,7 +141,8 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
               gap: '8px',
               justifyContent: 'center',
               display: 'flex',
-            }}>
+            }}
+             >
             <span>{t('Objects found')} : </span>
             <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t('Entities')}</span>
             <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t('Relationships')}</span>

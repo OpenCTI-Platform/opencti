@@ -235,7 +235,7 @@ const RetentionEditionContainer = (props) => {
               classNameNumber={2}
               styleNumber={2}
               redirection
-              />
+            />
             <div className={classes.buttons}>
               <Button
                 variant="contained"

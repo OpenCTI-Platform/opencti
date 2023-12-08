@@ -377,10 +377,10 @@ const StixDomainObjectHeader = (props) => {
                   <Chip
                     classes={{ root: classes.alias }}
                     label={truncate(label, 40)}
-                      />
+                  />
                 </Tooltip>
                   }
-                >
+            >
               <Tooltip title={label}>
                 <Chip
                   classes={{ root: classes.alias }}
@@ -390,7 +390,7 @@ const StixDomainObjectHeader = (props) => {
                           ? () => handleOpenCommitDelete(label)
                           : () => deleteAlias(label)
                       }
-                    />
+                />
               </Tooltip>
             </Security>
             ),
@@ -573,7 +573,7 @@ const StixDomainObjectHeader = (props) => {
                               : () => deleteAlias(label)
                           }
                       size="large"
-                        >
+                    >
                       <Delete />
                     </IconButton>
                   </ListItemSecondaryAction>

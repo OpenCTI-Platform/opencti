@@ -92,7 +92,7 @@ class Feed extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-            >
+      >
         <QueryRenderer
           query={FeedLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
@@ -102,9 +102,9 @@ class Feed extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-                        />
+            />
           )}
-                />
+        />
       </ListLines>
     );
   }

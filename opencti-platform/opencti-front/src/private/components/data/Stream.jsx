@@ -99,7 +99,7 @@ class Stream extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-            >
+      >
         <QueryRenderer
           query={StreamLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
@@ -109,9 +109,9 @@ class Stream extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-                        />
+            />
           )}
-                />
+        />
       </ListLines>
     );
   }

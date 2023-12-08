@@ -659,7 +659,7 @@ const SearchBulk = () => {
                                     label={n(entity.containersNumber.total)}
                                     component={Link}
                                     to={linkAnalyses}
-                                />
+                                  />
                                 )}
                             </>
                           )}

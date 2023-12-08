@@ -191,7 +191,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                     label={n(node.containersNumber.total)}
                     component={Link}
                     to={linkAnalyses}
-                />
+                  />
                 )}
             </div>
             <div

@@ -303,7 +303,7 @@ UserEditionOverviewComponentProps
             helperText={
               <SubscriptionFocus context={context} fieldName="account_status" />
               }
-            >
+          >
             {settings.platform_user_statuses.map((s) => {
               return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
             })}
@@ -319,7 +319,7 @@ UserEditionOverviewComponentProps
             }}
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
-            />
+          />
         </Form>
       )}
     </Formik>

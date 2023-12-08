@@ -278,7 +278,7 @@ const SettingsOrganization = ({
                           button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/groups/${group.id}`}
-                          >
+                        >
                           <ListItemIcon>
                             <ItemIcon type="Group" />
                           </ListItemIcon>
@@ -293,7 +293,7 @@ const SettingsOrganization = ({
                                   title={t(
                                     'This Group allows the user to bypass restriction. It should not be added here.',
                                   )}
-                              >
+                                >
                                   <WarningOutlined color="warning" />
                                 </Tooltip>
                           )}
@@ -314,7 +314,7 @@ const SettingsOrganization = ({
                                   title={t(
                                     'This Group allows the user to bypass restriction. It should not be added here.',
                                   )}
-                              >
+                                >
                                   <WarningOutlined color="warning" />
                                 </Tooltip>
                           )}

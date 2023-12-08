@@ -136,7 +136,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
-       >
+      >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Basic information')}
@@ -226,7 +226,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           title={t(
                             'You need to authorize this group to access this dashboard in the permissions of the workspace.',
                           )}
-                          >
+                        >
                           <WarningOutlined color="warning" />
                         </Tooltip>
                       </ListItemSecondaryAction>

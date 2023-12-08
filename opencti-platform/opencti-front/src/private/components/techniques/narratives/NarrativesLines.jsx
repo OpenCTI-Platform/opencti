@@ -61,7 +61,7 @@ class NarrativesLinesComponent extends Component {
                 key={narrative.id}
                 node={narrative}
                 subNarratives={subNarratives}
-                />
+              />
             );
           }, narratives)
           : Array.from(Array(20), (e, i) => <NarrativeLineDummy key={i} />)}

@@ -43,18 +43,18 @@ const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
-                            >
+              >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width="90%"
                   height={20}
-                                />
+                />
               </div>
             ))}
           </div>
                 }
-            />
+      />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <MoreVertOutlined />
       </ListItemSecondaryAction>

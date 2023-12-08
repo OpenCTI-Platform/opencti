@@ -3181,13 +3181,13 @@ const WorkbenchFileContentComponent = ({
                                       variant="inList"
                                       status={true}
                                       label={t('Yes')}
-                                  />
+                                    />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
                                       label={t('No')}
-                                  />
+                                    />
                                   );
                               }
                               return (
@@ -3204,7 +3204,7 @@ const WorkbenchFileContentComponent = ({
                               variant="inList"
                               status={null}
                               label={t('Not applicable')}
-                          />
+                            />
                           )}
                       </div>
                     </div>
@@ -3427,13 +3427,13 @@ const WorkbenchFileContentComponent = ({
                                       variant="inList"
                                       status={true}
                                       label={t('Yes')}
-                                  />
+                                    />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
                                       label={t('No')}
-                                  />
+                                    />
                                   );
                               }
                               return (
@@ -3450,7 +3450,7 @@ const WorkbenchFileContentComponent = ({
                               variant="inList"
                               status={null}
                               label={t('Not applicable')}
-                          />
+                            />
                           )}
                       </div>
                     </div>
@@ -3975,13 +3975,13 @@ const WorkbenchFileContentComponent = ({
                                       variant="inList"
                                       status={true}
                                       label={t('Yes')}
-                                  />
+                                    />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
                                       label={t('No')}
-                                  />
+                                    />
                                   );
                               }
                               return (
@@ -3998,7 +3998,7 @@ const WorkbenchFileContentComponent = ({
                               variant="inList"
                               status={null}
                               label={t('Not applicable')}
-                          />
+                            />
                           )}
                       </div>
                     </div>

@@ -103,11 +103,11 @@ const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
       {queryRef && (
         <React.Suspense
           fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
+        >
           <HiddenTypesIndicatorComponent
             queryRef={queryRef}
             platformHiddenTargetType={platformHiddenTargetType}
-              />
+          />
         </React.Suspense>)
         }
     </>
