@@ -12,8 +12,6 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
-import { AutoFix } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -100,7 +98,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   )}
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                {types.includes('manual') ? (
+                {types.includes('manual') && (
                   <ListItemSecondaryAction style={{ right: 0 }} >
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -112,14 +110,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                       </IconButton>
                     </Security>
                   </ListItemSecondaryAction>
-                ) : <Tooltip
-                  title={
-                    t('Inferred knowledge based on the rule Location propagation')
-                  }
-                >
-                  <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-                </Tooltip>
-                }
+                )}
               </ListItem>
             );
           })}
