@@ -158,18 +158,7 @@ FilterIconButtonContainerProps
   );
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
-  const operatorToDisplay = [
-    'eq',
-    'not_eq',
-    'nil',
-    'not_nil',
-    'contains',
-    'not_contains',
-    'starts_with',
-    'not_starts_with',
-    'not_ends_with',
-    'ends_with',
-  ];
+
   let classFilter = classes.filter1;
 
   const filtersRepresentativesMap = new Map(
@@ -224,6 +213,15 @@ FilterIconButtonContainerProps
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
+
+  const operatorIcon = [
+    'lt',
+    'lte',
+    'gt',
+    'gte',
+    'nil',
+    'not_nil',
+  ];
 
   const convertOperatorToIcon = (operator: string) => {
     switch (operator) {
@@ -283,19 +281,15 @@ FilterIconButtonContainerProps
       {displayedSpecificFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterOperator = currentFilter.operator;
-        const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
-        const isOperatorDisplayed = !operatorToDisplay.includes(filterOperator);
+        const isOperatorDisplayed = operatorIcon.includes(filterOperator);
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
+            {!isOperatorDisplayed
+              && <Box component={'span'} sx={{ padding: '0 4px', fontWeight: 'normal' }}>{t(filterOperator)}</Box> }
             {isOperatorDisplayed
               ? convertOperatorToIcon(filterOperator)
               : currentFilter.values.length > 0 && ':'}
-          </>
-        );
-        const label = (
-          <>
-            {isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel}
           </>
         );
         const isNotLastFilter = index < displayedSpecificFilters.length - 1;
@@ -304,7 +298,7 @@ FilterIconButtonContainerProps
             <Tooltip
               title={
                 <FilterValues
-                  label={label}
+                  label={keyLabel}
                   tooltip={true}
                   currentFilter={currentFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
@@ -337,7 +331,7 @@ FilterIconButtonContainerProps
                   }
                   label={
                     <FilterValues
-                      label={label}
+                      label={keyLabel}
                       tooltip={false}
                       currentFilter={currentFilter}
                       handleSwitchLocalMode={handleSwitchLocalMode}
@@ -431,19 +425,15 @@ FilterIconButtonContainerProps
       {othersFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterOperator = currentFilter.operator;
-        const isOperatorNegative = filterOperator.startsWith('not_') && filterOperator !== 'not_nil';
-        const isOperatorDisplayed = !operatorToDisplay.includes(filterOperator);
+        const isOperatorDisplayed = operatorIcon.includes(filterOperator);
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
+            { !isOperatorDisplayed
+              && <Box component={'span'} sx={{ padding: '0 4px', fontWeight: 'normal' }}>{t(filterOperator)}</Box> }
             {isOperatorDisplayed
               ? convertOperatorToIcon(filterOperator)
               : currentFilter.values.length > 0 && ':'}
-          </>
-        );
-        const label = (
-          <>
-            {isOperatorNegative ? `${t('NOT')} ` : ''} {keyLabel}
           </>
         );
         const isNotLastFilter = index < othersFilters.length - 1;
@@ -452,7 +442,7 @@ FilterIconButtonContainerProps
             <Tooltip
               title={
                 <FilterValues
-                  label={label}
+                  label={keyLabel}
                   tooltip={true}
                   currentFilter={currentFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
@@ -484,7 +474,7 @@ FilterIconButtonContainerProps
                   }
                   label={
                     <FilterValues
-                      label={label}
+                      label={keyLabel}
                       tooltip={false}
                       currentFilter={currentFilter}
                       handleSwitchLocalMode={handleSwitchLocalMode}

@@ -78,7 +78,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           className={deactivatePopoverMenu ? '' : classes.label}
           onClick={onCLick}
         >
-          {label}:
+          {label}
         </strong>{' '}
         <span>
           {filterOperator === 'nil' ? t('is empty') : t('is not empty')}
