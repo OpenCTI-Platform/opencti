@@ -220,9 +220,8 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
- * @param filterGroup
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean, authorizeNestedFiltersKeys?: boolean }) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean, authorizeNestedFiltersKeys?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
