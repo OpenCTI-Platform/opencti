@@ -15,7 +15,7 @@ import {
   internalFilterKeys,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
-  MEMBERS_USER_FILTER,
+  MEMBERS_USER_FILTER, nestedFilterKeys,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -220,18 +220,18 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
- * @param filterGroup
  */
-export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean, authorizeNestedFiltersKeys?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
   if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
     throw Error(`Incorrect filters format: ${JSON.stringify(filterGroup)}`);
   }
+  const { noFiltersChecking = false, authorizeNestedFiltersKeys = false } = opts;
+  // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given
-  if (isFilterGroupNotEmpty(filterGroup)) {
-    // 01. check filters keys exist in schema
+  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
     const keys = extractFilterKeys(filterGroup)
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
     if (keys.length > 0) {
@@ -240,13 +240,16 @@ export const checkAndConvertFilters = (filterGroup?: FilterGroup | null) => {
       const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
       const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
-      const availableKeys = availableAttributes
+      let availableKeys = availableAttributes
         .concat(availableRefRelations)
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
         .concat(specialFilterKeys)
         .concat(internalFilterKeys);
+      if (authorizeNestedFiltersKeys) {
+        availableKeys = availableKeys.concat(nestedFilterKeys);
+      }
       keys.forEach((k) => {
         if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);

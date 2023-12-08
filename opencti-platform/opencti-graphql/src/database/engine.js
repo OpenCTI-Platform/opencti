@@ -1927,8 +1927,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
-  const { types = null, search = null, noFiltersChecking = false } = options;
-  const filters = noFiltersChecking ? (options.filters ?? null) : checkAndConvertFilters(options.filters);
+  const { types = null, search = null } = options;
+  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking, authorizeNestedFiltersKeys: options.authorizeNestedFiltersKeys });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
