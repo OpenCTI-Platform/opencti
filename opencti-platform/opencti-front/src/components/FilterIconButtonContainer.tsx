@@ -221,6 +221,8 @@ FilterIconButtonContainerProps
     'gte',
     'nil',
     'not_nil',
+    'eq',
+    'not_eq',
   ];
 
   const convertOperatorToIcon = (operator: string) => {
@@ -233,6 +235,10 @@ FilterIconButtonContainerProps
         return <>&nbsp;&#62;</>;
       case 'gte':
         return <>&nbsp;&#8805;</>;
+      case 'eq':
+        return <>&nbsp;=</>;
+      case 'not_eq':
+        return <>&nbsp;&#8800;</>;
       default:
         return null;
     }

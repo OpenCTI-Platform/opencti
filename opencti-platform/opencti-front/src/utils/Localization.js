@@ -2360,8 +2360,6 @@ const i18n = {
       not_contains: 'no contiene',
       not_starts_with: 'no comienza con',
       not_ends_with: 'no termina con',
-      eq: 'igual',
-      not_eq: 'no igual',
     },
     'fr-fr': {
       // Titles
@@ -4731,8 +4729,6 @@ const i18n = {
       not_contains: 'ne contient pas',
       not_starts_with: 'ne commence pas par',
       not_ends_with: 'ne se termine pas par',
-      eq: 'égal',
-      not_eq: 'n\'est pas égal',
     },
     'ja-jp': {
       // Titles
@@ -7001,8 +6997,6 @@ const i18n = {
       contains: 'を含む',
       starts_with: 'で始まる',
       ends_with: 'で終わる',
-      eq: '等しい',
-      not_eq: '等しくない',
       not_contains: 'を含まない',
       not_starts_with: 'で始まらない',
       not_ends_with: 'で終わらない',
@@ -9160,8 +9154,6 @@ const i18n = {
       contains: '包含',
       starts_with: '以...开头',
       ends_with: '以...结尾',
-      eq: '等于',
-      not_eq: '不等于',
       not_contains: '不包含',
       not_starts_with: '不以...开始',
       not_ends_with: '不以...结尾',
@@ -9616,8 +9608,6 @@ const i18n = {
       elementTargetTypes: 'Target Types',
       starts_with: 'starts with',
       ends_with: 'ends with',
-      eq: 'equals',
-      not_eq: 'not equals',
       not_contains: 'not contains',
       not_starts_with: 'not starts with',
       not_ends_with: 'not ends with',
