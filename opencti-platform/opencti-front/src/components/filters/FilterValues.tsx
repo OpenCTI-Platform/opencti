@@ -28,7 +28,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 0,
     margin: '0 5px 0 5px',
     padding: '0 5px 0 5px',
-    cursor: 'pointer',
     backgroundColor: theme.palette.action?.disabled,
     fontFamily: 'Consolas, monaco, monospace',
   },
