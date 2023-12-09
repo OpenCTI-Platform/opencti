@@ -168,7 +168,7 @@ import {
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
 } from '../schema/stixCyberObservable';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import {
   FROM_START,
   FROM_START_STR,
@@ -2502,35 +2502,52 @@ const buildTimeUpdate = (input, instance, startField, stopField) => {
   }
   return inputs;
 };
-const buildRelationTimeFilter = (input) => {
+const buildRelationDeduplicationFilter = (input) => {
   const args = {};
-  const { from, relationship_type: relationshipType } = input;
+  const { from, relationship_type: relationshipType, createdBy } = input;
+  const deduplicationConfig = conf.get('relations_deduplication') ?? {
+    past_days: 30,
+    next_days: 30,
+    created_by_based: false,
+    types_overrides: {}
+  };
+  const config = deduplicationConfig.types_overrides?.[relationshipType] ?? deduplicationConfig;
+  if (config.created_by_based && createdBy) {
+    args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
+  }
+  const prepareBeginning = (key) => prepareDate(moment(input[key]).subtract(config.past_days, 'days').utc());
+  const prepareStopping = (key) => prepareDate(moment(input[key]).add(config.next_days, 'days').utc());
+  // Prepare for stix core
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
-      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
+      args.startTimeStart = prepareBeginning('start_time');
+      args.startTimeStop = prepareStopping('start_time');
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
-      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
+      args.stopTimeStart = prepareBeginning('stop_time');
+      args.stopTimeStop = prepareStopping('stop_time');
     }
-  } else if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
+  }
+  // Prepare for stix ref
+  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'days').utc());
-      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'days').utc());
+      args.startTimeStart = prepareBeginning('start_time');
+      args.startTimeStop = prepareStopping('start_time');
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'days').utc());
-      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'days').utc());
+      args.stopTimeStart = prepareBeginning('stop_time');
+      args.stopTimeStop = prepareStopping('stop_time');
     }
-  } else if (isStixSightingRelationship(relationshipType)) {
+  }
+  // Prepare for stix sighting
+  if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
-      args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
-      args.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
+      args.firstSeenStart = prepareBeginning('first_seen');
+      args.firstSeenStop = prepareStopping('first_seen');
     }
     if (!R.isNil(input.last_seen)) {
-      args.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
-      args.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
+      args.lastSeenStart = prepareBeginning('last_seen');
+      args.lastSeenStop = prepareStopping('last_seen');
     }
   }
   return args;
@@ -2922,7 +2939,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     } else {
       // In case of direct relation, try to find the relation with time filters
       // Only in standard indices.
-      const timeFilters = buildRelationTimeFilter(resolvedInput);
+      const timeFilters = buildRelationDeduplicationFilter(resolvedInput);
       const manualArgs = { ...listingArgs, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ...timeFilters };
       const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
       existingRelationships.push(...manualRelationships);
