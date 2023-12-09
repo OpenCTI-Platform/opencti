@@ -110,7 +110,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
   const worksForExport = await Promise.all(
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
-      const path = `export/${entityType}/`;
+      const path = `export/${entityType}`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
@@ -162,7 +162,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   const worksForExport = await Promise.all(
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
-      const path = `export/${entity.entity_type}/${entity.id}/`;
+      const path = `export/${entity.entity_type}/${entity.id}`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);

@@ -55,7 +55,8 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
+import { deleteFile, storeFileConverter, upload } from '../database/file-storage';
+import { findById as documentFindById } from '../modules/internal/document/document-domain';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -522,9 +523,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
-  const up = await loadFile(user, fileId);
-  const entityId = up.metaData.entity_id;
-  const externalReferenceId = up.metaData.external_reference_id;
+  const baseDocument = await documentFindById(context, user, fileId);
+  const entityId = baseDocument.metaData.entity_id;
+  const externalReferenceId = baseDocument.metaData.external_reference_id;
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
@@ -549,9 +550,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);
+    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);
     // Add in activity only for notifications
-    const contextData = buildContextDataForFile(previous, fileId, up.name);
+    const contextData = buildContextDataForFile(previous, fileId, baseDocument.name);
     await publishUserAction({
       user,
       event_type: 'file',
@@ -561,7 +562,6 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       context_data: contextData
     });
     await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, instance, user);
-    return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

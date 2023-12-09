@@ -32,12 +32,12 @@ import {
   stixCoreObjectsExportPush,
   stixCoreRelationships
 } from '../domain/stixCoreObject';
-import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { observableValue } from '../utils/format';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
@@ -62,7 +62,7 @@ const stixCyberObservableResolvers = {
       return stixCyberObservableDistribution(context, context.user, args);
     },
     stixCyberObservablesExportFiles: (_, { first }, context) => {
-      return filesListing(context, context.user, first, 'export/Stix-Cyber-Observable/');
+      return paginatedForPathsWithEnrichment(context, context.user, ['export/Stix-Cyber-Observable'], { first });
     },
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
@@ -81,10 +81,12 @@ const stixCyberObservableResolvers = {
     stixCoreRelationships: (rel, args, context) => stixCoreRelationships(context, context.user, rel.id, args),
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
-      return filesListing(context, context.user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`, stixCyberObservable);
+      const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first, entity_id: stixCyberObservable.id });
     },
     exportFiles: (stixCyberObservable, { first }, context) => {
-      return filesListing(context, context.user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`, stixCyberObservable);
+      const path = `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first, entity_id: stixCyberObservable.id });
     },
   },
   Process: {

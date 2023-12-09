@@ -19,6 +19,7 @@ export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
 export const ENTITY_TYPE_SYNC = 'Sync';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
+export const ENTITY_TYPE_INTERNAL_FILE = 'InternalFile';
 export const ENTITY_TYPE_FEED = 'Feed';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
@@ -54,7 +55,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
   ENTITY_TYPE_HISTORY,
-  ENTITY_TYPE_ACTIVITY
+  ENTITY_TYPE_ACTIVITY,
+  ENTITY_TYPE_INTERNAL_FILE
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

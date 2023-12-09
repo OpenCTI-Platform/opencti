@@ -26,10 +26,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { useMutation } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import Checkbox from '@mui/material/Checkbox';
-import {
-  fileIndexingDefaultMaxFileSize,
-  fileIndexingDefaultMimeTypes,
-} from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
@@ -75,19 +71,13 @@ FileIndexingConfigurationProps
   const { sdos, scos } = schema;
   const classes = useStyles();
   const manager_setting = managerConfiguration?.manager_setting;
-  const defaultMimeTypes = [...fileIndexingDefaultMimeTypes];
-  const initialMaxFileSizeInBytes = manager_setting?.max_file_size
-    ? parseInt(manager_setting.max_file_size, 10)
-    : fileIndexingDefaultMaxFileSize;
   const initialValues = {
-    accept_mime_types: manager_setting?.accept_mime_types ?? defaultMimeTypes,
-    include_global_files: manager_setting?.include_global_files || false,
-    max_file_size: Math.floor(initialMaxFileSizeInBytes / (1024 * 1024)),
-    entity_types: manager_setting?.entity_types ?? [],
+    accept_mime_types: manager_setting?.accept_mime_types,
+    include_global_files: manager_setting?.include_global_files,
+    max_file_size: manager_setting?.max_file_size,
+    entity_types: manager_setting?.entity_types,
   };
-  const availableEntityTypes = sdos
-    .map((sdo) => sdo.id)
-    .concat(scos.map((sco) => sco.id));
+  const availableEntityTypes = sdos.map((sdo) => sdo.id).concat(scos.map((sco) => sco.id));
   const [commitManagerSetting] = useMutation(
     fileIndexingConfigurationFieldPatch,
   );
@@ -133,12 +123,12 @@ FileIndexingConfigurationProps
           onSubmit={onSubmitForm}
         >
           {({ submitForm, setFieldValue, values }) => (
-            <Form>
+            <Form >
               <Typography variant="h4" gutterBottom={true}>
                 {t('File types to index')}
               </Typography>
               <List style={{ marginBottom: 12 }}>
-                {defaultMimeTypes.map((mimeType) => (
+                {(manager_setting?.supported_mime_types || []).map((mimeType: string) => (
                   <ListItem
                     key={mimeType}
                     divider={true}

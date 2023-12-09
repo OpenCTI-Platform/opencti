@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { logApp } from '../config/conf';
-import { deleteFile, fileListingForIndexing, loadFile, upload, uploadJobImport } from '../database/file-storage';
+import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -11,35 +11,63 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
+import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
+import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
+import { SYSTEM_USER } from '../utils/access';
+import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';
+import { getStats } from '../database/engine';
 
-export const filesMetrics = async (context, user, args) => {
-  const { excludedPaths = [] } = args;
-  const finalExcludedPaths = ['import/pending/', ...excludedPaths]; // always exclude pending
-  const finalArgs = {
-    ...args,
-    excludedPaths: finalExcludedPaths,
-  };
-  const files = await fileListingForIndexing(context, user, 'import/', finalArgs);
+export const buildOptionsFromFileManager = async (context) => {
+  let importPaths = ['import/'];
+  const excludedPaths = ['import/pending/']; // always exclude pending
+  const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+  const configMimetypes = managerConfiguration.manager_setting?.accept_mime_types;
+  if (isEmptyField(configMimetypes)) {
+    return {
+      globalCount: 0,
+      globalSize: 0,
+      metricsByMimeType: [],
+    };
+  }
+  const includeGlobal = managerConfiguration.manager_setting?.include_global_files || false;
+  const onlyForEntityTypes = managerConfiguration.manager_setting?.entity_types;
+  if (isNotEmptyField(onlyForEntityTypes)) {
+    importPaths = onlyForEntityTypes.map((entityType) => `import/${entityType}/`);
+    if (includeGlobal) {
+      importPaths.push('import/global/');
+    }
+  } else if (!includeGlobal) {
+    excludedPaths.push('import/global/');
+  }
+  const maxFileSize = managerConfiguration.manager_setting?.max_file_size || 5242880;
+  // const modifiedSince = await getIndexFromDate(context);
+  return { paths: importPaths, opts: { prefixMimeTypes: configMimetypes, maxFileSize, excludedPaths } };
+};
+
+export const filesMetrics = async (context, user) => {
+  const metrics = await getStats([READ_INDEX_FILES]);
+  const indexedFilesCount = metrics.docs.count;
+  const fileOptions = await buildOptionsFromFileManager(context);
+  const potentialIndexingFiles = await allFilesForPaths(context, user, fileOptions.paths, fileOptions.opts);
+  const remainingFilesCount = await allRemainingFilesCount(context, user, fileOptions.paths, fileOptions.opts);
   const metricsByMimeType = [];
-  const filesWithMimeType = files.filter((f) => f.mimeType !== null);
-  const filesByMimetype = R.groupBy((f) => f.mimeType, filesWithMimeType);
+  const filesByMimetype = R.groupBy((f) => f.metaData.mimetype, potentialIndexingFiles);
   const mimeTypesGroups = Object.keys(filesByMimetype);
   for (let index = 0; index < mimeTypesGroups.length; index += 1) {
     const mimeType = mimeTypesGroups[index];
     metricsByMimeType.push({
       mimeType,
       count: filesByMimetype[mimeType].length,
-      size: R.sum(filesByMimetype[mimeType].map((file) => file.Size)),
+      size: R.sum(filesByMimetype[mimeType].map((file) => file.size)),
     });
   }
   return {
-    globalCount: files.length,
-    globalSize: R.sum(files.map((file) => file.Size)),
+    globalCount: indexedFilesCount + remainingFilesCount,
+    globalSize: R.sum(potentialIndexingFiles.map((file) => file.size)),
     metricsByMimeType,
   };
 };
 
-// region import / upload
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);

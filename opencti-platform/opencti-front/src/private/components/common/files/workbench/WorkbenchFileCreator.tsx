@@ -100,34 +100,52 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objects: any = [];
-    fetchQuery(workbenchFileCreatorStixCoreObjectQuery, {
-      id: entityId,
-    })
-      .toPromise()
-      .then(async (entityData) => {
-        const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
-        if (workbenchStixCoreObject?.toStix) {
-          const stixEntity = JSON.parse(workbenchStixCoreObject.toStix);
-          delete stixEntity.extensions;
-          stixEntity.x_opencti_id = workbenchStixCoreObject.id;
-          objects.push(stixEntity);
-        }
-        const data = { id: `bundle--${uuid()}`, type: 'bundle', objects };
-        const json = JSON.stringify(data);
-        const blob = new Blob([json], { type: 'text/json' });
-        const file = new File([blob], name, {
-          type: 'application/json',
+    if (entityId) {
+      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, {
+        id: entityId,
+      })
+        .toPromise()
+        .then(async (entityData) => {
+          const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
+          if (workbenchStixCoreObject?.toStix) {
+            const stixEntity = JSON.parse(workbenchStixCoreObject.toStix);
+            delete stixEntity.extensions;
+            stixEntity.x_opencti_id = workbenchStixCoreObject.id;
+            objects.push(stixEntity);
+          }
+          const data = { id: `bundle--${uuid()}`, type: 'bundle', objects };
+          const json = JSON.stringify(data);
+          const blob = new Blob([json], { type: 'text/json' });
+          const file = new File([blob], name, {
+            type: 'application/json',
+          });
+          commitWorkbench({
+            variables: { file, labels: finalLabels, entityId },
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              handleCloseCreate();
+              onCompleted?.();
+            },
+          });
         });
-        commitWorkbench({
-          variables: { file, labels: finalLabels, entityId },
-          onCompleted: () => {
-            setSubmitting(false);
-            resetForm();
-            handleCloseCreate();
-            onCompleted?.();
-          },
-        });
+    } else {
+      const data = { id: `bundle--${uuid()}`, type: 'bundle', objects };
+      const json = JSON.stringify(data);
+      const blob = new Blob([json], { type: 'text/json' });
+      const file = new File([blob], name, {
+        type: 'application/json',
       });
+      commitWorkbench({
+        variables: { file, labels: finalLabels, entityId },
+        onCompleted: () => {
+          setSubmitting(false);
+          resetForm();
+          handleCloseCreate();
+          onCompleted?.();
+        },
+      });
+    }
   };
 
   const initialValues: WorkbenchFileCreatorFormValues = {

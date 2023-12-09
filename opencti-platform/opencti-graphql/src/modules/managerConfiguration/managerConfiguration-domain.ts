@@ -65,7 +65,7 @@ export const updateManagerConfigurationLastRun = async (
   context: AuthContext,
   user: AuthUser,
   managerConfigurationId: string,
-  updateInput: { last_run_start_date: Date, last_run_end_date: Date }
+  updateInput: { last_run_start_date?: Date, last_run_end_date?: Date }
 ) => {
   const updatedManagerConfiguration = await patchAttribute(context, user, managerConfigurationId, ENTITY_TYPE_MANAGER_CONFIGURATION, updateInput);
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updatedManagerConfiguration, user);

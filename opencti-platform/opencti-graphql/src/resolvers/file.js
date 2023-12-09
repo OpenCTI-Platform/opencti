@@ -1,4 +1,4 @@
-import { filesListing, loadFile } from '../database/file-storage';
+import { loadFile } from '../database/file-storage';
 import {
   askJobImport,
   deleteImport,
@@ -10,6 +10,7 @@ import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
+import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -17,9 +18,13 @@ const domainLoader = batchLoader(batchStixDomainObjects);
 const fileResolvers = {
   Query: {
     file: (_, { id }, context) => loadFile(context.user, id),
-    importFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/global/'),
-    pendingFiles: (_, { first }, context) => filesListing(context, context.user, first, 'import/pending/'),
-    filesMetrics: (_, args, context) => filesMetrics(context, context.user, args),
+    importFiles: (_, { first }, context) => {
+      return paginatedForPathsWithEnrichment(context, context.user, ['import/global'], { first });
+    },
+    pendingFiles: (_, { first }, context) => {
+      return paginatedForPathsWithEnrichment(context, context.user, ['import/pending'], { first });
+    },
+    filesMetrics: (_, args, context) => filesMetrics(context, context.user),
   },
   File: {
     works: (file, _, context) => worksForSource(context, context.user, file.id),
