@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { deleteFiles, rawFilesListing, storeFileConverter } from '../database/file-storage';
+import { deleteFiles, loadedFilesListing, storeFileConverter } from '../database/file-storage';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { logApp } from '../config/conf';
@@ -9,7 +9,7 @@ import { internalLoadById } from '../database/middleware-loader';
 export const up = async (next) => {
   const context = executionContext('migration');
   logApp.info('[MIGRATION] Starting files artifacts migration');
-  const imports = await rawFilesListing(context, SYSTEM_USER, '/import/Artifact', { recursive: true });
+  const imports = await loadedFilesListing(SYSTEM_USER, 'import/Artifact/', { recursive: true });
   const importGroups = R.groupBy((i) => i.metaData.entity_id, imports);
   const groupSize = Object.keys(importGroups).length;
   logApp.info(`[MIGRATION] Migrating ${groupSize} artifacts references`);

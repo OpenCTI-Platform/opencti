@@ -18,7 +18,7 @@ import { isAttachmentProcessorEnabled } from './engine';
 import { internalLoadById } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
-import { deleteDocumentIndex, indexFileToDocument, allFilesForPaths } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -241,13 +241,18 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-const simpleFilesListing = async (directory, opts = {}) => {
+const rawFilesListing = async (directory, opts = {}) => {
   const { recursive = false } = opts;
-  const { modifiedSince, maxFileSize, mimeTypes = [], excludedPaths = [], includedPaths = [] } = opts;
   const objects = [];
+  if (isNotEmptyField(directory) && directory.startsWith('/')) {
+    throw FunctionalError('File listing directory must not start with a /');
+  }
+  if (isNotEmptyField(directory) && !directory.endsWith('/')) {
+    throw FunctionalError('File listing directory must end with a /');
+  }
   const requestParams = {
     Bucket: bucketName,
-    Prefix: directory || undefined,
+    Prefix: directory,
     Delimiter: recursive ? undefined : '/'
   };
   let truncated = true;
@@ -270,19 +275,13 @@ const simpleFilesListing = async (directory, opts = {}) => {
       mimeType: guessMimeType(obj.Key),
     };
   });
-  const filteredObjects = storageObjects.filter((obj) => {
-    return !isFileObjectExcluded(obj.Key)
-      && (!mimeTypes?.length || mimeTypes.includes(obj.mimeType))
-      && (!modifiedSince || obj.LastModified > modifiedSince)
-      && (!maxFileSize || maxFileSize >= obj.Size)
-      && (!includedPaths?.length || includedPaths.some((includedPath) => obj.Key.startsWith(includedPath)))
-      && (!excludedPaths?.length || !excludedPaths.some((excludedPath) => obj.Key.startsWith(excludedPath)));
+  return storageObjects.filter((obj) => {
+    return !isFileObjectExcluded(obj.Key);
   });
-  return filteredObjects;
 };
 
-export const rawFilesListing = async (context, user, directory, opts = {}) => {
-  const storageObjects = await simpleFilesListing(directory, opts);
+export const loadedFilesListing = async (user, directory, opts = {}) => {
+  const storageObjects = await rawFilesListing(directory, opts);
   // Load file metadata with 5 // call maximum
   return BluePromise.map(storageObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
