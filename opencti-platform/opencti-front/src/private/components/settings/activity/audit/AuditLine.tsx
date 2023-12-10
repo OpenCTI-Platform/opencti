@@ -80,8 +80,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
-  const { fldt } = useFormatter();
+  const { t, fndt } = useFormatter();
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
@@ -147,7 +146,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.timestamp.width }}
               >
-                {fldt(data.timestamp)}
+                {fndt(data.timestamp)}
               </div>
               <div
                 className={classes.bodyItem}
