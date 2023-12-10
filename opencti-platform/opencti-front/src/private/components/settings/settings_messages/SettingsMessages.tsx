@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -14,6 +15,7 @@ import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsM
 import SettingsMessageCreation from './SettingsMessageCreation';
 import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -47,7 +49,7 @@ const SettingsMessages = ({
   const dataColumns: DataColumns = {
     color: {
       label: 'Color',
-      width: '15%',
+      width: '10%',
       isSortable: false,
       render: (data) => {
         const { backgroundColor, borderLeft, color } = generateBannerMessageColors(data?.color);
@@ -69,7 +71,7 @@ const SettingsMessages = ({
     },
     message: {
       label: 'Message',
-      width: '50%',
+      width: '40%',
       isSortable: false,
       render: (data) => <div>{data.message}</div>,
     },
@@ -89,7 +91,7 @@ const SettingsMessages = ({
     },
     dismissible: {
       label: 'Dismissible',
-      width: '15%',
+      width: '20%',
       isSortable: false,
       render: (data) => {
         return (
@@ -100,6 +102,16 @@ const SettingsMessages = ({
           />
         );
       },
+    },
+    recipients: {
+      label: 'recipients',
+      width: '15%',
+      isSortable: false,
+      render: (data: SettingsMessagesLine_settingsMessage$data) => (
+        <Tooltip title={data.recipients?.map(({ name }) => name).join(', ')}>
+          <span>{data.recipients?.map(({ name }) => name).join(', ')}</span>
+        </Tooltip>
+      ),
     },
   };
   const datas = messages.map((m) => ({ node: m }));
@@ -113,7 +125,7 @@ const SettingsMessages = ({
       </Typography>
       <IconButton
         style={{ float: 'left', marginTop: -15 }}
-        color="secondary"
+        color="primary"
         aria-label="Add"
         onClick={handleOpenCreate}
         size="large"

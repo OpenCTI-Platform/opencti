@@ -158,9 +158,7 @@ FilterIconButtonContainerProps
   );
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
-
   let classFilter = classes.filter1;
-
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
   );
@@ -189,7 +187,6 @@ FilterIconButtonContainerProps
       anchorEl: undefined,
     });
   };
-
   const handleChipClick = (
     event: React.MouseEvent<HTMLButtonElement>,
     filterId?: string,
@@ -201,7 +198,6 @@ FilterIconButtonContainerProps
       });
     }
   };
-
   const manageRemoveFilter = (
     currentFilterId: string | undefined,
     filterKey: string,
@@ -213,7 +209,6 @@ FilterIconButtonContainerProps
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
-
   const operatorIcon = [
     'lt',
     'lte',
@@ -224,7 +219,6 @@ FilterIconButtonContainerProps
     'eq',
     'not_eq',
   ];
-
   const convertOperatorToIcon = (operator: string) => {
     switch (operator) {
       case 'lt':
@@ -264,11 +258,9 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     marginTop = '0px';
   }
-
   const backgroundGroupingChipsStyle = {
     ...(styleNumber !== 3 && { backgroundColor: 'rgba(74, 117, 162, 0.2)' }),
   };
-
   return (
     <Box
       sx={
@@ -291,8 +283,14 @@ FilterIconButtonContainerProps
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
-            {!isOperatorDisplayed
-              && <Box component={'span'} sx={{ padding: '0 4px', fontWeight: 'normal' }}>{t(filterOperator)}</Box> }
+            {!isOperatorDisplayed && (
+              <Box
+                component={'span'}
+                sx={{ padding: '0 4px', fontWeight: 'normal' }}
+              >
+                {t(filterOperator)}
+              </Box>
+            )}
             {isOperatorDisplayed
               ? convertOperatorToIcon(filterOperator)
               : currentFilter.values.length > 0 && ':'}
@@ -435,8 +433,14 @@ FilterIconButtonContainerProps
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
-            { !isOperatorDisplayed
-              && <Box component={'span'} sx={{ padding: '0 4px', fontWeight: 'normal' }}>{t(filterOperator)}</Box> }
+            {!isOperatorDisplayed && (
+              <Box
+                component={'span'}
+                sx={{ padding: '0 4px', fontWeight: 'normal' }}
+              >
+                {t(filterOperator)}
+              </Box>
+            )}
             {isOperatorDisplayed
               ? convertOperatorToIcon(filterOperator)
               : currentFilter.values.length > 0 && ':'}

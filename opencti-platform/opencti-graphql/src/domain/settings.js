@@ -2,18 +2,12 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, {
-  ACCOUNT_STATUSES,
-  BUS_TOPICS,
-  ENABLED_DEMO_MODE,
-  getBaseUrl,
-  PLATFORM_VERSION
-} from '../config/conf';
+import conf, { ACCOUNT_STATUSES, BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -21,6 +15,7 @@ import { getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
+import { isEmptyField } from '../database/utils';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -119,8 +114,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
-export const getMessages = (settings) => {
-  return JSON.parse(settings.messages ?? '[]');
+export const getMessages = (user, settings) => {
+  const messages = JSON.parse(settings.messages ?? '[]');
+  return messages.filter(({ recipients }) => {
+    // eslint-disable-next-line max-len
+    return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
+  });
 };
 
 export const settingEditMessage = async (context, user, settingsId, message) => {
@@ -129,7 +128,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
     updated_at: now()
   };
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const messages = getMessages(settings);
+  const messages = getMessages(user, settings);
 
   const existingIdx = messages.findIndex((m) => m.id === message.id);
   if (existingIdx > -1) {
@@ -147,7 +146,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
 
 export const settingDeleteMessage = async (context, user, settingsId, messageId) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const messages = getMessages(settings);
+  const messages = getMessages(user, settings);
 
   const existingIdx = messages.findIndex((m) => m.id === messageId);
   if (existingIdx > -1) {

@@ -2,16 +2,7 @@ import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
 import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  getApplicationInfo,
-  getMessages,
-  getSettings,
-  settingDeleteMessage,
-  settingEditMessage,
-  settingsCleanContext,
-  settingsEditContext,
-  settingsEditField,
-} from '../domain/settings';
+import { getApplicationInfo, getMessages, getSettings, settingDeleteMessage, settingEditMessage, settingsCleanContext, settingsEditContext, settingsEditField, } from '../domain/settings';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -45,7 +36,10 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     editContext: (settings) => fetchEditContext(settings.id),
-    messages: (settings) => getMessages(settings),
+    messages: (settings, _, context) => getMessages(context.user, settings),
+  },
+  SettingsMessage: {
+    recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
   },
   Mutation: {
     settingsEdit: (_, { id }, context) => ({
@@ -79,8 +73,8 @@ const settingsResolvers = {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
         const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         const filtering = withFilter(() => asyncIterator, (payload) => {
-          const oldMessages = getMessages(settings);
-          const newMessages = getMessages(payload.instance);
+          const oldMessages = getMessages(context.user, settings);
+          const newMessages = getMessages(context.user, payload.instance);
           // If removed and was activated
           const removedMessage = R.difference(oldMessages, newMessages);
           if (removedMessage.length === 1 && removedMessage[0].activated) {

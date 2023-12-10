@@ -65,7 +65,6 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [members, setMembers] = useState<OptionMember[]>([]);
-
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
@@ -90,7 +89,6 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         setMembers(uniqTemplates);
       });
   };
-
   return (
     <div style={{ width: '100%' }}>
       <Field

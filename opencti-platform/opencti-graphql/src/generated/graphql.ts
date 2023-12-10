@@ -20701,6 +20701,7 @@ export type SettingsMessage = {
   dismissible: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   message: Scalars['String']['output'];
+  recipients?: Maybe<Array<Member>>;
   updated_at: Scalars['DateTime']['output'];
 };
 
@@ -20710,6 +20711,7 @@ export type SettingsMessageInput = {
   dismissible: Scalars['Boolean']['input'];
   id?: InputMaybe<Scalars['ID']['input']>;
   message: Scalars['String']['input'];
+  recipients?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -34613,6 +34615,7 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
   dismissible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
