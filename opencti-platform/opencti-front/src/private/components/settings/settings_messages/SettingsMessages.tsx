@@ -6,6 +6,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
+import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -15,7 +16,6 @@ import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsM
 import SettingsMessageCreation from './SettingsMessageCreation';
 import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {

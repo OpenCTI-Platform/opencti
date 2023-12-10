@@ -3,7 +3,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { toPairs } from 'ramda';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from './i18n';
