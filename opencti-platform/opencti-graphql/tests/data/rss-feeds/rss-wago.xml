@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rss version="2.0">
+    <channel>
+        <description>Here you will find our security notes.</description>
+        <link>https://www.wago.com/global</link>
+        <title>Security-Notes</title>
+        <item>
+            <title>WAGO: Controller with CODESYS 2.3 Runtime Denial-of-Service</title>
+            <description>An authenticated attacker can send a malformed packet to trigger a device crash via the CODESYS V2 runtime commands parsing.</description>
+            <link>https://cert.vde.com/en/advisories/VDE-2023-006/</link>
+            <guid isPermaLink="false">97820771daf76805db895f4d75e19052</guid>
+            <pubDate>Thu, 29 Jun 2023 16:37:40 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Series 750-3x/-8x prone to MODBUS server DoS</title>
+            <description>An unauthenticated attacker with network access to port 502/TCP of the target device can cause a denial-of-service condition by sending multiple specially crafted packets. </description>
+            <link>https://cert.vde.com/en/advisories/VDE-2023-005/</link>
+            <guid isPermaLink="false">08ff03d55874bd274469a2ccf4fc8bfc</guid>
+            <pubDate>Thu, 29 Jun 2023 16:29:47 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Unauthenticated command execution via Web-based-management</title>
+            <description>The “legal information” plugin of web-based-management contained a vulnerability which allowed execution of arbitrary commands with privileges of www user.</description>
+            <link>https://cert.vde.com/en/advisories/VDE-2023-007/</link>
+            <guid isPermaLink="false">cbd20c306a0b147b5c0e2f6bf26cf658</guid>
+            <pubDate>Tue, 16 May 2023 14:22:20 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Multiple vulnerabilities in web-based management of multiple products</title>
+            <description>The web-based management of affected products is vulnerable to Reflective Cross-Site Scripting. This can be used to install malicious code and to gain access to confidential information on a System that connects to the WBM after it has been compromised.</description>
+            <link>https://cert.vde.com/en/advisories/VDE-2022-060/</link>
+            <guid isPermaLink="false">aaa68d17e84c778fa666022262f0bbeb</guid>
+            <pubDate>Wed, 1 Mar 2023 13:42:09 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Exposure of configuration interface in unmanaged switches</title>
+            <description>An unknown and undocumented configuration interface with limited functionality was identified on the affected devices.</description>
+            <link>https://cert.vde.com/en/advisories/VDE-2022-055/</link>
+            <guid isPermaLink="false">d9fce5dc4c25a097e95331964756ffdc</guid>
+            <pubDate>Fri, 17 Feb 2023 16:26:16 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO Controller Firewall - Loss of MAC-Address-Filtering after reboot</title>
+            <description>The MAC address filter as part of the firewall has a flaw, which prevents the MAC address filter to be active after restart. In this way a remote attacker is able to circumvent the MAC address filtering after a reboot of a device.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-042/</link>
+            <guid isPermaLink="false">5c4211515ba29964c7c333ced62b277a</guid>
+            <pubDate>Wed, 26 Oct 2022 16:47:25 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Controller 750: Multiple Vulnerabilities in  WAGO I/O-Pro / CODESYS 2.3 Runtime</title>
+            <description>By crafting special packets / requests a low skilled attacker can exploit the vulnerabilities. This can lead to denial-of-service conditions, deleting files or have access to the communication.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-040/</link>
+            <guid isPermaLink="false">8cc373b6ef93c8c9f9f8b844ebef5369</guid>
+            <pubDate>Wed, 26 Oct 2022 16:41:43 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Controller 750: FTP-Server - Denial of Service </title>
+            <description>The FTP server does not properly release memory resources that were reserved for incomplete connection attempts by FTP clients. This could allow a remote attacker to generate a denial of service condition on devices that incorporate a vulnerable version of the FTP server.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-047/</link>
+            <guid isPermaLink="false">4d68cb3f3d5925f7ab509a678ab01b1d</guid>
+            <pubDate>Fri, 14 Oct 2022 14:24:45 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PFC100/200, TP600 affected by CODESYS vulnerabilities part2</title>
+            <description>Multiple WAGO product families are prone to multiple vulnerabilities affecting CODESYS control runtime system.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-035/</link>
+            <guid isPermaLink="false">773f020fe5fe3dbfdec6060bee68c8a9</guid>
+            <pubDate>Fri, 19 Aug 2022 15:04:40 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PFC100/200, TP600 affected by CODESYS vulnerabilities part1</title>
+            <description>Multiple WAGO product families are prone to multiple vulnerabilities affecting CODESYS control runtime system.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-031/</link>
+            <guid isPermaLink="false">2fc01c07e2ac6ff2095f4003dfe8827a</guid>
+            <pubDate>Fri, 19 Aug 2022 15:03:30 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PFC100/200, TP600 affected by CODESYS vulnerabilities</title>
+            <description>Multiple WAGO product families are prone to multiple vulnerabilities affecting CODESYS control runtime system</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-031/ </link>
+            <guid isPermaLink="false">2c0a42c49430f3145ca07ecad76e7fe0</guid>
+            <pubDate>Fri, 19 Aug 2022 14:55:50 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Web-Based Management Cross-Site Scripting</title>
+            <description>Various configuration pages of the device are vulnerable to reflected XSS (Cross-Site Scripting) attacks.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2022-004/</link>
+            <guid isPermaLink="false">7ba71ac62de3a94d3c735f43fa739fc3</guid>
+            <pubDate>Wed, 9 Mar 2022 13:43:49 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Smart Script affected by Log4Shell Vulnerability</title>
+            <description>Apache Log4j is used for logging events in WAGO Smart Script in Version 4.2 and higher.  Events logged by Log4j can contain JNDI references. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers when message lookup substitution is enabled. Additionally, Log4j does not protect from self-referential lookups, which can lead to Denial of Service.  Remark: WAGO Smart Script 4.8.1.3 is only affected by CVE-2021-45105 and not affected by CVE-2021-44228 and CVE-2021-45046.</description>
+            <link>https://cert.vde.com/en/advisories/VDE-2021-060/</link>
+            <guid isPermaLink="false">a98f10153beaeedc56123f736a1de73a</guid>
+            <pubDate>Wed, 12 Jan 2022 08:51:24 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Multiple Vulnerabilities in CODESYS Runtime 2.3 and WebVisualisation</title>
+            <description>Multiple vulnerabilities were reported in CODESYS 2.3 Runtime. The CODESYS 2.3 Runtime is an essential component in several WAGO PLCs</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2021-056/</link>
+            <guid isPermaLink="false">7a07b13485de22bbb640f03895a6ee64</guid>
+            <pubDate>Tue, 16 Nov 2021 16:21:26 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Denial of Service Vulnerability in CODESYS Runtime 2.3</title>
+            <description>A Denial-of-Service Vulnerability was reported in CODESYS 2.3 Runtime. The CODESYS 2.3 Runtime is an essential component in several WAGO PLC’s.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2021-049/</link>
+            <guid isPermaLink="false">ea71e5e30e8eb9242f6b471de112b8ee</guid>
+            <pubDate>Tue, 16 Nov 2021 16:18:19 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Multiple devices affected by Vulnerabilities in NUCLEUS TCP Stack</title>
+            <description>Multiple vulnerabilities were reported in the Nucleus Real-Time Operating System (RTOS). The Nucleus RTOS is an essential component in several WAGO PLCs and fieldbus coupler. WAGO uses older Versions of the Nucleus RTOS also in legacy products.</description>
+            <link>https://cert.vde.com/de/advisories/VDE-2021-050/</link>
+            <guid isPermaLink="false">cde87c17042767e32e663a74b6d9fd4b</guid>
+            <pubDate>Tue, 16 Nov 2021 16:04:28 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Vulnerable WIBU-SYSTEMS Codemeter installed through e!COCKPIT and WAGO-I/O-Pro</title>
+            <description>Multiple vulnerabilities were reported in WIBU-SYSTEMS Codemeter. WIBU-SYSTEMS Codemeter is installed by default during e!COCKPIT and WAGO-I/O-Pro (CODESYS 2.3) installations. </description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2021-043</link>
+            <guid isPermaLink="false">6d6c5c2e7615ca23b918d063d473f297</guid>
+            <pubDate>Wed, 1 Sep 2021 12:08:53 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: Web-Based Management Authentication Vulnerability in WAGO 750-36X and WAGO 750-8XX Versions &lt;= FW07</title>
+            <description>The Web-Based Management (WBM) of WAGOs programmable logic controller (PLC) is typically used for administration, commissioning and updates. With special crafted requests it is possible to read and write some special parameters without authentication</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-044</link>
+            <guid isPermaLink="false">fa2385f86876baf53bf2cd7549a4b9fb</guid>
+            <pubDate>Wed, 1 Sep 2021 12:06:21 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO: OpenSSL DoS Vulnerability in PLCs</title>
+            <description>WAGO controllers have always been designed for easy connection to IT infrastructure. Even controllers from legacy product lines support encryption standards to ensure secure communication. With special crafted requests it is possible to bring the device out of operation.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2021-038</link>
+            <guid isPermaLink="false">635e20b77e35bd3982cf505ea44916d8</guid>
+            <pubDate>Wed, 1 Sep 2021 12:01:49 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PFC: Multiple Vulnerabilities in I/O-Check Service</title>
+            <description>By exploiting the described vulnerabilities, the attacker potentially is able to manipulate or disrupt the device.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-036</link>
+            <guid isPermaLink="false">7367e82166146df082758724f988e866</guid>
+            <pubDate>Wed, 30 Jun 2021 10:17:43 +0200</pubDate>
+        </item>
+        <item>
+            <title/>
+            <description/>
+            <link/>
+            <guid isPermaLink="false">c0b757fe1f6fdec4388fe98e02fe1c4f</guid>
+            <pubDate>Wed, 30 Jun 2021 10:03:52 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PLCs: Multiple Vulnerabilities in CODESYS Runtime 2.3</title>
+            <description>The reported vulnerabilities allow an attacker who has access to the device and is able to exploit the vulnerabilities, to manipulate and disrupt the CODESYS 2.3 Runtime.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2021-014</link>
+            <guid isPermaLink="false">830a614cc52f6ef999e61272ae66c9c6</guid>
+            <pubDate>Fri, 21 May 2021 15:38:25 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Managed Switches: Multiple Vulnerabilities in the Web-Based Managemen</title>
+            <description>The reported vulnerabilities allow an attacker with access to the device and the Web-Based Management, to install malware, access to password hashes and create user with admin credentials.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2021-013</link>
+            <guid isPermaLink="false">bb20fc5d4ec969c76cf1e32c3d90b267</guid>
+            <pubDate>Mon, 10 May 2021 10:04:55 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO PFC200 - Command Injection Vulnerability in I/O-Check Service</title>
+            <description>The reported vulnerability allows an attacker who has network access to the device to execute code with specially crafted packets</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-045 </link>
+            <guid isPermaLink="false">8fb651f567e92086fe8e6eca7ec6c489</guid>
+            <pubDate>Thu, 17 Dec 2020 15:24:12 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO PLC families 750-88x and 750-352 prone to DoS attack,  valid versions &lt;FW11</title>
+            <description>An attacker which sends a series of maliciously constructed packets to HTTP(S) ports 80/443 could cause a crashed device, that needs a power on reset to go back to normal operation.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-042</link>
+            <guid isPermaLink="false">07a935ec68c6aeb1a1d79d91270cac91</guid>
+            <pubDate>Tue, 27 Oct 2020 14:09:37 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO 750-88x / -89x - Web-Based Management Cross-Site Scripting</title>
+            <description>An attacker needs an authorized login on the device in order to exploit the snmp configuration website with malicious scripts. This can be used to install malicious code and to gain access to confidential information on a PC that connects to the WBM after it has been compromised</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-029</link>
+            <guid isPermaLink="false">d4b13fb082fab8eb3657ee19f8c68e68</guid>
+            <pubDate>Wed, 30 Sep 2020 14:42:23 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO 750-89x - Web-Based Management Authentication Vulnerability</title>
+            <description>This vulnerability allows an attacker who has access to the WBM and knowledge about the directory structure of the WBM to change the parameter setting of the devices by sending specifically constructed requests without authentication.  This can lead to malfunction of the application after reboot.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-028</link>
+            <guid isPermaLink="false">da2f625f3ed94f1319f9eee82ee1720f</guid>
+            <pubDate>Wed, 30 Sep 2020 14:39:16 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO 750-88x - Web-Based Management Authentication Vulnerability</title>
+            <description>This vulnerability allows an attacker who has access to the WBM to prevent the loading of the runtime-application after restart of the device by sending specifically constructed requests without authentication</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-027</link>
+            <guid isPermaLink="false">434099a17c58ea089f7a31b248151744</guid>
+            <pubDate>Wed, 30 Sep 2020 14:30:39 +0200</pubDate>
+        </item>
+        <item>
+            <title>Vulnerable WIBU-SYSTEMS Codemeter installed through e!COCKPIT</title>
+            <description>Multiple vulnerabilties were reported in WIBU-SYSTEMS Codemeter. WIBU-SYSTEMS Codemeter is installed by default during e!COCKPIT installation. All currently existing e!COCKPIT installation bundles contain vulnerable versions of WIBU-SYSTEMS Codemeter.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-032</link>
+            <guid isPermaLink="false">d7d3c2824b3602d73bc94064c104da0c</guid>
+            <pubDate>Wed, 9 Sep 2020 10:52:17 +0200</pubDate>
+        </item>
+        <item>
+            <title>pppd Daemon -  Buffer Overflow Vulnerability</title>
+            <description>The reported vulnerability is only exploitable if the customer has activated the pppd daemon in his individual configuration manually. If the pppd daemon is used by the application from the customer, an unauthenticated remote attacker could cause a memory corruption in the pppd process, which may allow for arbitrary code execution, by sending an unsolicited EAP packet.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-020</link>
+            <guid isPermaLink="false">2f498cfcc9a25a20a8e0c8ac6a14827c</guid>
+            <pubDate>Wed, 10 Jun 2020 10:26:00 +0200</pubDate>
+        </item>
+        <item>
+            <title>Web Based Management – Code Execution Vulnerability</title>
+            <description>This vulnerability allows an attacker to gain root privileges on the device from the WBM admin user.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-015</link>
+            <guid isPermaLink="false">452fc25329a40fb3a9a1041bd0024fca</guid>
+            <pubDate>Wed, 10 Jun 2020 10:19:50 +0200</pubDate>
+        </item>
+        <item>
+            <title>Multiple Vulnerabilities in I/O-Check Service</title>
+            <description>The reported vulnerabilities allow a local attacker with valid login credentials who is able to create files on the device to change the devices settings, e.g. default gateway address, time server etc. and potentially execute code.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-011</link>
+            <guid isPermaLink="false">f744b7302c8e692d6cf7a371a2a44873</guid>
+            <pubDate>Mon, 9 Mar 2020 10:20:56 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO Cloud – Remote code Execution Vulnerability</title>
+            <description>The Cloud Connectivity of the WAGO PLCs is used to connect the device with the cloud services from different providers. It also supports maintenance functionality with the firmware update function from the WAGO cloud.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-010</link>
+            <guid isPermaLink="false">fa8e5c3f2619be5a79f8b433fdf365d7</guid>
+            <pubDate>Mon, 9 Mar 2020 10:20:30 +0100</pubDate>
+        </item>
+        <item>
+            <title>e!Cockpit – WAGO Update Package Vulnerability</title>
+            <description>The firmware update package (WUP) is not signed entirely. The used password offers no additional security, it is just meant to protect from unintentional modifications of the WUP file. Thus only the integrity of the signed firmware part (rauc file) is protected against intended manipulation. An attacker could manipulate the WUP file in a way that additional files with potentially malicious content are added to the WUP file.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-009</link>
+            <guid isPermaLink="false">eb3ef00d0f66b0794ef8712cf30ad80b</guid>
+            <pubDate>Mon, 9 Mar 2020 10:20:02 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO Cloud - Improper Host Validation Vulnerability</title>
+            <description>The Cloud Connectivity of the WAGO PLCs is used to connect the device with the cloud services from different providers. It also supports maintenance functionality with the firmware update function from the WAGO cloud.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-008</link>
+            <guid isPermaLink="false">a94f6d3cc6071155e96d825cf3563301</guid>
+            <pubDate>Mon, 9 Mar 2020 10:19:40 +0100</pubDate>
+        </item>
+        <item>
+            <title>Web-Based Management Denial of Service</title>
+            <description>The controller is an embedded device which has limited resources. The vulnerability described here takes advantage of this fact. With special crafted requests it is possible to have a denial of service of the WBM.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-007</link>
+            <guid isPermaLink="false">c674c2fb60ffdcf813573f0685a7328b</guid>
+            <pubDate>Mon, 9 Mar 2020 10:19:18 +0100</pubDate>
+        </item>
+        <item>
+            <title>Web-Based Management Authentication Vulnerabilities</title>
+            <description>With special crafted requests it is possible to get sensitive information, in this case the password hashes, by measuring response delay. With a substantial amount of time this data can be used to calculate the passwords of the Web-Based Management users.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-006</link>
+            <guid isPermaLink="false">74aff6d4a390eb18511c218fdc647a49</guid>
+            <pubDate>Mon, 9 Mar 2020 10:18:51 +0100</pubDate>
+        </item>
+        <item>
+            <title>e!Cockpit cleartext communication</title>
+            <description>The communication between e!Cockpit and the programmable logic controller is not encrypted. The password used by e!Cockpit for authentication against the PLC is encrypted with a hard-coded key. An attacker is able to decrypt the password by listening to the network traffic.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2020-004</link>
+            <guid isPermaLink="false">b8cd6116cf984b54863b3ee72e80afef</guid>
+            <pubDate>Mon, 9 Mar 2020 10:15:00 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO Multiple Vulnerabilities in I/O-Check Service in Multiple Devices</title>
+            <description>The reported vulnerabilities allow a remote attacker to change the setting, delete the application, set the device to factory defaults, code execution and to cause a system crash or denial of service.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2019-022</link>
+            <guid isPermaLink="false">f22ab0c72a3768fe35259886fde131bd</guid>
+            <pubDate>Mon, 16 Dec 2019 10:00:00 +0100</pubDate>
+        </item>
+        <item>
+            <title>WAGO Series PFC100/PFC200 Information Disclosure</title>
+            <description>The reported vulnerability allows a remote attacker to check paths and file names that are used in filesystem operations.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2019-017</link>
+            <guid isPermaLink="false">d939cce767bb7eb216467642643d2b29</guid>
+            <pubDate>Wed, 18 Sep 2019 09:36:28 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Multiple Vulnerabilities in industrial managed switches</title>
+            <description>Multiple vulnerabilities have been identified in WAGO 852-303, 852-1305 and 852-1505 industrial managed ethernet switches.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2019-013</link>
+            <guid isPermaLink="false">03ecb4c4819a4ec8bc06baef3be29640</guid>
+            <pubDate>Wed, 12 Jun 2019 17:06:55 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Undocumented service access in Series 750-88x and 750-87x devices</title>
+            <description>The reported vulnerability allows a remote attacker to change the settings or exchange the application of the device.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2019-008</link>
+            <guid isPermaLink="false">761fee849b87a7a215206b0766fc8bd5</guid>
+            <pubDate>Fri, 12 Apr 2019 10:00:42 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO 750-8xx Controller Denial of Service</title>
+            <description>The 750-8xx controller are susceptible to a Denial-of-Service attack due to a flood of network packets.</description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2018-013</link>
+            <guid isPermaLink="false">fc6f050be31492802712b85f45e0fe53</guid>
+            <pubDate>Fri, 17 Aug 2018 11:13:57 +0200</pubDate>
+        </item>
+        <item>
+            <title>WAGO Multiple vulnerabilities in e!DISPLAY products</title>
+            <description>An unauthenticated user can exploit a vulnerability (CVE-2018-12981) to inject code in the WBM via reflected cross-site scripting (XSS), if he is able trick a user to open a special crafted web site. [...] </description>
+            <link>https://cert.vde.com/de-de/advisories/vde-2018-010</link>
+            <guid isPermaLink="false">aad37240259dd951be9c6d5914fbef9c</guid>
+            <pubDate>Tue, 10 Jul 2018 13:50:29 +0200</pubDate>
+        </item>
+    </channel>
+</rss>

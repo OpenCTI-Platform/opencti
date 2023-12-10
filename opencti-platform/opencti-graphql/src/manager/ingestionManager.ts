@@ -93,7 +93,7 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
 const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
   return {
-    title: turndownService.turndown(item.title._),
+    title: turndownService.turndown(item.title._ ?? ''),
     description: turndownService.turndown(item.description?._ ?? ''),
     link: isNotEmptyField(item.link) ? (item.link._ ?? '').trim() : '',
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),

@@ -7,7 +7,7 @@ import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditCo
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
