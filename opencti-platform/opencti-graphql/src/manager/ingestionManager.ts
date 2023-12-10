@@ -230,7 +230,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
   const { data, addedLast } = await taxiiHttpGet(ingestion);
-  if (data.objects.length > 0) {
+  if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items`);
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
     // Push the bundle to absorption queue
@@ -242,6 +242,8 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
       current_state_cursor: data.next ? String(data.next) : undefined,
       added_after_start: utcDate(addedLast)
     });
+  } else if (data.objects === undefined) {
+    logApp.error(`[OPENCTI-MODULE] Taxii ingestion execution error for ${ingestion.name}`, { error: data });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
