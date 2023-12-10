@@ -117,9 +117,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
 export const getMessages = (user, settings) => {
   const messages = JSON.parse(settings.messages ?? '[]');
   return messages.filter(({ recipients }) => {
-    return isEmptyField(recipients)
-      || isUserHasCapability(user, SETTINGS)
-      || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
+    // eslint-disable-next-line max-len
+    return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
   });
 };
 

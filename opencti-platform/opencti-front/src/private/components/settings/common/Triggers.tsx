@@ -8,7 +8,9 @@ import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
-import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
+import TriggersLines, {
+  triggersLinesQuery,
+} from '../../profile/triggers/TriggersLines';
 import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -21,7 +23,10 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
-import { GqlFilterGroup, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import {
+  GqlFilterGroup,
+  emptyFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -75,7 +80,9 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     includeAuthorities: true,
     filters: {
       mode: 'and',
-      filters: [{ key: [filterKey], values: [recipientId], operator: 'eq', mode: 'or' }],
+      filters: [
+        { key: [filterKey], values: [recipientId], operator: 'eq', mode: 'or' },
+      ],
       filterGroups: [],
     } as GqlFilterGroup,
   };
@@ -114,11 +121,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openDigest, setOpenDigest] = useState(false);
   return (
     <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left' }}
-      >
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t('Triggers and Digests')}
       </Typography>
       <div style={{ float: 'right', marginTop: -12 }}>
@@ -134,7 +137,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           className={classes.createButton}
           onClick={() => setOpenLive(true)}
           size="large"
-          color="secondary"
+          color="primary"
         >
           <CampaignOutlined fontSize="small" />
         </IconButton>
@@ -151,7 +154,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           className={classes.createButton}
           onClick={() => setOpenDigest(true)}
           size="large"
-          color="secondary"
+          color="primary"
         >
           <BackupTableOutlined fontSize="small" />
         </IconButton>
@@ -168,6 +171,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           sortBy={sortBy}
           orderAsc={orderAsc}
           handleSort={helpers.handleSort}
+          secondaryAction={true}
         />
         {queryRef && (
           <React.Suspense

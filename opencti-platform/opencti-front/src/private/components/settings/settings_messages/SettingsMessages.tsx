@@ -125,7 +125,7 @@ const SettingsMessages = ({
       </Typography>
       <IconButton
         style={{ float: 'left', marginTop: -15 }}
-        color="secondary"
+        color="primary"
         aria-label="Add"
         onClick={handleOpenCreate}
         size="large"

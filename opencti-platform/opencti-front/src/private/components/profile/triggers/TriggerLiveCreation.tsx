@@ -38,7 +38,9 @@ import {
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, {
+  FilterAutocompleteInputValue,
+} from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import {
   TriggerEventType,
@@ -85,20 +87,22 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 // region live
 export const triggerLiveKnowledgeCreationMutation = graphql`
-    mutation TriggerLiveCreationKnowledgeMutation($input: TriggerLiveAddInput!) {
-        triggerKnowledgeLiveAdd(input: $input) {
-            id
-            name
-            event_types
-            ...TriggerLine_node
-        }
+  mutation TriggerLiveCreationKnowledgeMutation($input: TriggerLiveAddInput!) {
+    triggerKnowledgeLiveAdd(input: $input) {
+      id
+      name
+      event_types
+      ...TriggerLine_node
     }
+  }
 `;
 
 const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  event_types: Yup.array().min(1, t('Minimum one event type')).required(t('This field is required')),
+  event_types: Yup.array()
+    .min(1, t('Minimum one event type'))
+    .required(t('This field is required')),
   notifiers: Yup.array().nullable(),
 });
 
@@ -107,8 +111,8 @@ export const instanceTriggerDescription = 'An instance trigger on an entity X no
 interface TriggerLiveAddInput {
   name: string;
   description: string;
-  event_types: { value: TriggerEventType, label: string }[];
-  notifiers: { value: string, label: string }[];
+  event_types: { value: TriggerEventType; label: string }[];
+  notifiers: { value: string; label: string }[];
   recipients: string[];
 }
 
@@ -133,27 +137,41 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
+  const [filters, setFilters] = useState<FilterGroup | undefined>(
+    emptyFilterGroup,
+  );
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const [instanceFilters, setInstanceFilters] = useState<FilterAutocompleteInputValue[]>([]);
-  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
+  const [instanceFilters, setInstanceFilters] = useState<
+  FilterAutocompleteInputValue[]
+  >([]);
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
     { value: 'delete', label: t('Deletion') },
   ];
-  const instanceEventTypesOptions: { value: TriggerEventType, label: string }[] = [
+  const instanceEventTypesOptions: {
+    value: TriggerEventType;
+    label: string;
+  }[] = [
     { value: 'update', label: t('Modification') },
     { value: 'delete', label: t('Deletion') },
   ];
-
   const onReset = () => {
     handleClose?.();
     setFilters(emptyFilterGroup);
     setInstanceTrigger(false);
     setInstanceFilters([]);
   };
-  const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
-    setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
+  const onChangeInstanceTrigger = (
+    setFieldValue: (
+      key: string,
+      value: { value: string; label: string }[],
+    ) => void,
+  ) => {
+    setFieldValue(
+      'event_types',
+      instance_trigger ? eventTypesOptions : instanceEventTypesOptions,
+    );
     setInstanceTrigger(!instance_trigger);
     setFilters(emptyFilterGroup);
   };
@@ -163,13 +181,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const handleRemoveFilter = (k: string, op = 'eq') => {
     setFilters(constructHandleRemoveFilter(filters, k, op));
   };
-
   const handleSwitchLocalMode = (localFilter: Filter) => {
     if (filters) {
       setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
     }
   };
-
   const handleSwitchGlobalMode = () => {
     if (filters) {
       setFilters({
@@ -178,16 +194,18 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       });
     }
   };
-
-  const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(triggerLiveKnowledgeCreationMutation);
+  const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(
+    triggerLiveKnowledgeCreationMutation,
+  );
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
     description: '',
-    event_types: instance_trigger ? instanceEventTypesOptions : eventTypesOptions,
+    event_types: instance_trigger
+      ? instanceEventTypesOptions
+      : eventTypesOptions,
     notifiers: [],
     recipients: recipientId ? [recipientId] : [],
   };
-
   const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
@@ -208,7 +226,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       },
       updater: (store) => {
         if (paginationOptions) {
-          insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeLiveAdd');
+          insertNode(
+            store,
+            'Pagination_triggersKnowledge',
+            paginationOptions,
+            'triggerKnowledgeLiveAdd',
+          );
         }
       },
       onError: (error: Error) => {
@@ -224,103 +247,116 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       },
     });
   };
-
-  const renderKnowledgeTrigger = (values: TriggerLiveAddInput, setFieldValue: (key: string, value: (Option | string)[]) => void) => {
-    return <>
-            <Field
-                component={SwitchField}
-                type="checkbox"
-                name="instance_trigger"
-                label={t('Instance trigger')}
-                tooltip={instanceTriggerDescription}
-                containerstyle={{ marginTop: 20 }}
-                onChange={() => onChangeInstanceTrigger(setFieldValue)}
+  const renderKnowledgeTrigger = (
+    values: TriggerLiveAddInput,
+    setFieldValue: (key: string, value: (Option | string)[]) => void,
+  ) => {
+    return (
+      <>
+        <Field
+          component={SwitchField}
+          type="checkbox"
+          name="instance_trigger"
+          label={t('Instance trigger')}
+          tooltip={instanceTriggerDescription}
+          containerstyle={{ marginTop: 20 }}
+          onChange={() => onChangeInstanceTrigger(setFieldValue)}
+        />
+        <Field
+          component={AutocompleteField}
+          name="event_types"
+          style={fieldSpacingContainerStyle}
+          multiple={true}
+          textfieldprops={{
+            variant: 'standard',
+            label: t('Triggering on'),
+          }}
+          options={
+            instance_trigger ? instanceEventTypesOptions : eventTypesOptions
+          }
+          onChange={setFieldValue}
+          renderOption={(
+            props: React.HTMLAttributes<HTMLLIElement>,
+            option: { value: TriggerEventType; label: string },
+          ) => (
+            <MenuItem value={option.value} {...props}>
+              <Checkbox
+                checked={values.event_types
+                  .map((n) => n.value)
+                  .includes(option.value)}
+              />
+              <ListItemText primary={option.label} />
+            </MenuItem>
+          )}
+        />
+        <NotifierField name="notifiers" onChange={setFieldValue} />
+        {instance_trigger ? (
+          <div style={fieldSpacingContainerStyle}>
+            <FilterAutocomplete
+              filterKey={'connectedToId'}
+              searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+              defaultHandleAddFilter={handleAddFilter}
+              inputValues={instanceFilters}
+              setInputValues={setInstanceFilters}
+              openOnFocus={true}
             />
-            <Field
-                component={AutocompleteField}
-                name="event_types"
-                style={fieldSpacingContainerStyle}
-                multiple={true}
-                textfieldprops={{
-                  variant: 'standard',
-                  label: t('Triggering on'),
-                }}
-                options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
-                onChange={setFieldValue}
-                renderOption={(
-                  props: React.HTMLAttributes<HTMLLIElement>,
-                  option: { value: TriggerEventType, label: string },
-                ) => (
-                    <MenuItem value={option.value} {...props}>
-                        <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)}/>
-                        <ListItemText primary={option.label}/>
-                    </MenuItem>
-                )}
-            />
-            <NotifierField
-                name="notifiers"
-                onChange={setFieldValue}
-            />
-            {instance_trigger
-              ? (<div style={fieldSpacingContainerStyle}>
-                    <FilterAutocomplete
-                        filterKey={'connectedToId'}
-                        searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                        defaultHandleAddFilter={handleAddFilter}
-                        inputValues={instanceFilters}
-                        setInputValues={setInstanceFilters}
-                        openOnFocus={true}
-                    />
-                </div>)
-              : (
-                    <span>
+          </div>
+        ) : (
+          <span>
             <div style={{ marginTop: 35 }}>
-             <Filters
-                 variant="text"
-                 availableFilterKeys={[
-                   'entity_type',
-                   'x_opencti_workflow_id',
-                   'objectAssignee',
-                   'objects',
-                   'objectMarking',
-                   'objectLabel',
-                   'creator_id',
-                   'createdBy',
-                   'priority',
-                   'severity',
-                   'x_opencti_score',
-                   'x_opencti_detection',
-                   'revoked',
-                   'confidence',
-                   'indicator_types',
-                   'pattern_type',
-                   'fromId',
-                   'toId',
-                   'fromTypes',
-                   'toTypes',
-                 ]}
-                 handleAddFilter={handleAddFilter}
-                 handleRemoveFilter={undefined}
-                 handleSwitchFilter={undefined}
-                 noDirectFilters={true}
-                 disabled={undefined}
-                 size={undefined}
-                 fontSize={undefined}
-                 availableEntityTypes={undefined}
-                 availableRelationshipTypes={undefined}
-                 allEntityTypes={undefined}
-                 type={undefined}
-                 availableRelationFilterTypes={undefined}
-             />
+              <Filters
+                variant="text"
+                availableFilterKeys={[
+                  'entity_type',
+                  'x_opencti_workflow_id',
+                  'objectAssignee',
+                  'objects',
+                  'objectMarking',
+                  'objectLabel',
+                  'creator_id',
+                  'createdBy',
+                  'priority',
+                  'severity',
+                  'x_opencti_score',
+                  'x_opencti_detection',
+                  'revoked',
+                  'confidence',
+                  'indicator_types',
+                  'pattern_type',
+                  'fromId',
+                  'toId',
+                  'fromTypes',
+                  'toTypes',
+                ]}
+                handleAddFilter={handleAddFilter}
+                handleRemoveFilter={undefined}
+                handleSwitchFilter={undefined}
+                noDirectFilters={true}
+                disabled={undefined}
+                size={undefined}
+                fontSize={undefined}
+                availableEntityTypes={undefined}
+                availableRelationshipTypes={undefined}
+                allEntityTypes={undefined}
+                type={undefined}
+                availableRelationFilterTypes={undefined}
+              />
             </div>
-            <div className="clearfix"/>
+            <div className="clearfix" />
           </span>
-              )
-            }
-        </>;
+        )}
+      </>
+    );
   };
 
-  const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerLiveAddInput) => (
+  const liveFields = (
+    setFieldValue: (
+      field: string,
+      value: unknown,
+      shouldValidate?: boolean | undefined,
+    ) => void,
+    values: TriggerLiveAddInput,
+  ) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -340,113 +376,113 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
       <FilterIconButton
-          filters={filters}
-          handleRemoveFilter={handleRemoveFilter}
-          handleSwitchGlobalMode={handleSwitchGlobalMode}
-          handleSwitchLocalMode={handleSwitchLocalMode}
-          classNameNumber={2}
-          redirection
+        filters={filters}
+        handleRemoveFilter={handleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
+        classNameNumber={2}
+        redirection
       />
     </React.Fragment>
   );
 
   const renderClassic = () => (
-        <div>
-            <Drawer
-                disableRestoreFocus={true}
-                open={open}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleClose}
-            >
-                <div className={classes.header}>
-                    <IconButton
-                        aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={handleClose}
-                        size="large"
-                        color="primary"
-                    >
-                        <Close fontSize="small" color="primary"/>
-                    </IconButton>
-                    <Typography variant="h6">{t('Create a live trigger')}</Typography>
-                </div>
-                <div className={classes.container}>
-                    <Formik<TriggerLiveAddInput>
-                        initialValues={liveInitialValues}
-                        validationSchema={liveTriggerValidation(t)}
-                        onSubmit={onLiveSubmit}
-                        onReset={onReset}
-                    >
-                        {({
-                          submitForm,
-                          handleReset,
-                          isSubmitting,
-                          setFieldValue,
-                          values,
-                        }) => (
-                            <Form style={{ margin: '20px 0 20px 0' }}>
-                                {liveFields(setFieldValue, values)}
-                                <div className={classes.buttons}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleReset}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Cancel')}
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={submitForm}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Create')}
-                                    </Button>
-                                </div>
-                            </Form>
-                        )}
-                    </Formik>
-                </div>
-            </Drawer>
-        </div>
+    <Drawer
+      disableRestoreFocus={true}
+      open={open}
+      anchor="right"
+      elevation={1}
+      sx={{ zIndex: 1202 }}
+      classes={{ paper: classes.drawerPaper }}
+      onClose={handleClose}
+    >
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6">{t('Create a live trigger')}</Typography>
+      </div>
+      <div className={classes.container}>
+        <Formik<TriggerLiveAddInput>
+          initialValues={liveInitialValues}
+          validationSchema={liveTriggerValidation(t)}
+          onSubmit={onLiveSubmit}
+          onReset={onReset}
+        >
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              {liveFields(setFieldValue, values)}
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Create')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </Drawer>
   );
 
   const renderContextual = () => (
-        <Dialog disableRestoreFocus={true}
-                open={open ?? false}
-                onClose={handleClose}
-                PaperProps={{ elevation: 1 }}>
-            <Formik
-                initialValues={liveInitialValues}
-                validationSchema={liveTriggerValidation(t)}
-                onSubmit={onLiveSubmit}
-                onReset={onReset}
-            >
-                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-                    <div>
-                        <DialogTitle>{t('Create a live trigger')}</DialogTitle>
-                        <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
-                        <DialogActions classes={{ root: classes.dialogActions }}>
-                            <Button onClick={handleReset} disabled={isSubmitting}>
-                                {t('Cancel')}
-                            </Button>
-                            <Button
-                                color="secondary"
-                                onClick={submitForm}
-                                disabled={isSubmitting}
-                            >
-                                {t('Create')}
-                            </Button>
-                        </DialogActions>
-                    </div>
-                )}
-            </Formik>
-        </Dialog>
+    <Dialog
+      disableRestoreFocus={true}
+      open={open ?? false}
+      onClose={handleClose}
+      PaperProps={{ elevation: 1 }}
+    >
+      <Formik
+        initialValues={liveInitialValues}
+        validationSchema={liveTriggerValidation(t)}
+        onSubmit={onLiveSubmit}
+        onReset={onReset}
+      >
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+          <>
+            <DialogTitle>{t('Create a live trigger')}</DialogTitle>
+            <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
+            <DialogActions classes={{ root: classes.dialogActions }}>
+              <Button onClick={handleReset} disabled={isSubmitting}>
+                {t('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {t('Create')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Formik>
+    </Dialog>
   );
 
   return contextual ? renderContextual() : renderClassic();
