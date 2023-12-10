@@ -392,15 +392,15 @@ const createApp = async (app) => {
     const context = executionContext('app_loading');
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const title = await settings?.platform_title ?? 'Cyber threat intelligence platform';
+    const settingsTitle = settings?.platform_title;
     const description = 'OpenCTI is an open source platform allowing organizations'
       + ' to manage their cyber threat intelligence knowledge and observables.';
     const settingFavicon = settings?.platform_favicon;
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%APP_TITLE%/g, title)
+      .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? settingsTitle : 'OpenCTI - Cyber Threat Intelligence Platform')
       .replace(/%APP_DESCRIPTION%/g, description)
-      .replace(/%APP_FAVICON%/g, settingFavicon ?? `${basePath}/static/ext/favicon.png`)
+      .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? settingFavicon : `${basePath}/static/ext/favicon.png`)
       .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
     res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.set('Expires', '-1');
