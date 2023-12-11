@@ -782,7 +782,7 @@ const StixRelationshipsMultiHorizontalBars = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersContent = selection.filters;
+      filtersContent = selection.filters.filters ?? [];
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
