@@ -98,7 +98,6 @@ const StixCoreObjectsMultiHeatMap = ({
           types = entityTypeFilter;
         }
       }
-      console.log('selection.filters', selection.filters);
       const filters = selection.filters
         ? {
           ...selection.filters,
