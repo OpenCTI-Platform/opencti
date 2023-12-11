@@ -231,18 +231,20 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     ];
     return (
       <>
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginTop: '-10px',
-        paddingBottom: '10px',
-      }}>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginTop: '-10px',
+          paddingBottom: '10px',
+        }}
+        >
           <Box sx={{
             gap: '10px',
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-          }}>
+          }}
+          >
             <SearchInput
               variant="small"
               onSubmit={helpers.handleSearch}
@@ -256,44 +258,44 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {numberOfElements && (
-              <div>
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                {t('entitie(s)')}
-              </div>
+            <div>
+              <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+              {t('entitie(s)')}
+            </div>
             )}
-              <ToggleButtonGroup
-                size="small"
-                color="secondary"
-                value="graph"
-                exclusive={true}
-                onChange={(_, value) => {
-                  if (value && value === 'export') {
-                    helpers.handleToggleExports();
-                  } else if (value) {
-                    helpers.handleChangeView(value);
-                  }
-                }}
+            <ToggleButtonGroup
+              size="small"
+              color="secondary"
+              value="graph"
+              exclusive={true}
+              onChange={(_, value) => {
+                if (value && value === 'export') {
+                  helpers.handleToggleExports();
+                } else if (value) {
+                  helpers.handleChangeView(value);
+                }
+              }}
+            >
+              <ToggleButton value="lines" aria-label="lines">
+                <Tooltip title={t('Lines view')}>
+                  <ViewListOutlined fontSize="small" color="primary" />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton value="graph" aria-label="graph">
+                <Tooltip title={t('Graph view')}>
+                  <VectorPolygon fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton
+                value="export"
+                aria-label="export"
+                disabled={true}
               >
-                <ToggleButton value="lines" aria-label="lines">
-                  <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined fontSize="small" color="primary" />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="graph" aria-label="graph">
-                  <Tooltip title={t('Graph view')}>
-                    <VectorPolygon fontSize="small" />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton
-                  value="export"
-                  aria-label="export"
-                  disabled={true}
-                >
-                  <Tooltip title={t('Open export panel')}>
-                    <FileDownloadOutlined fontSize="small" />
-                  </Tooltip>
-                </ToggleButton>
-              </ToggleButtonGroup>
+                <Tooltip title={t('Open export panel')}>
+                  <FileDownloadOutlined fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Box>
 
         </Box>
