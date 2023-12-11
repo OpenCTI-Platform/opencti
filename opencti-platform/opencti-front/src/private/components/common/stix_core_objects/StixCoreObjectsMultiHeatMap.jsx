@@ -95,7 +95,7 @@ const StixCoreObjectsMultiHeatMap = ({
       );
       if (entityTypeFilter && entityTypeFilter.values.length > 0) {
         if (entityTypeFilter.values.filter((n) => n === 'all').length === 0) {
-          types = entityTypeFilter;
+          types = entityTypeFilter.values;
         }
       }
       const filters = selection.filters
