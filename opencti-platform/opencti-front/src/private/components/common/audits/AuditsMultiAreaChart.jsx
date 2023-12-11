@@ -112,7 +112,7 @@ const AuditsMultiAreaChart = ({
       const filters = selection.filters
         ? {
           ...selection.filters,
-          filters: (selection.filters.filters ?? []).filter(
+          filters: selection.filters.filters.filter(
             (f) => f.key !== 'entity_type',
           ),
         }
