@@ -1,29 +1,26 @@
 import ToggleButton from '@mui/material/ToggleButton';
 import { LockPersonOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
-import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
+import FormAuthorizedMembers, {
+  FormAuthorizedMembersInputs,
+} from '@components/common/form/FormAuthorizedMembers';
 import { FormikHelpers } from 'formik/dist/types';
 import { useMutation } from 'react-relay';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
+import {
+  AuthorizedMemberOption,
+  Creator,
+} from '../../../../utils/authorizedMembers';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { Theme } from '../../../../components/Theme';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttonEE: {
-    borderColor: theme.palette.ee.main,
-  },
-}));
 
 interface FormAuthorizedMembersDialogProps {
-  id: string
-  mutation: GraphQLTaggedNode
-  authorizedMembers?: AuthorizedMemberOption[]
-  owner?: Creator
+  id: string;
+  mutation: GraphQLTaggedNode;
+  authorizedMembers?: AuthorizedMemberOption[];
+  owner?: Creator;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -32,16 +29,17 @@ const FormAuthorizedMembersDialog = ({
   authorizedMembers,
   owner,
 }: FormAuthorizedMembersDialogProps) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-
   const [commit] = useMutation(mutation);
-
   const onSubmit = (
     values: FormAuthorizedMembersInputs,
-    { setSubmitting, resetForm, setErrors }: FormikHelpers<FormAuthorizedMembersInputs>,
+    {
+      setSubmitting,
+      resetForm,
+      setErrors,
+    }: FormikHelpers<FormAuthorizedMembersInputs>,
   ) => {
     commit({
       variables: {
@@ -66,7 +64,6 @@ const FormAuthorizedMembersDialog = ({
       },
     });
   };
-
   return (
     <>
       <EETooltip title={t('Manage access restriction')}>
@@ -75,9 +72,11 @@ const FormAuthorizedMembersDialog = ({
           value="manage-access"
           size="small"
           style={{ marginRight: 3 }}
-          classes={{ root: isEnterpriseEdition ? undefined : classes.buttonEE }}
         >
-          <LockPersonOutlined fontSize="small" color={isEnterpriseEdition ? 'warning' : 'ee'} />
+          <LockPersonOutlined
+            fontSize="small"
+            color={isEnterpriseEdition ? 'primary' : 'disabled'}
+          />
         </ToggleButton>
       </EETooltip>
       <FormAuthorizedMembers

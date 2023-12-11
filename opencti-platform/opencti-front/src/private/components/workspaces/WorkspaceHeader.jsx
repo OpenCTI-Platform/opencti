@@ -411,7 +411,7 @@ const WorkspaceHeader = ({
                   size="small"
                   value="manage-access"
                 >
-                  <LockPersonOutlined fontSize="small" color="warning" />
+                  <LockPersonOutlined fontSize="small" color="primary" />
                 </ToggleButton>
               </ToggleButtonGroup>
             </Tooltip>

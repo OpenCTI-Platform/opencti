@@ -885,14 +885,6 @@ const ContainerHeader = (props) => {
       )}
       <div className={classes.actions}>
         <ToggleButtonGroup size="small" color="secondary" exclusive={false}>
-          {!knowledge && disableSharing !== true && (
-            <StixCoreObjectSharing elementId={container.id} variant="header" />
-          )}
-          <StixCoreObjectFileExport
-            id={container.id}
-            type={container.entity_type}
-            redirectToContent={true}
-          />
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             hasAccess={!!enableManageAuthorizedMembers}
@@ -906,6 +898,14 @@ const ContainerHeader = (props) => {
               mutation={authorizedMembersMutation}
             />
           </Security>
+          {!knowledge && disableSharing !== true && (
+            <StixCoreObjectSharing elementId={container.id} variant="header" />
+          )}
+          <StixCoreObjectFileExport
+            id={container.id}
+            type={container.entity_type}
+            redirectToContent={true}
+          />
           {enableSuggestions && (
             <QueryRenderer
               query={containerHeaderObjectsQuery}

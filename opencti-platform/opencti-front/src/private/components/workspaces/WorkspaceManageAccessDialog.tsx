@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
+import FormAuthorizedMembers, {
+  FormAuthorizedMembersInputs,
+} from '@components/common/form/FormAuthorizedMembers';
 import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated__/WorkspaceManageAccessDialog_authorizedMembers.graphql';
 import { handleErrorInForm } from '../../../relay/environment';
@@ -44,15 +46,12 @@ WorkspaceManageAccessDialogProps
   const [commit] = useMutation(
     workspaceManageAccessDialogEditAuthorizedMembersMutation,
   );
-
   const data = useFragment<WorkspaceManageAccessDialog_authorizedMembers$key>(
     workspaceManageAccessDialogAuthorizedMembersFragment,
     authorizedMembersData,
   );
-
   const getInitialAuthorizedMembers = () => {
     const initialAuthorizedMembers = authorizedMembersToOptions(data?.authorizedMembers) ?? [];
-
     if (initialAuthorizedMembers.length < 1) {
       // empty, no restricted access
       // add owner as admin
@@ -65,18 +64,22 @@ WorkspaceManageAccessDialogProps
         });
       }
     }
-
     return initialAuthorizedMembers;
   };
-
   const onSubmitForm = (
     values: FormAuthorizedMembersInputs,
-    { setSubmitting, resetForm, setErrors }: FormikHelpers<FormAuthorizedMembersInputs>,
+    {
+      setSubmitting,
+      resetForm,
+      setErrors,
+    }: FormikHelpers<FormAuthorizedMembersInputs>,
   ) => {
     const finalValues = (values.authorizedMembers ?? [])
       .filter((v) => v.accessRight !== 'none')
       .filter((item, index, array) => {
-        return array.findIndex((member) => member.value === item.value) === index;
+        return (
+          array.findIndex((member) => member.value === item.value) === index
+        );
       })
       .map((member) => {
         return {
@@ -84,7 +87,6 @@ WorkspaceManageAccessDialogProps
           access_right: member.accessRight,
         };
       });
-
     commit({
       variables: {
         id: workspaceId,
@@ -101,7 +103,6 @@ WorkspaceManageAccessDialogProps
       },
     });
   };
-
   return (
     <FormAuthorizedMembers
       existingAccessRules={getInitialAuthorizedMembers()}

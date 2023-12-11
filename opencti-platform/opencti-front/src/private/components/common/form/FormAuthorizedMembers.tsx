@@ -6,7 +6,9 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import React from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import AuthorizedMembersField, {
+  AuthorizedMembersFieldValue,
+} from '@components/common/form/AuthorizedMembersField';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { Creator } from '../../../../utils/authorizedMembers';
@@ -18,13 +20,13 @@ export interface FormAuthorizedMembersInputs {
 interface FormAuthorizedMembersProps {
   open: boolean;
   handleClose: () => void;
-  existingAccessRules: FormAuthorizedMembersInputs['authorizedMembers']
+  existingAccessRules: FormAuthorizedMembersInputs['authorizedMembers'];
   onSubmit: (
     values: FormAuthorizedMembersInputs,
-    helpers: FormikHelpers<FormAuthorizedMembersInputs>
-  ) => void
-  owner?: Creator
-  canDeactivate?: boolean
+    helpers: FormikHelpers<FormAuthorizedMembersInputs>,
+  ) => void;
+  owner?: Creator;
+  canDeactivate?: boolean;
 }
 
 const FormAuthorizedMembers = ({
@@ -36,7 +38,6 @@ const FormAuthorizedMembers = ({
   canDeactivate,
 }: FormAuthorizedMembersProps) => {
   const { t } = useFormatter();
-
   return (
     <Formik<FormAuthorizedMembersInputs>
       enableReinitialize
@@ -45,12 +46,7 @@ const FormAuthorizedMembers = ({
       }}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        dirty,
-        handleReset,
-      }) => (
+      {({ submitForm, isSubmitting, dirty, handleReset }) => (
         <Dialog
           open={open}
           PaperProps={{ elevation: 1 }}
@@ -75,7 +71,6 @@ const FormAuthorizedMembers = ({
               />
             </Form>
           </DialogContent>
-
           <DialogActions>
             <Button
               onClick={() => {
@@ -88,10 +83,7 @@ const FormAuthorizedMembers = ({
             <Button
               color="secondary"
               onClick={submitForm}
-              disabled={
-                isSubmitting
-                || !dirty
-              }
+              disabled={isSubmitting || !dirty}
             >
               {t('Save')}
             </Button>
