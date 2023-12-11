@@ -1,7 +1,15 @@
 import channelTypeDefs from './channel.graphql';
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { RELATION_AMPLIFIES, RELATION_BELONGS_TO, RELATION_PUBLISHES, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import {
+  RELATION_AMPLIFIES,
+  RELATION_BELONGS_TO,
+  RELATION_DELIVERS,
+  RELATION_DROPS,
+  RELATION_PUBLISHES,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -12,7 +20,8 @@ import {
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_TOOL
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
 import { ENTITY_TYPE_CHANNEL, type StixChannel, type StoreEntityChannel } from './channel-types';
@@ -28,7 +37,7 @@ import {
   ENTITY_URL,
   ENTITY_USER_ACCOUNT
 } from '../../schema/stixCyberObservable';
-import { REL_EXTENDED, REL_NEW } from '../../database/stix';
+import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
@@ -73,6 +82,7 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_EVENT, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED }
       ]
     },
     {
@@ -109,6 +119,18 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_USER_ACCOUNT, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+      ]
+    },
+    {
+      name: RELATION_DELIVERS,
+      targets: [
+        { name: ENTITY_TYPE_MALWARE, type: REL_BUILT_IN },
+      ]
+    },
+    {
+      name: RELATION_DROPS,
+      targets: [
+        { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
       ]
     }
   ],
