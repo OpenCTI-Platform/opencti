@@ -402,6 +402,6 @@ export const deleteAllObjectFiles = async (context, user, element) => {
     importWorkPromise,
     exportWorkPromise
   ]);
-  const ids = [...importFiles, ...exportFiles].map((file) => file.Key);
+  const ids = [...importFiles, ...exportFiles].map((file) => file.id);
   return deleteFiles(context, user, ids);
 };
