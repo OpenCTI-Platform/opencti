@@ -45,7 +45,8 @@ import { Theme } from '../../../../components/Theme';
 import {
   emptyFilterGroup,
   removeFilter,
-  removeIdFromFilterObject, extractAllValueFromFilters,
+  removeIdFromFilterObject,
+  extractAllValueFromFilters,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
@@ -506,7 +507,6 @@ StixDomainObjectThreatKnowledgeProps
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        classNameNumber={8}
       />
       <QueryRenderer
         query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}

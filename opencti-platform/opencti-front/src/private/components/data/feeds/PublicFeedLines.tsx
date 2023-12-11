@@ -1,4 +1,9 @@
-import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  loadQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -55,7 +60,13 @@ const publicFeedLinesFragment = graphql`
 
 const publicFeedLinesQuery = graphql`
   query PublicFeedLinesQuery {
-    feeds(filters: { mode: and, filters: [{ key: "feed_public", values: ["true"] }], filterGroups: [] }) {
+    feeds(
+      filters: {
+        mode: and
+        filters: [{ key: "feed_public", values: ["true"] }]
+        filterGroups: []
+      }
+    ) {
       edges {
         node {
           ...PublicFeedLines_node
@@ -65,7 +76,11 @@ const publicFeedLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicFeedLinesQuery>(environment, publicFeedLinesQuery, {});
+const queryRef = loadQuery<PublicFeedLinesQuery>(
+  environment,
+  publicFeedLinesQuery,
+  {},
+);
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -100,12 +115,13 @@ const dataColumns: DataColumns = {
       const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
         <>
-          {nodeFilters && <FilterIconButton
-            filters={nodeFilters}
-            dataColumns={this}
-            classNameNumber={3}
-            styleNumber={3}
-                          />}
+          {nodeFilters && (
+            <FilterIconButton
+              filters={nodeFilters}
+              dataColumns={this}
+              styleNumber={3}
+            />
+          )}
         </>
       );
     },
@@ -125,7 +141,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <FileDelimitedOutline/>
+        <FileDelimitedOutline />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -140,24 +156,20 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
               </div>
             ))}
           </div>
-                }
+        }
       />
       <ListItemSecondaryAction>
-        <Tooltip
-          title={t(
-            'Copy uri to clipboard for your csv client',
-          )}
-        >
+        <Tooltip title={t('Copy uri to clipboard for your csv client')}>
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
-              <ContentCopy/>
+              <ContentCopy />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title={t('Access CSV feeds directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
-              <OpenInNew/>
+              <OpenInNew />
             </IconButton>
           </span>
         </Tooltip>
@@ -167,7 +179,10 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
 };
 
 const PublicFeedLines = () => {
-  const { feeds } = usePreloadedQuery<PublicFeedLinesQuery>(publicFeedLinesQuery, queryRef);
+  const { feeds } = usePreloadedQuery<PublicFeedLinesQuery>(
+    publicFeedLinesQuery,
+    queryRef,
+  );
   const { t } = useFormatter();
   return feeds && feeds.edges.length > 0 ? (
     <>
@@ -176,14 +191,12 @@ const PublicFeedLines = () => {
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
-          isLoading={() => {
-          }}
-          hasNext={() => {
-          }}
+          isLoading={() => {}}
+          hasNext={() => {}}
           dataColumns={dataColumns}
           dataList={feeds.edges}
           LineComponent={PublicFeedLine}
-          DummyLineComponent={<FeedLineDummy/>}
+          DummyLineComponent={<FeedLineDummy />}
         />
       </ListLines>
     </>

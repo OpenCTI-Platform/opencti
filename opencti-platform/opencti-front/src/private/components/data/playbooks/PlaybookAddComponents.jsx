@@ -484,7 +484,6 @@ const PlaybookAddComponentsContent = ({
                           handleRemoveFilter={handleRemoveFilter}
                           handleSwitchGlobalMode={handleSwitchGlobalMode}
                           handleSwitchLocalMode={handleSwitchLocalMode}
-                          classNameNumber={2}
                           styleNumber={2}
                           redirection
                         />

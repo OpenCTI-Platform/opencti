@@ -30,10 +30,16 @@ import {
   emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
-import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
+import {
+  dayStartDate,
+  formatTimeForToday,
+  parse,
+} from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, {
+  FilterAutocompleteInputValue,
+} from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -41,38 +47,38 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import TriggersField from './TriggersField';
 
 export const triggerMutationFieldPatch = graphql`
-    mutation TriggerEditionOverviewFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput!]!
-    ) {
-        triggerKnowledgeFieldPatch(id: $id, input: $input) {
-            ...TriggerEditionOverview_trigger
-        }
+  mutation TriggerEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
+    triggerKnowledgeFieldPatch(id: $id, input: $input) {
+      ...TriggerEditionOverview_trigger
     }
+  }
 `;
 
 const triggerEditionOverviewFragment = graphql`
-    fragment TriggerEditionOverview_trigger on Trigger {
-        id
-        name
-        trigger_type
-        event_types
-        description
-        filters
-        created
-        modified
-        notifiers{
-            id
-            name
-        }
-        period
-        trigger_time
-        instance_trigger
-        triggers {
-            id
-            name
-        }
+  fragment TriggerEditionOverview_trigger on Trigger {
+    id
+    name
+    trigger_type
+    event_types
+    description
+    filters
+    created
+    modified
+    notifiers {
+      id
+      name
     }
+    period
+    trigger_time
+    instance_trigger
+    triggers {
+      id
+      name
+    }
+  }
 `;
 
 interface TriggerEditionOverviewProps {
@@ -85,12 +91,12 @@ interface TriggerEditionFormValues {
   name: string;
   description: string | null;
   event_types: {
-    value: TriggerEventType,
-    label: string,
+    value: TriggerEventType;
+    label: string;
   }[];
   notifiers: {
-    value: string,
-    label: string,
+    value: string;
+    label: string;
   }[];
   trigger_ids: { value: string }[];
   period: string;
@@ -103,17 +109,18 @@ TriggerEditionOverviewProps
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const filters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState<FilterAutocompleteInputValue[]>([]);
-  const handleAddFilter = (
-    k: string,
-    id: string,
-    op = 'eq',
-  ) => {
+  const [instanceFilters, setInstanceFilters] = useState<
+  FilterAutocompleteInputValue[]
+  >([]);
+  const handleAddFilter = (k: string, id: string, op = 'eq') => {
     const newBaseFilters = constructHandleAddFilter(filters, k, id, op);
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(newBaseFilters),
+        },
       },
     });
   };
@@ -122,7 +129,10 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(newBaseFilters),
+        },
       },
     });
   };
@@ -133,7 +143,10 @@ TriggerEditionOverviewProps
       commitFieldPatch({
         variables: {
           id: trigger.id,
-          input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
+          input: {
+            key: 'filters',
+            value: serializeFilterGroupForBackend(newBaseFilters),
+          },
         },
       });
     }
@@ -149,7 +162,10 @@ TriggerEditionOverviewProps
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(newBaseFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(newBaseFilters),
+        },
       },
     });
   };
@@ -172,25 +188,29 @@ TriggerEditionOverviewProps
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     event_types:
-            trigger.trigger_type === 'live'
-              ? Yup.array().min(1, t('Minimum one event type')).required(t('This field is required'))
-              : Yup.array().nullable(),
+        trigger.trigger_type === 'live'
+          ? Yup.array()
+            .min(1, t('Minimum one event type'))
+            .required(t('This field is required'))
+          : Yup.array().nullable(),
     notifiers:
-            trigger.trigger_type === 'digest'
-              ? Yup.array().min(1, t('Minimum one notifier')).required(t('This field is required'))
-              : Yup.array().nullable(),
+        trigger.trigger_type === 'digest'
+          ? Yup.array()
+            .min(1, t('Minimum one notifier'))
+            .required(t('This field is required'))
+          : Yup.array().nullable(),
     period:
-            trigger.trigger_type === 'digest'
-              ? Yup.string().required(t('This field is required'))
-              : Yup.string().nullable(),
+        trigger.trigger_type === 'digest'
+          ? Yup.string().required(t('This field is required'))
+          : Yup.string().nullable(),
     day: Yup.string().nullable(),
     time: Yup.string().nullable(),
     trigger_ids:
-            trigger.trigger_type === 'digest'
-              ? Yup.array()
-                .min(1, t('Minimum one trigger'))
-                .required(t('This field is required'))
-              : Yup.array().nullable(),
+        trigger.trigger_type === 'digest'
+          ? Yup.array()
+            .min(1, t('Minimum one trigger'))
+            .required(t('This field is required'))
+          : Yup.array().nullable(),
   });
   const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
     .validateAt(name, { [name]: value })
@@ -267,8 +287,12 @@ TriggerEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
-    return triggerValidation().validateAt(name, { [name]: value })
+  const handleSubmitField = (
+    name: string,
+    value: Option | string | string[],
+  ) => {
+    return triggerValidation()
+      .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
           variables: {
@@ -301,7 +325,10 @@ TriggerEditionOverviewProps
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
-    time: currentTime.length > 1 ? formatTimeForToday(currentTime[1]) : formatTimeForToday(currentTime[0]),
+    time:
+      currentTime.length > 1
+        ? formatTimeForToday(currentTime[1])
+        : formatTimeForToday(currentTime[0]),
   };
   return (
     <Formik
@@ -331,174 +358,194 @@ TriggerEditionOverviewProps
             style={{ marginTop: 20 }}
           />
           {trigger.trigger_type === 'live' && (
-          <Field
-            component={AutocompleteField}
-            name="event_types"
-            style={fieldSpacingContainerStyle}
-            multiple={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t('Triggering on'),
-            }}
-            options={trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions}
-            onChange={(name: string, value: { value: string, label: string }[]) => handleSubmitField(name, value.map((n) => n.value))}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: { value: TriggerEventType, label: string },
-            ) => (
-              <MenuItem value={option.value} {...props}>
-                <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)}/>
-                <ListItemText primary={option.label}/>
-              </MenuItem>
-            )}
-          />
+            <Field
+              component={AutocompleteField}
+              name="event_types"
+              style={fieldSpacingContainerStyle}
+              multiple={true}
+              textfieldprops={{
+                variant: 'standard',
+                label: t('Triggering on'),
+              }}
+              options={
+                trigger.instance_trigger
+                  ? instanceEventTypesOptions
+                  : filterEventTypesOptions
+              }
+              onChange={(
+                name: string,
+                value: { value: string; label: string }[],
+              ) => handleSubmitField(
+                name,
+                value.map((n) => n.value),
+              )
+              }
+              renderOption={(
+                props: React.HTMLAttributes<HTMLLIElement>,
+                option: { value: TriggerEventType; label: string },
+              ) => (
+                <MenuItem value={option.value} {...props}>
+                  <Checkbox
+                    checked={values.event_types
+                      .map((n) => n.value)
+                      .includes(option.value)}
+                  />
+                  <ListItemText primary={option.label} />
+                </MenuItem>
+              )}
+            />
           )}
           {trigger.trigger_type === 'digest' && (
-          <TriggersField
-            name="trigger_ids"
-            setFieldValue={setFieldValue}
-            values={values.trigger_ids}
-            style={fieldSpacingContainerStyle}
-            onChange={handleSubmitTriggers}
-            paginationOptions={paginationOptions}
-          />
+            <TriggersField
+              name="trigger_ids"
+              setFieldValue={setFieldValue}
+              values={values.trigger_ids}
+              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitTriggers}
+              paginationOptions={paginationOptions}
+            />
           )}
           {trigger.trigger_type === 'digest' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="period"
-            label={t('Period')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitField}
-          >
-            <MenuItem value="hour">{t('hour')}</MenuItem>
-            <MenuItem value="day">{t('day')}</MenuItem>
-            <MenuItem value="week">{t('week')}</MenuItem>
-            <MenuItem value="month">{t('month')}</MenuItem>
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="period"
+              label={t('Period')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
+            >
+              <MenuItem value="hour">{t('hour')}</MenuItem>
+              <MenuItem value="day">{t('day')}</MenuItem>
+              <MenuItem value="week">{t('week')}</MenuItem>
+              <MenuItem value="month">{t('month')}</MenuItem>
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'week' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="day"
-            label={t('Week day')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitDay}
-          >
-            <MenuItem value="1">{t('Monday')}</MenuItem>
-            <MenuItem value="2">{t('Tuesday')}</MenuItem>
-            <MenuItem value="3">{t('Wednesday')}</MenuItem>
-            <MenuItem value="4">{t('Thursday')}</MenuItem>
-            <MenuItem value="5">{t('Friday')}</MenuItem>
-            <MenuItem value="6">{t('Saturday')}</MenuItem>
-            <MenuItem value="7">{t('Sunday')}</MenuItem>
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t('Week day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              <MenuItem value="1">{t('Monday')}</MenuItem>
+              <MenuItem value="2">{t('Tuesday')}</MenuItem>
+              <MenuItem value="3">{t('Wednesday')}</MenuItem>
+              <MenuItem value="4">{t('Thursday')}</MenuItem>
+              <MenuItem value="5">{t('Friday')}</MenuItem>
+              <MenuItem value="6">{t('Saturday')}</MenuItem>
+              <MenuItem value="7">{t('Sunday')}</MenuItem>
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'month' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="day"
-            label={t('Month day')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitDay}
-          >
-            {Array.from(Array(31).keys()).map((idx) => (
-              <MenuItem key={idx} value={(idx + 1).toString()}>
-                {(idx + 1).toString()}
-              </MenuItem>
-            ))}
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t('Month day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              {Array.from(Array(31).keys()).map((idx) => (
+                <MenuItem key={idx} value={(idx + 1).toString()}>
+                  {(idx + 1).toString()}
+                </MenuItem>
+              ))}
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period !== 'hour' && (
-          <Field
-            component={TimePickerField}
-            name="time"
-            withMinutes={true}
-            onSubmit={handleSubmitTime}
-            TextFieldProps={{
-              label: t('Time'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
-          />
+            <Field
+              component={TimePickerField}
+              name="time"
+              withMinutes={true}
+              onSubmit={handleSubmitTime}
+              TextFieldProps={{
+                label: t('Time'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+            />
           )}
           <NotifierField
             name="notifiers"
-            onChange={(name, options) => handleSubmitField(name, options.map(({ value }) => value))}
+            onChange={(name, options) => handleSubmitField(
+              name,
+              options.map(({ value }) => value),
+            )
+            }
           />
-          {trigger.trigger_type === 'live'
-                        && <span>
-                          {trigger.instance_trigger
-                            ? (<div style={fieldSpacingContainerStyle}>
-                              <FilterAutocomplete
-                                filterKey={'connectedToId'}
-                                searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                                defaultHandleAddFilter={handleAddFilter}
-                                inputValues={instanceFilters}
-                                setInputValues={setInstanceFilters}
-                                openOnFocus={true}
-                              />
-                            </div>)
-                            : <div>
-                              <div style={{ marginTop: 35 }}>
-                                <Filters
-                                  variant="text"
-                                  availableFilterKeys={[
-                                    'entity_type',
-                                    'x_opencti_workflow_id',
-                                    'objectAssignee',
-                                    'objects',
-                                    'objectMarking',
-                                    'objectLabel',
-                                    'creator_id',
-                                    'createdBy',
-                                    'priority',
-                                    'severity',
-                                    'x_opencti_score',
-                                    'x_opencti_detection',
-                                    'revoked',
-                                    'confidence',
-                                    'indicator_types',
-                                    'pattern_type',
-                                    'fromId',
-                                    'toId',
-                                    'fromTypes',
-                                    'toTypes',
-                                  ]}
-                                  handleAddFilter={handleAddFilter}
-                                  handleRemoveFilter={undefined}
-                                  handleSwitchFilter={undefined}
-                                  noDirectFilters={true}
-                                  disabled={undefined}
-                                  size={undefined}
-                                  fontSize={undefined}
-                                  availableEntityTypes={undefined}
-                                  availableRelationshipTypes={undefined}
-                                  allEntityTypes={undefined}
-                                  type={undefined}
-                                  availableRelationFilterTypes={undefined}
-                                />
-                              </div>
-                              <div className="clearfix"/>
-                            </div>
-              }
-                          <FilterIconButton
-                            filters={filters}
-                            handleRemoveFilter={handleRemoveFilter}
-                            handleSwitchGlobalMode={handleSwitchGlobalMode}
-                            handleSwitchLocalMode={handleSwitchLocalMode}
-                            classNameNumber={2}
-                            redirection
-                          />
-                        </span>
-                    }
+          {trigger.trigger_type === 'live' && (
+            <span>
+              {trigger.instance_trigger ? (
+                <div style={fieldSpacingContainerStyle}>
+                  <FilterAutocomplete
+                    filterKey={'connectedToId'}
+                    searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+                    defaultHandleAddFilter={handleAddFilter}
+                    inputValues={instanceFilters}
+                    setInputValues={setInstanceFilters}
+                    openOnFocus={true}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <div style={{ marginTop: 35 }}>
+                    <Filters
+                      variant="text"
+                      availableFilterKeys={[
+                        'entity_type',
+                        'x_opencti_workflow_id',
+                        'objectAssignee',
+                        'objects',
+                        'objectMarking',
+                        'objectLabel',
+                        'creator_id',
+                        'createdBy',
+                        'priority',
+                        'severity',
+                        'x_opencti_score',
+                        'x_opencti_detection',
+                        'revoked',
+                        'confidence',
+                        'indicator_types',
+                        'pattern_type',
+                        'fromId',
+                        'toId',
+                        'fromTypes',
+                        'toTypes',
+                      ]}
+                      handleAddFilter={handleAddFilter}
+                      handleRemoveFilter={undefined}
+                      handleSwitchFilter={undefined}
+                      noDirectFilters={true}
+                      disabled={undefined}
+                      size={undefined}
+                      fontSize={undefined}
+                      availableEntityTypes={undefined}
+                      availableRelationshipTypes={undefined}
+                      allEntityTypes={undefined}
+                      type={undefined}
+                      availableRelationFilterTypes={undefined}
+                    />
+                  </div>
+                  <div className="clearfix" />
+                </div>
+              )}
+              <FilterIconButton
+                filters={filters}
+                handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
+                styleNumber={2}
+                redirection
+              />
+            </span>
+          )}
         </Form>
       )}
     </Formik>

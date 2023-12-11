@@ -966,7 +966,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     }
                     handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')
                     }
-                    classNameNumber={7}
                     styleNumber={2}
                   />
                 )}
@@ -979,7 +978,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     }
                     handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')
                     }
-                    classNameNumber={7}
                     styleNumber={2}
                     chipColor={'warning'}
                   />
@@ -993,7 +991,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     }
                     handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')
                     }
-                    classNameNumber={7}
                     styleNumber={2}
                     chipColor={'success'}
                   />

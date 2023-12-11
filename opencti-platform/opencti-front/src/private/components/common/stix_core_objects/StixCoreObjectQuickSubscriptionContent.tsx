@@ -1,4 +1,8 @@
-import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
+import {
+  ExpandLess,
+  ExpandMore,
+  NotificationsOutlined,
+} from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -16,7 +20,12 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useMutation,
+  usePreloadedQuery,
+} from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -25,7 +34,11 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
-import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import {
@@ -52,32 +65,30 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
-    query StixCoreObjectQuickSubscriptionContentPaginationQuery(
-        $filters: FilterGroup
-        $first: Int
-    ) {
-        triggersKnowledge(
-            filters: $filters
-            first: $first
-        ) @connection(key: "Pagination_triggersKnowledge") {
-            edges {
-                node {
-                    id
-                    name
-                    trigger_type
-                    event_types
-                    description
-                    filters
-                    created
-                    modified
-                    notifiers {
-                        id
-                        name
-                    }
-                }
-            }
+  query StixCoreObjectQuickSubscriptionContentPaginationQuery(
+    $filters: FilterGroup
+    $first: Int
+  ) {
+    triggersKnowledge(filters: $filters, first: $first)
+      @connection(key: "Pagination_triggersKnowledge") {
+      edges {
+        node {
+          id
+          name
+          trigger_type
+          event_types
+          description
+          filters
+          created
+          modified
+          notifiers {
+            id
+            name
+          }
         }
+      }
     }
+  }
 `;
 
 interface InstanceTriggerEditionFormValues {
@@ -86,7 +97,7 @@ interface InstanceTriggerEditionFormValues {
   description: string | null;
   event_types: readonly Option[];
   notifiers: readonly Option[];
-  filters: string | null,
+  filters: string | null;
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -121,18 +132,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface StixCoreObjectQuickSubscriptionContentProps {
-  queryRef: PreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>,
-  paginationOptions: StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
-  instanceId: string,
-  instanceName: string,
+  queryRef: PreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>;
+  paginationOptions: StixCoreObjectQuickSubscriptionContentPaginationQuery$variables;
+  instanceId: string;
+  instanceName: string;
 }
 
-const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQuickSubscriptionContentProps> = ({
-  queryRef,
-  paginationOptions,
-  instanceId,
-  instanceName,
-}) => {
+const StixCoreObjectQuickSubscriptionContent: FunctionComponent<
+StixCoreObjectQuickSubscriptionContentProps
+> = ({ queryRef, paginationOptions, instanceId, instanceName }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -160,7 +168,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions)
       .toPromise()
       .then((data) => {
-        setExistingInstanceTriggersEdges((data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)?.triggersKnowledge?.edges ?? []);
+        setExistingInstanceTriggersEdges(
+          (data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)
+            ?.triggersKnowledge?.edges ?? [],
+        );
       });
   };
 
@@ -183,8 +194,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     event_types: Yup.array()
       .min(1, t('Minimum one event type'))
       .required(t('This field is required')),
-    notifiers: Yup.array()
-      .required(t('This field is required')),
+    notifiers: Yup.array().required(t('This field is required')),
   });
 
   const createInstanceTrigger = () => {
@@ -192,16 +202,21 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       name: instanceName,
       description: '',
       event_types: ['update', 'delete'],
-      notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d', '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'],
+      notifiers: [
+        'f4ee7b33-006a-4b0d-b57d-411ad288653d',
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
+      ],
       instance_trigger: true,
       filters: serializeFilterGroupForBackend({
         mode: 'and',
-        filters: [{
-          key: 'connectedToId',
-          values: [instanceId],
-          operator: 'eq',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: 'connectedToId',
+            values: [instanceId],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
         filterGroups: [],
       }),
     };
@@ -210,19 +225,23 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeLiveAdd');
+        insertNode(
+          store,
+          'Pagination_triggersKnowledge',
+          paginationOptions,
+          'triggerKnowledgeLiveAdd',
+        );
       },
       onCompleted: () => {
         searchInstanceTriggers();
-        MESSAGING$.notifySuccess('Instance trigger successfully created. You can click again on the bell to edit the options.');
+        MESSAGING$.notifySuccess(
+          'Instance trigger successfully created. You can click again on the bell to edit the options.',
+        );
       },
     });
   };
 
-  const onSubmitUpdate: FormikConfig<InstanceTriggerEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmitUpdate: FormikConfig<InstanceTriggerEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const finalValues = [
       {
         key: 'name',
@@ -257,7 +276,12 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         id: triggerIdToDelete,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, triggerIdToDelete);
+        deleteNode(
+          store,
+          'Pagination_triggersKnowledge',
+          paginationOptions,
+          triggerIdToDelete,
+        );
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -270,12 +294,17 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
     const filterGroup = deserializeFilterGroupForFrontend(filters);
-    const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'connectedToId')?.values?.filter((id) => id !== instanceId) ?? [];
+    const newInstanceValues = findFilterFromKey(
+      filterGroup?.filters ?? [],
+      'connectedToId',
+    )?.values?.filter((id) => id !== instanceId) ?? [];
     const newInstanceFilters = filterGroup && newInstanceValues.length > 0
       ? {
         ...filterGroup,
         filters: [
-          ...filterGroup.filters.filter((f) => f.key !== 'connectedToId' || f.operator !== 'eq'),
+          ...filterGroup.filters.filter(
+            (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+          ),
           {
             key: 'connectedToId',
             values: newInstanceValues,
@@ -286,7 +315,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       }
       : {
         mode: filterGroup?.mode ?? 'and',
-        filters: filterGroup?.filters.filter((f) => f.key !== 'connectedToId' || f.operator !== 'eq') ?? [],
+        filters:
+              filterGroup?.filters.filter(
+                (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+              ) ?? [],
         filterGroups: filterGroup?.filterGroups ?? [],
       };
     commitFieldPatch({
@@ -300,7 +332,12 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         ],
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, triggerIdToUpdate);
+        deleteNode(
+          store,
+          'Pagination_triggersKnowledge',
+          paginationOptions,
+          triggerIdToUpdate,
+        );
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -310,21 +347,25 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     });
   };
 
-  const updateInstanceTriggerContent = (instanceTrigger: InstanceTriggerEditionFormValues, firstTrigger: boolean, multipleInstanceTrigger: boolean) => {
-    const instanceTriggerFilters = deserializeFilterGroupForFrontend(instanceTrigger.filters);
+  const updateInstanceTriggerContent = (
+    instanceTrigger: InstanceTriggerEditionFormValues,
+    firstTrigger: boolean,
+    multipleInstanceTrigger: boolean,
+  ) => {
+    const instanceTriggerFilters = deserializeFilterGroupForFrontend(
+      instanceTrigger.filters,
+    );
     return (
-      <div key={instanceTrigger.id} className={firstTrigger ? classes.container : classes.subcontainer}>
+      <div
+        key={instanceTrigger.id}
+        className={firstTrigger ? classes.container : classes.subcontainer}
+      >
         <Formik
           initialValues={instanceTrigger}
           validationSchema={liveTriggerValidation}
           onSubmit={onSubmitUpdate}
         >
-          {({
-            submitForm,
-            isSubmitting,
-            values,
-            setFieldValue,
-          }) => (
+          {({ submitForm, isSubmitting, values, setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -333,10 +374,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 label={t('Name')}
                 fullWidth={true}
               />
-              <NotifierField
-                name="notifiers"
-                onChange={setFieldValue}
-              />
+              <NotifierField name="notifiers" onChange={setFieldValue} />
               <Field
                 component={AutocompleteField}
                 name="event_types"
@@ -350,30 +388,38 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 onChange={setFieldValue}
                 renderOption={(
                   props: React.HTMLAttributes<HTMLLIElement>,
-                  option: { value: string, label: string },
+                  option: { value: string; label: string },
                 ) => (
                   <MenuItem value={option.value} {...props}>
                     <Checkbox
-                      checked={values.event_types.map((n) => n.value).includes(option.value)}
+                      checked={values.event_types
+                        .map((n) => n.value)
+                        .includes(option.value)}
                     />
-                    <ListItemText primary={option.label}/>
+                    <ListItemText primary={option.label} />
                   </MenuItem>
                 )}
               />
-              {multipleInstanceTrigger && instanceTriggerFilters
-                                && <div style={{ ...fieldSpacingContainerStyle }}>
-                                  <FilterIconButton
-                                    filters={instanceTriggerFilters}
-                                    classNameNumber={3}
-                                    styleNumber={3}
-                                    redirection
-                                  />
-                                </div>
-                            }
-              <div className={classes.buttons} style={{ marginTop: firstTrigger ? 20 : 40 }}>
+              {multipleInstanceTrigger && instanceTriggerFilters && (
+                <div style={{ ...fieldSpacingContainerStyle }}>
+                  <FilterIconButton
+                    filters={instanceTriggerFilters}
+                    styleNumber={3}
+                    redirection
+                  />
+                </div>
+              )}
+              <div
+                className={classes.buttons}
+                style={{ marginTop: firstTrigger ? 20 : 40 }}
+              >
                 <Button
                   variant="contained"
-                  onClick={multipleInstanceTrigger ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
+                  onClick={
+                    multipleInstanceTrigger
+                      ? () => submitRemove(values.id, values.filters)
+                      : () => submitDelete(values.id)
+                  }
                   disabled={deleting}
                   classes={{ root: classes.deleteButton }}
                 >
@@ -396,11 +442,18 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     );
   };
 
-  const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
+  const isInstanceTriggerOnMultipleInstances = (
+    triggerValue: InstanceTriggerEditionFormValues,
+  ) => {
     const filters = deserializeFilterGroupForFrontend(triggerValue.filters);
     if (filters) {
-      const connectedToIdFilter = findFilterFromKey(filters.filters, 'connectedToId');
-      return connectedToIdFilter?.values && connectedToIdFilter.values.length > 1;
+      const connectedToIdFilter = findFilterFromKey(
+        filters.filters,
+        'connectedToId',
+      );
+      return (
+        connectedToIdFilter?.values && connectedToIdFilter.values.length > 1
+      );
     }
     return false;
   };
@@ -420,7 +473,9 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       .filter((n) => isInstanceTriggerOnMultipleInstances(n))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((n) => ({ values: n, multiple: true }));
-    const sortedTriggersToDisplay = uniqInstanceTriggers.concat(multipleInstanceTriggers);
+    const sortedTriggersToDisplay = uniqInstanceTriggers.concat(
+      multipleInstanceTriggers,
+    );
     const firstInstanceTriggerToDisplay = sortedTriggersToDisplay[0];
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
@@ -434,40 +489,44 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
             {t(instanceTriggerDescription)}
           </Alert>
           <div>
-            {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
+            {updateInstanceTriggerContent(
+              firstInstanceTriggerToDisplay.values,
+              true,
+              firstInstanceTriggerToDisplay.multiple,
+            )}
           </div>
-          {otherInstanceTriggersToDisplay.length > 0
-                        && <List>
-                          <ListItem
-                            button={true}
-                            divider={true}
-                            classes={{ root: classes.nested }}
-                            onClick={handleToggleLine}
-                          >
-                            <ListItemText
-                              primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`}
-                            />
-                            <ListItemSecondaryAction>
-                              <IconButton
-                                onClick={handleToggleLine}
-                                aria-haspopup="true"
-                                size="large"
-                              >
-                                {expandedLines ? (
-                                  <ExpandLess/>
-                                ) : (
-                                  <ExpandMore/>
-                                )}
-                              </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                          <Collapse
-                            in={expandedLines}
-                          >
-                            {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
-                          </Collapse>
-                        </List>
-                    }
+          {otherInstanceTriggersToDisplay.length > 0 && (
+            <List>
+              <ListItem
+                button={true}
+                divider={true}
+                classes={{ root: classes.nested }}
+                onClick={handleToggleLine}
+              >
+                <ListItemText
+                  primary={`${otherInstanceTriggersToDisplay.length} ${t(
+                    'other trigger(s) related to this entity',
+                  )}`}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={handleToggleLine}
+                    aria-haspopup="true"
+                    size="large"
+                  >
+                    {expandedLines ? <ExpandLess /> : <ExpandMore />}
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <Collapse in={expandedLines}>
+                {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(
+                  instanceTrigger.values,
+                  false,
+                  instanceTrigger.multiple,
+                ))}
+              </Collapse>
+            </List>
+          )}
         </>
       </Drawer>
     );

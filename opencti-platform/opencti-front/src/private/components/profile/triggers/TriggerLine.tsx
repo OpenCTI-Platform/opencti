@@ -201,7 +201,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   <FilterIconButton
                     filters={filters}
                     dataColumns={dataColumns}
-                    classNameNumber={3}
                     styleNumber={3}
                     redirection
                   />

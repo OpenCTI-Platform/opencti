@@ -1,4 +1,9 @@
-import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  loadQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -56,7 +61,13 @@ const publicStreamLinesFragment = graphql`
 
 const publicStreamLinesQuery = graphql`
   query PublicStreamLinesQuery {
-    streamCollections(filters: { mode: and, filters: [{ key: "stream_public", values: ["true"] }], filterGroups: [] }) {
+    streamCollections(
+      filters: {
+        mode: and
+        filters: [{ key: "stream_public", values: ["true"] }]
+        filterGroups: []
+      }
+    ) {
       edges {
         node {
           ...PublicStreamLines_node
@@ -105,12 +116,13 @@ const dataColumns: DataColumns = {
       const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
         <>
-          {nodeFilters && <FilterIconButton
-            filters={nodeFilters}
-            dataColumns={this}
-            classNameNumber={3}
-            styleNumber={3}
-                          />}
+          {nodeFilters && (
+            <FilterIconButton
+              filters={nodeFilters}
+              dataColumns={this}
+              styleNumber={3}
+            />
+          )}
         </>
       );
     },
@@ -130,7 +142,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon>
-        <Stream/>
+        <Stream />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -145,7 +157,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
               </div>
             ))}
           </div>
-                }
+        }
       />
       <ListItemSecondaryAction>
         <Tooltip
@@ -155,14 +167,14 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
         >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
-              <ContentCopy/>
+              <ContentCopy />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title={t('Access stream directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
-              <OpenInNew/>
+              <OpenInNew />
             </IconButton>
           </span>
         </Tooltip>
@@ -172,7 +184,10 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
 };
 
 const PublicStreamLines = () => {
-  const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(publicStreamLinesQuery, queryRef);
+  const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(
+    publicStreamLinesQuery,
+    queryRef,
+  );
   const { t } = useFormatter();
   return streamCollections && streamCollections.edges.length > 0 ? (
     <>
@@ -181,14 +196,12 @@ const PublicStreamLines = () => {
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
-          isLoading={() => {
-          }}
-          hasNext={() => {
-          }}
+          isLoading={() => {}}
+          hasNext={() => {}}
           dataColumns={dataColumns}
           dataList={streamCollections.edges}
           LineComponent={PublicStreamLine}
-          DummyLineComponent={<StreamLineDummy/>}
+          DummyLineComponent={<StreamLineDummy />}
         />
       </ListLines>
     </>

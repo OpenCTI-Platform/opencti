@@ -60,7 +60,13 @@ const publicTaxiiLinesFragment = graphql`
 
 const publicTaxiiLinesQuery = graphql`
   query PublicTaxiiLinesQuery {
-    taxiiCollections(filters: { mode: and, filters: [{ key: "taxii_public", values: ["true"] }], filterGroups: [] }) {
+    taxiiCollections(
+      filters: {
+        mode: and
+        filters: [{ key: "taxii_public", values: ["true"] }]
+        filterGroups: []
+      }
+    ) {
       edges {
         node {
           ...PublicTaxiiLines_node
@@ -70,7 +76,11 @@ const publicTaxiiLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicTaxiiLinesQuery>(environment, publicTaxiiLinesQuery, {});
+const queryRef = loadQuery<PublicTaxiiLinesQuery>(
+  environment,
+  publicTaxiiLinesQuery,
+  {},
+);
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -105,12 +115,13 @@ const dataColumns: DataColumns = {
       const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
       return (
         <>
-          {nodeFilters && <FilterIconButton
-            filters={nodeFilters}
-            dataColumns={this}
-            classNameNumber={3}
-            styleNumber={3}
-                          />}
+          {nodeFilters && (
+            <FilterIconButton
+              filters={nodeFilters}
+              dataColumns={this}
+              styleNumber={3}
+            />
+          )}
         </>
       );
     },
@@ -125,12 +136,15 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
     window.location.pathname = `/taxii2/root/collections/${collection.id}`;
   };
   const copyClick = () => {
-    copyToClipboard(t, `${window.location.origin}/taxii2/root/collections/${collection.id}`);
+    copyToClipboard(
+      t,
+      `${window.location.origin}/taxii2/root/collections/${collection.id}`,
+    );
   };
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <DatabaseExportOutline/>
+        <DatabaseExportOutline />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -145,24 +159,20 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
               </div>
             ))}
           </div>
-                }
+        }
       />
       <ListItemSecondaryAction>
-        <Tooltip
-          title={t(
-            'Copy uri to clipboard for your Taxii client',
-          )}
-        >
+        <Tooltip title={t('Copy uri to clipboard for your Taxii client')}>
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
-              <ContentCopy/>
+              <ContentCopy />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title={t('Access stream directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
-              <OpenInNew/>
+              <OpenInNew />
             </IconButton>
           </span>
         </Tooltip>
@@ -172,7 +182,10 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
 };
 
 const PublicTaxiiLines = () => {
-  const { taxiiCollections } = usePreloadedQuery<PublicTaxiiLinesQuery>(publicTaxiiLinesQuery, queryRef);
+  const { taxiiCollections } = usePreloadedQuery<PublicTaxiiLinesQuery>(
+    publicTaxiiLinesQuery,
+    queryRef,
+  );
   const { t } = useFormatter();
   return taxiiCollections && taxiiCollections.edges.length > 0 ? (
     <>
@@ -181,14 +194,12 @@ const PublicTaxiiLines = () => {
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
-          isLoading={() => {
-          }}
-          hasNext={() => {
-          }}
+          isLoading={() => {}}
+          hasNext={() => {}}
           dataColumns={dataColumns}
           dataList={taxiiCollections.edges}
           LineComponent={PublicTaxiiLine}
-          DummyLineComponent={<TaxiiLineDummy/>}
+          DummyLineComponent={<TaxiiLineDummy />}
         />
       </ListLines>
     </>

@@ -249,7 +249,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchLocalMode={handleSwitchLocalMode}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
-        classNameNumber={2}
         redirection
       />
     </React.Fragment>

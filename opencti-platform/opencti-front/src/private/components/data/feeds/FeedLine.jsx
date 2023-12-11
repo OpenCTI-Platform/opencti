@@ -106,7 +106,6 @@ class FeedLineLineComponent extends Component {
               >
                 <FilterIconButton
                   filters={filters}
-                  classNameNumber={3}
                   styleNumber={3}
                   dataColumns={dataColumns}
                 />

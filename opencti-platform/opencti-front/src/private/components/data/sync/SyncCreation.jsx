@@ -16,7 +16,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  handleErrorInForm,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -263,9 +268,8 @@ const SyncCreation = ({ paginationOptions }) => {
                       label={t('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
-                      renderValue={(value) => streams
-                        .filter((stream) => stream.value === value)
-                        .at(0).name
+                      renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
+                        .name
                       }
                     >
                       {streams.map(
@@ -291,12 +295,11 @@ const SyncCreation = ({ paginationOptions }) => {
                                   <Grid key={filters} item xs={12}>
                                     <FilterIconButton
                                       filters={streamsFilters}
-                                      classNameNumber={3}
                                       styleNumber={3}
                                     />
                                   </Grid>
                                 </Grid>
-                                  }
+                              }
                               placement="bottom-start"
                             >
                               <MenuItem key={value} value={value}>
@@ -339,7 +342,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   </div>
                 </Alert>
                 <CreatorField
-                  name='user_id'
+                  name="user_id"
                   label={t(
                     'User responsible for data creation (empty = System)',
                   )}
@@ -370,17 +373,27 @@ const SyncCreation = ({ paginationOptions }) => {
                   label={t('Verify SSL certificate')}
                 />
                 <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                  >
                     <Typography>{t('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
-                    <Alert icon={false}
-                      classes={{ root: classes.alert, message: classes.message }}
+                    <Alert
+                      icon={false}
+                      classes={{
+                        root: classes.alert,
+                        message: classes.message,
+                      }}
                       severity="error"
                       variant="outlined"
                       style={{ position: 'relative' }}
                     >
-                      <div>{t('Use these options if you know what you are doing')}</div>
+                      <div>
+                        {t('Use these options if you know what you are doing')}
+                      </div>
                     </Alert>
                     <Field
                       component={SwitchField}
@@ -389,7 +402,11 @@ const SyncCreation = ({ paginationOptions }) => {
                       name="no_dependencies"
                       label={t('Avoid dependencies resolution')}
                     />
-                    <div>{t('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
+                    <div>
+                      {t(
+                        'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)',
+                      )}
+                    </div>
                     <hr style={{ marginTop: 20, marginBottom: 20 }} />
                     <Field
                       component={SwitchField}
@@ -398,8 +415,16 @@ const SyncCreation = ({ paginationOptions }) => {
                       name="synchronized"
                       label={t('Use perfect synchronization')}
                     />
-                    <div>{t('Use this option only in case of platform to platform replication')}</div>
-                    <div>{t('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
+                    <div>
+                      {t(
+                        'Use this option only in case of platform to platform replication',
+                      )}
+                    </div>
+                    <div>
+                      {t(
+                        'Every data fetched from this synchronizer will be written as the only source of truth',
+                      )}
+                    </div>
                   </AccordionDetails>
                 </Accordion>
                 <div className={classes.buttons}>

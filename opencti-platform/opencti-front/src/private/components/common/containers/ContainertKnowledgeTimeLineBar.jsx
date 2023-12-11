@@ -161,7 +161,6 @@ const ContentKnowledgeTimeLineBar = ({
                     handleRemoveFilter={handleRemoveTimeLineFilter}
                     handleSwitchLocalMode={handleSwitchFilterLocalMode}
                     handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
-                    classNameNumber={1}
                     redirection
                   />
                 </div>

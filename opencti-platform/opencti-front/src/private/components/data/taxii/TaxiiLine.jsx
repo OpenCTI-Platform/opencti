@@ -119,7 +119,6 @@ class TaxiiLineLineComponent extends Component {
                 <FilterIconButton
                   filters={filters}
                   dataColumns={dataColumns}
-                  classNameNumber={3}
                   styleNumber={3}
                 />
               </div>

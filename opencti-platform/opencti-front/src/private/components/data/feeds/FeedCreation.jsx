@@ -527,7 +527,6 @@ const FeedCreation = (props) => {
                         handleRemoveFilter={handleRemoveFilter}
                         handleSwitchLocalMode={handleSwitchLocalMode}
                         handleSwitchGlobalMode={handleSwitchGlobalMode}
-                        classNameNumber={2}
                         styleNumber={2}
                         redirection
                       />

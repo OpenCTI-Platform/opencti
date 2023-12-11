@@ -20,7 +20,6 @@ interface FilterIconButtonProps {
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  classNameNumber?: number;
   styleNumber?: number;
   chipColor?: ChipOwnProps['color'];
   dataColumns?: DataColumns;

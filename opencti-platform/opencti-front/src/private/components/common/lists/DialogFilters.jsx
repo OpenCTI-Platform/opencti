@@ -51,8 +51,6 @@ const DialogFilters = ({
             handleRemoveFilter={defaultHandleRemoveFilter}
             handleSwitchGlobalMode={handleSwitchGlobalMode}
             handleSwitchLocalMode={handleSwitchLocalMode}
-            handleSwitchG
-            classNameNumber={4}
             styleNumber={2}
           />
           {filterElement}

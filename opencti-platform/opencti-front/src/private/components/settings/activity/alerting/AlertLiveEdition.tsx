@@ -5,7 +5,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useMutation,
+  usePreloadedQuery,
+} from 'react-relay';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
@@ -15,7 +21,8 @@ import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {
   constructHandleAddFilter,
-  constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
+  constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   Filter,
   filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
@@ -31,47 +38,44 @@ import { alertEditionQuery } from './AlertEditionQuery';
 import { liveActivityTriggerValidation } from './AlertLiveCreation';
 
 interface AlertLiveEditionProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<AlertEditionQuery>
-  paginationOptions?: AlertingPaginationQuery$variables
+  handleClose: () => void;
+  queryRef: PreloadedQuery<AlertEditionQuery>;
+  paginationOptions?: AlertingPaginationQuery$variables;
 }
 
 interface AlertLiveFormValues {
-  name?: string
-  notifiers: { value: string, label: string }[];
-  recipients: { value: string, label: string }[];
+  name?: string;
+  notifiers: { value: string; label: string }[];
+  recipients: { value: string; label: string }[];
 }
 
 const alertLiveEditionFragment = graphql`
-    fragment AlertLiveEdition_trigger on Trigger {
-        id
-        name
-        trigger_type
-        event_types
-        description
-        filters
-        created
-        modified
-        notifiers {
-            id
-            name
-        }
-        recipients {
-            id
-            name
-        }
+  fragment AlertLiveEdition_trigger on Trigger {
+    id
+    name
+    trigger_type
+    event_types
+    description
+    filters
+    created
+    modified
+    notifiers {
+      id
+      name
     }
+    recipients {
+      id
+      name
+    }
+  }
 `;
 
 const alertLiveEditionFieldPatch = graphql`
-    mutation AlertLiveEditionFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput!]!
-    ) {
-        triggerActivityFieldPatch(id: $id, input: $input) {
-            ...AlertLiveEdition_trigger
-        }
+  mutation AlertLiveEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    triggerActivityFieldPatch(id: $id, input: $input) {
+      ...AlertLiveEdition_trigger
     }
+  }
 `;
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -93,14 +97,26 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, handleClose }) => {
+const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
+  queryRef,
+  handleClose,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
-  const trigger = useFragment<AlertLiveEdition_trigger$key>(alertLiveEditionFragment, data.triggerKnowledge);
+  const data = usePreloadedQuery<AlertEditionQuery>(
+    alertEditionQuery,
+    queryRef,
+  );
+  const trigger = useFragment<AlertLiveEdition_trigger$key>(
+    alertLiveEditionFragment,
+    data.triggerKnowledge,
+  );
   const filters = deserializeFilterGroupForFrontend(trigger?.filters ?? null);
   const [commitFieldPatch] = useMutation(alertLiveEditionFieldPatch);
-  const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     commitFieldPatch({
       variables: {
         id: trigger?.id,
@@ -112,15 +128,21 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
-    return liveActivityTriggerValidation(t).validateAt(name, { [name]: value }).then(() => {
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: { key: name, value: value || '' },
-        },
-      });
-    }).catch(() => false);
+  const handleSubmitField = (
+    name: string,
+    value: Option | string | string[],
+  ) => {
+    return liveActivityTriggerValidation(t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: trigger?.id,
+            input: { key: name, value: value || '' },
+          },
+        });
+      })
+      .catch(() => false);
   };
   const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => liveActivityTriggerValidation(t)
     .validateAt(name, { [name]: value })
@@ -138,7 +160,10 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(updatedFilters),
+        },
       },
     });
   };
@@ -147,7 +172,10 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(updatedFilters),
+        },
       },
     });
   };
@@ -157,7 +185,10 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     commitFieldPatch({
       variables: {
         id: trigger?.id,
-        input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(updatedFilters),
+        },
       },
     });
   };
@@ -171,7 +202,10 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
       commitFieldPatch({
         variables: {
           id: trigger?.id,
-          input: { key: 'filters', value: serializeFilterGroupForBackend(updatedFilters) },
+          input: {
+            key: 'filters',
+            value: serializeFilterGroupForBackend(updatedFilters),
+          },
         },
       });
     }
@@ -181,7 +215,10 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
     name: trigger?.name,
     description: trigger?.description,
     notifiers: convertNotifiers(trigger),
-    recipients: (trigger?.recipients ?? []).map((n) => ({ label: n?.name, value: n?.id })),
+    recipients: (trigger?.recipients ?? []).map((n) => ({
+      label: n?.name,
+      value: n?.id,
+    })),
   };
 
   return (
@@ -202,7 +239,11 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues as never}
+          onSubmit={onSubmit}
+        >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -225,13 +266,18 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
               />
               <NotifierField
                 name="notifiers"
-                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+                onChange={(name, values) => handleSubmitField(
+                  name,
+                  values.map(({ value }) => value),
+                )
+                }
               />
               <ObjectMembersField
                 label={'Recipients'}
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
-                multiple={true} name={'recipients'}
+                multiple={true}
+                name={'recipients'}
               />
               <div style={{ marginTop: 35 }}>
                 <Filters
@@ -258,20 +304,20 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
                 />
               </div>
               <div className="clearfix" />
-              {filters
-                && <FilterIconButton
+              {filters && (
+                <FilterIconButton
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
-                  classNameNumber={2}
-                   />}
+                  styleNumber={2}
+                />
+              )}
             </Form>
           )}
         </Formik>
       </div>
     </div>
-
   );
 };
 
