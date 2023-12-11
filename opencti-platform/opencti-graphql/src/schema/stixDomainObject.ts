@@ -21,7 +21,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedbac
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 
 export const ATTRIBUTE_NAME = 'name';
-export const ATTRIBUTE_ABSTRACT = 'abstract';
+export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
 export const ATTRIBUTE_EXPLANATION = 'explanation';
 export const ATTRIBUTE_DESCRIPTION = 'description';
 export const ATTRIBUTE_ALIASES = 'aliases';
