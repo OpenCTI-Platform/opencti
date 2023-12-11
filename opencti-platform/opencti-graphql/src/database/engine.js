@@ -1917,7 +1917,6 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
-  // case 1: operator = nil or no_nil
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     const newFilter = {
       ...filter,
@@ -1925,10 +1924,7 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
     };
     return { newFilter, newFilterGroup: undefined };
   }
-  // case 2: operator = eq or no_eq
   if (operator === 'eq' || operator === 'not_eq') {
-    // worflow_id filter values can be both status ids and templates ids of a status
-    // get all the statuses
     let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
     // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
     statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
