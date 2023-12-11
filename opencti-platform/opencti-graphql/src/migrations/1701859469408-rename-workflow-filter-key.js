@@ -259,8 +259,7 @@ export const up = async (next) => {
       const playbookDefinition = JSON.parse(playbook.playbook_definition);
       const definitionNodes = playbookDefinition.nodes;
       const newDefinitionNodes = [];
-      for (let i = 0; i < definitionNodes.length; i += 1) {
-        const node = definitionNodes[i];
+      definitionNodes.forEach((node) => {
         const nodeConfiguration = JSON.parse(node.configuration);
         const { filters } = nodeConfiguration;
         if (filters) {
@@ -276,7 +275,7 @@ export const up = async (next) => {
         } else { // no conversion to do
           newDefinitionNodes.push(node);
         }
-      }
+      });
       const newPlaybookDefinition = {
         ...playbookDefinition,
         nodes: newDefinitionNodes,
