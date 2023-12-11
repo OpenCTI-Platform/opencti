@@ -27,9 +27,7 @@ export const stixRefRelationshipsMapping: RelationshipMappings = {
     { name: INPUT_OBJECTS, type: REL_NEW }
   ],
   [`*_${ENTITY_TYPE_USER}`]: [
-    { name: INPUT_ASSIGNEE, type: REL_NEW }
-  ],
-  [`*_${ENTITY_TYPE_USER}`]: [
+    { name: INPUT_ASSIGNEE, type: REL_NEW },
     { name: INPUT_PARTICIPANT, type: REL_NEW }
   ],
   [`*_${ENTITY_TYPE_LABEL}`]: [
