@@ -1,4 +1,4 @@
-# Indicators lifecycle
+# Retention policies
 
 !!! tip "Under construction"
 

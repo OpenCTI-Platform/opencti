@@ -7,13 +7,13 @@ Workbenches serve as dedicated workspaces for manipulating data before it is off
 
 The workbenches are located at various places within the platform:
 
-#### Data import and analyst workbenches window
+### Data import and analyst workbenches window
 
 This window encompasses all the necessary tools for importing a file. Files imported through this interface will subsequently be processed by the import connectors, resulting in the creation of workbenches. Additionally, analysts can manually create a workbench by clicking on the "+" icon at the bottom right of the window.
 
 ![Data import and workbenches panel](assets/data-import-and-workbenches.png)
 
-#### Data tabs of all entities
+### Data tabs of all entities
 
 Workbenches are also accessible through the "Data" tabs of entities, providing convenient access to import data associated with the entity.
 

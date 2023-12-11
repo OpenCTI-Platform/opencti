@@ -32,14 +32,14 @@ TAXII collections are a sub-selection of the knowledge available in the platform
 
 ![TAXII Feeds](assets/taxii.png)
 
-### HTTP Streams
+### Live Streams
 
 After implementing CSV feeds and TAXII collections, we figured out that those 2 stateless APIs are definitely not enough when it comes to tackle advanced information sharing challenges such as:
 
-* Real time transmission of the information (ie. avoid hundreds of systems to pull data every 5 minutes).
-* Dependencies resolution (ie. an intrusion created by an organization but the organization is not in the TAXII collection).
-* Partial update for huge entities such as report (ie. just having the *update* event).
-* Delete events when necessary (ie. to handle indicators expiration in third party systems for instance).
+* Real time transmission of the information (i.e. avoid hundreds of systems to pull data every 5 minutes).
+* Dependencies resolution (i.e. an intrusion created by an organization but the organization is not in the TAXII collection).
+* Partial update for huge entities such as report (i.e. just having the *update* event).
+* Delete events when necessary (i.e. to handle indicators expiration in third party systems for instance).
 
 Live streams are available in Data > Data sharing > Live streams. As TAXII collections, it is possible to create as many streams as needed using filters.
 

@@ -7,10 +7,7 @@ Manual data creation in OpenCTI is an intuitive process that occurs throughout t
 To create an entity:
 
 1. Navigate to the relevant section: Be on the section of the platform related to the object type you want to create.
-2. Click on the "+" icon: Locate the "+" icon located at the bottom right of the window.
-
-![New report](assets/new-report.png)
-
+2. Click on the "+" icon: Locate the "+" icon located at the bottom right of the window. ![New report](assets/new-report.png)
 3. Fill in entity-specific fields: A form on the right side of the window will appear, allowing to fill in specific fields of the entity. Certain fields are inherently obligatory, and administrators have the option to designate additional mandatory fields ([See here](../administration/entities.md#attributes-section) for more information). 
 4. Click on "Create": Once you've filled in the desired fields, click on "create" to initiate the entity creation process.
 
@@ -34,10 +31,7 @@ When it comes to creating relationships within containers in OpenCTI, the proces
 
 1. Navigate to the container: Go to the specific container to which you want to attach an object. This could be a Report, Grouping, or Cases.
 2. Access the "Entities" tab: Within the container, locate and access the "Entities" tab.
-3. Click on the "+" icon: Find the "+" icon located at the bottom right of the window. 
-
-![New relation with container](assets/relation-with-container.png)
-
+3. Click on the "+" icon: Find the "+" icon located at the bottom right of the window. ![New relation with container](assets/relation-with-container.png)
 4. Search for entities: A side window will appear. Search for the entities you want to add to the container. 
 5. Add entities to the container: Click on the desired entities. They will be added directly to the container.
 
@@ -48,15 +42,9 @@ When creating relationships not involving a container, the creation method is di
 1. Navigate to one of the entities: Go to one of the entities you wish to link. Please be aware that the entity from which you create the relationship will be designated as the "from" entity for that relationship. So the decision of which entity to choose for creating the relationship should be considered, as it will impact the outcome. 
 2. Access the "Knowledge" tab: Within the entity, go to the "Knowledge" tab.
 3. Select the relevant categories: In the right banner, navigate to the categories that correspond to the object to be linked. The available categories depend on the type of entity you are currently on. For example, if you are on malware and want to link to a sector, choose "victimology."
-4. Click on the "+" icon: Find the "+" icon located at the bottom right of the window. 
-
-![New relationhip](assets/new-relationship.png)
-
+4. Click on the "+" icon: Find the "+" icon located at the bottom right of the window. ![New relationhip](assets/new-relationship.png)
 5. Search for entities: A side window will appear. Search for the entities you want to link.
-6. Add entities and click on "Continue": Click on the entities you wish to link. Multiple entities can be selected. Then click on "Continue" at the bottom right.
-
-![Entities to link](assets/entities-to-link.png)
-
+6. Add entities and click on "Continue": Click on the entities you wish to link. Multiple entities can be selected. Then click on "Continue" at the bottom right. ![Entities to link](assets/entities-to-link.png)
 7. Fill in the relationship form: As relationships are objects, a creation form similar to creating an entity will appear. 
 8. Click on "Create": Once you've filled in the desired fields, click on "create" to initiate the relationship creation process.
 

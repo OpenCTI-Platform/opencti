@@ -158,11 +158,11 @@ nav:
       - Merge objects: usage/merging.md
     - Act on knowledge:
       - Case management: usage/case-management.md
-      - Notifications:
-        - Notifications and alerting: usage/notifications.md
-        - Sample notifiers: usage/notifiers.md
+      - Notifications and alerting: usage/notifications.md
       - Background tasks: usage/background-tasks.md
-      - Custom dashboards: usage/dashboards.md
+      - Dashboards:
+        - Custom dashboards: usage/dashboards.md
+        - Widget creation: usage/widgets.md
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Automation: usage/automation.md
@@ -185,6 +185,9 @@ nav:
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md
+        - Notifiers:
+          - Custom notifiers: administration/notifiers.md
+          - Notifier samples: administration/notifier-samples.md
         - Retention policies: administration/retentions.md
         - Sourcing knowledge: administration/sourcing.md
       - Taxonomies: administration/ontologies.md

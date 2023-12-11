@@ -1,139 +1,140 @@
 # Custom dashboards
 
-## Sharing and access restriction
-
-`Organizations`, `groups`, or `users` who have access to a dashboard can have 3 levels of access: 
-- `admin` read, write, access management
-- `edit` read and write
-- `view` read-only
-
-When a user creates a custom dashboard, it is only visible to themselves and becomes the admin of it. They can then define who can access it and with what level of rights via the `Manage access` button at the top right of the dashboard page.
+OpenCTI provides an adaptable and entirely customizable dashboard functionality. The flexibility of OpenCTI's dashboard ensures a tailored and insightful visualization of data, fostering a comprehensive understanding of the platform's knowledge, relationships, and activities.
 
 
-![manage-access-button](assets/manage-access-button.png)  
-*Manage access button*
+## Dashboard overview
 
-They can give access to organizations, groups, users, but also to all users on the platform (`everyone`).
+You have the flexibility to tailor the arrangement of [widgets](widgets.md) on your dashboard, optimizing organization and workflow efficiency. Widgets can be intuitively placed to highlight key information. Additionally, you can resize widgets from the bottom right corner based on the importance of the information, enabling adaptation to specific analytical needs. This technical flexibility ensures a fluid, visually optimized user experience.
 
-![manage-access-dialog](assets/manage-access-dialog.png)  
-*Manage access window*
+Moreover, the top banner of the dashboard offers a convenient feature to configure the timeframe for displayed data. This can be accomplished through the selection of a relative time period, such as "Last 7 days", or by specifying fixed "Start" and "End" dates, allowing users to precisely control the temporal scope of the displayed information.
 
-It is important to note that a dashboard must have at least one user with `admin` access level.
+![Dashboard overview](assets/dashboard-overview.png)
 
-## Exporting dashboards configuration
 
-Users can export a dashboard from:
-- custom dashboards list
-- dashboard view
+## Access control
 
-Your configuration will be saved as a JSON file.
+In OpenCTI, the power to create custom dashboards comes with a flexible access control system, allowing users to tailor visibility and rights according to their collaborative needs.
 
-Its title will be formatted like this:  `<date: year month day>_octi_dashboard_<dashboard title>`
+When a user crafts a personalized dashboard, by default, it remains visible only to the dashboard creator. At this stage, the creator holds administrative access rights. However, they can extend access and rights to others using the "Manage access" button, denoted by a locker icon, located at the top right of the dashboard page.
 
-### Attributes of an export
-Here is the expected configuration file content:
-- for dashboards
+![Manage access button](assets/manage-access-button.png)
+
+**Levels of access:**
+
+- View: Access to view the dashboard. 
+- Edit: View + Permission to modify and update the dashboard and its widgets. 
+- Manage: Edit + Ability to delete the dashboard and to control user access and rights.
+
+It's crucial to emphasize that at least one user must retain admin access to ensure ongoing management capabilities for the dashboard.
+
+![Manage access dialog](assets/manage-access-dialog.png) 
+
+!!! note "Knowledge access restriction"
+
+    The platform's data access restrictions also apply to dashboards. The data displayed in the widgets is subject to the user's access rights within the platform. Therefore, an admin user will not see the same results in the widgets as a user with limited access, such as viewing only TLP:CLEAR data (assuming the platform contains data beyond TLP:CLEAR). 
+
+
+## Share dashboard and widget configurations
+
+OpenCTI provides functionality for exporting, importing and duplicating dashboard and widget configurations, facilitating the seamless transfer of customized dashboard setups between instances or users.
+
+### Export
+
+Dashboards can be exported from either the custom dashboards list or the dashboard view. 
+
+To export a dashboard configuration from the custom dashboards list:
+
+1. Click on the burger menu button at the end of the dashboard line.
+2. Select `Export`.
+
+![Export dashboard option](assets/export-dashboard-option.png)
+
+To export a widget, the same mechanism is used, but from the burger menu button in the upper right-hand corner of the widget.
+
+![Export widget option](assets/export-widget-option.png)
+
+To export a dashboard configuration from the dashboard view:
+
+1. Navigate to the desired dashboard.
+2. Click on the `Export` button (file with an arrow pointing to the top right corner) located in the top-right corner of the dashboard.
+
+![Export JSON button](assets/export-json-button.png)
+
+#### Configuration file
+
+The dashboard configuration will be saved as a JSON file, with the title formatted as `[YYYYMMDD]_octi_dashboard_[dashboard title]`. The expected configuration file content is as follows:
+
 ```JSON
 {
   "openCTI_version": "5.12.0",
   "type": "dashboard",
-  "configuration": "eyJ3aWRn(...)bmZpZyI6e319"
+  "configuration": {
+    "name": "My dashboard title",
+    "manifest": "eyJ3aWRn(...)uZmlnIjp7fX0="
+  }
 }
 ```
-- for widgets
+
+The widget configuration will be saved as a JSON file, with the title formatted as `[YYYYMMDD]_octi_widget_[widget view]`. The expected configuration file content is as follows:
+
 ```JSON
 {
   "openCTI_version": "5.12.0",
   "type": "widget",
-  "configuration": "eyJ0eXB(...)iOmZhbHNlfX0"
+  "configuration": "eyJ0eXB(...)iOmZhbHNlfX0="
 }
 ```
 
-#### Access
+!!! warning "Source platform-related filters"
 
-The user importing the dashboard becomes the only one that has access to it. Then, access can be managed as usual.
-On widget configuration import, the dashboard access management is unchanged from prior this import.
+    When exporting a dashboard or widget configuration, all filters will be exported as is. Filters on objects that do not exist in the receiving platform will need manual deletion after import. Filters to be deleted can be identified by their "delete" barred value.
 
-### Exporting from custom dashboards list
+![Filter to delete](assets/filter-to-delete.png)
 
-Click the burger menu button at the end of the dashboard line.
-Select `Export` and save your dashboard configuration.
 
-![export-json-option](assets/export-json-option.png)  
-*Export to JSON option*
+### Import
 
-### Exporting from dashboard view
+Dashboards can be imported from the custom dashboards list:
 
-The button with the file and the upward right arrow allows the users to export the current dashboard configuration.
+1. Hover over the Add button (+) in the right bottom corner.
+2. Click on the `Import dashboard` button (cloud with an upward arrow).
+3. Select your file.
 
-![export-json-button](assets/export-json-button.png)  
-*Export to JSON button*
+![Import dashboard option](assets/import-dashboard-option.png)
 
-## Importing configurations
+To import a widget, the same mechanism is used, but from a dashboard view.
 
-Note that only JSON files with the required properties will be accepted:
-- `openCTI_version` with `5.12.0` version and more
-- `type`, here `dashboard` will be the only valid type
-- `configuration`
+![Import widget option](assets/import-widget-option.png)
 
-This applies to both dashboards and widgets configurations. 
+!!! warning "Configuration compatibility"
 
-## Importing dashboards configuration
+    Only JSON files with the required properties will be accepted, including "openCTI_version: [5.12.0 and above]", "type: [dashboard|widget]", and a "configuration". This applies to both dashboards and widgets configurations.
 
-Users can import a dashboard from:
-- custom dashboards list
-- dashboard view
 
-### Importing from custom dashboards list
+### Duplicate
 
-Hover the `Add` button (+) in the right bottom corner. 
-Click on the `Import dashboard` button (cloud with an upward arrow).
-Select your file.
+Dashboards can be duplicated from either the custom dashboards list or the dashboard view.
 
-![import-dashboard-option](assets/import-dashboard-option.png)  
-*Import dashboard option*
+To duplicate a dashboard from the custom dashboards list:
 
-The user is redirected to the imported dashboard view.
+1. Click on the burger menu button at the end of the dashboard line.
+2. Select `Duplicate`.
 
-## Duplicating from dashboard view
+To duplicate a widget, the same mechanism is used, but from the burger menu button in the upper right-hand corner of the widget.
 
-The button with two files allows the users to duplicate the current dashboard configuration.
-On duplication success, a message is displayed for a short amount of time to confirm it. And, a link allows the user to navigate to the imported dashboard view.
+To duplicate a dashboard from the dashboard view:
 
-![duplicate-dashboard-button](assets/duplicate-dashboard-button.png)  
-*Duplicate dashboard button*
+1. Navigate to the desired dashboard.
+2. Click on the `Duplicate the dashboard` button (two stacked sheets) located in the top-right corner of the dashboard.
 
-You can select the `Duplicate` option in the burger menu next to the dashboard title.
+![Duplicate dashboard button](assets/duplicate-dashboard-button.png)
 
-![duplicate-dashboard-option](assets/duplicate-dashboard-option.png)  
-*Duplicate dashboard option*
+Upon successful duplication, a confirmation message is displayed for a short duration, accompanied by a link for easy access to the new dashboard view. Nevertheless, the new dashboard can still be found in the dashboards list.
 
-![duplicate-dashboard-success-message](assets/duplicate-dashboard-success-message.png)  
-*Duplicate dashboard message confirmation*
+![duplicate-dashboard-success-message](assets/duplicate-dashboard-success-message.png)
 
-The new dashboard can be found in the dashboards list.
+!!! note "Dashboard access"
 
-## Exporting widgets configuration
+    The user importing or duplicating a dashboard becomes the only one with access to it. Then, access can be managed as usual.
 
-Users can export a widget from the dashboard view.
-Click on the burger menu in the top right corner of the widget. Select the `Export` option and save your widget configuration.
-
-![export-widget-json-option](assets/export-widget-json-option.png)  
-*Export JSON option for widgets*
-
-## Importing widgets configuration
-
-Users can import a widget from the dashboard view.
-Click on the burger menu in the top right corner of the widget. Select the `Export` option and save your widget configuration.
-
-Hover the `Add` button (+) in the right bottom corner.
-Click on the `Import dashboard` button (cloud with an upward arrow).
-Select your file.
-
-![import-widget-option](assets/import-widget-option.png)  
-*Import JSON option for widgets*
-
-Due to the imported widget dimensions, you may have to manually place it.
-This way, pre-existing widgets will get back to their position.
-![import-widget-success](assets/import-widget-success.png)  
-*Imported widget*
