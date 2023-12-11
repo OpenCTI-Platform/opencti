@@ -1,5 +1,11 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
+import { VectorPolygon } from 'mdi-material-ui';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
@@ -18,6 +24,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import {
   emptyFilterGroup,
 } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,9 +33,6 @@ const useStyles = makeStyles(() => ({
   containerGraph: {
     paddingBottom: 0,
   },
-  parameters: {
-    marginTop: -10,
-  },
 }));
 const StixCoreObjectOrStixCoreRelationshipContainers = ({
   stixDomainObjectOrStixCoreRelationship,
@@ -36,6 +40,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   onChangeOpenExports,
   reportType,
 }) => {
+  const { t } = useFormatter();
   const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -226,30 +231,81 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     ];
     return (
       <>
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: '-10px',
+        paddingBottom: '10px',
+      }}>
+          <Box sx={{
+            gap: '10px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}>
             <SearchInput
               variant="small"
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}
             />
-          </div>
-          <Filters
-            helpers={helpers}
-            availableFilterKeys={availableFilterKeys}
-            handleAddFilter={defaultHandleAddFilter}
-          />
-            <FilterIconButton
+            <Filters
               helpers={helpers}
-              filters={filters}
-              handleRemoveFilter={helpers.handleRemoveFilter}
-              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-              className={5}
-              redirection
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={defaultHandleAddFilter}
             />
-          <div className="clearfix" />
-        </div>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {numberOfElements && (
+              <div>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t('entitie(s)')}
+              </div>
+            )}
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="graph"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    helpers.handleToggleExports();
+                  } else if (value) {
+                    helpers.handleChangeView(value);
+                  }
+                }}
+              >
+                <ToggleButton value="lines" aria-label="lines">
+                  <Tooltip title={t('Lines view')}>
+                    <ViewListOutlined fontSize="small" color="primary" />
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value="graph" aria-label="graph">
+                  <Tooltip title={t('Graph view')}>
+                    <VectorPolygon fontSize="small" />
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton
+                  value="export"
+                  aria-label="export"
+                  disabled={true}
+                >
+                  <Tooltip title={t('Open export panel')}>
+                    <FileDownloadOutlined fontSize="small" />
+                  </Tooltip>
+                </ToggleButton>
+              </ToggleButtonGroup>
+          </Box>
+
+        </Box>
+        <FilterIconButton
+          helpers={helpers}
+          filters={filters}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          className={5}
+          redirection
+        />
         <QueryRenderer
           query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
           variables={{
