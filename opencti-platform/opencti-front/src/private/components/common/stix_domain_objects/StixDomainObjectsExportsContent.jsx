@@ -65,13 +65,13 @@ class StixDomainObjectsExportsContentComponent extends Component {
           {stixDomainObjectsExportFiles.length > 0 ? (
             stixDomainObjectsExportFiles.map(
               (file) => file?.node && (
-                  <FileLine
-                    key={file.node.id}
-                    file={file.node}
-                    dense={true}
-                    disableImport={true}
-                    directDownload={true}
-                  />
+              <FileLine
+                key={file.node.id}
+                file={file.node}
+                dense={true}
+                disableImport={true}
+                directDownload={true}
+              />
               ),
             )
           ) : (

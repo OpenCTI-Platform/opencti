@@ -46,15 +46,15 @@ const DialogFilters = ({
         <DialogTitle>{t('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
 
-            <FilterIconButton
-              filters={filters}
-              handleRemoveFilter={defaultHandleRemoveFilter}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              handleSwitchG
-              classNameNumber={4}
-              styleNumber={2}
-            />
+          <FilterIconButton
+            filters={filters}
+            handleRemoveFilter={defaultHandleRemoveFilter}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchG
+            classNameNumber={4}
+            styleNumber={2}
+          />
           {filterElement}
         </DialogContent>
         <DialogActions>

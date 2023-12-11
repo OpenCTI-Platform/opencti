@@ -1,3 +1,4 @@
+import React from 'react';
 import { makeStyles } from '@mui/styles';
 import { Chip, Grid, Paper, Typography } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -72,11 +73,11 @@ const ThreatActorIndividualDemographics = ({
               {countryRelationship.country_of_residence.length > 0
                 ? countryRelationship.country_of_residence.map(
                   (place: string, index: number) => (
-                      <Chip
-                        key={index}
-                        label={t(place)}
-                        style={{ margin: 1 }}
-                      />
+                    <Chip
+                      key={index}
+                      label={t(place)}
+                      style={{ margin: 1 }}
+                    />
                   ),
                 )
                 : '-'}
@@ -90,11 +91,11 @@ const ThreatActorIndividualDemographics = ({
               {countryRelationship.citizenship.length > 0
                 ? countryRelationship.citizenship.map(
                   (place: string, index: number) => (
-                      <Chip
-                        key={index}
-                        label={t(place)}
-                        style={{ margin: 1 }}
-                      />
+                    <Chip
+                      key={index}
+                      label={t(place)}
+                      style={{ margin: 1 }}
+                    />
                   ),
                 )
                 : '-'}
@@ -127,11 +128,11 @@ const ThreatActorIndividualDemographics = ({
               && countryRelationship.nationality.length > 0
                 ? countryRelationship.nationality.map(
                   (place: string, index: number) => (
-                      <Chip
-                        key={index}
-                        label={t(place)}
-                        style={{ margin: 1 }}
-                      />
+                    <Chip
+                      key={index}
+                      label={t(place)}
+                      style={{ margin: 1 }}
+                    />
                   ),
                 )
                 : '-'}

@@ -589,14 +589,14 @@ const StixDomainPanel = ({
     }
     if (type === 'Threat-Actor-Individual') {
       return (
-          <ThreatActorIndividualCreationForm
-              inputValue={inputValue}
-              defaultConfidence={confidence}
-              defaultCreatedBy={baseCreatedBy}
-              defaultMarkingDefinitions={baseMarkingDefinitions}
-              onReset={onClose}
-              updater={creationUpdater}
-          />
+        <ThreatActorIndividualCreationForm
+          inputValue={inputValue}
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
       );
     }
     if (type === 'Tool') {

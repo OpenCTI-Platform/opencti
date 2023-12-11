@@ -3177,17 +3177,17 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
                                   > 0 ? (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={true}
-                                    label={t('Yes')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={true}
+                                      label={t('Yes')}
+                                    />
                                   ) : (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={false}
-                                    label={t('No')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={false}
+                                      label={t('No')}
+                                    />
                                   );
                               }
                               return (
@@ -3200,11 +3200,11 @@ const WorkbenchFileContentComponent = ({
                             }}
                           />
                           ) : (
-                          <ItemBoolean
-                            variant="inList"
-                            status={null}
-                            label={t('Not applicable')}
-                          />
+                            <ItemBoolean
+                              variant="inList"
+                              status={null}
+                              label={t('Not applicable')}
+                            />
                           )}
                       </div>
                     </div>
@@ -3423,17 +3423,17 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixCyberObservables) {
                                 return props.stixCyberObservables.edges.length
                                   > 0 ? (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={true}
-                                    label={t('Yes')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={true}
+                                      label={t('Yes')}
+                                    />
                                   ) : (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={false}
-                                    label={t('No')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={false}
+                                      label={t('No')}
+                                    />
                                   );
                               }
                               return (
@@ -3446,11 +3446,11 @@ const WorkbenchFileContentComponent = ({
                             }}
                           />
                           ) : (
-                          <ItemBoolean
-                            variant="inList"
-                            status={null}
-                            label={t('Not applicable')}
-                          />
+                            <ItemBoolean
+                              variant="inList"
+                              status={null}
+                              label={t('Not applicable')}
+                            />
                           )}
                       </div>
                     </div>
@@ -3971,17 +3971,17 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
                                   > 0 ? (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={true}
-                                    label={t('Yes')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={true}
+                                      label={t('Yes')}
+                                    />
                                   ) : (
-                                  <ItemBoolean
-                                    variant="inList"
-                                    status={false}
-                                    label={t('No')}
-                                  />
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={false}
+                                      label={t('No')}
+                                    />
                                   );
                               }
                               return (
@@ -3994,11 +3994,11 @@ const WorkbenchFileContentComponent = ({
                             }}
                           />
                           ) : (
-                          <ItemBoolean
-                            variant="inList"
-                            status={null}
-                            label={t('Not applicable')}
-                          />
+                            <ItemBoolean
+                              variant="inList"
+                              status={null}
+                              label={t('Not applicable')}
+                            />
                           )}
                       </div>
                     </div>

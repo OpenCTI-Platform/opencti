@@ -4,37 +4,41 @@ module.exports = {
     'airbnb-typescript/base',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended'
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
   ],
   parserOptions: {
     ecmaVersion: 2020,
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
-    parser: '@typescript-eslint/parser'
+    parser: '@typescript-eslint/parser',
+    ecmaFeatures: {
+      jsx: true,
+    },
   },
   env: {
     browser: true,
-    jest: true
+    jest: true,
   },
   overrides: [
     {
-      "files": ["*.jsx", "*.js","*.ts", "*.tsx"]
-    }
+      files: ['*.jsx', '*.js', '*.ts', '*.tsx'],
+    },
   ],
   ignorePatterns: [
     '**/builder/**',
-    '**/coverage/**', 
-    '**/node_module/**', 
+    '**/coverage/**',
+    '**/node_module/**',
     '**/packages/**',
     '**/src/generated/**',
     '**/__generated__/**',
     '**/src/static/ext/**',
-    'jest.config.js', 
+    'jest.config.js',
     'jest.setup.js',
     'jest.file.transform.js',
-    'jest.relay.transform.js'
+    'jest.relay.transform.js',
   ],
-  plugins: ["custom-rules"],
+  plugins: ['custom-rules'],
   rules: {
     'custom-rules/classes-rule': 1,
     'no-restricted-syntax': 0,
@@ -45,31 +49,34 @@ module.exports = {
     'arrow-body-style': 'off',
     'max-len': [
       'error', 180, 2, {
-        'ignoreUrls': true,
-        'ignoreComments': false,
-        'ignoreRegExpLiterals': true,
-        'ignoreStrings': true,
-        'ignoreTemplateLiterals': true
-      }
+        ignoreUrls: true,
+        ignoreComments: false,
+        ignoreRegExpLiterals: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+      },
     ],
     '@typescript-eslint/naming-convention': ['error', {
-      'selector': 'variable',
-      'format': ['camelCase', 'UPPER_CASE'],
-      'leadingUnderscore': 'allow',
-      'trailingUnderscore': 'allow',
-      'filter': {
-        'regex': '/([^_]*)/',
-        'match': true
-      }
+      selector: 'variable',
+      format: ['camelCase', 'UPPER_CASE'],
+      leadingUnderscore: 'allow',
+      trailingUnderscore: 'allow',
+      filter: {
+        regex: '/([^_]*)/',
+        match: true,
+      },
     }],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
-      }
-    ]
-  }
-}
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
+    'react/jsx-indent': [2, 2],
+    'react/jsx-indent-props': [2, 2],
+    'react/jsx-closing-bracket-location': 'error',
+  },
+};

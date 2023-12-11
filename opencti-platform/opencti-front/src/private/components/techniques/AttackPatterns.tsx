@@ -74,7 +74,7 @@ const AttackPatterns = () => {
     );
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -104,28 +104,28 @@ const AttackPatterns = () => {
         ]}
       >
         {queryRef && (
-            <React.Suspense
-                fallback={
-                  <>
-                    {Array(20)
-                      .fill(0)
-                      .map((_, idx) => (
-                            <AttackPatternLineDummy
-                                key={idx}
-                                dataColumns={dataColumns}
-                            />
-                      ))}
-                  </>
+        <React.Suspense
+          fallback={
+            <>
+              {Array(20)
+                .fill(0)
+                .map((_, idx) => (
+                  <AttackPatternLineDummy
+                    key={idx}
+                    dataColumns={dataColumns}
+                  />
+                ))}
+            </>
                 }
-            >
-            <AttackPatternsLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={helpers.handleAddFilter}
-                setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-            </React.Suspense>
+        >
+          <AttackPatternsLines
+            queryRef={queryRef}
+            paginationOptions={paginationOptions}
+            dataColumns={dataColumns}
+            onLabelClick={helpers.handleAddFilter}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+          />
+        </React.Suspense>
         )}
       </ListLines>
     );

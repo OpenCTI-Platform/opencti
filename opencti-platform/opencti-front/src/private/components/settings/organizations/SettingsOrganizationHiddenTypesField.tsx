@@ -1,3 +1,4 @@
+import React from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import HiddenTypesField from '../hidden_types/HiddenTypesField';
 import {

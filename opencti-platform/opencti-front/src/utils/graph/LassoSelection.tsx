@@ -1,7 +1,7 @@
+import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, useRef } from 'react';
 import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { FunctionComponent, MutableRefObject, useCallback, useEffect, useRef } from 'react';
 import { ForceGraphMethods } from 'react-force-graph-2d';
 import { Theme } from '../../components/Theme';
 import { pointInPolygon } from '../Graph';

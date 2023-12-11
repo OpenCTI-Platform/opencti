@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';

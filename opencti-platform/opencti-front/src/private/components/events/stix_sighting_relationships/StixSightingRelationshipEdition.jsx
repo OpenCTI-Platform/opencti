@@ -48,11 +48,12 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
   const renderInGraph = () => {
     return (
       <Drawer open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaperInGraph }}
-              onClose={handleClose}>
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaperInGraph }}
+        onClose={handleClose}
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview
@@ -73,11 +74,12 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
   const renderClassic = () => {
     return (
       <Drawer open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={handleClose}>
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview

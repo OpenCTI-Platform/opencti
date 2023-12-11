@@ -73,7 +73,7 @@ const Notifiers = () => {
       <CustomizationMenu />
       <NotifierCreation paginationOptions={paginationOptions} />
       <ListLines
-          helpers={storageHelpers}
+        helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

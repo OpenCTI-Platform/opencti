@@ -41,17 +41,17 @@ class OrganizationKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
             render={(routeProps) => (viewAs === 'knowledge' ? (
-                <StixDomainObjectKnowledge
-                  stixDomainObjectId={organization.id}
-                  stixDomainObjectType="Organization"
-                  {...routeProps}
-                />
+              <StixDomainObjectKnowledge
+                stixDomainObjectId={organization.id}
+                stixDomainObjectType="Organization"
+                {...routeProps}
+              />
             ) : (
-                <StixDomainObjectAuthorKnowledge
-                  stixDomainObjectId={organization.id}
-                  stixDomainObjectType="Organization"
-                  {...routeProps}
-                />
+              <StixDomainObjectAuthorKnowledge
+                stixDomainObjectId={organization.id}
+                stixDomainObjectType="Organization"
+                {...routeProps}
+              />
             ))
             }
           />

@@ -31,34 +31,34 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
-        <ListItem classes={{ root: classes.item }} divider={true}>
-            <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-                <Skeleton animation="wave" variant="circular" width={30} height={30} />
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
-                            >
-                                <Skeleton
-                                    animation="wave"
-                                    variant="rectangular"
-                                    width="90%"
-                                    height={20}
-                                />
-                            </div>
-                        ))}
-                    </div>
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
+          </div>
                 }
-            />
-            <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-                <MoreVertOutlined />
-            </ListItemSecondaryAction>
-        </ListItem>
+      />
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <MoreVertOutlined />
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 

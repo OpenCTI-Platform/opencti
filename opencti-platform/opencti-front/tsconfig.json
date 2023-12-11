@@ -25,6 +25,6 @@
     }
   },
   "include": [
-    "src", "index.d.ts"
+    "src", "index.d.ts", ".eslintrc.js"
   ]
 }

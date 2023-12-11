@@ -250,7 +250,7 @@ const SettingsOrganizationUserCreation = ({
                 containerStyle={{ width: '100%' }}
                 predefinedGroups={convertGrantableGroups(organization)}
                 style={fieldSpacingContainerStyle}
-              /> }
+                                /> }
               <Field
                 component={SelectField}
                 variant="standard"

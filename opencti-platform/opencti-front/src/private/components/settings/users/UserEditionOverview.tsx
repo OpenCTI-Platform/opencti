@@ -237,17 +237,17 @@ UserEditionOverviewComponentProps
             }
           />
           <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={fieldSpacingContainerStyle}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={fieldSpacingContainerStyle}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
           />
           <Field
@@ -291,35 +291,35 @@ UserEditionOverviewComponentProps
               <SubscriptionFocus context={context} fieldName="api_token" />
             }
           />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="account_status"
-              label={t('Account Status')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
-              onFocus={handleChangeFocus}
-              onChange={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="account_status" />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="account_status"
+            label={t('Account Status')}
+            fullWidth={true}
+            containerstyle={fieldSpacingContainerStyle}
+            onFocus={handleChangeFocus}
+            onChange={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="account_status" />
               }
-            >
-              {settings.platform_user_statuses.map((s) => {
-                return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
-              })}
-            </Field>
-            <Field
-              component={DateTimePickerField}
-              name="account_lock_after_date"
-              TextFieldProps={{
-                label: t('Account Expire Date'),
-                variant: 'standard',
-                style: fieldSpacingContainerStyle,
-                fullWidth: true,
-              }}
-              onFocus={handleChangeFocus}
-              onChange={handleSubmitField}
-            />
+          >
+            {settings.platform_user_statuses.map((s) => {
+              return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
+            })}
+          </Field>
+          <Field
+            component={DateTimePickerField}
+            name="account_lock_after_date"
+            TextFieldProps={{
+              label: t('Account Expire Date'),
+              variant: 'standard',
+              style: fieldSpacingContainerStyle,
+              fullWidth: true,
+            }}
+            onFocus={handleChangeFocus}
+            onChange={handleSubmitField}
+          />
         </Form>
       )}
     </Formik>

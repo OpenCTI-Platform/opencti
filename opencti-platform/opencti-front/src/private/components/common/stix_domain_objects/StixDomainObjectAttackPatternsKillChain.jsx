@@ -127,50 +127,50 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
     }
     const exportDisabled = targetEntities.length > export_max_size;
     return (
-            <>
-                <div
-                    className={classes.parameters}
-                    style={{ marginTop: -12 }}
-                >
-                    <div style={{ float: 'left', marginRight: 20 }}>
-                        <SearchInput
-                            variant="small"
-                            keyword={searchTerm}
-                            onSubmit={handleSearch.bind(this)}
-                        />
-                    </div>
-                    <div
-                        style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }}
-                    >
-                        <Tooltip
-                            title={
+      <>
+        <div
+          className={classes.parameters}
+          style={{ marginTop: -12 }}
+        >
+          <div style={{ float: 'left', marginRight: 20 }}>
+            <SearchInput
+              variant="small"
+              keyword={searchTerm}
+              onSubmit={handleSearch.bind(this)}
+            />
+          </div>
+          <div
+            style={{ float: 'left', display: 'flex', margin: '-6px 4px 0 0' }}
+          >
+            <Tooltip
+              title={
                                 currentModeOnlyActive
                                   ? t('Display the whole matrix')
                                   : t('Display only used techniques')
                             }
-                        >
+            >
               <span>
                 <IconButton
-                    color={currentModeOnlyActive ? 'secondary' : 'primary'}
-                    onClick={this.handleToggleModeOnlyActive.bind(this)}
-                    size="large"
+                  color={currentModeOnlyActive ? 'secondary' : 'primary'}
+                  onClick={this.handleToggleModeOnlyActive.bind(this)}
+                  size="large"
                 >
                   <FilterAltOutlined fontSize="medium"/>
                 </IconButton>
               </span>
-                        </Tooltip>
-                        <Tooltip
-                            title={
+            </Tooltip>
+            <Tooltip
+              title={
                                 currentColorsReversed
                                   ? t('Disable invert colors')
                                   : t('Enable invert colors')
                             }
-                        >
+            >
               <span>
                 <IconButton
-                    color={currentColorsReversed ? 'secondary' : 'primary'}
-                    onClick={this.handleToggleColorsReversed.bind(this)}
-                    size="large"
+                  color={currentColorsReversed ? 'secondary' : 'primary'}
+                  onClick={this.handleToggleColorsReversed.bind(this)}
+                  size="large"
                 >
                   <InvertColorsOffOutlined fontSize="medium"/>
                 </IconButton>
@@ -230,108 +230,108 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 </ToggleButton>
               </Tooltip>
               {typeof handleToggleExports === 'function' && !exportDisabled && (
-                <Tooltip title={t('Open export panel')}>
-                  <ToggleButton
-                    value="export"
-                    aria-label="export"
-                    onClick={handleToggleExports.bind(this)}
-                  >
-                    <FileDownloadOutlined
-                      fontSize="small"
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
+              <Tooltip title={t('Open export panel')}>
+                <ToggleButton
+                  value="export"
+                  aria-label="export"
+                  onClick={handleToggleExports.bind(this)}
+                >
+                  <FileDownloadOutlined
+                    fontSize="small"
+                    color={openExports ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
               )}
               {typeof handleToggleExports === 'function' && exportDisabled && (
-                <Tooltip
-                  title={`${
-                    t(
-                      'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                    ) + export_max_size
-                  })`}
-                >
-                  <span>
-                    <ToggleButton
-                        size="small"
-                        value="export"
-                        aria-label="export"
-                        disabled={true}
-                    >
-                      <FileDownloadOutlined fontSize="small"/>
-                    </ToggleButton>
-                  </span>
-                                </Tooltip>
+              <Tooltip
+                title={`${
+                  t(
+                    'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                  ) + export_max_size
+                })`}
+              >
+                <span>
+                  <ToggleButton
+                    size="small"
+                    value="export"
+                    aria-label="export"
+                    disabled={true}
+                  >
+                    <FileDownloadOutlined fontSize="small"/>
+                  </ToggleButton>
+                </span>
+              </Tooltip>
               )}
-                        </ToggleButtonGroup>
-                        <div className={classes.export}>
-                            <ExportButtons
-                                domElementId="container"
-                                name={t('Attack patterns kill chain')}
-                                csvData={csvData}
-                                csvFileName={`${t('Attack pattern courses of action')}.csv`}
-                            />
-                        </div>
-                    </div>
-                    <div className="clearfix"/>
-                </div>
-                <div className={classes.container}>
-                    {currentView === 'list' && (
-                        <StixDomainObjectAttackPatternsKillChainLines
-                            data={data}
-                            entityLink={entityLink}
-                            paginationOptions={paginationOptions}
-                            onDelete={this.props.relay.refetch.bind(this)}
-                            searchTerm={searchTerm}
-                        />
-                    )}
-                    {currentView === 'matrix' && (
-                        <StixDomainObjectAttackPatternsKillChainMatrix
-                            data={data}
-                            entityLink={entityLink}
-                            searchTerm={searchTerm}
-                            handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                              this,
-                            )}
-                            handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                              this,
-                            )}
-                            currentColorsReversed={currentColorsReversed}
-                            currentModeOnlyActive={currentModeOnlyActive}
-                            handleAdd={this.handleAdd.bind(this)}
-                        />
-                    )}
-                    {currentView === 'courses-of-action' && (
-                        <StixDomainObjectAttackPatternsKillChainLines
-                            data={data}
-                            entityLink={entityLink}
-                            paginationOptions={paginationOptions}
-                            onDelete={this.props.relay.refetch.bind(this)}
-                            searchTerm={searchTerm}
-                            coursesOfAction={true}
-                        />
-                    )}
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <StixCoreRelationshipCreationFromEntity
-                            entityId={stixDomainObjectId}
-                            isRelationReversed={false}
-                            paddingRight={220}
-                            onCreate={this.props.relay.refetch.bind(this)}
-                            targetStixDomainObjectTypes={['Attack-Pattern']}
-                            paginationOptions={paginationOptions}
-                            targetEntities={targetEntities}
-                        />
-                    </Security>
-                    <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-                        <StixCoreRelationshipsExports
-                            open={openExports}
-                            handleToggle={handleToggleExports.bind(this)}
-                            paginationOptions={paginationOptions}
-                            context={exportContext}
-                        />
-                    </Security>
-                </div>
-            </>
+            </ToggleButtonGroup>
+            <div className={classes.export}>
+              <ExportButtons
+                domElementId="container"
+                name={t('Attack patterns kill chain')}
+                csvData={csvData}
+                csvFileName={`${t('Attack pattern courses of action')}.csv`}
+              />
+            </div>
+          </div>
+          <div className="clearfix"/>
+        </div>
+        <div className={classes.container}>
+          {currentView === 'list' && (
+          <StixDomainObjectAttackPatternsKillChainLines
+            data={data}
+            entityLink={entityLink}
+            paginationOptions={paginationOptions}
+            onDelete={this.props.relay.refetch.bind(this)}
+            searchTerm={searchTerm}
+          />
+          )}
+          {currentView === 'matrix' && (
+          <StixDomainObjectAttackPatternsKillChainMatrix
+            data={data}
+            entityLink={entityLink}
+            searchTerm={searchTerm}
+            handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+              this,
+            )}
+            handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+              this,
+            )}
+            currentColorsReversed={currentColorsReversed}
+            currentModeOnlyActive={currentModeOnlyActive}
+            handleAdd={this.handleAdd.bind(this)}
+          />
+          )}
+          {currentView === 'courses-of-action' && (
+          <StixDomainObjectAttackPatternsKillChainLines
+            data={data}
+            entityLink={entityLink}
+            paginationOptions={paginationOptions}
+            onDelete={this.props.relay.refetch.bind(this)}
+            searchTerm={searchTerm}
+            coursesOfAction={true}
+          />
+          )}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={stixDomainObjectId}
+              isRelationReversed={false}
+              paddingRight={220}
+              onCreate={this.props.relay.refetch.bind(this)}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              paginationOptions={paginationOptions}
+              targetEntities={targetEntities}
+            />
+          </Security>
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixCoreRelationshipsExports
+              open={openExports}
+              handleToggle={handleToggleExports.bind(this)}
+              paginationOptions={paginationOptions}
+              context={exportContext}
+            />
+          </Security>
+        </div>
+      </>
     );
   }
 }

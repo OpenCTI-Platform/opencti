@@ -193,7 +193,8 @@ const DashboardSettings = () => {
                             <MenuItem key={id} value={id}>
                               <ListItemIcon classes={{
                                 root: classes.muiSelectIcon,
-                              }}>
+                              }}
+                              >
                                 <ItemIcon type="Dashboard" variant="inline" />
                               </ListItemIcon>
                               <ListItemText>{name}</ListItemText>
@@ -206,7 +207,8 @@ const DashboardSettings = () => {
                             <MenuItem key={node.id} value={node.id}>
                               <ListItemIcon classes={{
                                 root: classes.muiSelectIcon,
-                              }}>
+                              }}
+                              >
                                 <ItemIcon type="Dashboard" />
                               </ListItemIcon>
                               <ListItemText>{node.name}</ListItemText>

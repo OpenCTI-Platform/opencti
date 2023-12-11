@@ -164,133 +164,133 @@ const EventEditionOverviewComponent = (props) => {
     ]),
   )(event);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={eventValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={eventValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
-            <OpenVocabField
-              label={t('Event types')}
-              type="event-type-ov"
-              name="event_types"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+          />
+          <OpenVocabField
+            label={t('Event types')}
+            type="event-type-ov"
+            name="event_types"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-            <Field
-              component={DateTimePickerField}
-              name="start_time"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Start date'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="start_date" />
-                ),
-              }}
-            />
-            <Field
-              component={DateTimePickerField}
-              name="stop_time"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('End date'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="end_date" />
-                ),
-              }}
-            />
-            {event.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Event"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+          />
+          <Field
+            component={DateTimePickerField}
+            name="start_time"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Start date'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="start_date" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="stop_time"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('End date'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="end_date" />
+              ),
+            }}
+          />
+          {event.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="Event"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+          />
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={editor.changeCreated}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              setFieldValue={setFieldValue}
-              onChange={editor.changeMarking}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={event.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+            setFieldValue={setFieldValue}
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting || !isValid || !dirty}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={event.id}
+          />
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

@@ -734,33 +734,33 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   };
   const renderTypes = () => {
     return (
-            <Grid
-                container={true}
-                spacing={3}
-                style={{ marginTop: 20, marginBottom: 20 }}
-            >
-                {visualizationTypes.map((visualizationType) => (
-                    <Grid key={visualizationType.key} item={true} xs="4">
-                        <Card variant="outlined" className={classes.card3}>
-                            <CardActionArea
-                                onClick={() => handleSelectType(visualizationType.key)}
-                                style={{ height: '100%' }}
-                            >
-                                <CardContent>
-                                    {renderIcon(visualizationType.key)}
-                                    <Typography
-                                        gutterBottom
-                                        variant="body1"
-                                        style={{ marginTop: 8 }}
-                                    >
-                                        {t(visualizationType.name)}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginTop: 20, marginBottom: 20 }}
+      >
+        {visualizationTypes.map((visualizationType) => (
+          <Grid key={visualizationType.key} item={true} xs="4">
+            <Card variant="outlined" className={classes.card3}>
+              <CardActionArea
+                onClick={() => handleSelectType(visualizationType.key)}
+                style={{ height: '100%' }}
+              >
+                <CardContent>
+                  {renderIcon(visualizationType.key)}
+                  <Typography
+                    gutterBottom
+                    variant="body1"
+                    style={{ marginTop: 8 }}
+                  >
+                    {t(visualizationType.name)}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     );
   };
   const renderPerspective = () => {
@@ -775,92 +775,92 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       xs = 6;
     }
     return (
-            <Grid
-                container={true}
-                spacing={3}
-                style={{ marginTop: 20, marginBottom: 20 }}
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginTop: 20, marginBottom: 20 }}
+      >
+        {getCurrentIsEntities() && (
+        <Grid item={true} xs={xs}>
+          <Card variant="outlined" className={classes.card}>
+            <CardActionArea
+              onClick={() => handleSelectPerspective('entities')}
+              style={{ height: '100%' }}
             >
-                {getCurrentIsEntities() && (
-                    <Grid item={true} xs={xs}>
-                        <Card variant="outlined" className={classes.card}>
-                            <CardActionArea
-                                onClick={() => handleSelectPerspective('entities')}
-                                style={{ height: '100%' }}
-                            >
-                                <CardContent>
-                                    <DatabaseOutline style={{ fontSize: 40 }} color="primary"/>
-                                    <Typography
-                                        gutterBottom
-                                        variant="h2"
-                                        style={{ marginTop: 20 }}
-                                    >
-                                        {t('Entities')}
-                                    </Typography>
-                                    <br/>
-                                    <Typography variant="body1">
-                                        {t('Display global knowledge with filters and criteria.')}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                )}
-                {getCurrentIsRelationships() && (
-                    <Grid item={true} xs={xs}>
-                        <Card variant="outlined" className={classes.card}>
-                            <CardActionArea
-                                onClick={() => handleSelectPerspective('relationships')}
-                                style={{ height: '100%' }}
-                            >
-                                <CardContent>
-                                    <FlaskOutline style={{ fontSize: 40 }} color="primary"/>
-                                    <Typography
-                                        gutterBottom
-                                        variant="h2"
-                                        style={{ marginTop: 20 }}
-                                    >
-                                        {t('Knowledge graph')}
-                                    </Typography>
-                                    <br/>
-                                    <Typography variant="body1">
-                                        {t(
-                                          'Display specific knowledge using relationships and filters.',
-                                        )}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                )}
-                {getCurrentIsAudits() && (
-                    <Grid item={true} xs={xs}>
-                        <Card variant="outlined" className={classes.card}>
-                            <CardActionArea
-                                onClick={() => handleSelectPerspective('audits')}
-                                style={{ height: '100%' }}
-                            >
-                                <CardContent>
-                                    <LibraryBooksOutlined
-                                        style={{ fontSize: 40 }}
-                                        color="primary"
-                                    />
-                                    <Typography
-                                        gutterBottom
-                                        variant="h2"
-                                        style={{ marginTop: 20 }}
-                                    >
-                                        {t('Activity & history')}
-                                    </Typography>
-                                    <br/>
-                                    <Typography variant="body1">
-                                        {t('Display data related to the history and activity.')}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                )}
-            </Grid>
+              <CardContent>
+                <DatabaseOutline style={{ fontSize: 40 }} color="primary"/>
+                <Typography
+                  gutterBottom
+                  variant="h2"
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Entities')}
+                </Typography>
+                <br/>
+                <Typography variant="body1">
+                  {t('Display global knowledge with filters and criteria.')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        )}
+        {getCurrentIsRelationships() && (
+        <Grid item={true} xs={xs}>
+          <Card variant="outlined" className={classes.card}>
+            <CardActionArea
+              onClick={() => handleSelectPerspective('relationships')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <FlaskOutline style={{ fontSize: 40 }} color="primary"/>
+                <Typography
+                  gutterBottom
+                  variant="h2"
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Knowledge graph')}
+                </Typography>
+                <br/>
+                <Typography variant="body1">
+                  {t(
+                    'Display specific knowledge using relationships and filters.',
+                  )}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        )}
+        {getCurrentIsAudits() && (
+        <Grid item={true} xs={xs}>
+          <Card variant="outlined" className={classes.card}>
+            <CardActionArea
+              onClick={() => handleSelectPerspective('audits')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <LibraryBooksOutlined
+                  style={{ fontSize: 40 }}
+                  color="primary"
+                />
+                <Typography
+                  gutterBottom
+                  variant="h2"
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Activity & history')}
+                </Typography>
+                <br/>
+                <Typography variant="body1">
+                  {t('Display data related to the history and activity.')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        )}
+      </Grid>
     );
   };
   const renderDataSelection = () => {
@@ -1072,474 +1072,474 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   };
   const renderParameters = () => {
     return (
-            <div style={{ marginTop: 20 }}>
-                <TextField
-                    label={t('Title')}
-                    fullWidth={true}
-                    value={parameters.title}
-                    onChange={(event) => handleChangeParameter('title', event.target.value)
+      <div style={{ marginTop: 20 }}>
+        <TextField
+          label={t('Title')}
+          fullWidth={true}
+          value={parameters.title}
+          onChange={(event) => handleChangeParameter('title', event.target.value)
                     }
-                />
-                {getCurrentCategory() === 'text' && (
-                    <div style={{ marginTop: 20 }}>
-                        <InputLabel shrink={true}>{t('Content')}</InputLabel>
-                        <ReactMde
-                            value={parameters.content}
-                            onChange={(value) => handleChangeParameter('content', value)}
-                            selectedTab={selectedTab}
-                            onTabChange={(tab) => setSelectedTab(tab)}
-                            generateMarkdownPreview={(markdown) => Promise.resolve(
-                                <MarkdownDisplay
-                                    content={markdown}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                />,
-                            )
+        />
+        {getCurrentCategory() === 'text' && (
+        <div style={{ marginTop: 20 }}>
+          <InputLabel shrink={true}>{t('Content')}</InputLabel>
+          <ReactMde
+            value={parameters.content}
+            onChange={(value) => handleChangeParameter('content', value)}
+            selectedTab={selectedTab}
+            onTabChange={(tab) => setSelectedTab(tab)}
+            generateMarkdownPreview={(markdown) => Promise.resolve(
+              <MarkdownDisplay
+                content={markdown}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />,
+            )
                             }
-                            l18n={{
-                              write: t('Write'),
-                              preview: t('Preview'),
-                              uploadingImage: t('Uploading image'),
-                              pasteDropSelect: t('Paste'),
-                            }}
-                            minEditorHeight={100}
-                            maxEditorHeight={100}
-                        />
-                    </div>
-                )}
-                {getCurrentCategory() === 'timeseries' && (
-                    <FormControl fullWidth={true} style={{ marginTop: 20 }}>
-                        <InputLabel id="relative">{t('Interval')}</InputLabel>
-                        <Select
-                            labelId="relative"
-                            fullWidth={true}
-                            value={parameters.interval ?? 'day'}
-                            onChange={(event) => handleChangeParameter('interval', event.target.value)
+            l18n={{
+              write: t('Write'),
+              preview: t('Preview'),
+              uploadingImage: t('Uploading image'),
+              pasteDropSelect: t('Paste'),
+            }}
+            minEditorHeight={100}
+            maxEditorHeight={100}
+          />
+        </div>
+        )}
+        {getCurrentCategory() === 'timeseries' && (
+        <FormControl fullWidth={true} style={{ marginTop: 20 }}>
+          <InputLabel id="relative">{t('Interval')}</InputLabel>
+          <Select
+            labelId="relative"
+            fullWidth={true}
+            value={parameters.interval ?? 'day'}
+            onChange={(event) => handleChangeParameter('interval', event.target.value)
                             }
-                        >
-                            <MenuItem value="day">{t('Day')}</MenuItem>
-                            <MenuItem value="week">{t('Week')}</MenuItem>
-                            <MenuItem value="month">{t('Month')}</MenuItem>
-                            <MenuItem value="quarter">{t('Quarter')}</MenuItem>
-                            <MenuItem value="year">{t('Year')}</MenuItem>
-                        </Select>
-                    </FormControl>
-                )}
-                <>
-                    {Array(dataSelection.length)
-                      .fill(0)
-                      .map((_, i) => {
-                        return (
-                                <div key={i}>
-                                    {(getCurrentCategory() === 'distribution'
+          >
+            <MenuItem value="day">{t('Day')}</MenuItem>
+            <MenuItem value="week">{t('Week')}</MenuItem>
+            <MenuItem value="month">{t('Month')}</MenuItem>
+            <MenuItem value="quarter">{t('Quarter')}</MenuItem>
+            <MenuItem value="year">{t('Year')}</MenuItem>
+          </Select>
+        </FormControl>
+        )}
+        <>
+          {Array(dataSelection.length)
+            .fill(0)
+            .map((_, i) => {
+              return (
+                <div key={i}>
+                  {(getCurrentCategory() === 'distribution'
                                         || getCurrentCategory() === 'list') && (
                                         <TextField
-                                            label={t('Number of results')}
-                                            fullWidth={true}
-                                            type="number"
-                                            value={dataSelection[i].number ?? 10}
-                                            onChange={(event) => handleChangeDataValidationParameter(
-                                              i,
-                                              'number',
-                                              event.target.value,
-                                              true,
-                                            )
+                                          label={t('Number of results')}
+                                          fullWidth={true}
+                                          type="number"
+                                          value={dataSelection[i].number ?? 10}
+                                          onChange={(event) => handleChangeDataValidationParameter(
+                                            i,
+                                            'number',
+                                            event.target.value,
+                                            true,
+                                          )
                                             }
-                                            style={{ marginTop: 20 }}
+                                          style={{ marginTop: 20 }}
                                         />
-                                    )}
-                                    {dataSelection[i].perspective !== 'audits' && (
-                                        <div
-                                            style={{
-                                              display: 'flex',
-                                              width: '100%',
-                                              marginTop: 20,
-                                            }}
-                                        >
-                                            <FormControl fullWidth={true} style={{ flex: 1 }}>
-                                                <InputLabel id="relative" size="small">
-                                                    {isNotEmptyField(dataSelection[i].label)
-                                                      ? dataSelection[i].label
-                                                      : t('Date attribute')}
-                                                </InputLabel>
-                                                <Select
-                                                    labelId="relative"
-                                                    size="small"
-                                                    fullWidth={true}
-                                                    value={
+                  )}
+                  {dataSelection[i].perspective !== 'audits' && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      marginTop: 20,
+                    }}
+                  >
+                    <FormControl fullWidth={true} style={{ flex: 1 }}>
+                      <InputLabel id="relative" size="small">
+                        {isNotEmptyField(dataSelection[i].label)
+                          ? dataSelection[i].label
+                          : t('Date attribute')}
+                      </InputLabel>
+                      <Select
+                        labelId="relative"
+                        size="small"
+                        fullWidth={true}
+                        value={
                                                         dataSelection[i].date_attribute ?? 'created_at'
                                                     }
-                                                    onChange={(event) => handleChangeDataValidationParameter(
-                                                      i,
-                                                      'date_attribute',
-                                                      event.target.value,
-                                                    )
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'date_attribute',
+                          event.target.value,
+                        )
                                                     }
-                                                >
-                                                    <MenuItem value="created_at">
-                                                        created_at ({t('Technical date')})
-                                                    </MenuItem>
-                                                    <MenuItem value="updated_at">
-                                                        updated_at ({t('Technical date')})
-                                                    </MenuItem>
-                                                    <MenuItem value="created">
-                                                        created ({t('Functional date')})
-                                                    </MenuItem>
-                                                    <MenuItem value="modified">
-                                                        modified ({t('Functional date')})
-                                                    </MenuItem>
-                                                    {getCurrentIsRelationships() && (
-                                                        <MenuItem value="start_time">
-                                                            start_time ({t('Functional date')})
-                                                        </MenuItem>
-                                                    )}
-                                                    {getCurrentIsRelationships() && (
-                                                        <MenuItem value="stop_time">
-                                                            stop_time ({t('Functional date')})
-                                                        </MenuItem>
-                                                    )}
-                                                    {getCurrentIsRelationships() && (
-                                                        <MenuItem value="first_seen">
-                                                            first_seen ({t('Functional date')})
-                                                        </MenuItem>
-                                                    )}
-                                                    {getCurrentIsRelationships() && (
-                                                        <MenuItem value="last_seen">
-                                                            last_seen ({t('Functional date')})
-                                                        </MenuItem>
-                                                    )}
-                                                </Select>
-                                            </FormControl>
-                                        </div>
-                                    )}
-                                    {dataSelection[i].perspective === 'relationships'
+                      >
+                        <MenuItem value="created_at">
+                          created_at ({t('Technical date')})
+                        </MenuItem>
+                        <MenuItem value="updated_at">
+                          updated_at ({t('Technical date')})
+                        </MenuItem>
+                        <MenuItem value="created">
+                          created ({t('Functional date')})
+                        </MenuItem>
+                        <MenuItem value="modified">
+                          modified ({t('Functional date')})
+                        </MenuItem>
+                        {getCurrentIsRelationships() && (
+                        <MenuItem value="start_time">
+                          start_time ({t('Functional date')})
+                        </MenuItem>
+                        )}
+                        {getCurrentIsRelationships() && (
+                        <MenuItem value="stop_time">
+                          stop_time ({t('Functional date')})
+                        </MenuItem>
+                        )}
+                        {getCurrentIsRelationships() && (
+                        <MenuItem value="first_seen">
+                          first_seen ({t('Functional date')})
+                        </MenuItem>
+                        )}
+                        {getCurrentIsRelationships() && (
+                        <MenuItem value="last_seen">
+                          last_seen ({t('Functional date')})
+                        </MenuItem>
+                        )}
+                      </Select>
+                    </FormControl>
+                  </div>
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
-                                            <TextField
-                                                label={t('Zoom')}
-                                                fullWidth={true}
-                                                value={dataSelection[i].zoom ?? 2}
-                                                placeholder={t('Zoom')}
-                                                onChange={(event) => handleChangeDataValidationParameter(
-                                                  i,
-                                                  'zoom',
-                                                  event.target.value,
-                                                )
+                                        <TextField
+                                          label={t('Zoom')}
+                                          fullWidth={true}
+                                          value={dataSelection[i].zoom ?? 2}
+                                          placeholder={t('Zoom')}
+                                          onChange={(event) => handleChangeDataValidationParameter(
+                                            i,
+                                            'zoom',
+                                            event.target.value,
+                                          )
                                                 }
-                                                style={{ marginTop: 20 }}
-                                            />
-                                    )}
-                                    {dataSelection[i].perspective === 'relationships'
+                                          style={{ marginTop: 20 }}
+                                        />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
-                                            <TextField
-                                                label={t('Center latitude')}
-                                                fullWidth={true}
-                                                value={dataSelection[i].centerLat ?? 48.8566969}
-                                                placeholder={t('Center latitude')}
-                                                onChange={(event) => handleChangeDataValidationParameter(
-                                                  i,
-                                                  'centerLat',
-                                                  event.target.value,
-                                                )
+                                        <TextField
+                                          label={t('Center latitude')}
+                                          fullWidth={true}
+                                          value={dataSelection[i].centerLat ?? 48.8566969}
+                                          placeholder={t('Center latitude')}
+                                          onChange={(event) => handleChangeDataValidationParameter(
+                                            i,
+                                            'centerLat',
+                                            event.target.value,
+                                          )
                                                 }
-                                                style={{ marginTop: 20 }}
-                                            />
-                                    )}
-                                    {dataSelection[i].perspective === 'relationships'
+                                          style={{ marginTop: 20 }}
+                                        />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
-                                            <TextField
-                                                label={t('Center longitude')}
-                                                fullWidth={true}
-                                                value={dataSelection[i].centerLng ?? 2.3514616}
-                                                placeholder={t('Center longitude')}
-                                                onChange={(event) => handleChangeDataValidationParameter(
-                                                  i,
-                                                  'centerLng',
-                                                  event.target.value,
-                                                )
+                                        <TextField
+                                          label={t('Center longitude')}
+                                          fullWidth={true}
+                                          value={dataSelection[i].centerLng ?? 2.3514616}
+                                          placeholder={t('Center longitude')}
+                                          onChange={(event) => handleChangeDataValidationParameter(
+                                            i,
+                                            'centerLng',
+                                            event.target.value,
+                                          )
                                                 }
-                                                style={{ marginTop: 20 }}
-                                            />
-                                    )}
-                                    {getCurrentAvailableParameters().includes('attribute') && (
-                                        <div
-                                            style={{ display: 'flex', width: '100%', marginTop: 20 }}
-                                        >
-                                            {dataSelection[i].perspective === 'relationships' && (
-                                                <FormControl
-                                                    className={classes.formControl}
-                                                    fullWidth={true}
-                                                    style={{
-                                                      flex: 1,
-                                                      marginRight: 20,
-                                                    }}
-                                                >
-                                                    <InputLabel>{t('Attribute')}</InputLabel>
-                                                    <Select
-                                                        fullWidth={true}
-                                                        value={dataSelection[i].attribute}
-                                                        onChange={(event) => handleChangeDataValidationParameter(
-                                                          i,
-                                                          'attribute',
-                                                          event.target.value,
-                                                        )
+                                          style={{ marginTop: 20 }}
+                                        />
+                  )}
+                  {getCurrentAvailableParameters().includes('attribute') && (
+                  <div
+                    style={{ display: 'flex', width: '100%', marginTop: 20 }}
+                  >
+                    {dataSelection[i].perspective === 'relationships' && (
+                    <FormControl
+                      className={classes.formControl}
+                      fullWidth={true}
+                      style={{
+                        flex: 1,
+                        marginRight: 20,
+                      }}
+                    >
+                      <InputLabel>{t('Attribute')}</InputLabel>
+                      <Select
+                        fullWidth={true}
+                        value={dataSelection[i].attribute}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'attribute',
+                          event.target.value,
+                        )
                                                         }
-                                                    >
-                                                        <MenuItem key="internal_id" value="internal_id">
-                                                            {t('Entity')}
-                                                        </MenuItem>
-                                                        <MenuItem key="entity_type" value="entity_type">
-                                                            {t('Entity type')}
-                                                        </MenuItem>
-                                                        <MenuItem
-                                                            key="created-by.internal_id"
-                                                            value="created-by.internal_id"
-                                                        >
-                                                            {t('Author')}
-                                                        </MenuItem>
-                                                        <MenuItem
-                                                            key="object-marking.internal_id"
-                                                            value="object-marking.internal_id"
-                                                        >
-                                                            {t('Marking definition')}
-                                                        </MenuItem>
-                                                        <MenuItem
-                                                            key="kill-chain-phase.internal_id"
-                                                            value="kill-chain-phase.internal_id"
-                                                        >
-                                                            {t('Kill chain phase')}
-                                                        </MenuItem>
-                                                        <MenuItem key="creator_id" value="creator_id">
-                                                            {t('Creator')}
-                                                        </MenuItem>
-                                                    </Select>
-                                                </FormControl>
-                                            )}
-                                            {dataSelection[i].perspective === 'entities'
+                      >
+                        <MenuItem key="internal_id" value="internal_id">
+                          {t('Entity')}
+                        </MenuItem>
+                        <MenuItem key="entity_type" value="entity_type">
+                          {t('Entity type')}
+                        </MenuItem>
+                        <MenuItem
+                          key="created-by.internal_id"
+                          value="created-by.internal_id"
+                        >
+                          {t('Author')}
+                        </MenuItem>
+                        <MenuItem
+                          key="object-marking.internal_id"
+                          value="object-marking.internal_id"
+                        >
+                          {t('Marking definition')}
+                        </MenuItem>
+                        <MenuItem
+                          key="kill-chain-phase.internal_id"
+                          value="kill-chain-phase.internal_id"
+                        >
+                          {t('Kill chain phase')}
+                        </MenuItem>
+                        <MenuItem key="creator_id" value="creator_id">
+                          {t('Creator')}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                    )}
+                    {dataSelection[i].perspective === 'entities'
                                                 && getCurrentSelectedEntityTypes(i).length > 0 && (
-                                                    <FormControl
-                                                        className={classes.formControl}
-                                                        fullWidth={true}
-                                                        style={{
-                                                          flex: 1,
-                                                        }}
-                                                    >
-                                                        <InputLabel>{t('Attribute')}</InputLabel>
-                                                        <QueryRenderer
-                                                            query={stixCyberObservablesLinesAttributesQuery}
-                                                            variables={{
-                                                              elementType: getCurrentSelectedEntityTypes(i),
-                                                            }}
-                                                            render={({ props: resultProps }) => {
-                                                              if (
-                                                                resultProps
+                                                <FormControl
+                                                  className={classes.formControl}
+                                                  fullWidth={true}
+                                                  style={{
+                                                    flex: 1,
+                                                  }}
+                                                >
+                                                  <InputLabel>{t('Attribute')}</InputLabel>
+                                                  <QueryRenderer
+                                                    query={stixCyberObservablesLinesAttributesQuery}
+                                                    variables={{
+                                                      elementType: getCurrentSelectedEntityTypes(i),
+                                                    }}
+                                                    render={({ props: resultProps }) => {
+                                                      if (
+                                                        resultProps
                                                                     && resultProps.schemaAttributeNames
-                                                              ) {
-                                                                let attributes = R.pipe(
-                                                                  R.map((n) => n.node),
-                                                                  R.filter(
-                                                                    (n) => !R.includes(
-                                                                      n.value,
-                                                                      ignoredAttributesInDashboards,
-                                                                    ) && !n.value.startsWith('i_'),
-                                                                  ),
-                                                                )(resultProps.schemaAttributeNames.edges);
-                                                                if (
-                                                                  attributes.filter(
-                                                                    (n) => n.value === 'hashes',
-                                                                  ).length > 0
-                                                                ) {
-                                                                  attributes = R.sortBy(
-                                                                    R.prop('value'),
-                                                                    [
-                                                                      ...attributes,
-                                                                      { value: 'hashes.MD5' },
-                                                                      { value: 'hashes.SHA-1' },
-                                                                      { value: 'hashes.SHA-256' },
-                                                                      { value: 'hashes.SHA-512' },
-                                                                    ].filter((n) => n.value !== 'hashes'),
-                                                                  );
-                                                                }
-                                                                return (
-                                                                        <Select
-                                                                            fullWidth={true}
-                                                                            value={dataSelection[i].attribute}
-                                                                            onChange={(event) => handleChangeDataValidationParameter(
-                                                                              i,
-                                                                              'attribute',
-                                                                              event.target.value,
-                                                                            )
+                                                      ) {
+                                                        let attributes = R.pipe(
+                                                          R.map((n) => n.node),
+                                                          R.filter(
+                                                            (n) => !R.includes(
+                                                              n.value,
+                                                              ignoredAttributesInDashboards,
+                                                            ) && !n.value.startsWith('i_'),
+                                                          ),
+                                                        )(resultProps.schemaAttributeNames.edges);
+                                                        if (
+                                                          attributes.filter(
+                                                            (n) => n.value === 'hashes',
+                                                          ).length > 0
+                                                        ) {
+                                                          attributes = R.sortBy(
+                                                            R.prop('value'),
+                                                            [
+                                                              ...attributes,
+                                                              { value: 'hashes.MD5' },
+                                                              { value: 'hashes.SHA-1' },
+                                                              { value: 'hashes.SHA-256' },
+                                                              { value: 'hashes.SHA-512' },
+                                                            ].filter((n) => n.value !== 'hashes'),
+                                                          );
+                                                        }
+                                                        return (
+                                                          <Select
+                                                            fullWidth={true}
+                                                            value={dataSelection[i].attribute}
+                                                            onChange={(event) => handleChangeDataValidationParameter(
+                                                              i,
+                                                              'attribute',
+                                                              event.target.value,
+                                                            )
                                                                             }
-                                                                        >
-                                                                            {[
-                                                                              ...attributes,
-                                                                              { value: 'created-by.internal_id' },
-                                                                              { value: 'object-label.internal_id' },
-                                                                              {
-                                                                                value: 'object-assignee.internal_id',
-                                                                              },
-                                                                              { value: 'object-marking.internal_id' },
-                                                                              {
-                                                                                value: 'kill-chain-phase.internal_id',
-                                                                              },
-                                                                            ].map((attribute) => (
-                                                                                <MenuItem
-                                                                                    key={attribute.value}
-                                                                                    value={attribute.value}
-                                                                                >
-                                                                                    {t(
-                                                                                      capitalizeFirstLetter(
-                                                                                        attribute.value,
-                                                                                      ),
-                                                                                    )}
-                                                                                </MenuItem>
-                                                                            ))}
-                                                                        </Select>
-                                                                );
-                                                              }
-                                                              return <div/>;
-                                                            }}
-                                                        />
-                                                    </FormControl>
-                                            )}
-                                            {dataSelection[i].perspective === 'entities'
+                                                          >
+                                                            {[
+                                                              ...attributes,
+                                                              { value: 'created-by.internal_id' },
+                                                              { value: 'object-label.internal_id' },
+                                                              {
+                                                                value: 'object-assignee.internal_id',
+                                                              },
+                                                              { value: 'object-marking.internal_id' },
+                                                              {
+                                                                value: 'kill-chain-phase.internal_id',
+                                                              },
+                                                            ].map((attribute) => (
+                                                              <MenuItem
+                                                                key={attribute.value}
+                                                                value={attribute.value}
+                                                              >
+                                                                {t(
+                                                                  capitalizeFirstLetter(
+                                                                    attribute.value,
+                                                                  ),
+                                                                )}
+                                                              </MenuItem>
+                                                            ))}
+                                                          </Select>
+                                                        );
+                                                      }
+                                                      return <div/>;
+                                                    }}
+                                                  />
+                                                </FormControl>
+                    )}
+                    {dataSelection[i].perspective === 'entities'
                                                 && getCurrentSelectedEntityTypes(i).length === 0 && (
-                                                    <TextField
-                                                        style={{
-                                                          flex: 1,
-                                                          marginRight:
+                                                <TextField
+                                                  style={{
+                                                    flex: 1,
+                                                    marginRight:
                                                                 dataSelection[i].perspective === 'relationships'
                                                                   ? 20
                                                                   : 0,
-                                                        }}
-                                                        label={t('Field')}
-                                                        fullWidth={true}
-                                                        value={dataSelection[i].attribute}
-                                                        placeholder={t('Series attribute')}
-                                                        onChange={(event) => handleChangeDataValidationParameter(
-                                                          i,
-                                                          'attribute',
-                                                          event.target.value,
-                                                        )
+                                                  }}
+                                                  label={t('Field')}
+                                                  fullWidth={true}
+                                                  value={dataSelection[i].attribute}
+                                                  placeholder={t('Series attribute')}
+                                                  onChange={(event) => handleChangeDataValidationParameter(
+                                                    i,
+                                                    'attribute',
+                                                    event.target.value,
+                                                  )
                                                         }
-                                                    />
-                                            )}
-                                            {dataSelection[i].perspective === 'audits' && (
-                                                <FormControl
-                                                    className={classes.formControl}
-                                                    fullWidth={true}
-                                                    style={{
-                                                      flex: 1,
-                                                    }}
-                                                >
-                                                    <InputLabel>{t('Attribute')}</InputLabel>
-                                                    <Select
-                                                        fullWidth={true}
-                                                        value={dataSelection[i].attribute ?? 'entity_type'}
-                                                        onChange={(event) => handleChangeDataValidationParameter(
-                                                          i,
-                                                          'attribute',
-                                                          event.target.value,
-                                                        )
-                                                        }
-                                                    >
-                                                        {[
-                                                          { value: 'entity_type' },
-                                                          { value: 'context_data.id' },
-                                                          { value: 'context_data.created_by_ref_id' },
-                                                          { value: 'context_data.labels_ids' },
-                                                          { value: 'context_data.object_marking_refs_ids' },
-                                                          { value: 'context_data.creator_ids' },
-                                                          { value: 'context_data.search' },
-                                                          { value: 'event_type' },
-                                                          {
-                                                            value: 'event_scope',
-                                                          },
-                                                          {
-                                                            value: 'user_id',
-                                                          },
-                                                          {
-                                                            value: 'group_ids',
-                                                          },
-                                                          {
-                                                            value: 'organization_ids',
-                                                          },
-                                                        ].map((attribute) => (
-                                                            <MenuItem
-                                                                key={attribute.value}
-                                                                value={attribute.value}
-                                                            >
-                                                                {t(capitalizeFirstLetter(attribute.value))}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                            )}
-                                            {dataSelection[i].perspective === 'relationships' && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            onChange={() => handleToggleDataValidationIsTo(i)}
-                                                            checked={!dataSelection[i].isTo}
-                                                        />
-                                                    }
-                                                    label={t('Display the source')}
                                                 />
-                                            )}
-                                            {dataSelection[i].perspective === 'relationships' && (
-                                                <Tooltip
-                                                    title={t(
-                                                      'Enable if the displayed data is the source of the relationships.',
-                                                    )}
-                                                >
-                                                    <InformationOutline
-                                                        fontSize="small"
-                                                        color="primary"
-                                                        style={{ marginTop: 14 }}
-                                                    />
-                                                </Tooltip>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                        );
-                      })}
-                </>
-                <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
-                    {getCurrentAvailableParameters().includes('stacked') && (
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    onChange={() => handleToggleParameter('stacked')}
-                                    checked={parameters.stacked}
-                                />
-                            }
-                            label={t('Stacked')}
-                        />
                     )}
-                    {getCurrentAvailableParameters().includes('distributed') && (
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    onChange={() => handleToggleParameter('distributed')}
-                                    checked={parameters.distributed}
-                                />
-                            }
-                            label={t('Distributed')}
-                        />
+                    {dataSelection[i].perspective === 'audits' && (
+                    <FormControl
+                      className={classes.formControl}
+                      fullWidth={true}
+                      style={{
+                        flex: 1,
+                      }}
+                    >
+                      <InputLabel>{t('Attribute')}</InputLabel>
+                      <Select
+                        fullWidth={true}
+                        value={dataSelection[i].attribute ?? 'entity_type'}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'attribute',
+                          event.target.value,
+                        )
+                                                        }
+                      >
+                        {[
+                          { value: 'entity_type' },
+                          { value: 'context_data.id' },
+                          { value: 'context_data.created_by_ref_id' },
+                          { value: 'context_data.labels_ids' },
+                          { value: 'context_data.object_marking_refs_ids' },
+                          { value: 'context_data.creator_ids' },
+                          { value: 'context_data.search' },
+                          { value: 'event_type' },
+                          {
+                            value: 'event_scope',
+                          },
+                          {
+                            value: 'user_id',
+                          },
+                          {
+                            value: 'group_ids',
+                          },
+                          {
+                            value: 'organization_ids',
+                          },
+                        ].map((attribute) => (
+                          <MenuItem
+                            key={attribute.value}
+                            value={attribute.value}
+                          >
+                            {t(capitalizeFirstLetter(attribute.value))}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                     )}
-                    {getCurrentAvailableParameters().includes('legend') && (
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    onChange={() => handleToggleParameter('legend')}
-                                    checked={parameters.legend}
-                                />
-                            }
-                            label={t('Display legend')}
+                    {dataSelection[i].perspective === 'relationships' && (
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          onChange={() => handleToggleDataValidationIsTo(i)}
+                          checked={!dataSelection[i].isTo}
                         />
+                                                    }
+                      label={t('Display the source')}
+                    />
                     )}
+                    {dataSelection[i].perspective === 'relationships' && (
+                    <Tooltip
+                      title={t(
+                        'Enable if the displayed data is the source of the relationships.',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ marginTop: 14 }}
+                      />
+                    </Tooltip>
+                    )}
+                  </div>
+                  )}
                 </div>
-            </div>
+              );
+            })}
+        </>
+        <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
+          {getCurrentAvailableParameters().includes('stacked') && (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => handleToggleParameter('stacked')}
+                checked={parameters.stacked}
+              />
+                            }
+            label={t('Stacked')}
+          />
+          )}
+          {getCurrentAvailableParameters().includes('distributed') && (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => handleToggleParameter('distributed')}
+                checked={parameters.distributed}
+              />
+                            }
+            label={t('Distributed')}
+          />
+          )}
+          {getCurrentAvailableParameters().includes('legend') && (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => handleToggleParameter('legend')}
+                checked={parameters.legend}
+              />
+                            }
+            label={t('Display legend')}
+          />
+          )}
+        </div>
+      </div>
     );
   };
   const getStepContent = () => {
@@ -1562,24 +1562,24 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         <>
           <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
           <SpeedDial
-              className={classes.createButton}
-              ariaLabel="Create"
-              icon={<SpeedDialIcon />}
-              FabProps={{ color: 'secondary' }}
+            className={classes.createButton}
+            ariaLabel="Create"
+            icon={<SpeedDialIcon />}
+            FabProps={{ color: 'secondary' }}
           >
             <SpeedDialAction
-                title={t('Create a widget')}
-                icon={<WidgetsOutlined />}
-                tooltipTitle={t('Create a widget')}
-                onClick={() => setOpen(true)}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
+              title={t('Create a widget')}
+              icon={<WidgetsOutlined />}
+              tooltipTitle={t('Create a widget')}
+              onClick={() => setOpen(true)}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
             />
             <SpeedDialAction
-                title={t('Import a widget')}
-                icon={<CloudUploadOutlined />}
-                tooltipTitle={t('Import a widget')}
-                onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
+              title={t('Import a widget')}
+              icon={<CloudUploadOutlined />}
+              tooltipTitle={t('Import a widget')}
+              onClick={() => inputRef.current?.click()}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
             />
           </SpeedDial>
         </>

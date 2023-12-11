@@ -271,54 +271,54 @@ const SettingsOrganization = ({
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
                       {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
-                          <ListItem
-                            key={group.id}
-                            dense={true}
-                            divider={true}
-                            button={true}
-                            component={Link}
-                            to={`/dashboard/settings/accesses/groups/${group.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="Group" />
-                            </ListItemIcon>
-                            <ListItemText primary={group.name} />
-                            {(capabilitiesPerGroup
-                              .get(group.id)
-                              ?.includes(SETTINGS_SETACCESSES)
+                        <ListItem
+                          key={group.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${group.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={group.name} />
+                          {(capabilitiesPerGroup
+                            .get(group.id)
+                            ?.includes(SETTINGS_SETACCESSES)
                               || capabilitiesPerGroup
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
-                              <Tooltip
-                                title={t(
-                                  'This Group allows the user to bypass restriction. It should not be added here.',
-                                )}
-                              >
-                                <WarningOutlined color="warning" />
-                              </Tooltip>
-                            )}
-                          </ListItem>
+                                <Tooltip
+                                  title={t(
+                                    'This Group allows the user to bypass restriction. It should not be added here.',
+                                  )}
+                                >
+                                  <WarningOutlined color="warning" />
+                                </Tooltip>
+                          )}
+                        </ListItem>
                       ) : (
-                          <ListItem key={group.id} dense={true} divider={true}>
-                            <ListItemIcon>
-                              <ItemIcon type="Group" />
-                            </ListItemIcon>
-                            <ListItemText primary={group.name} />
-                            {(capabilitiesPerGroup
-                              .get(group.id)
-                              ?.includes(SETTINGS_SETACCESSES)
+                        <ListItem key={group.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={group.name} />
+                          {(capabilitiesPerGroup
+                            .get(group.id)
+                            ?.includes(SETTINGS_SETACCESSES)
                               || capabilitiesPerGroup
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
-                              <Tooltip
-                                title={t(
-                                  'This Group allows the user to bypass restriction. It should not be added here.',
-                                )}
-                              >
-                                <WarningOutlined color="warning" />
-                              </Tooltip>
-                            )}
-                          </ListItem>
+                                <Tooltip
+                                  title={t(
+                                    'This Group allows the user to bypass restriction. It should not be added here.',
+                                  )}
+                                >
+                                  <WarningOutlined color="warning" />
+                                </Tooltip>
+                          )}
+                        </ListItem>
                       )))}
                     </List>
                   </FieldOrEmpty>

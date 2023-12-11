@@ -109,7 +109,7 @@ class AddLocationsThreatActorIndividual extends Component {
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
           updater={updater}
-         />
+        />
       </>
     );
   }

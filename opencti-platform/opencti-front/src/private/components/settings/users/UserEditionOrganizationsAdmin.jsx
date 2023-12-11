@@ -96,22 +96,22 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
     return <div style={{ marginTop: 20 }}><EnterpriseEdition feature={t('Organization sharing')} /></div>;
   }
   return (
-      <List>
-        {(user?.objectOrganization?.edges ?? []).map(({ node: organization }) => {
-          const isAdmin = (organization.authorized_authorities ?? []).includes(user.id);
-          return (
-              <ListItem key={organization.id} divider={true}>
-                <ListItemIcon color="primary">
-                  <AccountBalanceOutlined />
-                </ListItemIcon>
-                <ListItemText primary={organization.name} secondary={organization.description ?? ''}/>
-                <ListItemSecondaryAction>
-                  <Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin}/>
-                </ListItemSecondaryAction>
-              </ListItem>
-          );
-        })}
-      </List>
+    <List>
+      {(user?.objectOrganization?.edges ?? []).map(({ node: organization }) => {
+        const isAdmin = (organization.authorized_authorities ?? []).includes(user.id);
+        return (
+          <ListItem key={organization.id} divider={true}>
+            <ListItemIcon color="primary">
+              <AccountBalanceOutlined />
+            </ListItemIcon>
+            <ListItemText primary={organization.name} secondary={organization.description ?? ''}/>
+            <ListItemSecondaryAction>
+              <Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin}/>
+            </ListItemSecondaryAction>
+          </ListItem>
+        );
+      })}
+    </List>
   );
 };
 

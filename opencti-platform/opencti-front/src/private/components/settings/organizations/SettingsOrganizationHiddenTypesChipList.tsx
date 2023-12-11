@@ -22,7 +22,7 @@ const SettingsOrganizationHiddenTypesChipList = ({
   const hiddenTypesOrganization = organization?.default_hidden_types ?? [];
 
   return (
-      <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization}/>
+    <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization}/>
   );
 };
 

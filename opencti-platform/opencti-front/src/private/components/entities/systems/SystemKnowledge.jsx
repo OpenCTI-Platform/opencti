@@ -42,17 +42,17 @@ class SystemKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/systems/:systemId/knowledge/overview"
             render={(routeProps) => (viewAs === 'knowledge' ? (
-                <StixDomainObjectKnowledge
-                  stixDomainObjectId={system.id}
-                  stixDomainObjectType="System"
-                  {...routeProps}
-                />
+              <StixDomainObjectKnowledge
+                stixDomainObjectId={system.id}
+                stixDomainObjectType="System"
+                {...routeProps}
+              />
             ) : (
-                <StixDomainObjectAuthorKnowledge
-                  stixDomainObjectId={system.id}
-                  stixDomainObjectType="System"
-                  {...routeProps}
-                />
+              <StixDomainObjectAuthorKnowledge
+                stixDomainObjectId={system.id}
+                stixDomainObjectType="System"
+                {...routeProps}
+              />
             ))
             }
           />

@@ -83,7 +83,7 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
           {(groupsName.length > 0 && orgsName.length > 0) && `${t(' & ')}`}
           {orgsName.length > 0 && `${t('Organizations')} : ${orgsName}`}
           {')'}
-            </span>)
+        </span>)
       }
     </span>
   );
@@ -99,18 +99,18 @@ const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
   const queryRef = useQueryLoading<HiddenTypesIndicatorQuery>(hiddenTypesIndicatorQuery, {});
 
   return (
-      <>
-        {queryRef && (
-            <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <HiddenTypesIndicatorComponent
-                  queryRef={queryRef}
-                  platformHiddenTargetType={platformHiddenTargetType}
-              />
-            </React.Suspense>)
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <HiddenTypesIndicatorComponent
+            queryRef={queryRef}
+            platformHiddenTargetType={platformHiddenTargetType}
+          />
+        </React.Suspense>)
         }
-      </>
+    </>
   );
 };
 

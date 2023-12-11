@@ -94,21 +94,21 @@ const EventsLines: FunctionComponent<EventsLinesProps> = ({
   });
 
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.events?.edges ?? []}
-        globalCount={
+    <ListLinesContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      dataList={data?.events?.edges ?? []}
+      globalCount={
           data?.events?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={EventLine}
-        DummyLineComponent={EventLineDummy}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
+      LineComponent={EventLine}
+      DummyLineComponent={EventLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
   );
 };
 

@@ -56,7 +56,7 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
               </ListItem>
             );
           })}
-          </List>
+        </List>
         : ('-')
       }
     </div>

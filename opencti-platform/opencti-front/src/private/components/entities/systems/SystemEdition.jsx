@@ -28,18 +28,18 @@ class SystemEdition extends Component {
   render() {
     const { systemId } = this.props;
     return (
-          <QueryRenderer
-            query={systemEditionQuery}
-            variables={{ id: systemId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <SystemEditionContainer system={props.system} handleClose={this.handleClose.bind(this)} />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
+      <QueryRenderer
+        query={systemEditionQuery}
+        variables={{ id: systemId }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <SystemEditionContainer system={props.system} handleClose={this.handleClose.bind(this)} />
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
     );
   }
 }

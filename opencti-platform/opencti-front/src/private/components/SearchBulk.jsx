@@ -654,12 +654,12 @@ const SearchBulk = () => {
                                   label={n(entity.containersNumber.total)}
                                 />
                                 ) : (
-                                <Chip
-                                  classes={{ root: classes.chip }}
-                                  label={n(entity.containersNumber.total)}
-                                  component={Link}
-                                  to={linkAnalyses}
-                                />
+                                  <Chip
+                                    classes={{ root: classes.chip }}
+                                    label={n(entity.containersNumber.total)}
+                                    component={Link}
+                                    to={linkAnalyses}
+                                  />
                                 )}
                             </>
                           )}

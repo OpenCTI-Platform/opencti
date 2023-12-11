@@ -73,13 +73,13 @@ const RootSettingsOrganization = () => {
   const queryRef = useQueryLoading<RootSettingsOrganizationQuery>(organizationQuery, { id: organizationId });
   return (
     <div>
-            {queryRef ? (
+      {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootSettingsOrganizationComponent queryRef={queryRef} organizationId={organizationId}/>
         </React.Suspense>
-            ) : (
+      ) : (
         <Loader variant={LoaderVariant.inElement} />
-            )}
+      )}
     </div>
   );
 };

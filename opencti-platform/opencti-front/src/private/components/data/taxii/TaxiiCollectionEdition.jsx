@@ -268,13 +268,13 @@ const TaxiiCollectionEditionContainer = (props) => {
           </div>
           <div className="clearfix" />
           <FilterIconButton
-              filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              classNameNumber={2}
-              styleNumber={2}
-              redirection
+            filters={filters}
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            classNameNumber={2}
+            styleNumber={2}
+            redirection
           />
         </Form>
       )}

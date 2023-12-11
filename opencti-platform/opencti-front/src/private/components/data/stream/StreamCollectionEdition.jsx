@@ -230,13 +230,13 @@ const StreamCollectionEditionContainer = ({ streamCollection }) => {
           </div>
           <div className="clearfix" />
           <FilterIconButton
-              filters={filters}
-              classNameNumber={2}
-              styleNumber={2}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              redirection
+            filters={filters}
+            classNameNumber={2}
+            styleNumber={2}
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            redirection
           />
         </Form>
       )}

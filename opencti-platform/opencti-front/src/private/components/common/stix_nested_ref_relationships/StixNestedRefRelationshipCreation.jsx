@@ -860,22 +860,22 @@ class StixNestedRefRelationshipCreation extends Component {
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
         {step === 2 ? <QueryRenderer
-            query={stixNestedRefRelationshipCreationResolveQuery}
-            variables={{
-              id: this.props.fromObjects[0].id,
-              toType: this.props.toObjects[0].entity_type,
-            }}
-            render={({ props }) => {
-              if (props && props.stixSchemaRefRelationships) {
-                return (
-                  <div>
-                    {this.renderForm(props.stixSchemaRefRelationships)}
-                  </div>
-                );
-              }
-              return this.renderLoader();
-            }}
-          />
+          query={stixNestedRefRelationshipCreationResolveQuery}
+          variables={{
+            id: this.props.fromObjects[0].id,
+            toType: this.props.toObjects[0].entity_type,
+          }}
+          render={({ props }) => {
+            if (props && props.stixSchemaRefRelationships) {
+              return (
+                <div>
+                  {this.renderForm(props.stixSchemaRefRelationships)}
+                </div>
+              );
+            }
+            return this.renderLoader();
+          }}
+                      />
           : ''}
       </Drawer>
     );

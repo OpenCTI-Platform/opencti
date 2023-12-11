@@ -174,7 +174,7 @@ const Alerting: FunctionComponent = () => {
     const queryRef = useQueryLoading<AlertingPaginationQuery>(alertingQuery, paginationOptions);
     return (
       <ListLines
-          helpers={helpers}
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -192,7 +192,8 @@ const Alerting: FunctionComponent = () => {
         availableFilterKeys={[
           'trigger_type',
           'created',
-        ]}>
+        ]}
+      >
         {queryRef && (
           <React.Suspense
             fallback={
@@ -204,7 +205,8 @@ const Alerting: FunctionComponent = () => {
                   />
                 ))}
               </>
-            }>
+            }
+          >
             <AlertingLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}

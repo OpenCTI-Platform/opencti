@@ -214,9 +214,9 @@ const StixCoreObjectEnrichment = ({
                       {messages.length > 0
                         ? R.map(
                           (message) => (
-                              <div key={message.message}>
-                                [{nsdt(message.timestamp)}] {message.message}
-                              </div>
+                            <div key={message.message}>
+                              [{nsdt(message.timestamp)}] {message.message}
+                            </div>
                           ),
                           messages,
                         )

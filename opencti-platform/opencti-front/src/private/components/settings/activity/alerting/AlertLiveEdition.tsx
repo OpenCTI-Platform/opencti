@@ -265,7 +265,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
                   classNameNumber={2}
-              />}
+                   />}
             </Form>
           )}
         </Formik>

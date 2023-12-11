@@ -353,43 +353,43 @@ class StixCoreRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     return (
-        <UserContext.Consumer>
-          {({ schema }) => {
-            const relationshipTypes = resolveRelationsTypes(
-              fromObjects[0].entity_type,
-              toObjects[0].entity_type,
-              schema.schemaRelationsTypesMapping,
-            );
-            return (
-                <>
-                  <div className={classes.header}>
-                    <IconButton
-                      aria-label="Close"
-                      className={classes.closeButton}
-                      onClick={this.handleClose.bind(this)}
-                      size="large"
-                    >
-                      <Close fontSize="small" color="primary" />
-                    </IconButton>
-                    <Typography variant="h6">{t('Create a relationship')}</Typography>
-                  </div>
-                  <StixCoreRelationshipCreationForm
-                      fromEntities={fromObjects}
-                      toEntities={toObjects}
-                      relationshipTypes={relationshipTypes}
-                      handleReverseRelation={this.handleReverseRelation.bind(this)}
-                      onSubmit={this.onSubmit.bind(this)}
-                      handleClose={this.handleClose.bind(this)}
-                      defaultConfidence={confidence}
-                      defaultStartTime={startTime}
-                      defaultStopTime={stopTime}
-                      defaultCreatedBy={defaultCreatedBy}
-                      defaultMarkingDefinitions={defaultMarkingDefinitions}
-                  />
-                </>
-            );
-          }}
-        </UserContext.Consumer>
+      <UserContext.Consumer>
+        {({ schema }) => {
+          const relationshipTypes = resolveRelationsTypes(
+            fromObjects[0].entity_type,
+            toObjects[0].entity_type,
+            schema.schemaRelationsTypesMapping,
+          );
+          return (
+            <>
+              <div className={classes.header}>
+                <IconButton
+                  aria-label="Close"
+                  className={classes.closeButton}
+                  onClick={this.handleClose.bind(this)}
+                  size="large"
+                >
+                  <Close fontSize="small" color="primary" />
+                </IconButton>
+                <Typography variant="h6">{t('Create a relationship')}</Typography>
+              </div>
+              <StixCoreRelationshipCreationForm
+                fromEntities={fromObjects}
+                toEntities={toObjects}
+                relationshipTypes={relationshipTypes}
+                handleReverseRelation={this.handleReverseRelation.bind(this)}
+                onSubmit={this.onSubmit.bind(this)}
+                handleClose={this.handleClose.bind(this)}
+                defaultConfidence={confidence}
+                defaultStartTime={startTime}
+                defaultStopTime={stopTime}
+                defaultCreatedBy={defaultCreatedBy}
+                defaultMarkingDefinitions={defaultMarkingDefinitions}
+              />
+            </>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 

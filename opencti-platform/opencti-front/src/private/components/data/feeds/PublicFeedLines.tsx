@@ -84,12 +84,12 @@ const dataColumns: DataColumns = {
     width: '20%',
     isSortable: false,
     render: (node, { t, classes }) => (
-            <Chip
-                classes={{ root: classes.chipInList }}
-                color={'success'}
-                variant="outlined"
-                label={t('Started')}
-            />
+      <Chip
+        classes={{ root: classes.chipInList }}
+        color={'success'}
+        variant="outlined"
+        label={t('Started')}
+      />
     ),
   },
   filters: {
@@ -105,7 +105,7 @@ const dataColumns: DataColumns = {
             dataColumns={this}
             classNameNumber={3}
             styleNumber={3}
-          />}
+                          />}
         </>
       );
     },
@@ -123,46 +123,46 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
     copyToClipboard(t, `${window.location.origin}/feeds/${feed.id}`);
   };
   return (
-        <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
-            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <FileDelimitedOutline/>
-            </ListItemIcon>
-            <ListItemText
-                primary={
-                    <div>
-                        {Object.values(dataColumns).map((value) => (
-                            <div
-                                key={value.label}
-                                className={classes.bodyItem}
-                                style={{ width: value.width }}
-                            >
-                                {value.render?.(feed, { t, classes })}
-                            </div>
-                        ))}
-                    </div>
+    <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <FileDelimitedOutline/>
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(feed, { t, classes })}
+              </div>
+            ))}
+          </div>
                 }
-            />
-            <ListItemSecondaryAction>
-                <Tooltip
-                    title={t(
-                      'Copy uri to clipboard for your csv client',
-                    )}
-                >
+      />
+      <ListItemSecondaryAction>
+        <Tooltip
+          title={t(
+            'Copy uri to clipboard for your csv client',
+          )}
+        >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy/>
             </IconButton>
           </span>
-                </Tooltip>
-                <Tooltip title={t('Access CSV feeds directly in your browser')}>
+        </Tooltip>
+        <Tooltip title={t('Access CSV feeds directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
               <OpenInNew/>
             </IconButton>
           </span>
-                </Tooltip>
-            </ListItemSecondaryAction>
-        </ListItem>
+        </Tooltip>
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 
@@ -170,37 +170,37 @@ const PublicFeedLines = () => {
   const { feeds } = usePreloadedQuery<PublicFeedLinesQuery>(publicFeedLinesQuery, queryRef);
   const { t } = useFormatter();
   return feeds && feeds.edges.length > 0 ? (
-        <>
-            <Typography variant="h2" gutterBottom={true}>
-                {t('Public CSV feeds')}
-            </Typography>
-            <ListLines dataColumns={dataColumns} secondaryAction={true}>
-                <ListLinesContent
-                    isLoading={() => {
-                    }}
-                    hasNext={() => {
-                    }}
-                    dataColumns={dataColumns}
-                    dataList={feeds.edges}
-                    LineComponent={PublicFeedLine}
-                    DummyLineComponent={<FeedLineDummy/>}
-                />
-            </ListLines>
-        </>
+    <>
+      <Typography variant="h2" gutterBottom={true}>
+        {t('Public CSV feeds')}
+      </Typography>
+      <ListLines dataColumns={dataColumns} secondaryAction={true}>
+        <ListLinesContent
+          isLoading={() => {
+          }}
+          hasNext={() => {
+          }}
+          dataColumns={dataColumns}
+          dataList={feeds.edges}
+          LineComponent={PublicFeedLine}
+          DummyLineComponent={<FeedLineDummy/>}
+        />
+      </ListLines>
+    </>
   ) : (
-        <>
-            <Typography variant="h2" gutterBottom={true}>
-                {t('Public CSV feeds')}
-            </Typography>
-            <Typography
-                variant="h5"
-                gutterBottom={true}
-                color={'error'}
-                style={{ marginTop: 20 }}
-            >
-                {t('No available public CSV feeds on this platform')}
-            </Typography>
-        </>
+    <>
+      <Typography variant="h2" gutterBottom={true}>
+        {t('Public CSV feeds')}
+      </Typography>
+      <Typography
+        variant="h5"
+        gutterBottom={true}
+        color={'error'}
+        style={{ marginTop: 20 }}
+      >
+        {t('No available public CSV feeds on this platform')}
+      </Typography>
+    </>
   );
 };
 

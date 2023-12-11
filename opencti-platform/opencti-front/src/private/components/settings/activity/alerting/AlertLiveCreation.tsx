@@ -190,37 +190,38 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: Option[]) => void) => {
     return <>
-            <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
-                                onChange={setFieldValue}
-                                multiple={true} name={'recipients'}/>
-            <span>
+      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
+        onChange={setFieldValue}
+        multiple={true} name={'recipients'}
+      />
+      <span>
         <div style={{ marginTop: 35 }}>
-         <Filters
-             variant="text"
-             availableFilterKeys={[
-               'event_type',
-               'event_scope',
-               'members_user',
-               'members_group',
-               'members_organization',
-             ]}
-             handleAddFilter={handleAddFilter}
-             handleRemoveFilter={undefined}
-             handleSwitchFilter={undefined}
-             noDirectFilters={true}
-             disabled={undefined}
-             size={undefined}
-             fontSize={undefined}
-             availableEntityTypes={undefined}
-             availableRelationshipTypes={undefined}
-             allEntityTypes={undefined}
-             type={undefined}
-             availableRelationFilterTypes={undefined}
-         />
+          <Filters
+            variant="text"
+            availableFilterKeys={[
+              'event_type',
+              'event_scope',
+              'members_user',
+              'members_group',
+              'members_organization',
+            ]}
+            handleAddFilter={handleAddFilter}
+            handleRemoveFilter={undefined}
+            handleSwitchFilter={undefined}
+            noDirectFilters={true}
+            disabled={undefined}
+            size={undefined}
+            fontSize={undefined}
+            availableEntityTypes={undefined}
+            availableRelationshipTypes={undefined}
+            allEntityTypes={undefined}
+            type={undefined}
+            availableRelationFilterTypes={undefined}
+          />
         </div>
         <div className="clearfix"/>
       </span>
-        </>;
+    </>;
   };
 
   const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (
@@ -244,107 +245,109 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       <NotifierField name="notifiers" onChange={setFieldValue} />
       {renderActivityTrigger(values, setFieldValue)}
       <FilterIconButton
-          filters={filters}
-          handleRemoveFilter={handleRemoveFilter}
-          handleSwitchLocalMode={handleSwitchLocalMode}
-          handleSwitchGlobalMode={handleSwitchGlobalMode}
-          classNameNumber={2}
-          redirection
-        />
+        filters={filters}
+        handleRemoveFilter={handleRemoveFilter}
+        handleSwitchLocalMode={handleSwitchLocalMode}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        classNameNumber={2}
+        redirection
+      />
     </React.Fragment>
   );
 
   const renderClassic = () => (
-        <div>
-            <Drawer
-                disableRestoreFocus={true}
-                open={open}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleClose}
-            >
-                <div className={classes.header}>
-                    <IconButton
-                        aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={handleClose}
-                        size="large"
-                        color="primary"
-                    >
-                        <Close fontSize="small" color="primary"/>
-                    </IconButton>
-                    <Typography variant="h6">{t('Create a live activity trigger')}</Typography>
-                </div>
-                <div className={classes.container}>
-                    <Formik<TriggerActivityLiveAddInput>
-                        initialValues={liveInitialValues}
-                        validationSchema={liveActivityTriggerValidation(t)}
-                        onSubmit={onLiveSubmit}
-                        onReset={onReset}
-                    >
-                        {({
-                          submitForm,
-                          handleReset,
-                          isSubmitting,
-                          setFieldValue,
-                          values,
-                        }) => (
-                            <Form style={{ margin: '20px 0 20px 0' }}>
-                                {liveFields(setFieldValue, values)}
-                                <div className={classes.buttons}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleReset}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Cancel')}
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={submitForm}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Create')}
-                                    </Button>
-                                </div>
-                            </Form>
-                        )}
-                    </Formik>
-                </div>
-            </Drawer>
+    <div>
+      <Drawer
+        disableRestoreFocus={true}
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary"/>
+          </IconButton>
+          <Typography variant="h6">{t('Create a live activity trigger')}</Typography>
         </div>
+        <div className={classes.container}>
+          <Formik<TriggerActivityLiveAddInput>
+            initialValues={liveInitialValues}
+            validationSchema={liveActivityTriggerValidation(t)}
+            onSubmit={onLiveSubmit}
+            onReset={onReset}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                {liveFields(setFieldValue, values)}
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </Drawer>
+    </div>
   );
 
   const renderContextual = () => (
-        <Dialog disableRestoreFocus={true}
-                open={open ?? false}
-                onClose={handleClose}
-                PaperProps={{ elevation: 1 }}>
-            <Formik initialValues={liveInitialValues}
-                    validationSchema={liveActivityTriggerValidation(t)}
-                    onSubmit={onLiveSubmit}
-                    onReset={onReset}>
-                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-                    <div>
-                        <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>
-                        <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
-                        <DialogActions classes={{ root: classes.dialogActions }}>
-                            <Button onClick={handleReset} disabled={isSubmitting}>
-                                {t('Cancel')}
-                            </Button>
-                            <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
-                                {t('Create')}
-                            </Button>
-                        </DialogActions>
-                    </div>
-                )}
-            </Formik>
-        </Dialog>
+    <Dialog disableRestoreFocus={true}
+      open={open ?? false}
+      onClose={handleClose}
+      PaperProps={{ elevation: 1 }}
+    >
+      <Formik initialValues={liveInitialValues}
+        validationSchema={liveActivityTriggerValidation(t)}
+        onSubmit={onLiveSubmit}
+        onReset={onReset}
+      >
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+          <div>
+            <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>
+            <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
+            <DialogActions classes={{ root: classes.dialogActions }}>
+              <Button onClick={handleReset} disabled={isSubmitting}>
+                {t('Cancel')}
+              </Button>
+              <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                {t('Create')}
+              </Button>
+            </DialogActions>
+          </div>
+        )}
+      </Formik>
+    </Dialog>
   );
 
   return contextual ? renderContextual() : renderClassic();

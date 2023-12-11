@@ -111,87 +111,87 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   };
 
   return (
-      <>
-        <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
-        <Drawer
-          title={t(`Create ${type}`)}
-          variant={type === 'dashboard' ? undefined : DrawerVariant.create}
-          controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
-            <SpeedDial
-              className={classes.createButton}
-              ariaLabel="Create"
-              icon={<SpeedDialIcon />}
-              FabProps={{ color: 'secondary' }}
-            >
-              <SpeedDialAction
-                  title={t('Create dashboard')}
-                  icon={<InsertChartOutlined />}
-                  tooltipTitle={t('Create dashboard')}
-                  onClick={onOpen}
-                  FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-              <SpeedDialAction
-                title={t('Import dashboard')}
-                icon={<CloudUploadOutlined />}
-                tooltipTitle={t('Import dashboard')}
-                onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-            </SpeedDial>
-          ) : undefined}
-        >
-          {({ onClose }) => (
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-              }}
-              validationSchema={workspaceValidation(t)}
-              onSubmit={onSubmit}
-              onReset={onClose}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          )}
-        </Drawer>
-      </>
+    <>
+      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
+      <Drawer
+        title={t(`Create ${type}`)}
+        variant={type === 'dashboard' ? undefined : DrawerVariant.create}
+        controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
+          <SpeedDial
+            className={classes.createButton}
+            ariaLabel="Create"
+            icon={<SpeedDialIcon />}
+            FabProps={{ color: 'secondary' }}
+          >
+            <SpeedDialAction
+              title={t('Create dashboard')}
+              icon={<InsertChartOutlined />}
+              tooltipTitle={t('Create dashboard')}
+              onClick={onOpen}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+              title={t('Import dashboard')}
+              icon={<CloudUploadOutlined />}
+              tooltipTitle={t('Import dashboard')}
+              onClick={() => inputRef.current?.click()}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+          </SpeedDial>
+        ) : undefined}
+      >
+        {({ onClose }) => (
+          <Formik
+            initialValues={{
+              name: '',
+              description: '',
+            }}
+            validationSchema={workspaceValidation(t)}
+            onSubmit={onSubmit}
+            onReset={onClose}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </Drawer>
+    </>
   );
 };
 

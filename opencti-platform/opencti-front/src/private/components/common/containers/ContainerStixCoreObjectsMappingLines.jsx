@@ -95,28 +95,28 @@ const ContainerStixCoreObjectsMappingLines = ({
   });
 
   return (
-      <ListLinesContent
-        initialLoading={!data}
-        hasMore={hasMore}
-        loadMore={loadMore}
-        isLoading={isLoadingMore}
-        dataList={data?.container?.objects?.edges ?? []}
-        paginationOptions={paginationOptions}
-        globalCount={
+    <ListLinesContent
+      initialLoading={!data}
+      hasMore={hasMore}
+      loadMore={loadMore}
+      isLoading={isLoadingMore}
+      dataList={data?.container?.objects?.edges ?? []}
+      paginationOptions={paginationOptions}
+      globalCount={
           data?.container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={
-          <ContainerStixCoreObjectsMappingLine
-            containerId={data?.container?.id ?? null}
-          />
+      LineComponent={
+        <ContainerStixCoreObjectsMappingLine
+          containerId={data?.container?.id ?? null}
+        />
         }
-        DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        height={height}
-        contentMapping={contentMapping}
-        contentMappingData={contentMappingData}
-      />
+      DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      height={height}
+      contentMapping={contentMapping}
+      contentMappingData={contentMappingData}
+    />
   );
 };
 

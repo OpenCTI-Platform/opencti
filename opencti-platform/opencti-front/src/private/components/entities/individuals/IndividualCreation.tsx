@@ -150,7 +150,8 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     initialValues={initialValues}
     validationSchema={individualValidator}
     onSubmit={onSubmit}
-    onReset={onReset}>
+    onReset={onReset}
+         >
     {({
       submitForm,
       handleReset,

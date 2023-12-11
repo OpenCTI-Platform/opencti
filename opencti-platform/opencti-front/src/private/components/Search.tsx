@@ -119,98 +119,98 @@ const Search = () => {
     return (
       <>
         <ListLines
-              helpers={storageHelpers}
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-              handleChangeView={storageHelpers.handleChangeView}
-              handleToggleSelectAll={handleToggleSelectAll}
-              handleToggleExports={storageHelpers.handleToggleExports}
-              openExports={openExports}
-              exportEntityType="Stix-Core-Object"
-              selectAll={selectAll}
-              disableCards={true}
-              filters={filters}
-              keyword={searchTerm}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              iconExtension={true}
-              availableFilterKeys={[
-                'entity_type',
-                'objectLabel',
-                'objectMarking',
-                'createdBy',
-                'source_reliability',
-                'confidence',
-                'x_opencti_organization_type',
-                'creator_id',
-                'created',
-                'created_at',
-              ]}
-            >
-              {queryRef && (
-                  <React.Suspense
-                      fallback={
-                        <>
-                          {Array(20)
-                            .fill(0)
-                            .map((_, idx) => (
-                                  <SearchStixCoreObjectLineDummy key={idx} dataColumns={dataColumns} />
-                            ))}
-                        </>
+          helpers={storageHelpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+          handleChangeView={storageHelpers.handleChangeView}
+          handleToggleSelectAll={handleToggleSelectAll}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          exportEntityType="Stix-Core-Object"
+          selectAll={selectAll}
+          disableCards={true}
+          filters={filters}
+          keyword={searchTerm}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          availableFilterKeys={[
+            'entity_type',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'x_opencti_organization_type',
+            'creator_id',
+            'created',
+            'created_at',
+          ]}
+        >
+          {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <SearchStixCoreObjectLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
                       }
-                  >
-                  <SearchStixCoreObjectsLines
-                      queryRef={queryRef}
-                      paginationOptions={paginationOptions}
-                      dataColumns={dataColumns}
-                      onLabelClick={storageHelpers.handleAddFilter}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      onToggleEntity={onToggleEntity}
-                      selectAll={selectAll}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  />
-                <ToolBar
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  numberOfSelectedElements={numberOfSelectedElements}
-                  selectAll={selectAll}
-                  filters={filters}
-                  search={paginationOptions.search}
-                  handleClearSelectedElements={handleClearSelectedElements}
-                />
-              </React.Suspense>
-              )}
+          >
+            <SearchStixCoreObjectsLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onLabelClick={storageHelpers.handleAddFilter}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
+              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+            />
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={filters}
+              search={paginationOptions.search}
+              handleClearSelectedElements={handleClearSelectedElements}
+            />
+          </React.Suspense>
+          )}
         </ListLines>
       </>
     );
   };
   return (
-      <ExportContextProvider>
-        <div>
-          {renderLines()}
-          {resultsCount <= 5 && searchTerm && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Button
-                size="small"
-                variant="outlined"
-                component={Link}
-                color={isEnterpriseEdition ? 'primary' : 'ee'}
-                to={`/dashboard/search/files/${searchTerm}`}
-              >
-                <div>{t('Extend this search to indexed files')}<EEChip /></div>
-              </Button>
-            </div>
-          )}
+    <ExportContextProvider>
+      <div>
+        {renderLines()}
+        {resultsCount <= 5 && searchTerm && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            component={Link}
+            color={isEnterpriseEdition ? 'primary' : 'ee'}
+            to={`/dashboard/search/files/${searchTerm}`}
+          >
+            <div>{t('Extend this search to indexed files')}<EEChip /></div>
+          </Button>
         </div>
-      </ExportContextProvider>
+        )}
+      </div>
+    </ExportContextProvider>
   );
 };
 

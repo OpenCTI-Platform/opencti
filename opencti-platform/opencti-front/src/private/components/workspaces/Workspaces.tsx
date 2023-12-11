@@ -90,7 +90,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     };
     return (
       <ListLines
-          helpers={storageHelpers}
+        helpers={storageHelpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
@@ -121,7 +121,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
             />
           </React.Suspense>
         )}
-        </ListLines>
+      </ListLines>
     );
   };
 

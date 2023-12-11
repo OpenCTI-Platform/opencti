@@ -169,7 +169,8 @@ const ChannelEditionOverviewComponent = (props) => {
     <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={channelValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,

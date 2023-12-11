@@ -147,16 +147,16 @@ CsvMapperRepresentationAttributeFormProps
           (attribute.type === 'date' || attribute.multiple)
           && <CsvMapperRepresentationDialogOption attribute={attribute}>
             <CsvMapperRepresentationAttributeOptions
-                attribute={attribute}
-                indexRepresentation={indexRepresentation}
+              attribute={attribute}
+              indexRepresentation={indexRepresentation}
             />
           </CsvMapperRepresentationDialogOption>
         }
       </div>
-        <CsvMapperRepresentionAttributeSelectedConfigurations
-          configuration={ formikContext.values.representations[indexRepresentation]
-            .attributes[indexAttribute]?.column?.configuration}
-        />
+      <CsvMapperRepresentionAttributeSelectedConfigurations
+        configuration={ formikContext.values.representations[indexRepresentation]
+          .attributes[indexAttribute]?.column?.configuration}
+      />
 
     </div>
   );

@@ -135,137 +135,137 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   });
   const { count: _, ...tasksFilters } = paginationOptions;
   return (
-        <div style={{ height: '100%' }}>
-            <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left', paddingBottom: 11 }}
-            >
-                {t('Tasks')}
-            </Typography>
-            <Tooltip title={t('Add a task to this container')}>
-                <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={handleOpen}
-                    classes={{ root: classes.createButton }}
-                    size="large"
-                >
-                    <AddOutlined fontSize="small"/>
-                </IconButton>
-            </Tooltip>
-            <Tooltip title={t('Apply a new case template')}>
-                <IconButton
-                    color="secondary"
-                    aria-label="Apply"
-                    onClick={() => setOpenCaseTemplate(true)}
-                    classes={{ root: classes.applyButton }}
-                    size="large"
-                >
-                    <ContentPasteGoOutlined fontSize="small"/>
-                </IconButton>
-            </Tooltip>
-            <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={openCaseTemplate}
-                onClose={() => setOpenCaseTemplate(false)}
-                fullWidth={true}
-                maxWidth="md"
-            >
-                <DialogTitle>{t('Apply case templates')}</DialogTitle>
-                <DialogContent>
-                    <Formik
-                        initialValues={{ caseTemplates: [] }}
-                        onSubmit={(values, { setSubmitting, setErrors }) => {
-                          commit({
-                            variables: {
-                              id: caseId,
-                              caseTemplatesId: values.caseTemplates.map(
-                                ({ value }) => value,
-                              ),
-                              connections: [
-                                generateConnectionId({
-                                  key: 'Pagination_tasks',
-                                  params: tasksFilters,
-                                }),
-                              ],
-                            },
-                            onCompleted: () => {
-                              setSubmitting(false);
-                              setOpenCaseTemplate(false);
-                            },
-                            onError: (error: Error) => {
-                              handleErrorInForm(error, setErrors);
-                              setSubmitting(false);
-                            },
-                          });
-                        }}
-                    >
-                        {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
-                            <Form style={{ minWidth: 400 }}>
-                                <CaseTemplateField
-                                    onChange={setFieldValue}
-                                    label="Case templates"
-                                />
-                                <div className={classes.buttons}>
-                                    <Button
-                                        onClick={() => {
-                                          handleReset();
-                                          setOpenCaseTemplate(false);
-                                        }}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Cancel')}
-                                    </Button>
-                                    <Button
-                                        color="secondary"
-                                        onClick={submitForm}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Apply')}
-                                    </Button>
-                                </div>
-                            </Form>
-                        )}
-                    </Formik>
-                </DialogContent>
-            </Dialog>
-            <Drawer
-                open={open}
-                title={t('Create a task')}
-                onClose={handleClose}
-            >
-                <CaseTaskCreation
-                    caseId={caseId}
-                    onClose={handleClose}
-                    paginationOptions={paginationOptions}
-                    defaultMarkings={defaultMarkings}
+    <div style={{ height: '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{ float: 'left', paddingBottom: 11 }}
+      >
+        {t('Tasks')}
+      </Typography>
+      <Tooltip title={t('Add a task to this container')}>
+        <IconButton
+          color="secondary"
+          aria-label="Add"
+          onClick={handleOpen}
+          classes={{ root: classes.createButton }}
+          size="large"
+        >
+          <AddOutlined fontSize="small"/>
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={t('Apply a new case template')}>
+        <IconButton
+          color="secondary"
+          aria-label="Apply"
+          onClick={() => setOpenCaseTemplate(true)}
+          classes={{ root: classes.applyButton }}
+          size="large"
+        >
+          <ContentPasteGoOutlined fontSize="small"/>
+        </IconButton>
+      </Tooltip>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={openCaseTemplate}
+        onClose={() => setOpenCaseTemplate(false)}
+        fullWidth={true}
+        maxWidth="md"
+      >
+        <DialogTitle>{t('Apply case templates')}</DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={{ caseTemplates: [] }}
+            onSubmit={(values, { setSubmitting, setErrors }) => {
+              commit({
+                variables: {
+                  id: caseId,
+                  caseTemplatesId: values.caseTemplates.map(
+                    ({ value }) => value,
+                  ),
+                  connections: [
+                    generateConnectionId({
+                      key: 'Pagination_tasks',
+                      params: tasksFilters,
+                    }),
+                  ],
+                },
+                onCompleted: () => {
+                  setSubmitting(false);
+                  setOpenCaseTemplate(false);
+                },
+                onError: (error: Error) => {
+                  handleErrorInForm(error, setErrors);
+                  setSubmitting(false);
+                },
+              });
+            }}
+          >
+            {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ minWidth: 400 }}>
+                <CaseTemplateField
+                  onChange={setFieldValue}
+                  label="Case templates"
                 />
-            </Drawer>
-            <div className="clearfix"/>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-                <ListLines
-                    sortBy={sortBy}
-                    orderAsc={orderAsc}
-                    handleSort={handleSort}
-                    dataColumns={tasksDataColumns}
-                    inline={true}
-                    secondaryAction={true}
-                >
-                    <ListLinesContent
-                        dataColumns={tasksDataColumns}
-                        dataList={data?.tasks?.edges ?? []}
-                        LineComponent={CaseTasksLine}
-                        isLoading={() => false}
-                        entityId={caseId}
-                        paginationOptions={tasksFilters}
-                        containerRef={containerRef}
-                    />
-                </ListLines>
-            </Paper>
-        </div>
+                <div className={classes.buttons}>
+                  <Button
+                    onClick={() => {
+                      handleReset();
+                      setOpenCaseTemplate(false);
+                    }}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Apply')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
+      <Drawer
+        open={open}
+        title={t('Create a task')}
+        onClose={handleClose}
+      >
+        <CaseTaskCreation
+          caseId={caseId}
+          onClose={handleClose}
+          paginationOptions={paginationOptions}
+          defaultMarkings={defaultMarkings}
+        />
+      </Drawer>
+      <div className="clearfix"/>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          handleSort={handleSort}
+          dataColumns={tasksDataColumns}
+          inline={true}
+          secondaryAction={true}
+        >
+          <ListLinesContent
+            dataColumns={tasksDataColumns}
+            dataList={data?.tasks?.edges ?? []}
+            LineComponent={CaseTasksLine}
+            isLoading={() => false}
+            entityId={caseId}
+            paginationOptions={tasksFilters}
+            containerRef={containerRef}
+          />
+        </ListLines>
+      </Paper>
+    </div>
   );
 };
 

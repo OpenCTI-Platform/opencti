@@ -126,90 +126,90 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       },
     };
     return (
-            <>
-                <ListLines
-                    helpers={storageHelpers}
-                    sortBy={sortBy}
-                    orderAsc={orderAsc}
-                    dataColumns={dataColumns}
-                    handleSort={storageHelpers.handleSort}
-                    handleSearch={storageHelpers.handleSearch}
-                    handleAddFilter={storageHelpers.handleAddFilter}
-                    handleRemoveFilter={storageHelpers.handleRemoveFilter}
-                    handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-                    handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-                    handleToggleExports={storageHelpers.handleToggleExports}
-                    openExports={openExports}
-                    handleToggleSelectAll={handleToggleSelectAll}
-                    selectAll={selectAll}
-                    noPadding={typeof onChangeOpenExports === 'function'}
-                    exportEntityType="Observed-Data"
-                    exportContext={exportContext}
-                    keyword={searchTerm}
-                    filters={filters}
-                    paginationOptions={paginationOptions}
-                    numberOfElements={numberOfElements}
-                    iconExtension={true}
-                    availableFilterKeys={[
-                      'x_opencti_workflow_id',
-                      'objectLabel',
-                      'objectMarking',
-                      'createdBy',
-                      'source_reliability',
-                      'confidence',
-                      'created',
-                    ]}
-                >
-                    <QueryRenderer
-                        query={observedDatasLinesQuery}
-                        variables={{ ...paginationOptions }}
-                        render={({
-                          props,
-                        }: {
-                          props: ObservedDatasLinesPaginationQuery$data;
-                        }) => (
-                            <ObservedDatasLines
-                                data={props}
-                                paginationOptions={paginationOptions}
-                                dataColumns={dataColumns}
-                                initialLoading={props === null}
-                                onLabelClick={storageHelpers.handleAddFilter}
-                                selectedElements={selectedElements}
-                                deSelectedElements={deSelectedElements}
-                                onToggleEntity={onToggleEntity}
-                                selectAll={selectAll}
-                                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                            />
-                        )}
-                    />
-                </ListLines>
-                <ToolBar
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    numberOfSelectedElements={numberOfSelectedElements}
-                    selectAll={selectAll}
-                    search={searchTerm}
-                    filters={toolBarFilters}
-                    handleClearSelectedElements={handleClearSelectedElements}
-                    type="Observed-Data"
-                />
-            </>
+      <>
+        <ListLines
+          helpers={storageHelpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          noPadding={typeof onChangeOpenExports === 'function'}
+          exportEntityType="Observed-Data"
+          exportContext={exportContext}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          availableFilterKeys={[
+            'x_opencti_workflow_id',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'created',
+          ]}
+        >
+          <QueryRenderer
+            query={observedDatasLinesQuery}
+            variables={{ ...paginationOptions }}
+            render={({
+              props,
+            }: {
+              props: ObservedDatasLinesPaginationQuery$data;
+            }) => (
+              <ObservedDatasLines
+                data={props}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                onLabelClick={storageHelpers.handleAddFilter}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={toolBarFilters}
+          handleClearSelectedElements={handleClearSelectedElements}
+          type="Observed-Data"
+        />
+      </>
     );
   };
 
   return (
-        <UserContext.Consumer>
-            {({ platformModuleHelpers }) => (
-                <ExportContextProvider>
-                    <div>
-                        {renderLines(platformModuleHelpers)}
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ObservedDataCreation paginationOptions={paginationOptions}/>
-                        </Security>
-                    </div>
-                </ExportContextProvider>
-            )}
-        </UserContext.Consumer>
+    <UserContext.Consumer>
+      {({ platformModuleHelpers }) => (
+        <ExportContextProvider>
+          <div>
+            {renderLines(platformModuleHelpers)}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataCreation paginationOptions={paginationOptions}/>
+            </Security>
+          </div>
+        </ExportContextProvider>
+      )}
+    </UserContext.Consumer>
   );
 };
 

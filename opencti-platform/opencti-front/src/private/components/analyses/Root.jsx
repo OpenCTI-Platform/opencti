@@ -65,7 +65,8 @@ const Root = () => {
       <BoundaryRoute
         exact
         path="/dashboard/analyses/notes"
-        component={Notes} />
+        component={Notes}
+      />
       <BoundaryRoute
         path="/dashboard/analyses/notes/:noteId"
         component={RootNote}

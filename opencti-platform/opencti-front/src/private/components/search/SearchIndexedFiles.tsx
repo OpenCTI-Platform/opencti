@@ -172,7 +172,7 @@ const SearchIndexedFilesComponent = () => {
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                />
+              />
             </React.Suspense>
           )}
         </ListLines>
@@ -198,7 +198,7 @@ const SearchIndexedFilesComponent = () => {
                   color="warning"
                   variant="outlined"
                   style={{ marginLeft: 20 }}
-                  >
+                >
                   {t('Configure file indexing')}
                 </Button>
               </Security>

@@ -1226,12 +1226,14 @@ class CaseRfiKnowledgeGraphComponent extends Component {
   handleRectSelectMove(e, coords) {
     if (this.state.selectRectangleModeFree) {
       const { left, top } = this.canvas.getBoundingClientRect();
-      this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
-      this.state.rectSelected.origin[1] = R.min(coords.origin[1], coords.target[1]) - top;
-      this.state.rectSelected.target[0] = R.max(coords.origin[0], coords.target[0]) - left;
-      this.state.rectSelected.target[1] = R.max(coords.origin[1], coords.target[1]) - top;
-      this.state.rectSelected.shiftKey = e.shiftKey;
-      this.state.rectSelected.altKey = e.altKey;
+      this.setState({
+        rectSelected: {
+          origin: [R.min(coords.origin[0], coords.target[0]) - left, R.min(coords.origin[1], coords.target[1]) - top],
+          target: [R.max(coords.origin[0], coords.target[0]) - left, R.max(coords.origin[1], coords.target[1]) - top],
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+        },
+      });
     }
   }
 
@@ -1262,12 +1264,14 @@ class CaseRfiKnowledgeGraphComponent extends Component {
       }
       this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
     }
-    this.state.rectSelected = {
-      origin: [0, 0],
-      target: [0, 0],
-      shiftKey: false,
-      altKey: false,
-    };
+    this.setState({
+      rectSelected: {
+        origin: [0, 0],
+        target: [0, 0],
+        shiftKey: false,
+        altKey: false,
+      },
+    });
   }
 
   handleSelectAll() {

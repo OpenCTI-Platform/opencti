@@ -844,22 +844,22 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
             {step === 0 ? this.renderSelectEntity() : ''}
             {step === 1
               ? <QueryRenderer
-                query={stixNestedRefRelationshipResolveTypes}
-                variables={{
-                  id: entityId,
-                  toType: this.state.targetEntity.entity_type,
-                }}
-                render={({ props }) => {
-                  if (props && props.stixSchemaRefRelationships) {
-                    return (
-                      <div>
-                        {this.renderForm(props.stixSchemaRefRelationships)}
-                      </div>
-                    );
-                  }
-                  return this.renderLoader();
-                }}
-              />
+                  query={stixNestedRefRelationshipResolveTypes}
+                  variables={{
+                    id: entityId,
+                    toType: this.state.targetEntity.entity_type,
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixSchemaRefRelationships) {
+                      return (
+                        <div>
+                          {this.renderForm(props.stixSchemaRefRelationships)}
+                        </div>
+                      );
+                    }
+                    return this.renderLoader();
+                  }}
+                />
               : ''}
           </div>
         </Drawer>

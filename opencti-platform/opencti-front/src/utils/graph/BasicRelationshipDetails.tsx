@@ -28,47 +28,47 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
   const { t } = useFormatter();
   return (
     <div>
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-            {t('Relation type')}
-        </Typography>
-        <Chip
-            classes={{ root: classes.chipInList }}
-            style={{
-              backgroundColor: hexToRGB(
-                itemColor(relation.relationship_type),
-                0.08,
-              ),
-              color: itemColor(relation.relationship_type),
-              border: `1px solid ${itemColor(
-                relation.relationship_type,
-              )}`,
-            }}
-            label={t(`relationship_${relation.relationship_type}`)}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Relation type')}
+      </Typography>
+      <Chip
+        classes={{ root: classes.chipInList }}
+        style={{
+          backgroundColor: hexToRGB(
+            itemColor(relation.relationship_type),
+            0.08,
+          ),
+          color: itemColor(relation.relationship_type),
+          border: `1px solid ${itemColor(
+            relation.relationship_type,
+          )}`,
+        }}
+        label={t(`relationship_${relation.relationship_type}`)}
+      />
+      {relation.source_id && (
+        <RelationShipFromAndTo
+          id={relation.source_id}
+          direction={'From'}
         />
-        {relation.source_id && (
-            <RelationShipFromAndTo
-                id={relation.source_id}
-                direction={'From'}
-            />
-        )}
-        {relation.target_id && (
-            <RelationShipFromAndTo
-                id={relation.target_id}
-                direction={'To'}
-            />
-        )}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-            {t('Marking')}
-        </Typography>
-        {relation.markedBy
+      )}
+      {relation.target_id && (
+        <RelationShipFromAndTo
+          id={relation.target_id}
+          direction={'To'}
+        />
+      )}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Marking')}
+      </Typography>
+      {relation.markedBy
         && relation.markedBy.length > 0 ? (
-            <ItemMarkings
-                markingDefinitionsEdges={relation.markedBy.map((marking) => ({ node: marking }))}
-                limit={2}
-            />
-          ) : (
-            '-'
-          )}
+          <ItemMarkings
+            markingDefinitionsEdges={relation.markedBy.map((marking) => ({ node: marking }))}
+            limit={2}
+          />
+        ) : (
+          '-'
+        )}
     </div>
   );
 };

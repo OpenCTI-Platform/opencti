@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import FieldOrEmpty from './FieldOrEmpty';

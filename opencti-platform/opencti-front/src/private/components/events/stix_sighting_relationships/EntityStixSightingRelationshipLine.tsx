@@ -264,99 +264,99 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
   const entityLink = (entity?.entity_type) ? `${resolveLink(entity.entity_type)}/${entity.id}` : undefined;
   const link = `${entityLink}/knowledge/sightings/${data.id}`;
   return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={link}
-        disabled={restricted}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={!restricted ? entity.entity_type : 'restricted'} />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_negative.width }}
-              >
-                <Chip
-                  classes={{
-                    root: data.x_opencti_negative
-                      ? classes.negative
-                      : classes.positive,
-                  }}
-                  label={
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={link}
+      disabled={restricted}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type={!restricted ? entity.entity_type : 'restricted'} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.x_opencti_negative.width }}
+            >
+              <Chip
+                classes={{
+                  root: data.x_opencti_negative
+                    ? classes.negative
+                    : classes.positive,
+                }}
+                label={
                     data.x_opencti_negative
                       ? t('False positive')
                       : t('True positive')
                   }
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.attribute_count.width }}
-              >
-                {data.attribute_count}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {!restricted
-                  ? entity.name || entity.observable_value
-                  : t('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                {!restricted
-                  ? t(`entity_${entity.entity_type}`)
-                  : t('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
-              >
-                {nsdt(data.first_seen)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
-              >
-                {nsdt(data.last_seen)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
-              </div>
+              />
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.attribute_count.width }}
+            >
+              {data.attribute_count}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              {!restricted
+                ? entity.name || entity.observable_value
+                : t('Restricted')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              {!restricted
+                ? t(`entity_${entity.entity_type}`)
+                : t('Restricted')}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.first_seen.width }}
+            >
+              {nsdt(data.first_seen)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.last_seen.width }}
+            >
+              {nsdt(data.last_seen)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.confidence.width }}
+            >
+              <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
+            </div>
+          </div>
           }
-        />
-        <ListItemSecondaryAction>
-          {data.is_inferred ? (
-            <Tooltip
-              title={
+      />
+      <ListItemSecondaryAction>
+        {data.is_inferred ? (
+          <Tooltip
+            title={
                 `${t('Inferred knowledge based on the rule ')}
                 ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`
               }
-            >
-              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-            </Tooltip>
-          ) : (
-            <StixSightingRelationshipPopover
-              stixSightingRelationshipId={data.id}
-              paginationOptions={paginationOptions}
-              disabled={restricted}
-            />
-          )}
-        </ListItemSecondaryAction>
-      </ListItem>
+          >
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <StixSightingRelationshipPopover
+            stixSightingRelationshipId={data.id}
+            paginationOptions={paginationOptions}
+            disabled={restricted}
+          />
+        )}
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 
@@ -367,96 +367,96 @@ export const EntityStixSightingRelationshipLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HelpOutlined />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_negative.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.attribute_count.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <HelpOutlined />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.x_opencti_negative.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.attribute_count.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.first_seen.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.last_seen.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.confidence.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
           }
-        />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </ListItemSecondaryAction>
-      </ListItem>
+      />
+      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
+        <MoreVertOutlined />
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };

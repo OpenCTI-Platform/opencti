@@ -41,17 +41,17 @@ class IndividualKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/individuals/:individualId/knowledge/overview"
             render={(routeProps) => (viewAs === 'knowledge' ? (
-                <StixDomainObjectKnowledge
-                  stixDomainObjectId={individual.id}
-                  stixDomainObjectType="Individual"
-                  {...routeProps}
-                />
+              <StixDomainObjectKnowledge
+                stixDomainObjectId={individual.id}
+                stixDomainObjectType="Individual"
+                {...routeProps}
+              />
             ) : (
-                <StixDomainObjectAuthorKnowledge
-                  stixDomainObjectId={individual.id}
-                  stixDomainObjectType="Individual"
-                  {...routeProps}
-                />
+              <StixDomainObjectAuthorKnowledge
+                stixDomainObjectId={individual.id}
+                stixDomainObjectType="Individual"
+                {...routeProps}
+              />
             ))
             }
           />

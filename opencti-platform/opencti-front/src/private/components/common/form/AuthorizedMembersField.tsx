@@ -388,14 +388,14 @@ const AuthorizedMembersField = ({
               {value && value.length > 0 && (
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (!isGenericOption(authorizedMember.value) ? (
-                      <AuthorizedMembersFieldListItem
-                        key={authorizedMember.value}
-                        authorizedMember={authorizedMember}
-                        name={`${name}[${index}].accessRight`}
-                        accessRights={accessRights}
-                        ownerId={owner?.id}
-                        onRemove={() => arrayHelpers.remove(index)}
-                      />
+                    <AuthorizedMembersFieldListItem
+                      key={authorizedMember.value}
+                      authorizedMember={authorizedMember}
+                      name={`${name}[${index}].accessRight`}
+                      accessRights={accessRights}
+                      ownerId={owner?.id}
+                      onRemove={() => arrayHelpers.remove(index)}
+                    />
                   ) : null))}
                 </List>
               )}

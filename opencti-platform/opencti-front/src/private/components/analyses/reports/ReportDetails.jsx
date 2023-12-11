@@ -181,41 +181,41 @@ const ReportDetailsComponent = (props) => {
             ? relatedContainers.map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
-                  <ListItem
-                    key={report.id}
-                    dense={true}
-                    button={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/analyses/reports/${relatedContainer.id}`}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type={relatedContainer.entity_type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.itemText}>
-                          {relatedContainer.name}
-                        </div>
+                <ListItem
+                  key={report.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/analyses/reports/${relatedContainer.id}`}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type={relatedContainer.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div className={classes.itemText}>
+                        {relatedContainer.name}
+                      </div>
                       }
-                    />
-                    <div className={classes.itemAuthor}>
-                      {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                    </div>
-                    <div className={classes.itemDate}>
-                      {fsd(relatedContainer.published)}
-                    </div>
-                    <div className={classes.itemMarking}>
-                      <ItemMarkings
-                        variant="inList"
-                        markingDefinitionsEdges={
+                  />
+                  <div className={classes.itemAuthor}>
+                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
+                  </div>
+                  <div className={classes.itemDate}>
+                    {fsd(relatedContainer.published)}
+                  </div>
+                  <div className={classes.itemMarking}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitionsEdges={
                           relatedContainer.objectMarking.edges
                         }
-                        limit={1}
-                      />
-                    </div>
-                  </ListItem>
+                      limit={1}
+                    />
+                  </div>
+                </ListItem>
               );
             })
             : '-'}

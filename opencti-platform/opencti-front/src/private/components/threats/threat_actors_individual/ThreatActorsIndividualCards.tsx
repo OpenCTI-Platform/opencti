@@ -1,5 +1,5 @@
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { FunctionComponent, useState } from 'react';
 import {
   HandleAddFilter,
   UseLocalStorageHelpers,

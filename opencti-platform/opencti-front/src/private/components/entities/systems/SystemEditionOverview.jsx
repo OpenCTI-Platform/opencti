@@ -164,119 +164,119 @@ const SystemEditionOverviewComponent = (props) => {
     ]),
   )(system);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={systemValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              disabled={external}
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={systemValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            disabled={external}
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="contact_information"
-              label={t('Contact information')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="contact_information" />
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="contact_information"
+            label={t('Contact information')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="contact_information" />
               }
-            />
-            <OpenVocabField
-                label={t('Reliability')}
-                type="reliability_ov"
-                name="x_opencti_reliability"
-                onChange={setFieldValue}
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                multiple={false}
-                editContext={context}
-                variant="edit"
-                containerStyle={fieldSpacingContainerStyle}
-            />
-            {system.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="System"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+          />
+          <OpenVocabField
+            label={t('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            onChange={setFieldValue}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            multiple={false}
+            editContext={context}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          {system.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="System"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+          />
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={editor.changeCreated}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              setFieldValue={setFieldValue}
-              onChange={editor.changeMarking}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={system.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+            setFieldValue={setFieldValue}
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting || !isValid || !dirty}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={system.id}
+          />
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

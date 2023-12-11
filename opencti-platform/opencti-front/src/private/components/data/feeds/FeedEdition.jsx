@@ -428,7 +428,7 @@ const FeedEditionContainer = (props) => {
                       fullWidth={true}
                       multiple={false}
                       containerstyle={{ width: '100%', marginTop: 20 }}
-                      ><MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
+                    ><MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
                       <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
                     </Field>
                     <Field
@@ -484,13 +484,13 @@ const FeedEditionContainer = (props) => {
                     </div>
                     <div className="clearfix" />
                     <FilterIconButton
-                        filters={filters}
-                        handleRemoveFilter={handleRemoveFilter}
-                        handleSwitchLocalMode={handleSwitchLocalMode}
-                        handleSwitchGlobalMode={handleSwitchGlobalMode}
-                        classNameNumber={2}
-                        styleNumber={2}
-                        redirection
+                      filters={filters}
+                      handleRemoveFilter={handleRemoveFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      handleSwitchGlobalMode={handleSwitchGlobalMode}
+                      classNameNumber={2}
+                      styleNumber={2}
+                      redirection
                     />
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>

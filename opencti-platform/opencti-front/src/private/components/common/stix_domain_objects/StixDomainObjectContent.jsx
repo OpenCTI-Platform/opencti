@@ -602,11 +602,11 @@ class StixDomainObjectContentComponent extends Component {
                     selectedTab={markdownSelectedTab}
                     onTabChange={this.onMarkdownChangeTab.bind(this)}
                     generateMarkdownPreview={(markdown) => Promise.resolve(
-                        <MarkdownDisplay
-                          content={markdown}
-                          remarkGfmPlugin={true}
-                          commonmark={true}
-                        />,
+                      <MarkdownDisplay
+                        content={markdown}
+                        remarkGfmPlugin={true}
+                        commonmark={true}
+                      />,
                     )
                     }
                     l18n={{

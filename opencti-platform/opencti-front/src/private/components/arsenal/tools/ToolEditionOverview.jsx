@@ -173,120 +173,120 @@ const ToolEditionOverviewComponent = (props) => {
     ]),
   )(tool);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={toolValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={toolValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-            <ConfidenceField
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              entityType="Tool"
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              variant="edit"
-            />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="killChainPhases" />
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Tool"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="killChainPhases" />
               }
-              onChange={editor.changeKillChainPhases}
-            />
-            {tool.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Tool"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+            onChange={editor.changeKillChainPhases}
+          />
+          {tool.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="Tool"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+          />
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={editor.changeCreated}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              setFieldValue={setFieldValue}
-              onChange={editor.changeMarking}
-            />
-            <OpenVocabField
-              type="tool_types_ov"
-              name="tool_types"
-              label={t('Tool types')}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={tool.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+            setFieldValue={setFieldValue}
+            onChange={editor.changeMarking}
+          />
+          <OpenVocabField
+            type="tool_types_ov"
+            name="tool_types"
+            label={t('Tool types')}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          {enableReferences && (
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting || !isValid || !dirty}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={tool.id}
+          />
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

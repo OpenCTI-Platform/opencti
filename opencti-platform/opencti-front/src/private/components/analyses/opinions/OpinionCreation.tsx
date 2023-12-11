@@ -404,15 +404,15 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
         <>
           {userIsKnowledgeEditor
             ? <OpinionCreationFormKnowledgeEditor
-              updater={updater}
-              onCompleted={onClose}
-              onReset={onClose}
-            />
+                updater={updater}
+                onCompleted={onClose}
+                onReset={onClose}
+              />
             : <OpinionCreationFormKnowledgeParticipant
-              updater={updater}
-              onCompleted={onClose}
-              onReset={onClose}
-            />
+                updater={updater}
+                onCompleted={onClose}
+                onReset={onClose}
+              />
           }
         </>
       )}

@@ -1,6 +1,6 @@
+import React, { Suspense } from 'react';
 import 'typeface-ibm-plex-sans';
 import 'typeface-roboto';
-import { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import makeStyles from '@mui/styles/makeStyles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';

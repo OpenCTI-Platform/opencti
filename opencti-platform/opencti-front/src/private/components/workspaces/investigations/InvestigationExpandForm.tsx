@@ -453,14 +453,14 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
   return distributionRelQueryRef
     && distributionFromQueryRef
     && distributionToQueryRef ? (
-    <Suspense fallback={Fallback}>
-      <InvestigationExpandFormContent
-        {...props}
-        distributionRelQueryRef={distributionRelQueryRef}
-        distributionFromQueryRef={distributionFromQueryRef}
-        distributionToQueryRef={distributionToQueryRef}
-      />
-    </Suspense>
+      <Suspense fallback={Fallback}>
+        <InvestigationExpandFormContent
+          {...props}
+          distributionRelQueryRef={distributionRelQueryRef}
+          distributionFromQueryRef={distributionFromQueryRef}
+          distributionToQueryRef={distributionToQueryRef}
+        />
+      </Suspense>
     ) : (
       Fallback
     );

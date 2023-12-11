@@ -49,7 +49,8 @@ const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
           <div>
             <span
               className={classes.railSpan}
-              style={{ backgroundColor: `${tick.color ? tick.color : '#00b1ff'}` }}>
+              style={{ backgroundColor: `${tick.color ? tick.color : '#00b1ff'}` }}
+            >
             </span>
           </div>
           <div className={classes.tickLabel}>

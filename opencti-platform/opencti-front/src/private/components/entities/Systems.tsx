@@ -118,12 +118,12 @@ const Systems = () => {
   };
 
   return (
-      <>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SystemCreation paginationOptions={paginationOptions} />
-        </Security>
-      </>
+    <>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <SystemCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
   );
 };
 

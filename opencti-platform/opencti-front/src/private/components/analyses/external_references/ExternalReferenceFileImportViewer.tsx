@@ -247,23 +247,23 @@ ExternalReferenceFileImportViewerBaseProps
                       );
                     })}
                   </Field>
-                    {(selectedConnector?.configurations?.length ?? 0) > 0
+                  {(selectedConnector?.configurations?.length ?? 0) > 0
                         && <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="configuration"
-                            label={t('Configuration')}
-                            fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
-                        >
+                          component={SelectField}
+                          variant="standard"
+                          name="configuration"
+                          label={t('Configuration')}
+                          fullWidth={true}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
+                           >
                             {selectedConnector?.configurations.map((config) => {
                               return (
-                                    <MenuItem
-                                        key={config.id}
-                                        value={config.configuration}
-                                    >
-                                        {config.name}
-                                    </MenuItem>
+                                <MenuItem
+                                  key={config.id}
+                                  value={config.configuration}
+                                >
+                                  {config.name}
+                                </MenuItem>
                               );
                             })}
                         </Field>

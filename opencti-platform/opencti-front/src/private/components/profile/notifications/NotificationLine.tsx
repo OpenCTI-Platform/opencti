@@ -236,9 +236,11 @@ NotificationLineProps
       <ListItem classes={{ root: classes.item }} divider={true} button={isClickableLine}
         component={isLinkAvailable ? Link : 'div'}
         to={isLinkAvailable ? `/dashboard/id/${firstEvent?.instance_id}` : undefined}
-        onClick={() => { if (isDigest) { setOpen(true); } }}>
+        onClick={() => { if (isDigest) { setOpen(true); } }}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }} style={{ minWidth: 40 }}
-          onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event))}>
+          onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event))}
+        >
           <Checkbox edge="start"
             checked={(selectAll && !(data.id in (deSelectedElements || {}))) || data.id in (selectedElements || {})}
             disableRipple={true}
@@ -271,7 +273,7 @@ NotificationLineProps
                 {events.length > 1 ? (
                   <i>{t('Digest with multiple notifiers')}</i>
                 ) : (
-                    <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
+                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
                 )}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>

@@ -427,12 +427,12 @@ const WorkspaceHeader = ({
         <div className={classes.tags}>
           {R.take(2, tags).map(
             (tag) => tag.length > 0 && (
-                <Chip
-                  key={tag}
-                  classes={{ root: classes.tag }}
-                  label={tag}
-                  onDelete={() => deleteTag(tag)}
-                />
+            <Chip
+              key={tag}
+              classes={{ root: classes.tag }}
+              label={tag}
+              onDelete={() => deleteTag(tag)}
+            />
             ),
           )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
@@ -528,23 +528,23 @@ const WorkspaceHeader = ({
                 <List>
                   {tags.map(
                     (label) => label.length > 0 && (
-                        <ListItem
-                          key={label}
-                          disableGutters={true}
-                          dense={true}
+                    <ListItem
+                      key={label}
+                      disableGutters={true}
+                      dense={true}
+                    >
+                      <ListItemText primary={label} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => deleteTag(label)}
+                          size="large"
                         >
-                          <ListItemText primary={label} />
-                          <ListItemSecondaryAction>
-                            <IconButton
-                              edge="end"
-                              aria-label="delete"
-                              onClick={() => deleteTag(label)}
-                              size="large"
-                            >
-                              <Delete />
-                            </IconButton>
-                          </ListItemSecondaryAction>
-                        </ListItem>
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
                     ),
                   )}
                 </List>
