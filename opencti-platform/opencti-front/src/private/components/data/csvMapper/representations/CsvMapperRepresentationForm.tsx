@@ -89,7 +89,7 @@ CsvMapperRepresentationFormProps
     const updatedRepresentation = {
       ...representation,
       attributes: [],
-      target: { entity_type: option?.value || null },
+      target: { entity_type: option?.value ?? null },
     };
 
     await formikContext.setFieldValue(`representations[${index}]`, updatedRepresentation);
