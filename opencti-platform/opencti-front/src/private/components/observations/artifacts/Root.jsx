@@ -101,6 +101,7 @@ class RootArtifact extends Component {
                   <>
                     <StixCyberObservableHeader
                       stixCyberObservable={stixCyberObservable}
+                      isArtifact={true}
                     />
                     <Box
                       sx={{
