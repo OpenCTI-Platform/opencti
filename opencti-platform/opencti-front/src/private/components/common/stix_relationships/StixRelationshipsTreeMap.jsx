@@ -11,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { treeMapOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -229,41 +230,20 @@ const StixRelationshipsTreeMap = ({
   const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
-    let filtersContent = [];
     let selection = {};
-    let dataSelectionRelationshipType = null;
-    let dataSelectionFromId = null;
-    let dataSelectionToId = null;
-    let dataSelectionFromTypes = null;
-    let dataSelectionToTypes = null;
+    let filtersAndOptions;
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersContent = selection.filters.filters ?? [];
-      dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
-      dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values
-        || null;
-      dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      filtersContent = filtersContent.filter(
-        (n) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(n.key),
-      );
+      filtersAndOptions = constructFiltersAndOptions(selection.filters);
     }
     const finalField = selection.attribute || field || 'entity_type';
-    const finalToTypes = dataSelectionToTypes || toTypes;
+    const finalToTypes = filtersAndOptions?.dataSelectionToTypes || toTypes;
     const variables = {
-      fromId: dataSelectionFromId || stixCoreObjectId,
-      toId: dataSelectionToId,
-      relationship_type: dataSelectionRelationshipType || relationshipType,
-      fromTypes: dataSelectionFromTypes,
+      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
+      toId: filtersAndOptions?.dataSelectionToId,
+      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
+      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
       toTypes: finalToTypes,
       field: finalField,
       operation: 'count',
@@ -271,7 +251,7 @@ const StixRelationshipsTreeMap = ({
       endDate,
       dateAttribute,
       limit: selection.number ?? 10,
-      filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+      filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
     };
     return (

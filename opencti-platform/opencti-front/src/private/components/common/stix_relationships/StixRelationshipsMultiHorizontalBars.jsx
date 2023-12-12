@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -761,100 +762,42 @@ const StixRelationshipsMultiHorizontalBars = ({
   const { t } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
-    let filtersContent = [];
     let selection = {};
     let dataSelectionDateAttribute = null;
-    let dataSelectionRelationshipType = null;
-    let dataSelectionFromId = null;
-    let dataSelectionToId = null;
-    let dataSelectionFromTypes = null;
-    let dataSelectionToTypes = null;
+    let filtersAndOptions;
+    let subDistributionFiltersAndOptions;
     let subSelection = {};
     let subDistributionTypes = null;
-    let subSelectionFiltersContent = [];
-    let subDistributionRelationshipType = null;
-    let subDistributionToTypes = null;
-    let subSelectionRelationshipType = null;
-    let subSelectionFromId = null;
-    let subSelectionToId = null;
-    let subSelectionFromTypes = null;
-    let subSelectionToTypes = null;
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersContent = selection.filters.filters ?? [];
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
-      dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values
-        || null;
-      dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      filtersContent = filtersContent.filter(
-        (n) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(n.key),
-      );
+      filtersAndOptions = constructFiltersAndOptions(selection.filters);
       if (dataSelection.length > 1) {
         // eslint-disable-next-line prefer-destructuring
         subSelection = dataSelection[1];
-        subSelectionFiltersContent = subSelection.filters;
+        subDistributionFiltersAndOptions = constructFiltersAndOptions(subSelection.filters);
         if (subSelection.perspective === 'entities') {
-          subDistributionTypes = R.head(
-            subSelectionFiltersContent.filter((n) => n.key === 'entity_type'),
-          )?.values || ['Stix-Core-Object'];
-          subDistributionRelationshipType = R.head(
-            subSelectionFiltersContent.filter(
-              (n) => n.key === 'relationship_type',
-            ),
-          )?.values || null;
-          subDistributionToTypes = R.head(subSelectionFiltersContent.filter((n) => n.key === 'toTypes'))
-            ?.values || null;
-          subSelectionFiltersContent = subSelectionFiltersContent.filter(
-            (n) => !['entity_type', 'relationship_type', 'toTypes'].includes(n.key),
-          );
-        } else {
-          subSelectionRelationshipType = R.head(
-            subSelectionFiltersContent.filter(
-              (n) => n.key === 'relationship_type',
-            ),
-          )?.values || null;
-          subSelectionFromId = R.head(subSelectionFiltersContent.filter((n) => n.key === 'fromId'))
-            ?.values || null;
-          subSelectionToId = R.head(subSelectionFiltersContent.filter((n) => n.key === 'toId'))
-            ?.values || null;
-          subSelectionFromTypes = R.head(
-            subSelectionFiltersContent.filter((n) => n.key === 'fromTypes'),
-          )?.values || null;
-          subSelectionToTypes = R.head(subSelectionFiltersContent.filter((n) => n.key === 'toTypes'))
-            ?.values || null;
-          subSelectionFiltersContent = subSelectionFiltersContent.filter(
-            (n) => !['relationship_type', 'fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
-          );
+          subDistributionTypes = ['Stix-Core-Object'];
         }
       }
     }
     const finalField = selection.attribute || field || 'entity_type';
     let variables = {
-      fromId: dataSelectionFromId || stixCoreObjectId,
-      toId: dataSelectionToId,
-      relationship_type: dataSelectionRelationshipType || relationshipType,
-      fromTypes: dataSelectionFromTypes,
-      toTypes: dataSelectionToTypes || toTypes,
+      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
+      toId: filtersAndOptions?.dataSelectionToId,
+      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
+      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
+      toTypes: filtersAndOptions?.dataSelectionToTypes || toTypes,
       field: finalField,
       operation: 'count',
       startDate,
       endDate,
       dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: selection.number ?? 10,
-      filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+      filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
@@ -863,8 +806,8 @@ const StixRelationshipsMultiHorizontalBars = ({
     if (subSelection.perspective === 'entities') {
       variables = {
         ...variables,
-        subDistributionRelationshipType,
-        subDistributionToTypes,
+        subDistributionRelationshipType: subDistributionFiltersAndOptions?.dataSelectionRelationshipType,
+        subDistributionToTypes: subDistributionFiltersAndOptions?.dataSelectionToTypes,
         subDistributionField: finalSubDistributionField,
         subDistributionStartDate: startDate,
         subDistributionEndDate: endDate,
@@ -875,7 +818,7 @@ const StixRelationshipsMultiHorizontalBars = ({
         subDistributionOperation: 'count',
         subDistributionLimit: subSelection.number ?? 15,
         subDistributionTypes,
-        subDistributionFilters: { ...subSelection.filters, filters: subSelectionFiltersContent },
+        subDistributionFilters: subDistributionFiltersAndOptions?.filters,
       };
     } else {
       variables = {
@@ -890,11 +833,11 @@ const StixRelationshipsMultiHorizontalBars = ({
             : 'created_at',
         subDistributionIsTo: subSelection.isTo,
         subDistributionLimit: subSelection.number ?? 15,
-        subDistributionFromId: subSelectionFromId,
-        subDistributionFromTypes: subSelectionFromTypes,
-        subDistributionToId: subSelectionToId,
-        subDistributionToTypes: subSelectionToTypes,
-        subDistributionRelationshipType: subSelectionRelationshipType,
+        subDistributionFromId: subDistributionFiltersAndOptions?.dataSelectionFromId,
+        subDistributionFromTypes: subDistributionFiltersAndOptions?.dataSelectionFromTypes,
+        subDistributionToId: subDistributionFiltersAndOptions?.dataSelectionToId,
+        subDistributionToTypes: subDistributionFiltersAndOptions?.dataSelectionToTypes,
+        subDistributionRelationshipType: subDistributionFiltersAndOptions?.dataSelectionRelationshipType,
       };
     }
     return (

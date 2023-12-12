@@ -5,12 +5,12 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -88,25 +88,17 @@ const StixRelationshipsMultiHeatMap = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let filtersContent = selection.filters?.filters ?? [];
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))?.values
-        || null;
-      const dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-      const dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-      const dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
-      const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      filtersContent = filtersContent.filter(
-        (n) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(n.key),
-      );
+      const {
+        filters,
+        dataSelectionFromId,
+        dataSelectionToId,
+        dataSelectionRelationshipType,
+        dataSelectionFromTypes,
+        dataSelectionToTypes,
+      } = constructFiltersAndOptions(selection.filters);
       return {
         fromId: dataSelectionFromId,
         toId: dataSelectionToId,
@@ -114,7 +106,7 @@ const StixRelationshipsMultiHeatMap = ({
         fromTypes: dataSelectionFromTypes,
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
-        filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+        filters,
       };
     });
     return (

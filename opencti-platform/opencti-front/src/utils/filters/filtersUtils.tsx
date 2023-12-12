@@ -312,20 +312,29 @@ export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
 // construct filters and options for widgets
 export const constructFiltersAndOptions = (
   inputFilters: FilterGroup | undefined,
-  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string },
+  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
   // 01. handle api filters in options
   let filtersContent = inputFilters?.filters ?? [];
   const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
   const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
+  const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))?.values || null;
+  const dataSelectionFromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
+  const dataSelectionToId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
+  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values
+    || null;
+  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
   filtersContent = filtersContent.filter(
-    (n) => ![
+    (o) => ![
       'elementId',
-      'toTypes',
       'elementWithTargetTypes',
-    ].includes(n.key),
+      'relationship_type',
+      'fromId',
+      'toId',
+      'fromTypes',
+      'toTypes',
+    ].includes(o.key),
   );
   let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
   // 02. remove 'all' in filter with key=entity_type
@@ -355,7 +364,16 @@ export const constructFiltersAndOptions = (
       filterGroups: filters ? [filters] : [],
     };
   }
-  return { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes };
+  return {
+    filters,
+    dataSelectionElementId,
+    dataSelectionElementWithTargetTypes,
+    dataSelectionRelationshipType,
+    dataSelectionFromId,
+    dataSelectionFromTypes,
+    dataSelectionToId,
+    dataSelectionToTypes,
+  };
 };
 
 // return the i18n label corresponding to a value

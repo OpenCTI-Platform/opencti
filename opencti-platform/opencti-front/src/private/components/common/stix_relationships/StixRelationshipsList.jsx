@@ -16,6 +16,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { computeLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -4511,44 +4512,22 @@ const StixRelationshipsList = ({
       return 'No data selection';
     }
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const relationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const fromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-    const toId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-    const fromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
-    const toTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => ![
-        'relationship_type',
-        'fromId',
-        'toId',
-        'fromTypes',
-        'toTypes',
-      ].includes(n.key),
-    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    if (startDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
+    const {
+      filters,
+      dataSelectionRelationshipType: relationship_type,
+      dataSelectionFromId: fromId,
+      dataSelectionFromTypes: fromTypes,
+      dataSelectionToId: toId,
+      dataSelectionToTypes: toTypes,
+    } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixRelationshipsListQuery}
         variables={{
-          relationship_type: relationshipType,
+          relationship_type,
           fromId,
           toId,
           fromTypes,
@@ -4556,7 +4535,7 @@ const StixRelationshipsList = ({
           first: 50,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           dynamicFrom: selection.dynamicFrom,
           dynamicTo: selection.dynamicTo,
         }}

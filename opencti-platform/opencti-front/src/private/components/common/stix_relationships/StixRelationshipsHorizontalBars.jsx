@@ -5,7 +5,6 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -14,6 +13,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -236,52 +236,31 @@ const StixRelationshipsHorizontalBars = ({
   const { t } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
-    let filtersContent = [];
     let selection = {};
-    let dataSelectionDateAttribute = null;
-    let dataSelectionRelationshipType = null;
-    let dataSelectionFromId = null;
-    let dataSelectionToId = null;
-    let dataSelectionFromTypes = null;
-    let dataSelectionToTypes = null;
+    let filtersAndOptions;
+    let dataSelectionDateAttribute = 'created_at';
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersContent = selection.filters?.filters ?? [];
+      filtersAndOptions = constructFiltersAndOptions(selection.filters);
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
-      dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values
-        || null;
-      dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      filtersContent = filtersContent.filter(
-        (n) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(n.key),
-      );
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {
-      fromId: dataSelectionFromId || stixCoreObjectId,
-      toId: dataSelectionToId,
-      relationship_type: dataSelectionRelationshipType || relationshipType,
-      fromTypes: dataSelectionFromTypes,
-      toTypes: dataSelectionToTypes || toTypes,
+      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
+      toId: filtersAndOptions?.dataSelectionToId,
+      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
+      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
+      toTypes: filtersAndOptions?.dataSelectionToTypes || toTypes,
       field: finalField,
       operation: 'count',
       startDate,
       endDate,
       dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: selection.number ?? 10,
-      filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+      filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
