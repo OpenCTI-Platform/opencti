@@ -106,7 +106,7 @@ const AuditsMultiLineChart = ({
       );
       if (entityTypeFilter && entityTypeFilter.values.length > 0) {
         if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-          types = entityTypeFilter.values;;
+          types = entityTypeFilter.values;
         }
       }
       const filters = selection.filters
